@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>org.monarchinitiative.sss</groupId>
+    <artifactId>ThreeSplicing</artifactId>
+    <packaging>pom</packaging>
+    <version>1.0-SNAPSHOT</version>
+    <modules>
+        <module>sss-core</module>
+    </modules>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+        <java.version>11</java.version>
+        <htsjdk.version>2.19.0</htsjdk.version>
+        <slf4j.version>1.7.25</slf4j.version>
+        <guava.version>27.1-jre</guava.version>
+        <junit-jupiter.version>5.4.1</junit-jupiter.version>
+    </properties>
+
+    <developers>
+        <developer>
+            <name>Daniel Danis</name>
+            <email>daniel.danis@jax.org</email>
+            <organization>The Jackson Laboratory for Genomic Medicine</organization>
+            <organizationUrl>https://www.jax.org</organizationUrl>
+        </developer>
+        <developer>
+            <name>Peter N Robinson</name>
+            <email>peter.robinson@jax.org</email>
+            <organization>The Jackson Laboratory for Genomic Medicine</organization>
+            <organizationUrl>https://www.jax.org</organizationUrl>
+        </developer>
+    </developers>
+
+    <dependencies>
+        <!--        Libraries for testing         -->
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-engine</artifactId>
+            <version>${junit-jupiter.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-params</artifactId>
+            <version>${junit-jupiter.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.hamcrest</groupId>
+            <artifactId>hamcrest</artifactId>
+            <version>2.1</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-junit-jupiter</artifactId>
+            <version>2.28.2</version>
+            <scope>test</scope>
+        </dependency>
+
+    </dependencies>
+
+</project>
