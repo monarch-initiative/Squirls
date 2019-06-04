@@ -1,6 +1,7 @@
 package org.monarchinitiative.sss.core;
 
 import org.junit.jupiter.api.Test;
+import org.monarchinitiative.sss.core.pwm.SplicingInformationContentAnnotator;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.closeTo;
@@ -16,7 +17,8 @@ class SplicingInformationContentAnnotatorTest {
     @Test
     void getSpliceDonorScoreTest() {
         instance = new SplicingInformationContentAnnotator(MakeSplicePositionWeightMatrices.makeDonorMatrix(),
-                MakeSplicePositionWeightMatrices.makeAcceptorMatrix());
+                MakeSplicePositionWeightMatrices.makeAcceptorMatrix(),
+                MakeSplicePositionWeightMatrices.makeSplicingParameters());
 
         assertThat(instance.getSpliceDonorScore("CAGgtaggc"), closeTo(8.66411, EPSILON));
         assertThat(instance.getSpliceDonorScore("TCCgtgagt"), closeTo(3.01706, EPSILON));
@@ -29,7 +31,8 @@ class SplicingInformationContentAnnotatorTest {
     @Test
     void getSpliceAcceptorScoreTest() {
         instance = new SplicingInformationContentAnnotator(MakeSplicePositionWeightMatrices.makeDonorMatrix(),
-                MakeSplicePositionWeightMatrices.makeAcceptorMatrix());
+                MakeSplicePositionWeightMatrices.makeAcceptorMatrix(),
+                MakeSplicePositionWeightMatrices.makeSplicingParameters());
 
         assertThat(instance.getSpliceAcceptorScore("aggtttttttgaaagtctctcgtagAA"), closeTo(5.44088, EPSILON));
         assertThat(instance.getSpliceAcceptorScore("gctcctttcttaacaggctggaaagTT"), closeTo(-3.37936, EPSILON));

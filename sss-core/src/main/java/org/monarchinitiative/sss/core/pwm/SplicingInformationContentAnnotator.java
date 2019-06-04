@@ -1,4 +1,4 @@
-package org.monarchinitiative.sss.core;
+package org.monarchinitiative.sss.core.pwm;
 
 import org.jblas.DoubleMatrix;
 import org.slf4j.Logger;
@@ -28,18 +28,19 @@ public class SplicingInformationContentAnnotator {
      */
     private final DoubleMatrix donorMatrix, acceptorMatrix;
 
+    private final SplicingParameters splicingParameters;
+
     /**
      * Instantiate the annotator. Perform sanity check of provided PWM definitions.
      *
      * @param donorMatrix    - matrix of nucleotide frequencies observed on splice donor sites genome-wise
      * @param acceptorMatrix - matrix of nucleotide frequencies observed on splice acceptor sites genome-wise
      */
-    public SplicingInformationContentAnnotator(DoubleMatrix donorMatrix, DoubleMatrix acceptorMatrix) {
+    public SplicingInformationContentAnnotator(DoubleMatrix donorMatrix, DoubleMatrix acceptorMatrix, SplicingParameters splicingParameters) {
         this.donorMatrix = createICMatrix(donorMatrix);
         this.acceptorMatrix = createICMatrix(acceptorMatrix);
-
+        this.splicingParameters = splicingParameters;
     }
-
 
     /**
      * Convert {@link DoubleMatrix} with nucleotide frequencies into array of information content values.
@@ -62,7 +63,6 @@ public class SplicingInformationContentAnnotator {
         return icm;
     }
 
-
     /**
      * Calculate information content of the nucleotide from the frequency using formula 1 (Rogan paper from class
      * description). Correction factor is ignored, I assume that the sample size used to calculate the nucleotide
@@ -74,7 +74,6 @@ public class SplicingInformationContentAnnotator {
     private static double calculateIC(double freq) {
         return 2d - (-Math.log(freq) / Math.log(2));
     }
-
 
     /**
      * Convert sequence into its binary mask representation. For sequence 'ACGTAT' the corresponding binary mask
@@ -125,6 +124,9 @@ public class SplicingInformationContentAnnotator {
         return binary_mask;
     }
 
+    public SplicingParameters getSplicingParameters() {
+        return splicingParameters;
+    }
 
     /**
      * @param sequence String with nucleotide sequence to be scored

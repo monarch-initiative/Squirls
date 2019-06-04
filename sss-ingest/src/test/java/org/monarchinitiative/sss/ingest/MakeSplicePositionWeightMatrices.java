@@ -1,4 +1,4 @@
-package org.monarchinitiative.sss.core;
+package org.monarchinitiative.sss.ingest;
 
 import org.jblas.DoubleMatrix;
 import org.monarchinitiative.sss.core.pwm.SplicingParameters;

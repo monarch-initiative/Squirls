@@ -4,6 +4,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.monarchinitiative.sss.core.model.GenomeInterval;
 import org.monarchinitiative.sss.core.model.SequenceInterval;
 
 import java.io.File;
@@ -59,12 +60,14 @@ class SimpleGenomeSequenceAccessorTest {
         GenomeSequenceAccessor accessor = new SimpleGenomeSequenceAccessor(FASTA_PATH);
         assertThat(accessor.fetchSequence("7", 44580, 44620, true),
                 is(SequenceInterval.newBuilder()
-                        .setContig("7")
-                        .setBegin(44580)
-                        .setEnd(44620)
-                        .setStrand(true)
+                        .setInterval(GenomeInterval.newBuilder()
+                                .setContig("7")
+                                .setBegin(44580)
+                                .setEnd(44620)
+                                .setStrand(true)
+                                .setContigLength(49950)
+                                .build())
                         .setSequence("AGAGGAGGAAACGTGAATAGTATGCAGCTTCCCGCACACA")
-                        .setContigLength(49950)
                         .build()
                 ));
     }
@@ -74,12 +77,14 @@ class SimpleGenomeSequenceAccessorTest {
     void fetchSequenceOnFwdStrand() throws Exception {
         SequenceInterval si = instance.fetchSequence("1", 10000, 10100, true);
         assertThat(si, is(SequenceInterval.newBuilder()
-                .setContig("1")
-                .setBegin(10000)
-                .setEnd(10100)
-                .setStrand(true)
+                .setInterval(GenomeInterval.newBuilder()
+                        .setContig("1")
+                        .setBegin(10000)
+                        .setEnd(10100)
+                        .setStrand(true)
+                        .setContigLength(49950)
+                        .build())
                 .setSequence("taaccctaaccctaaccctaaccctaaccctaaccctaaccctaaccctaaccctaaccctaaccctaaccctaaccctaaccctaaccctaaccctaac")
-                .setContigLength(49950)
                 .build()));
     }
 
@@ -87,12 +92,14 @@ class SimpleGenomeSequenceAccessorTest {
     void fetchSequenceOnRevStrand() throws Exception {
         SequenceInterval si = instance.fetchSequence("2", 10000, 10100, false);
         assertThat(si, is(SequenceInterval.newBuilder()
-                .setContig("2")
-                .setBegin(10000)
-                .setEnd(10100)
-                .setStrand(false)
+                .setInterval(GenomeInterval.newBuilder()
+                        .setContig("2")
+                        .setBegin(10000)
+                        .setEnd(10100)
+                        .setStrand(false)
+                        .setContigLength(49950)
+                        .build())
                 .setSequence("TGGTTGCTCTAAAAATGCTGCTATTTTGCTGTTCACTGTATTGCACTTAGTTAAAAAGAAGATAATGTGAAAGATGAGAGCAGTTTTTTAAAGGATCTTT")
-                .setContigLength(49950)
                 .build()));
     }
 

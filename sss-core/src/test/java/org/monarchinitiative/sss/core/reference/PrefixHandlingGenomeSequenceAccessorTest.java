@@ -1,6 +1,7 @@
 package org.monarchinitiative.sss.core.reference;
 
 import org.junit.jupiter.api.*;
+import org.monarchinitiative.sss.core.model.GenomeInterval;
 import org.monarchinitiative.sss.core.model.SequenceInterval;
 
 import java.io.File;
@@ -43,12 +44,14 @@ class PrefixHandlingGenomeSequenceAccessorTest {
     void fetchSequenceFromPrefixedChromosome() throws Exception {
         SequenceInterval si = instance.fetchSequence("chr2", 10000, 10100, true);
         assertThat(si, is(SequenceInterval.newBuilder()
-                .setContig("chr2")
-                .setBegin(10000)
-                .setEnd(10100)
-                .setStrand(true)
+                .setInterval(GenomeInterval.newBuilder()
+                        .setContig("chr2")
+                        .setBegin(10000)
+                        .setEnd(10100)
+                        .setStrand(true)
+                        .setContigLength(49950)
+                        .build())
                 .setSequence("")
-                .setContigLength(49950)
                 .build()));
     }
 }
