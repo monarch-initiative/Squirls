@@ -121,7 +121,7 @@ public class SequenceInterval {
         return sequence.substring(begin, end);
     }
 
-    public String getSequence(int begin, int end) {
+    public String getSubsequence(int begin, int end) {
         return getLocalSequence(begin - interval.getBegin(), end - interval.getBegin());
     }
 

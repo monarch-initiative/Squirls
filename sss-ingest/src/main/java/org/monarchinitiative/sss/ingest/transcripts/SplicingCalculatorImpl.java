@@ -86,11 +86,11 @@ public class SplicingCalculatorImpl implements SplicingCalculator {
             // we have more than one exon, therefore we also have at least single intron
             // we start at i = 1, since we already processed the first exon above
             int intronBegin = exonRegions.get(i - 1).getEndPos();
-            String donorSequence = si.getSequence(intronBegin - parameters.getDonorExonic(), intronBegin + parameters.getDonorIntronic());
+            String donorSequence = si.getSubsequence(intronBegin - parameters.getDonorExonic(), intronBegin + parameters.getDonorIntronic());
             double donorScore = annotator.getSpliceDonorScore(donorSequence);
 
             int intronEnd = exonRegions.get(i).getBeginPos();
-            String acceptorSequence = si.getSequence(intronEnd - parameters.getAcceptorIntronic(), intronEnd + parameters.getAcceptorExonic());
+            String acceptorSequence = si.getSubsequence(intronEnd - parameters.getAcceptorIntronic(), intronEnd + parameters.getAcceptorExonic());
             double acceptorScore = annotator.getSpliceAcceptorScore(acceptorSequence);
 
             int exonEnd = exonRegions.get(i).getEndPos();

@@ -53,6 +53,12 @@ class SequenceIntervalTest {
         assertThat(instance.getLocalSequence(begin, end), is(expected));
     }
 
+    @ParameterizedTest
+    @CsvSource({"10, 11, A", "19, 20, C", "10, 20, ACGTACGTAC", "14, 16, AC"})
+    void sequenceGoodResults(int begin, int end, String expected) {
+        assertThat(instance.getSubsequence(begin, end), is(expected));
+    }
+
     @Test
     void throwsExceptionInLengthDiscordance() {
         String sequence = "ACGT";
