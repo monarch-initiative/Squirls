@@ -43,7 +43,6 @@ class PrefixHandlingGenomeSequenceAccessorTest {
     }
 
     @Test
-//    @Disabled("Fetch sequence from prefixed chromosome is not yet implemented")
     void fetchSequenceFromPrefixedChromosome() throws Exception {
         SequenceInterval si = instance.fetchSequence("chr2", 10000, 10100, true);
         assertThat(si, is(SequenceInterval.newBuilder()
@@ -58,12 +57,4 @@ class PrefixHandlingGenomeSequenceAccessorTest {
                 .build()));
     }
 
-    @Test
-    void weirdBug() throws InvalidFastaFileException, InvalidCoordinatesException {
-        File fasta = new File("/home/ielis/tempelhof/genomes/hg19/hg19.fa");
-        File idx = new File("/home/ielis/tempelhof/genomes/hg19/hg19.fa.fai");
-        PrefixHandlingGenomeSequenceAccessor instance = new PrefixHandlingGenomeSequenceAccessor(fasta, idx);
-        SequenceInterval si = instance.fetchSequence("17", 1345748, 1349491, false);
-        System.out.println(si);
-    }
 }

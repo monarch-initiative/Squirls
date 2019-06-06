@@ -1,4 +1,4 @@
-package org.monarchinitiative.sss.ingest;
+package org.monarchinitiative.sss.core;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
@@ -6,7 +6,6 @@ import de.charite.compbio.jannovar.data.ReferenceDictionary;
 import de.charite.compbio.jannovar.data.ReferenceDictionaryBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.jdbc.core.JdbcTemplate;
 
 import javax.sql.DataSource;
 
@@ -16,12 +15,6 @@ import javax.sql.DataSource;
 @Configuration
 public class TestDataSourceConfig {
 
-
-    @Bean
-    public JdbcTemplate jdbcTemplate(DataSource dataSource) {
-        return new JdbcTemplate(dataSource);
-    }
-
     /**
      * @return in-memory database for testing
      */
@@ -30,7 +23,6 @@ public class TestDataSourceConfig {
         String jdbcUrl = "jdbc:h2:mem:pbga;INIT=CREATE SCHEMA IF NOT EXISTS SPLICING";
         final HikariConfig config = new HikariConfig();
         config.setUsername("sa");
-//        config.setPassword("");
         config.setDriverClassName("org.h2.Driver");
         config.setJdbcUrl(jdbcUrl);
 
