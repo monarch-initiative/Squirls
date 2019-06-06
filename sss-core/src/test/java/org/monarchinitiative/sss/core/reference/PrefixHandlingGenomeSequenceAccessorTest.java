@@ -1,6 +1,9 @@
 package org.monarchinitiative.sss.core.reference;
 
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.monarchinitiative.sss.core.model.GenomeInterval;
 import org.monarchinitiative.sss.core.model.SequenceInterval;
 
@@ -29,7 +32,7 @@ class PrefixHandlingGenomeSequenceAccessorTest {
 
 
     @BeforeEach
-    void setUp() {
+    void setUp() throws InvalidFastaFileException {
         instance = new PrefixHandlingGenomeSequenceAccessor(FASTA_PATH, FASTA_IDX_PATH);
     }
 
@@ -40,7 +43,7 @@ class PrefixHandlingGenomeSequenceAccessorTest {
     }
 
     @Test
-    @Disabled("Fetch sequence from prefixed chromosome is not yet implemented")
+//    @Disabled("Fetch sequence from prefixed chromosome is not yet implemented")
     void fetchSequenceFromPrefixedChromosome() throws Exception {
         SequenceInterval si = instance.fetchSequence("chr2", 10000, 10100, true);
         assertThat(si, is(SequenceInterval.newBuilder()
@@ -51,7 +54,16 @@ class PrefixHandlingGenomeSequenceAccessorTest {
                         .setStrand(true)
                         .setContigLength(49950)
                         .build())
-                .setSequence("")
+                .setSequence("CGTATCCcacacaccacacccacacaccacacccacacacacccacacccacacccacacacaccacacccacacaccacacccacacccacacaccaca")
                 .build()));
+    }
+
+    @Test
+    void weirdBug() throws InvalidFastaFileException, InvalidCoordinatesException {
+        File fasta = new File("/home/ielis/tempelhof/genomes/hg19/hg19.fa");
+        File idx = new File("/home/ielis/tempelhof/genomes/hg19/hg19.fa.fai");
+        PrefixHandlingGenomeSequenceAccessor instance = new PrefixHandlingGenomeSequenceAccessor(fasta, idx);
+        SequenceInterval si = instance.fetchSequence("17", 1345748, 1349491, false);
+        System.out.println(si);
     }
 }

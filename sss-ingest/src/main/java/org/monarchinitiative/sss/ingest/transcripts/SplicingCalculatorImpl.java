@@ -24,17 +24,19 @@ public class SplicingCalculatorImpl implements SplicingCalculator {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SplicingCalculatorImpl.class);
 
+    /**
+     * For each {@link TranscriptModel} we fetch +- 100bp sequence
+     */
+    private static final int SEQ_INT_PADDING = 100;
+
     private final GenomeSequenceAccessor accessor;
 
     private final SplicingInformationContentAnnotator annotator;
-
-    private final SplicingParameters parameters;
 
 
     public SplicingCalculatorImpl(GenomeSequenceAccessor accessor, SplicingInformationContentAnnotator splicingInformationContentAnnotator) {
         this.accessor = accessor;
         this.annotator = splicingInformationContentAnnotator;
-        this.parameters = splicingInformationContentAnnotator.getSplicingParameters();
     }
 
     @Override
@@ -43,13 +45,13 @@ public class SplicingCalculatorImpl implements SplicingCalculator {
         GenomeInterval txRegion = model.getTXRegion();
 
         String contigName = refDict.getContigIDToName().get(txRegion.getChr());
+        int siBegin = txRegion.getBeginPos() - SEQ_INT_PADDING;
+        int siEnd = txRegion.getEndPos() + SEQ_INT_PADDING;
         SequenceInterval si;
         try {
-            si = accessor.fetchSequence(contigName,
-                    txRegion.getBeginPos(),
-                    txRegion.getEndPos(), txRegion.getStrand().isForward());
+            si = accessor.fetchSequence(contigName, siBegin, siEnd, txRegion.getStrand().isForward());
         } catch (InvalidCoordinatesException e) {
-            LOGGER.warn("Transcript {} has invalid coordinates: {}", model.getAccession(), txRegion);
+            LOGGER.warn("Transcript {} has invalid coordinates: {}", model.getAccession(), txRegion, e);
             return Optional.empty();
         }
 
@@ -71,27 +73,27 @@ public class SplicingCalculatorImpl implements SplicingCalculator {
         }
 
 
-        int txBegin = txRegion.getBeginPos();
         // add first exon which may also be last if transcript consists of only single exon
+        GenomeInterval firstExon = exonRegions.get(0);
         builder.addExon(
                 SplicingExon.newBuilder()
-                        .setBegin(txRegion.getBeginPos() - txBegin)
-                        .setEnd(txRegion.getEndPos() - txBegin)
+                        .setBegin(firstExon.getBeginPos())
+                        .setEnd(firstExon.getEndPos())
                         .build());
 
-
+        SplicingParameters parameters = annotator.getSplicingParameters();
         for (int i = 1; i < exonRegions.size(); i++) {
             // we have more than one exon, therefore we also have at least single intron
             // we start at i = 1, since we already processed the first exon above
-            int intronBegin = exonRegions.get(i - 1).getEndPos() - txBegin;
-            String donorSequence = si.getLocalSequence(intronBegin - parameters.getDonorExonic(), intronBegin + parameters.getDonorIntronic());
+            int intronBegin = exonRegions.get(i - 1).getEndPos();
+            String donorSequence = si.getSequence(intronBegin - parameters.getDonorExonic(), intronBegin + parameters.getDonorIntronic());
             double donorScore = annotator.getSpliceDonorScore(donorSequence);
 
-            int intronEnd = exonRegions.get(i).getBeginPos() - txBegin;
-            String acceptorSequence = si.getLocalSequence(intronEnd - parameters.getAcceptorIntronic(), intronEnd + parameters.getAcceptorExonic());
+            int intronEnd = exonRegions.get(i).getBeginPos();
+            String acceptorSequence = si.getSequence(intronEnd - parameters.getAcceptorIntronic(), intronEnd + parameters.getAcceptorExonic());
             double acceptorScore = annotator.getSpliceAcceptorScore(acceptorSequence);
 
-            int exonEnd = exonRegions.get(i).getEndPos() - txBegin;
+            int exonEnd = exonRegions.get(i).getEndPos();
 
             builder.addIntron(SplicingIntron.newBuilder()
                     .setBegin(intronBegin)

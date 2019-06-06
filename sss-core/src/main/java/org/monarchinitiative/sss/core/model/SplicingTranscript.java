@@ -11,6 +11,8 @@ import java.util.List;
  */
 public class SplicingTranscript {
 
+    private static final SplicingTranscript DEFAULT = SplicingTranscript.newBuilder().build();
+
     private final GenomeInterval interval;
 
     private final String accessionId;
@@ -26,8 +28,21 @@ public class SplicingTranscript {
         accessionId = builder.accessionId;
     }
 
+
+    public static SplicingTranscript getDefaultInstance() {
+        return DEFAULT;
+    }
+
     public static Builder newBuilder() {
         return new Builder();
+    }
+
+    public ImmutableList<SplicingExon> getExons() {
+        return exons;
+    }
+
+    public ImmutableList<SplicingIntron> getIntrons() {
+        return introns;
     }
 
     public String getAccessionId() {
@@ -38,27 +53,46 @@ public class SplicingTranscript {
         return interval.isStrand();
     }
 
+    public String getContig() {
+        return interval.getContig();
+    }
+
     public int getTxBegin() {
         return interval.getBegin();
+    }
+
+    public int getTxBeginOnFwd() {
+        if (interval.isStrand()) { // forward strand
+            return getTxBegin();
+        } else {
+            return interval.getContigLength() - interval.getEnd();
+        }
     }
 
     public int getTxEnd() {
         return interval.getEnd();
     }
 
+    public int getTxEndOnFwd() {
+        if (interval.isStrand()) {
+            return getTxEnd();
+        } else {
+            return interval.getContigLength() - interval.getBegin();
+        }
+    }
+
     public static final class Builder {
 
-        private GenomeInterval interval;
+        private GenomeInterval interval = GenomeInterval.getDefaultInstance();
 
-        private List<SplicingExon> exons;
+        private List<SplicingExon> exons = new ArrayList<>();
 
-        private List<SplicingIntron> introns;
+        private List<SplicingIntron> introns = new ArrayList<>();
 
-        private String accessionId;
+        private String accessionId = "";
 
         private Builder() {
-            exons = new ArrayList<>();
-            introns = new ArrayList<>();
+            // private no-op
         }
 
         public Builder setAccessionId(String accessionId) {

@@ -1,9 +1,13 @@
 package org.monarchinitiative.sss.core.model;
 
+import java.util.Objects;
+
 /**
  *
  */
 public class GenomeInterval {
+
+    private static final GenomeInterval DEFAULT = GenomeInterval.newBuilder().build();
 
     private final String contig;
 
@@ -14,11 +18,15 @@ public class GenomeInterval {
     private final int contigLength;
 
     private GenomeInterval(Builder builder) {
-        contig = builder.contig;
+        contig = Objects.requireNonNull(builder.contig, "Contig cannot be null");
         begin = builder.begin;
         end = builder.end;
         strand = builder.strand;
         contigLength = builder.contigLength;
+    }
+
+    public static GenomeInterval getDefaultInstance() {
+        return DEFAULT;
     }
 
     public static Builder newBuilder() {
@@ -110,7 +118,7 @@ public class GenomeInterval {
 
     public static final class Builder {
 
-        private String contig;
+        private String contig = "";
 
         private int begin;
 

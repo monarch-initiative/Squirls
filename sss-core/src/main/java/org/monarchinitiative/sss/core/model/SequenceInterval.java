@@ -16,8 +16,12 @@ public class SequenceInterval {
         this.interval = builder.interval;
         this.sequence = builder.sequence;
 
-        // TODO - add sanity checks
+        // sanity checks
+        if (interval.getLength() != sequence.length()) {
+            throw new IllegalArgumentException(String.format("Sequence with length %d for interval %d", sequence.length(), interval.getLength()));
+        }
     }
+
 
     /**
      * Convert nucleotide sequence to reverse complement.
@@ -115,6 +119,10 @@ public class SequenceInterval {
      */
     public String getLocalSequence(int begin, int end) {
         return sequence.substring(begin, end);
+    }
+
+    public String getSequence(int begin, int end) {
+        return getLocalSequence(begin - interval.getBegin(), end - interval.getBegin());
     }
 
     /**

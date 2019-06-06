@@ -44,6 +44,10 @@ public class TestDataSourceConfig {
         builder.putContigID("chr2", 2);
         builder.putContigName(2, "chr2");
         builder.putContigLength(2, 100_000);
+
+        builder.putContigID("chr3", 3);
+        builder.putContigName(3, "chr3");
+        builder.putContigLength(3, 200_000);
         return builder.build();
     }
 }

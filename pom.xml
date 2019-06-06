@@ -11,6 +11,7 @@
     <modules>
         <module>sss-core</module>
         <module>sss-ingest</module>
+        <module>sss-exomiser-bridge</module>
     </modules>
 
     <properties>

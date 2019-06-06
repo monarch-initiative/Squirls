@@ -5,10 +5,12 @@ import com.zaxxer.hikari.HikariDataSource;
 import de.charite.compbio.jannovar.data.JannovarData;
 import de.charite.compbio.jannovar.data.JannovarDataSerializer;
 import de.charite.compbio.jannovar.data.SerializationException;
-import org.monarchinitiative.sss.core.pwm.PositionalWeightMatrixParser;
+import org.monarchinitiative.sss.core.pwm.FileBasedSplicingPositionalWeightMatrixParser;
 import org.monarchinitiative.sss.core.pwm.SplicingInformationContentAnnotator;
+import org.monarchinitiative.sss.core.pwm.SplicingPositionalWeightMatrixParser;
 import org.monarchinitiative.sss.core.reference.GenomeSequenceAccessor;
-import org.monarchinitiative.sss.core.reference.SimpleGenomeSequenceAccessor;
+import org.monarchinitiative.sss.core.reference.InvalidFastaFileException;
+import org.monarchinitiative.sss.core.reference.PrefixHandlingGenomeSequenceAccessor;
 import org.monarchinitiative.sss.ingest.transcripts.SplicingCalculator;
 import org.monarchinitiative.sss.ingest.transcripts.SplicingCalculatorImpl;
 import org.springframework.context.annotation.Bean;
@@ -55,8 +57,8 @@ public class IngestConfiguration {
     }
 
     @Bean
-    public GenomeSequenceAccessor genomeSequenceAccessor() {
-        return new SimpleGenomeSequenceAccessor(ingestProperties.getFastaPath().toFile(), ingestProperties.getFastaIndexPath().toFile());
+    public GenomeSequenceAccessor genomeSequenceAccessor() throws InvalidFastaFileException {
+        return new PrefixHandlingGenomeSequenceAccessor(ingestProperties.getFastaPath().toFile(), ingestProperties.getFastaIndexPath().toFile());
     }
 
     @Bean
@@ -66,16 +68,16 @@ public class IngestConfiguration {
     }
 
     @Bean
-    public SplicingInformationContentAnnotator splicingInformationContentAnnotator(PositionalWeightMatrixParser positionalWeightMatrixParser) {
-        return new SplicingInformationContentAnnotator(positionalWeightMatrixParser.getDonorMatrix(),
-                positionalWeightMatrixParser.getAcceptorMatrix(),
-                positionalWeightMatrixParser.getSplicingParameters());
+    public SplicingInformationContentAnnotator splicingInformationContentAnnotator(SplicingPositionalWeightMatrixParser splicingPositionalWeightMatrixParser) {
+        return new SplicingInformationContentAnnotator(splicingPositionalWeightMatrixParser.getDonorMatrix(),
+                splicingPositionalWeightMatrixParser.getAcceptorMatrix(),
+                splicingPositionalWeightMatrixParser.getSplicingParameters());
     }
 
     @Bean
-    public PositionalWeightMatrixParser positionalWeightMatrixParser() throws IOException {
+    public SplicingPositionalWeightMatrixParser positionalWeightMatrixParser() throws IOException {
         try (InputStream is = Files.newInputStream(ingestProperties.getSplicingInformationContentMatrixPath())) {
-            return new PositionalWeightMatrixParser(is);
+            return new FileBasedSplicingPositionalWeightMatrixParser(is);
         }
     }
 }

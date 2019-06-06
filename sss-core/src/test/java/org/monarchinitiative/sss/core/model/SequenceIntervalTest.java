@@ -53,5 +53,28 @@ class SequenceIntervalTest {
         assertThat(instance.getLocalSequence(begin, end), is(expected));
     }
 
+    @Test
+    void throwsExceptionInLengthDiscordance() {
+        String sequence = "ACGT";
+        GenomeInterval shorter = GenomeInterval.newBuilder()
+                .setContig("chr10")
+                .setBegin(30)
+                .setEnd(33)
+                .setStrand(true)
+                .setContigLength(100)
+                .build();
+        assertThrows(IllegalArgumentException.class,
+                () -> SequenceInterval.newBuilder().setSequence(sequence).setInterval(shorter).build());
+
+        GenomeInterval longer = GenomeInterval.newBuilder()
+                .setContig("chr10")
+                .setBegin(30)
+                .setEnd(35)
+                .setStrand(true)
+                .setContigLength(100)
+                .build();
+        assertThrows(IllegalArgumentException.class,
+                () -> SequenceInterval.newBuilder().setSequence(sequence).setInterval(longer).build());
+    }
 }
 

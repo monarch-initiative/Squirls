@@ -3,9 +3,11 @@ package org.monarchinitiative.sss.ingest;
 import de.charite.compbio.jannovar.data.JannovarData;
 import org.flywaydb.core.Flyway;
 import org.monarchinitiative.sss.ingest.config.IngestProperties;
-import org.monarchinitiative.sss.ingest.transcripts.IngestDao;
+import org.monarchinitiative.sss.ingest.pwm.PwmIngestDao;
+import org.monarchinitiative.sss.ingest.pwm.PwmIngestRunner;
 import org.monarchinitiative.sss.ingest.transcripts.SplicingCalculator;
-import org.monarchinitiative.sss.ingest.transcripts.UniversalIngestDao;
+import org.monarchinitiative.sss.ingest.transcripts.TranscriptIngestDao;
+import org.monarchinitiative.sss.ingest.transcripts.TranscriptsIngestRunner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.ApplicationArguments;
@@ -13,7 +15,6 @@ import org.springframework.boot.ApplicationRunner;
 import org.springframework.stereotype.Component;
 
 import javax.sql.DataSource;
-import java.util.Optional;
 
 /**
  *
@@ -67,24 +68,21 @@ public class MainIngestRunner implements ApplicationRunner {
             int migrations = applyMigrations(dataSource, locations);
             LOGGER.info("Applied {} migrations", migrations);
 
-            JannovarTranscriptSource jts = ingestProperties.getJannovarTranscriptSource();
+//            JannovarTranscriptSource jts = ingestProperties.getJannovarTranscriptSource();
 
-            IngestDao ingestDao = new UniversalIngestDao(dataSource);
+            // process PWMs
+            PwmIngestDao pwm = new PwmIngestDao(dataSource);
+            PwmIngestRunner pwmIngestRunner = new PwmIngestRunner(pwm, ingestProperties.getSplicingInformationContentMatrixPath());
+            pwmIngestRunner.run();
 
             // process transcripts
-            LOGGER.info("Processing {} transcripts", jannovarData.getTmByAccession().values().size());
-
-            int inserted = jannovarData.getTmByAccession().values().stream()
-                    .map(splicingCalculator::calculate)
-                    .filter(Optional::isPresent)
-                    .map(Optional::get)
-                    .map(ingestDao::insertTranscript)
-                    .reduce(Integer::sum)
-                    .orElse(0);
-            LOGGER.info("Inserted {} transcripts", inserted);
+            final TranscriptIngestDao transcriptIngestDao = new TranscriptIngestDao(dataSource);
+            TranscriptsIngestRunner transcriptsIngestRunner = new TranscriptsIngestRunner(splicingCalculator, transcriptIngestDao, jannovarData);
+            transcriptsIngestRunner.run();
 
         } catch (Exception e) {
             LOGGER.error("Error: ", e);
+            throw e;
         }
     }
 }
