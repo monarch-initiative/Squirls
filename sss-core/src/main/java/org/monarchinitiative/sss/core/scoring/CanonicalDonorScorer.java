@@ -1,15 +1,30 @@
 package org.monarchinitiative.sss.core.scoring;
 
+import org.monarchinitiative.sss.core.model.SequenceInterval;
+import org.monarchinitiative.sss.core.model.SplicingTranscript;
+import org.monarchinitiative.sss.core.model.SplicingVariant;
 import org.monarchinitiative.sss.core.pwm.SplicingInformationContentAnnotator;
 import org.monarchinitiative.sss.core.pwm.SplicingParameters;
 
 
-public class CanonicalDonorScorer {
+public class CanonicalDonorScorer implements SpliceScorer {
 
     private final SplicingInformationContentAnnotator annotator;
 
-    public CanonicalDonorScorer(SplicingParameters params, SplicingInformationContentAnnotator annotator) {
+    private final SplicingParameters parameters;
+
+    private final SplicingTranscriptLocator locator;
+
+    public CanonicalDonorScorer(SplicingInformationContentAnnotator annotator, SplicingTranscriptLocator locator) {
         this.annotator = annotator;
+        this.parameters = annotator.getSplicingParameters();
+        this.locator = locator;
+    }
+
+    @Override
+    public double score(SplicingVariant variant, SplicingTranscript transcript, SequenceInterval sequenceInterval) {
+
+        return 0;
     }
 
 
@@ -25,7 +40,7 @@ public class CanonicalDonorScorer {
 //            SplicingContext.SplicePosition pos = ctx.getSplicePosition();
 //            switch (pos) {
 //                case DONOR:
-//                    double wtCanonicalDonorScore = ctx.getTranscript().getExons(ctx.getExonIdx()).getDonorScore();
+//                    double wtCanonicalDonorScore = ctx.getTranscript().getExons(ctx.getFeatureIndex()).getDonorScore();
 //                    String altCanonicalDonorSnippet = ctx.getDonorSiteWithAltAllele();
 //                    if (altCanonicalDonorSnippet == null) {
 //                        // e.g. when the whole site is deleted. Other parts of analysis pipeline should interpret such events

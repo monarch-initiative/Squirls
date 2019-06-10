@@ -3,6 +3,7 @@ package org.monarchinitiative.sss.ingest.transcripts;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.monarchinitiative.sss.core.model.SplicingTranscript;
+import org.monarchinitiative.sss.core.reference.GenomeCoordinatesFlipper;
 import org.monarchinitiative.sss.ingest.TestDataInstances;
 import org.monarchinitiative.sss.ingest.TestDataSourceConfig;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,6 +29,9 @@ class TranscriptIngestDaoTest {
 
     @Autowired
     private DataSource dataSource;
+
+    @Autowired
+    private GenomeCoordinatesFlipper genomeCoordinatesFlipper;
 
     private TranscriptIngestDao instance;
 
@@ -72,7 +76,7 @@ class TranscriptIngestDaoTest {
 
     @BeforeEach
     void setUp() {
-        instance = new TranscriptIngestDao(dataSource);
+        instance = new TranscriptIngestDao(dataSource, genomeCoordinatesFlipper);
     }
 
     @Test

@@ -1,13 +1,17 @@
 package org.monarchinitiative.sss.core;
 
+import com.google.common.collect.ImmutableMap;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import de.charite.compbio.jannovar.data.ReferenceDictionary;
 import de.charite.compbio.jannovar.data.ReferenceDictionaryBuilder;
+import org.monarchinitiative.sss.core.pwm.SplicingParameters;
+import org.monarchinitiative.sss.core.reference.GenomeCoordinatesFlipper;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import javax.sql.DataSource;
+import java.util.Map;
 
 /**
  *
@@ -41,5 +45,28 @@ public class TestDataSourceConfig {
         builder.putContigName(3, "chr3");
         builder.putContigLength(3, 200_000);
         return builder.build();
+    }
+
+    @Bean
+    public SplicingParameters splicingParameters() {
+        return SplicingParameters.builder()
+                .setDonorExonic(3)
+                .setDonorIntronic(6)
+                .setAcceptorExonic(2)
+                .setAcceptorIntronic(25)
+                .build();
+    }
+
+    @Bean
+    public Map<String, Integer> contigLengthMap() {
+        return ImmutableMap.<String, Integer>builder()
+                .put("chr1", 10000)
+                .put("chr2", 20000)
+                .build();
+    }
+
+    @Bean
+    public GenomeCoordinatesFlipper genomeCoordinatesFlipper(Map<String, Integer> contigLengthMap) {
+        return new GenomeCoordinatesFlipper(contigLengthMap);
     }
 }

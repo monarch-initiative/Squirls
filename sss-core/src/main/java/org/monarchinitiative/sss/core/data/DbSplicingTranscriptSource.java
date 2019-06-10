@@ -1,9 +1,10 @@
 package org.monarchinitiative.sss.core.data;
 
-import org.monarchinitiative.sss.core.model.GenomeInterval;
+import org.monarchinitiative.sss.core.model.GenomeCoordinates;
 import org.monarchinitiative.sss.core.model.SplicingExon;
 import org.monarchinitiative.sss.core.model.SplicingIntron;
 import org.monarchinitiative.sss.core.model.SplicingTranscript;
+import org.monarchinitiative.sss.core.reference.InvalidCoordinatesException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,15 +22,15 @@ import java.util.stream.Collectors;
 /**
  *
  */
-public class SplicingDataSourceImpl implements SplicingDataSource {
+public class DbSplicingTranscriptSource implements SplicingTranscriptSource {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(SplicingDataSourceImpl.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(DbSplicingTranscriptSource.class);
 
     private final DataSource dataSource;
 
     private final Map<String, Integer> contigLengthMap;
 
-    public SplicingDataSourceImpl(DataSource dataSource, Map<String, Integer> contigLengthMap) {
+    public DbSplicingTranscriptSource(DataSource dataSource, Map<String, Integer> contigLengthMap) {
         this.dataSource = dataSource;
         this.contigLengthMap = contigLengthMap;
     }
@@ -70,12 +71,11 @@ public class SplicingDataSourceImpl implements SplicingDataSource {
                     final boolean tStrand = exonsRs.getBoolean("strand");
                     transcriptMap.put(accession, SplicingTranscript.newBuilder()
                             .setAccessionId(accession)
-                            .setInterval(GenomeInterval.newBuilder()
+                            .setCoordinates(GenomeCoordinates.newBuilder()
                                     .setContig(tContig)
                                     .setBegin(tBegin)
                                     .setEnd(tEnd)
                                     .setStrand(tStrand)
-                                    .setContigLength(contigLengthMap.get(tContig))
                                     .build())
                     );
                 }
@@ -109,8 +109,11 @@ public class SplicingDataSourceImpl implements SplicingDataSource {
                     .collect(Collectors.toList());
         } catch (SQLException e) {
             LOGGER.warn("Error fetching data for {}:{}-{}", contig, begin, end, e);
-            return Collections.emptyList();
+        } catch (InvalidCoordinatesException e) {
+            // this should not happen
+            LOGGER.error("There was transcript with invalid coordinates in query {}:{}-{}", contig, begin, end, e);
         }
+        return Collections.emptyList();
     }
 
 }

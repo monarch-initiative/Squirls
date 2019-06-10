@@ -4,7 +4,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.monarchinitiative.sss.core.model.GenomeInterval;
+import org.monarchinitiative.sss.core.model.GenomeCoordinates;
 import org.monarchinitiative.sss.core.model.SequenceInterval;
 
 import java.io.File;
@@ -46,12 +46,11 @@ class PrefixHandlingGenomeSequenceAccessorTest {
     void fetchSequenceFromPrefixedChromosome() throws Exception {
         SequenceInterval si = instance.fetchSequence("chr2", 10000, 10100, true);
         assertThat(si, is(SequenceInterval.newBuilder()
-                .setInterval(GenomeInterval.newBuilder()
+                .setCoordinates(GenomeCoordinates.newBuilder()
                         .setContig("chr2")
                         .setBegin(10000)
                         .setEnd(10100)
                         .setStrand(true)
-                        .setContigLength(49950)
                         .build())
                 .setSequence("CGTATCCcacacaccacacccacacaccacacccacacacacccacacccacacccacacacaccacacccacacaccacacccacacccacacaccaca")
                 .build()));

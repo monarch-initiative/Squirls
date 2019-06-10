@@ -25,14 +25,14 @@ import static org.hamcrest.Matchers.hasSize;
 @SpringBootTest(classes = {TestDataSourceConfig.class})
 @Sql(scripts = {"file:src/test/resources/sql/create_transcripts_tables.sql",
         "file:src/test/resources/sql/insert_transcripts_data.sql"})
-class SplicingDataSourceImplTest {
+class DbSplicingTranscriptSourceImplTest {
 
     private static Map<String, Integer> contigLengthMap;
 
     @Autowired
     private DataSource dataSource;
 
-    private SplicingDataSourceImpl source;
+    private DbSplicingTranscriptSource source;
 
     @BeforeAll
     static void setUpBefore() {
@@ -42,7 +42,7 @@ class SplicingDataSourceImplTest {
 
     @BeforeEach
     void setUp() {
-        source = new SplicingDataSourceImpl(dataSource, contigLengthMap);
+        source = new DbSplicingTranscriptSource(dataSource, contigLengthMap);
     }
 
     @Test
@@ -60,8 +60,6 @@ class SplicingDataSourceImplTest {
         assertThat(first.getTxBegin(), is(1000));
         assertThat(first.getTxEnd(), is(2000));
         assertThat(first.getStrand(), is(true));
-        assertThat(first.getTxBeginOnFwd(), is(1000));
-        assertThat(first.getTxEndOnFwd(), is(2000));
 
         final List<SplicingExon> firstExons = first.getExons();
         assertThat(firstExons, hasSize(3));
@@ -83,8 +81,6 @@ class SplicingDataSourceImplTest {
         assertThat(second.getTxBegin(), is(5000));
         assertThat(second.getTxEnd(), is(6000));
         assertThat(second.getStrand(), is(true));
-        assertThat(second.getTxBeginOnFwd(), is(5000));
-        assertThat(second.getTxEndOnFwd(), is(6000));
 
         final List<SplicingExon> secondExons = second.getExons();
         assertThat(secondExons, hasSize(4));

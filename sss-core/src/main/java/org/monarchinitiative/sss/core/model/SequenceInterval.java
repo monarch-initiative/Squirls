@@ -7,18 +7,18 @@ package org.monarchinitiative.sss.core.model;
  */
 public class SequenceInterval {
 
-    private final GenomeInterval interval;
+    private final GenomeCoordinates coordinates;
 
     private final String sequence;
 
 
     private SequenceInterval(Builder builder) {
-        this.interval = builder.interval;
+        this.coordinates = builder.coordinates;
         this.sequence = builder.sequence;
 
         // sanity checks
-        if (interval.getLength() != sequence.length()) {
-            throw new IllegalArgumentException(String.format("Sequence with length %d for interval %d", sequence.length(), interval.getLength()));
+        if (coordinates.getLength() != sequence.length()) {
+            throw new IllegalArgumentException(String.format("Sequence with length %d for coordinates %d", sequence.length(), coordinates.getLength()));
         }
     }
 
@@ -66,28 +66,11 @@ public class SequenceInterval {
         return new Builder();
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof SequenceInterval)) return false;
-
-        SequenceInterval that = (SequenceInterval) o;
-
-        if (interval != null ? !interval.equals(that.interval) : that.interval != null) return false;
-        return sequence != null ? sequence.equals(that.sequence) : that.sequence == null;
-
-    }
-
-    @Override
-    public int hashCode() {
-        int result = interval != null ? interval.hashCode() : 0;
-        result = 31 * result + (sequence != null ? sequence.hashCode() : 0);
-        return result;
-    }
 
     @Override
     public String toString() {
-        return String.format("%s:[%d-%d](%d)%s %s", interval.getContig(), interval.getBegin(), interval.getEnd(), interval.getContigLength(), interval.isStrand() ? "+" : "-", sequence);
+        return String.format("%s:[%d-%d]%s %s",
+                coordinates.getContig(), coordinates.getBegin(), coordinates.getEnd(), coordinates.isStrand() ? "+" : "-", sequence);
     }
 
     public String getSequence() {
@@ -95,18 +78,23 @@ public class SequenceInterval {
     }
 
 
-    public SequenceInterval withStrand(boolean strand) {
-        final GenomeInterval intervalOnStrand = interval.withStrand(strand);
-        final String sequenceOnStrand;
-        if (strand == this.interval.isStrand()) {
-            sequenceOnStrand = sequence;
-        } else {
-            sequenceOnStrand = reverseComplement(sequence);
-        }
-        return newBuilder()
-                .setInterval(intervalOnStrand)
-                .setSequence(sequenceOnStrand)
-                .build();
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof SequenceInterval)) return false;
+
+        SequenceInterval that = (SequenceInterval) o;
+
+        if (coordinates != null ? !coordinates.equals(that.coordinates) : that.coordinates != null) return false;
+        return sequence != null ? sequence.equals(that.sequence) : that.sequence == null;
+
+    }
+
+    @Override
+    public int hashCode() {
+        int result = coordinates != null ? coordinates.hashCode() : 0;
+        result = 31 * result + (sequence != null ? sequence.hashCode() : 0);
+        return result;
     }
 
     /**
@@ -122,7 +110,7 @@ public class SequenceInterval {
     }
 
     public String getSubsequence(int begin, int end) {
-        return getLocalSequence(begin - interval.getBegin(), end - interval.getBegin());
+        return getLocalSequence(begin - coordinates.getBegin(), end - coordinates.getBegin());
     }
 
     /**
@@ -130,15 +118,15 @@ public class SequenceInterval {
      */
     public static final class Builder {
 
-        private GenomeInterval interval;
+        private GenomeCoordinates coordinates;
 
         private String sequence;
 
         private Builder() {
         }
 
-        public Builder setInterval(GenomeInterval interval) {
-            this.interval = interval;
+        public Builder setCoordinates(GenomeCoordinates coordinates) {
+            this.coordinates = coordinates;
             return this;
         }
 

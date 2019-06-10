@@ -4,6 +4,10 @@ import de.charite.compbio.jannovar.data.JannovarData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
 /**
  *
  */
@@ -21,11 +25,13 @@ public class ContigIngestRunner {
     }
 
     public void run() {
-        LOGGER.info("Storing lengths of {} contigs", jannovarData.getRefDict().getContigIDToLength().size());
-        Integer inserted = jannovarData.getRefDict().getContigIDToLength().entrySet().stream()
-                .map(e -> dao.insertContig(jannovarData.getRefDict().getContigIDToName().get(e.getKey()), e.getValue()))
+        final Map<String, Integer> contigLengths = jannovarData.getRefDict().getContigNameToID().keySet().stream()
+                .collect(Collectors.toMap(Function.identity(),
+                        idx -> jannovarData.getRefDict().getContigIDToLength().get(jannovarData.getRefDict().getContigNameToID().get(idx))));
+        Integer inserted = contigLengths.entrySet().stream()
+                .map(e -> dao.insertContig(e.getKey(), e.getValue()))
                 .reduce(Integer::sum)
                 .orElse(0);
-        LOGGER.info("Stored {} contigs", inserted);
+        LOGGER.info("Stored lengths of {} contigs", inserted);
     }
 }

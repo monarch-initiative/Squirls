@@ -8,6 +8,7 @@ import de.charite.compbio.jannovar.reference.TranscriptModelBuilder;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
+import org.monarchinitiative.sss.core.model.GenomeCoordinates;
 import org.monarchinitiative.sss.core.model.SequenceInterval;
 import org.monarchinitiative.sss.core.model.SplicingTranscript;
 import org.monarchinitiative.sss.core.pwm.SplicingInformationContentAnnotator;
@@ -109,12 +110,11 @@ class SplicingCalculatorImplTest {
 
         when(accessor.fetchSequence("chr2", 9_900, 20_100, true))
                 .thenReturn(SequenceInterval.newBuilder()
-                        .setInterval(org.monarchinitiative.sss.core.model.GenomeInterval.newBuilder()
+                        .setCoordinates(GenomeCoordinates.newBuilder()
                                 .setContig("chr2")
                                 .setBegin(9_900)
                                 .setEnd(20_100)
                                 .setStrand(true)
-                                .setContigLength(100_000)
                                 .build())
                         .setSequence(mockSeq)
                         .build());
@@ -162,12 +162,11 @@ class SplicingCalculatorImplTest {
         String mockSeq = new String(chars);
         when(accessor.fetchSequence("chr2", 0, 300, true))
                 .thenReturn(SequenceInterval.newBuilder()
-                        .setInterval(org.monarchinitiative.sss.core.model.GenomeInterval.newBuilder()
+                        .setCoordinates(GenomeCoordinates.newBuilder()
                                 .setContig("chr2")
                                 .setBegin(0)
                                 .setEnd(300)
                                 .setStrand(true)
-                                .setContigLength(100_000)
                                 .build())
                         .setSequence(mockSeq)
                         .build());

@@ -2,6 +2,7 @@ package org.monarchinitiative.sss.ingest;
 
 import de.charite.compbio.jannovar.data.JannovarData;
 import org.flywaydb.core.Flyway;
+import org.monarchinitiative.sss.core.reference.GenomeCoordinatesFlipper;
 import org.monarchinitiative.sss.ingest.config.IngestProperties;
 import org.monarchinitiative.sss.ingest.pwm.PwmIngestDao;
 import org.monarchinitiative.sss.ingest.pwm.PwmIngestRunner;
@@ -17,6 +18,9 @@ import org.springframework.boot.ApplicationRunner;
 import org.springframework.stereotype.Component;
 
 import javax.sql.DataSource;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  *
@@ -82,7 +86,11 @@ public class MainIngestRunner implements ApplicationRunner {
             pwmIngestRunner.run();
 
             // process transcripts
-            final TranscriptIngestDao transcriptIngestDao = new TranscriptIngestDao(dataSource);
+            final Map<String, Integer> contigLengths = jannovarData.getRefDict().getContigNameToID().keySet().stream()
+                    .collect(Collectors.toMap(Function.identity(),
+                            idx -> jannovarData.getRefDict().getContigIDToLength().get(jannovarData.getRefDict().getContigNameToID().get(idx))));
+            final GenomeCoordinatesFlipper genomeCoordinatesFlipper = new GenomeCoordinatesFlipper(contigLengths);
+            final TranscriptIngestDao transcriptIngestDao = new TranscriptIngestDao(dataSource, genomeCoordinatesFlipper);
             TranscriptsIngestRunner transcriptsIngestRunner = new TranscriptsIngestRunner(splicingCalculator, transcriptIngestDao, jannovarData);
             transcriptsIngestRunner.run();
 

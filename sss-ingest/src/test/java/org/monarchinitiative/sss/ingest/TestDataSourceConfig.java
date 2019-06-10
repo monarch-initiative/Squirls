@@ -4,11 +4,14 @@ import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import de.charite.compbio.jannovar.data.ReferenceDictionary;
 import de.charite.compbio.jannovar.data.ReferenceDictionaryBuilder;
+import org.monarchinitiative.sss.core.reference.GenomeCoordinatesFlipper;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import javax.sql.DataSource;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  *
@@ -50,4 +53,13 @@ public class TestDataSourceConfig {
         builder.putContigLength(3, 200_000);
         return builder.build();
     }
+
+    @Bean
+    public GenomeCoordinatesFlipper genomeCoordinatesFlipper(ReferenceDictionary referenceDictionary) {
+        final Map<String, Integer> contigLengths = referenceDictionary.getContigIDToName().keySet().stream()
+                .collect(Collectors.toMap(idx -> referenceDictionary.getContigIDToName().get(idx),
+                        idx -> referenceDictionary.getContigIDToLength().get(idx)));
+        return new GenomeCoordinatesFlipper(contigLengths);
+    }
+
 }

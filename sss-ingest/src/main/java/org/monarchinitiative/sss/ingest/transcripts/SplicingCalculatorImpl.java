@@ -4,10 +4,7 @@ import com.google.common.collect.ImmutableList;
 import de.charite.compbio.jannovar.data.ReferenceDictionary;
 import de.charite.compbio.jannovar.reference.GenomeInterval;
 import de.charite.compbio.jannovar.reference.TranscriptModel;
-import org.monarchinitiative.sss.core.model.SequenceInterval;
-import org.monarchinitiative.sss.core.model.SplicingExon;
-import org.monarchinitiative.sss.core.model.SplicingIntron;
-import org.monarchinitiative.sss.core.model.SplicingTranscript;
+import org.monarchinitiative.sss.core.model.*;
 import org.monarchinitiative.sss.core.pwm.SplicingInformationContentAnnotator;
 import org.monarchinitiative.sss.core.pwm.SplicingParameters;
 import org.monarchinitiative.sss.core.reference.GenomeSequenceAccessor;
@@ -48,21 +45,23 @@ public class SplicingCalculatorImpl implements SplicingCalculator {
         int siBegin = txRegion.getBeginPos() - SEQ_INT_PADDING;
         int siEnd = txRegion.getEndPos() + SEQ_INT_PADDING;
         SequenceInterval si;
+        final GenomeCoordinates coordinates;
         try {
             si = accessor.fetchSequence(contigName, siBegin, siEnd, txRegion.getStrand().isForward());
+            coordinates = GenomeCoordinates.newBuilder()
+                    .setContig(contigName)
+                    .setBegin(txRegion.getBeginPos())
+                    .setEnd(txRegion.getEndPos())
+                    .setStrand(txRegion.getStrand().isForward())
+                    .build();
         } catch (InvalidCoordinatesException e) {
             LOGGER.warn("Transcript {} has invalid coordinates: {}", model.getAccession(), txRegion, e);
             return Optional.empty();
         }
 
+
         SplicingTranscript.Builder builder = SplicingTranscript.newBuilder()
-                .setInterval(org.monarchinitiative.sss.core.model.GenomeInterval.newBuilder()
-                        .setContig(contigName)
-                        .setBegin(txRegion.getBeginPos())
-                        .setEnd(txRegion.getEndPos())
-                        .setStrand(txRegion.getStrand().isForward())
-                        .setContigLength(refDict.getContigIDToLength().get(txRegion.getChr()))
-                        .build())
+                .setCoordinates(coordinates)
                 .setAccessionId(model.getAccession());
 
 

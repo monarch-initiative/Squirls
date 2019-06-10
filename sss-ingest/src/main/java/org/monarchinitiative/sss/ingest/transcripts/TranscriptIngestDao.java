@@ -1,8 +1,10 @@
 package org.monarchinitiative.sss.ingest.transcripts;
 
+import org.monarchinitiative.sss.core.model.GenomeCoordinates;
 import org.monarchinitiative.sss.core.model.SplicingExon;
 import org.monarchinitiative.sss.core.model.SplicingIntron;
 import org.monarchinitiative.sss.core.model.SplicingTranscript;
+import org.monarchinitiative.sss.core.reference.GenomeCoordinatesFlipper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -10,6 +12,7 @@ import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.util.Optional;
 
 /**
  *
@@ -20,9 +23,11 @@ public class TranscriptIngestDao {
 
     private final DataSource dataSource;
 
+    private final GenomeCoordinatesFlipper genomeCoordinatesFlipper;
 
-    public TranscriptIngestDao(DataSource dataSource) {
+    public TranscriptIngestDao(DataSource dataSource, GenomeCoordinatesFlipper genomeCoordinatesFlipper) {
         this.dataSource = dataSource;
+        this.genomeCoordinatesFlipper = genomeCoordinatesFlipper;
     }
 
 
@@ -52,11 +57,22 @@ public class TranscriptIngestDao {
                  PreparedStatement exons = connection.prepareStatement(exonsSql);
                  PreparedStatement introns = connection.prepareStatement(intronsSql)) {
 
+                GenomeCoordinates coordinates = transcript.getCoordinates();
+                if (!coordinates.isStrand()) {
+                    // we need to flip the coordinates to FWD strand
+                    final Optional<GenomeCoordinates> flipOp = genomeCoordinatesFlipper.flip(coordinates);
+                    if (flipOp.isEmpty()) {
+                        // complaint made in coordinates flipper
+                        return 0;
+                    }
+                    coordinates = flipOp.get();
+                }
+
                 transcripts.setString(1, transcript.getContig());
                 transcripts.setInt(2, transcript.getTxBegin());
                 transcripts.setInt(3, transcript.getTxEnd());
-                transcripts.setInt(4, transcript.getTxBeginOnFwd());
-                transcripts.setInt(5, transcript.getTxEndOnFwd());
+                transcripts.setInt(4, coordinates.getBegin());
+                transcripts.setInt(5, coordinates.getEnd());
                 transcripts.setBoolean(6, transcript.getStrand());
                 transcripts.setString(7, transcript.getAccessionId());
                 updatedTx += transcripts.executeUpdate();

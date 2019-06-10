@@ -13,7 +13,7 @@ public class SplicingTranscript {
 
     private static final SplicingTranscript DEFAULT = SplicingTranscript.newBuilder().build();
 
-    private final GenomeInterval interval;
+    private final GenomeCoordinates coordinates;
 
     private final String accessionId;
 
@@ -22,12 +22,11 @@ public class SplicingTranscript {
     private final ImmutableList<SplicingIntron> introns;
 
     private SplicingTranscript(Builder builder) {
-        interval = builder.interval;
+        coordinates = builder.coordinates;
         exons = ImmutableList.copyOf(builder.exons);
         introns = ImmutableList.copyOf(builder.introns);
         accessionId = builder.accessionId;
     }
-
 
     public static SplicingTranscript getDefaultInstance() {
         return DEFAULT;
@@ -35,6 +34,10 @@ public class SplicingTranscript {
 
     public static Builder newBuilder() {
         return new Builder();
+    }
+
+    public GenomeCoordinates getCoordinates() {
+        return coordinates;
     }
 
     public ImmutableList<SplicingExon> getExons() {
@@ -50,40 +53,26 @@ public class SplicingTranscript {
     }
 
     public boolean getStrand() {
-        return interval.isStrand();
+        return coordinates.isStrand();
     }
 
     public String getContig() {
-        return interval.getContig();
+        return coordinates.getContig();
     }
 
     public int getTxBegin() {
-        return interval.getBegin();
+        return coordinates.getBegin();
     }
 
-    public int getTxBeginOnFwd() {
-        if (interval.isStrand()) { // forward strand
-            return getTxBegin();
-        } else {
-            return interval.getContigLength() - interval.getEnd();
-        }
-    }
 
     public int getTxEnd() {
-        return interval.getEnd();
+        return coordinates.getEnd();
     }
 
-    public int getTxEndOnFwd() {
-        if (interval.isStrand()) {
-            return getTxEnd();
-        } else {
-            return interval.getContigLength() - interval.getBegin();
-        }
-    }
 
     public static final class Builder {
 
-        private GenomeInterval interval = GenomeInterval.getDefaultInstance();
+        private GenomeCoordinates coordinates;
 
         private List<SplicingExon> exons = new ArrayList<>();
 
@@ -100,8 +89,8 @@ public class SplicingTranscript {
             return this;
         }
 
-        public Builder setInterval(GenomeInterval interval) {
-            this.interval = interval;
+        public Builder setCoordinates(GenomeCoordinates coordinates) {
+            this.coordinates = coordinates;
             return this;
         }
 

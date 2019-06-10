@@ -7,7 +7,8 @@ import java.util.List;
 /**
  *
  */
-public interface SplicingDataSource {
+public interface SplicingTranscriptSource {
+
 
     /**
      * Fetch transcripts that overlap with query interval specified by <code>contig</code>, <code>begin</code>, and
@@ -19,5 +20,4 @@ public interface SplicingDataSource {
      * @return
      */
     List<SplicingTranscript> fetchTranscripts(String contig, int begin, int end);
-
 }

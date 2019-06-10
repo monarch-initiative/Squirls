@@ -5,7 +5,7 @@ import htsjdk.samtools.reference.FastaSequenceIndex;
 import htsjdk.samtools.reference.FastaSequenceIndexEntry;
 import htsjdk.samtools.reference.IndexedFastaSequenceFile;
 import htsjdk.samtools.reference.ReferenceSequence;
-import org.monarchinitiative.sss.core.model.GenomeInterval;
+import org.monarchinitiative.sss.core.model.GenomeCoordinates;
 import org.monarchinitiative.sss.core.model.SequenceInterval;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -104,12 +104,11 @@ public class SimpleGenomeSequenceAccessor implements GenomeSequenceAccessor {
         }
 
         return SequenceInterval.newBuilder()
-                .setInterval(GenomeInterval.newBuilder()
+                .setCoordinates(GenomeCoordinates.newBuilder()
                         .setContig(contig)
                         .setBegin(begin)
                         .setEnd(end)
                         .setStrand(strand)
-                        .setContigLength(contigLength)
                         .build())
                 .setSequence(sequence)
                 .build();
