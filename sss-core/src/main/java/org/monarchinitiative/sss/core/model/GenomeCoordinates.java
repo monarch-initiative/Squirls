@@ -61,6 +61,30 @@ public class GenomeCoordinates {
         return end - begin;
     }
 
+    public boolean overlapsWith(GenomeCoordinates other) {
+        if (!this.contig.equals(other.contig)) {
+            throw new InvalidCoordinatesException("Cannot compute overlap for coordinates on different contigs");
+        }
+        if (this.strand != other.strand) {
+            throw new InvalidCoordinatesException("Cannot compute overlap for coordinates on different strands");
+        }
+        return this.getBegin() < other.getEnd() && other.getBegin() < this.getEnd();
+    }
+
+    public boolean contains(GenomeCoordinates inner) {
+        if (!this.contig.equals(inner.contig)) {
+            throw new InvalidCoordinatesException("Cannot compute overlap for coordinates on different contigs");
+        }
+        if (this.strand != inner.strand) {
+            throw new InvalidCoordinatesException("Cannot compute overlap for coordinates on different strands");
+        }
+        return inner.getBegin() >= this.getBegin() && inner.getEnd() <= this.getEnd();
+    }
+
+    public boolean contains(int pos) {
+        return begin < pos && pos <= this.end;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

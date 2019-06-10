@@ -22,11 +22,6 @@ public class NaiveSplicingTranscriptLocator implements SplicingTranscriptLocator
         this.flipper = flipper;
     }
 
-
-    private static boolean overlapsWith(GenomeCoordinates first, GenomeCoordinates second) {
-        return second.getBegin() < first.getEnd() && first.getBegin() < second.getEnd();
-    }
-
     @Override
     public SplicingLocationData localize(SplicingVariant variant, SplicingTranscript transcript) {
         try {
@@ -49,7 +44,7 @@ public class NaiveSplicingTranscriptLocator implements SplicingTranscriptLocator
 
             // intersects with transcript
             final GenomeCoordinates varCoor = variant.getCoordinates();
-            if (!overlapsWith(coordinates, varCoor)) {
+            if (!coordinates.overlapsWith(varCoor)) {
                 return SplicingLocationData.outside();
             }
 
@@ -76,7 +71,7 @@ public class NaiveSplicingTranscriptLocator implements SplicingTranscriptLocator
                         .setStrand(transcript.getStrand())
                         .build();
 
-                if (overlapsWith(donor, varCoor)) {
+                if (donor.overlapsWith(varCoor)) {
                     return dataBuilder
                             .setSplicingPosition(SplicingLocationData.SplicingPosition.DONOR)
                             .setFeatureIndex(i)
@@ -92,7 +87,7 @@ public class NaiveSplicingTranscriptLocator implements SplicingTranscriptLocator
                         .setStrand(transcript.getStrand())
                         .build();
 
-                if (overlapsWith(acceptor, varCoor)) {
+                if (acceptor.overlapsWith(varCoor)) {
                     return dataBuilder
                             .setSplicingPosition(SplicingLocationData.SplicingPosition.ACCEPTOR)
                             .setFeatureIndex(i)

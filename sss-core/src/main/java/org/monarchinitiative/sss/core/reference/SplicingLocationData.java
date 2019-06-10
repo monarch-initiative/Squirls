@@ -1,7 +1,7 @@
 package org.monarchinitiative.sss.core.reference;
 
 /**
- *
+ * POJO for grouping location data of variant with respect to transcript.
  */
 public class SplicingLocationData {
 
@@ -36,6 +36,24 @@ public class SplicingLocationData {
         return featureIndex;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof SplicingLocationData)) return false;
+
+        SplicingLocationData that = (SplicingLocationData) o;
+
+        if (featureIndex != that.featureIndex) return false;
+        return position == that.position;
+
+    }
+
+    @Override
+    public int hashCode() {
+        int result = position != null ? position.hashCode() : 0;
+        result = 31 * result + featureIndex;
+        return result;
+    }
 
     @Override
     public String toString() {

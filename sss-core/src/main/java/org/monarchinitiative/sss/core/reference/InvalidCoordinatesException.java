@@ -1,11 +1,11 @@
 package org.monarchinitiative.sss.core.reference;
 
-import org.monarchinitiative.sss.core.ThreeSException;
+import org.monarchinitiative.sss.core.ThreeSRuntimeException;
 
 /**
  *
  */
-public class InvalidCoordinatesException extends ThreeSException {
+public class InvalidCoordinatesException extends ThreeSRuntimeException {
 
     public InvalidCoordinatesException() {
         super();
