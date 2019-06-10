@@ -36,7 +36,7 @@ public class TranscriptIngestDao {
         }
 
         String transcriptsSql = "INSERT INTO SPLICING.TRANSCRIPTS (CONTIG, BEGIN_POS, END_POS, " +
-                "BEGIN_ON_FWD, BEGIN_ON_REV, STRAND, TX_ACCESSION) " +
+                "BEGIN_ON_FWD, END_ON_FWD, STRAND, TX_ACCESSION) " +
                 "VALUES (?, ?, ?, ?, ?, ?, ?)";
         String exonsSql = "INSERT INTO SPLICING.EXONS (TX_ACCESSION, BEGIN_POS, END_POS) " +
                 "VALUES (?, ?, ?)";

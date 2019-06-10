@@ -45,6 +45,14 @@ public class SplicingExon {
         return result;
     }
 
+    @Override
+    public String toString() {
+        return "SplicingExon{" +
+                "begin=" + begin +
+                ", end=" + end +
+                '}';
+    }
+
     public static final class Builder {
 
         private int begin;

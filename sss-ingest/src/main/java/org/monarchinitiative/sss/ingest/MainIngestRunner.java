@@ -5,6 +5,8 @@ import org.flywaydb.core.Flyway;
 import org.monarchinitiative.sss.ingest.config.IngestProperties;
 import org.monarchinitiative.sss.ingest.pwm.PwmIngestDao;
 import org.monarchinitiative.sss.ingest.pwm.PwmIngestRunner;
+import org.monarchinitiative.sss.ingest.reference.ContigIngestDao;
+import org.monarchinitiative.sss.ingest.reference.ContigIngestRunner;
 import org.monarchinitiative.sss.ingest.transcripts.SplicingCalculator;
 import org.monarchinitiative.sss.ingest.transcripts.TranscriptIngestDao;
 import org.monarchinitiative.sss.ingest.transcripts.TranscriptsIngestRunner;
@@ -69,6 +71,10 @@ public class MainIngestRunner implements ApplicationRunner {
             LOGGER.info("Applied {} migrations", migrations);
 
 //            JannovarTranscriptSource jts = ingestProperties.getJannovarTranscriptSource();
+
+            ContigIngestDao dao = new ContigIngestDao(dataSource);
+            ContigIngestRunner contigIngestRunner = new ContigIngestRunner(dao, jannovarData);
+            contigIngestRunner.run();
 
             // process PWMs
             PwmIngestDao pwm = new PwmIngestDao(dataSource);
