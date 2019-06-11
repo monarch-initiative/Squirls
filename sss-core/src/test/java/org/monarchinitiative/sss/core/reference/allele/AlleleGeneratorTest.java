@@ -303,4 +303,27 @@ class AlleleGeneratorTest {
         assertThat(allele, is("gaacactgttccttctctctttcagGT"));
     }
 
+
+    // ---------------   static Region class   ---------------
+
+
+    @Test
+    void differenceTo() {
+        final AlleleGenerator.Region first = generator.makeDonorRegion(100);
+
+        int diff = first.differenceTo(110, 120);
+        assertThat(diff, is(-5));
+
+        diff = first.differenceTo(120, 120);
+        assertThat(diff, is(-15));
+
+        diff = first.differenceTo(90, 95);
+        assertThat(diff, is(3));
+
+        diff = first.differenceTo(80, 85);
+        assertThat(diff, is(13));
+
+        diff = first.differenceTo(99, 101);
+        assertThat(diff, is(0));
+    }
 }

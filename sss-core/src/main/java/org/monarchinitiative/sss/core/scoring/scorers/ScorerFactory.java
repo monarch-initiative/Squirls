@@ -24,4 +24,8 @@ public class ScorerFactory {
         return new CanonicalAcceptorScorer(annotator, alleleGenerator);
     }
 
+    public CrypticDonorScorer getCrypticDonorScorer() {
+        return new CrypticDonorScorer(annotator, alleleGenerator);
+    }
+
 }

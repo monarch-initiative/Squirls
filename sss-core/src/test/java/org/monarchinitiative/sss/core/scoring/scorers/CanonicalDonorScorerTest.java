@@ -9,9 +9,7 @@ import org.monarchinitiative.sss.core.model.GenomeCoordinates;
 import org.monarchinitiative.sss.core.model.SplicingTranscript;
 import org.monarchinitiative.sss.core.model.SplicingVariant;
 import org.monarchinitiative.sss.core.pwm.SplicingInformationContentAnnotator;
-import org.monarchinitiative.sss.core.pwm.SplicingParameters;
 import org.monarchinitiative.sss.core.reference.allele.AlleleGenerator;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import static org.hamcrest.CoreMatchers.is;
@@ -23,9 +21,6 @@ import static org.mockito.Mockito.*;
 class CanonicalDonorScorerTest {
 
     private static final double EPSILON = 0.0005;
-
-    @Autowired
-    private SplicingParameters splicingParameters;
 
     @Mock
     private SplicingInformationContentAnnotator annotator;
@@ -40,7 +35,6 @@ class CanonicalDonorScorerTest {
 
     @BeforeEach
     void setUp() {
-        when(annotator.getSplicingParameters()).thenReturn(splicingParameters);
         scorer = new CanonicalDonorScorer(annotator, generator);
         st = PojosForTesting.getTranscriptWithThreeExons();
     }
