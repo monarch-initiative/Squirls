@@ -7,18 +7,21 @@ public class SplicingLocationData {
 
     private static final SplicingLocationData OUTSIDE = newBuilder()
             .setSplicingPosition(SplicingPosition.OUTSIDE)
-            .setFeatureIndex(-1)
+            .setExonIndex(-1)
+            .setIntronIndex(-1)
             .build();
 
     private final SplicingPosition position;
 
-    private final int featureIndex;
+    private final int intronIdx;
+
+    private final int exonIdx;
 
     private SplicingLocationData(Builder builder) {
-        featureIndex = builder.featureIndex;
+        intronIdx = builder.intronIdx;
+        exonIdx = builder.exonIdx;
         position = builder.position;
     }
-
 
     public static SplicingLocationData outside() {
         return OUTSIDE;
@@ -28,13 +31,18 @@ public class SplicingLocationData {
         return new Builder();
     }
 
+    public int getIntronIdx() {
+        return intronIdx;
+    }
+
+    public int getExonIdx() {
+        return exonIdx;
+    }
+
     public SplicingPosition getPosition() {
         return position;
     }
 
-    public int getFeatureIndex() {
-        return featureIndex;
-    }
 
     @Override
     public boolean equals(Object o) {
@@ -43,7 +51,8 @@ public class SplicingLocationData {
 
         SplicingLocationData that = (SplicingLocationData) o;
 
-        if (featureIndex != that.featureIndex) return false;
+        if (intronIdx != that.intronIdx) return false;
+        if (exonIdx != that.exonIdx) return false;
         return position == that.position;
 
     }
@@ -51,13 +60,14 @@ public class SplicingLocationData {
     @Override
     public int hashCode() {
         int result = position != null ? position.hashCode() : 0;
-        result = 31 * result + featureIndex;
+        result = 31 * result + intronIdx;
+        result = 31 * result + exonIdx;
         return result;
     }
 
     @Override
     public String toString() {
-        return "spl pos [" + position + " feature " + featureIndex + "]";
+        return "spl pos [" + position + "i:" + intronIdx + ";e:" + exonIdx + "]";
     }
 
     public enum SplicingPosition {
@@ -86,16 +96,22 @@ public class SplicingLocationData {
 
     public static final class Builder {
 
-        private int featureIndex;
+        private int intronIdx = -1;
+
+        private int exonIdx = -1;
 
         private SplicingPosition position;
 
         private Builder() {
         }
 
+        public Builder setExonIndex(int exonIndex) {
+            this.exonIdx = exonIndex;
+            return this;
+        }
 
-        public Builder setFeatureIndex(int featureIndex) {
-            this.featureIndex = featureIndex;
+        public Builder setIntronIndex(int intronIdx) {
+            this.intronIdx = intronIdx;
             return this;
         }
 

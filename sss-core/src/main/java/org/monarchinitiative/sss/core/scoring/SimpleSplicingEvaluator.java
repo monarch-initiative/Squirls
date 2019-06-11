@@ -37,23 +37,37 @@ public class SimpleSplicingEvaluator implements SplicingEvaluator {
         final SplicingLocationData locationData = transcriptLocator.locate(variant, transcript);
 
         final SplicingPathogenicityData.Builder resultBuilder = SplicingPathogenicityData.newBuilder();
+
         switch (locationData.getPosition()) {
             case DONOR:
-                double donorScore = factory.getCanonicalDonorScorer().score(variant, transcript.getIntrons().get(locationData.getFeatureIndex()), si);
-                final double cryptDonorScore = factory.getCrypticDonorScorer().score(variant, transcript.getIntrons().get(locationData.getFeatureIndex()), si);
-                resultBuilder.putScore(ScoringStrategy.CANONICAL_DONOR, donorScore)
-                        .putScore(ScoringStrategy.CRYPTIC_DONOR, cryptDonorScore);
+                final int d_i_i = locationData.getIntronIdx();
+                double donorScore = factory.getCanonicalDonorScorer().score(variant, transcript.getIntrons().get(d_i_i), si);
+                resultBuilder.putScore(ScoringStrategy.CANONICAL_DONOR, donorScore);
                 break;
             case ACCEPTOR:
-                double acceptorScore = factory.getCanonicalAcceptorScorer().score(variant, transcript.getIntrons().get(locationData.getFeatureIndex()), si);
+                final int a_i_i = locationData.getIntronIdx();
+                double acceptorScore = factory.getCanonicalAcceptorScorer().score(variant, transcript.getIntrons().get(a_i_i), si);
                 resultBuilder.putScore(ScoringStrategy.CANONICAL_ACCEPTOR, acceptorScore);
-                // TODO - add cryptic acceptor scorer
                 break;
             case EXON:
-                // TODO - add cryptic donor & acceptor scorer
+                final int e_e_i = locationData.getExonIdx();
+                if (e_e_i != 0) { // variant is not in the first exon
+                    // use the previous intron to calculate acceptor score
+                    final double exonCryptAccSc = factory.getCrypticAcceptorScorer().score(variant, transcript.getIntrons().get(e_e_i - 1), si);
+                    resultBuilder.putScore(ScoringStrategy.CRYPTIC_ACCEPTOR, exonCryptAccSc);
+                } else if (transcript.getExons().size() - 1 != e_e_i) { // variant is not in the last exon
+                    final double exonCryptDonSc = factory.getCrypticDonorScorer().score(variant, transcript.getIntrons().get(e_e_i), si);
+                    resultBuilder.putScore(ScoringStrategy.CRYPTIC_DONOR, exonCryptDonSc);
+                }
                 break;
             case INTRON:
-                // TODO - contemplate
+                final int i_i = locationData.getIntronIdx();
+                final double intronCryptDonSc = factory.getCrypticDonorScorer().score(variant, transcript.getIntrons().get(i_i), si);
+                final double intronCryptAccSc = factory.getCrypticAcceptorScorer().score(variant, transcript.getIntrons().get(i_i), si);
+
+                resultBuilder.putScore(ScoringStrategy.CRYPTIC_DONOR, intronCryptDonSc)
+                        .putScore(ScoringStrategy.CRYPTIC_ACCEPTOR, intronCryptAccSc);
+
                 break;
             default:
                 // no-op

@@ -104,11 +104,11 @@ public class AlleleGenerator {
     }
 
     public Region makeAcceptorRegion(SplicingIntron intron) {
-        return makeDonorRegion(intron.getEnd());
+        return makeAcceptorRegion(intron.getEnd());
     }
 
     public Region makeAcceptorRegion(SplicingExon exon) {
-        return makeDonorRegion(exon.getBegin());
+        return makeAcceptorRegion(exon.getBegin());
     }
 
     public Region makeAcceptorRegion(int anchor) {
@@ -162,9 +162,8 @@ public class AlleleGenerator {
 
         @Override
         public String toString() {
-            return "Region{" +
-                    "begin=" + begin +
-                    ", end=" + end +
+            return "Region{" + begin +
+                    "-" + end +
                     '}';
         }
     }

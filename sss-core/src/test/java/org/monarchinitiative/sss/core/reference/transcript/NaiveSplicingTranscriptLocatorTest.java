@@ -85,7 +85,8 @@ class NaiveSplicingTranscriptLocatorTest {
                 .build();
         final SplicingLocationData data = locator.locate(variant, st);
         assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.EXON));
-        assertThat(data.getFeatureIndex(), is(0));
+        assertThat(data.getExonIdx(), is(0));
+        assertThat(data.getIntronIdx(), is(-1));
     }
 
 
@@ -103,7 +104,8 @@ class NaiveSplicingTranscriptLocatorTest {
                 .build();
         final SplicingLocationData data = locator.locate(variant, st);
         assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.EXON));
-        assertThat(data.getFeatureIndex(), is(0));
+        assertThat(data.getExonIdx(), is(0));
+        assertThat(data.getIntronIdx(), is(-1));
     }
 
     @Test
@@ -120,7 +122,8 @@ class NaiveSplicingTranscriptLocatorTest {
                 .build();
         final SplicingLocationData data = locator.locate(variant, st);
         assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.DONOR));
-        assertThat(data.getFeatureIndex(), is(0));
+        assertThat(data.getIntronIdx(), is(0));
+        assertThat(data.getExonIdx(), is(0));
     }
 
     @Test
@@ -137,7 +140,8 @@ class NaiveSplicingTranscriptLocatorTest {
                 .build();
         final SplicingLocationData data = locator.locate(variant, st);
         assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.DONOR));
-        assertThat(data.getFeatureIndex(), is(0));
+        assertThat(data.getIntronIdx(), is(0));
+        assertThat(data.getExonIdx(), is(0));
     }
 
 
@@ -155,7 +159,8 @@ class NaiveSplicingTranscriptLocatorTest {
                 .build();
         final SplicingLocationData data = locator.locate(variant, st);
         assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.INTRON));
-        assertThat(data.getFeatureIndex(), is(0));
+        assertThat(data.getIntronIdx(), is(0));
+        assertThat(data.getExonIdx(), is(-1));
     }
 
     @Test
@@ -172,7 +177,8 @@ class NaiveSplicingTranscriptLocatorTest {
                 .build();
         final SplicingLocationData data = locator.locate(variant, st);
         assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.INTRON));
-        assertThat(data.getFeatureIndex(), is(0));
+        assertThat(data.getIntronIdx(), is(0));
+        assertThat(data.getExonIdx(), is(-1));
     }
 
     @Test
@@ -189,7 +195,8 @@ class NaiveSplicingTranscriptLocatorTest {
                 .build();
         final SplicingLocationData data = locator.locate(variant, st);
         assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.ACCEPTOR));
-        assertThat(data.getFeatureIndex(), is(0));
+        assertThat(data.getIntronIdx(), is(0));
+        assertThat(data.getExonIdx(), is(1));
     }
 
 
@@ -207,7 +214,8 @@ class NaiveSplicingTranscriptLocatorTest {
                 .build();
         final SplicingLocationData data = locator.locate(variant, st);
         assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.ACCEPTOR));
-        assertThat(data.getFeatureIndex(), is(0));
+        assertThat(data.getIntronIdx(), is(0));
+        assertThat(data.getExonIdx(), is(1));
     }
 
     @Test
@@ -224,7 +232,8 @@ class NaiveSplicingTranscriptLocatorTest {
                 .build();
         final SplicingLocationData data = locator.locate(variant, st);
         assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.EXON));
-        assertThat(data.getFeatureIndex(), is(1));
+        assertThat(data.getExonIdx(), is(1));
+        assertThat(data.getIntronIdx(), is(-1));
     }
 
     @Test
@@ -241,7 +250,8 @@ class NaiveSplicingTranscriptLocatorTest {
                 .build();
         final SplicingLocationData data = locator.locate(variant, st);
         assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.EXON));
-        assertThat(data.getFeatureIndex(), is(1));
+        assertThat(data.getExonIdx(), is(1));
+        assertThat(data.getIntronIdx(), is(-1));
     }
 
     @Test
@@ -258,7 +268,8 @@ class NaiveSplicingTranscriptLocatorTest {
                 .build();
         final SplicingLocationData data = locator.locate(variant, st);
         assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.DONOR));
-        assertThat(data.getFeatureIndex(), is(1));
+        assertThat(data.getIntronIdx(), is(1));
+        assertThat(data.getExonIdx(), is(1));
     }
 
     @Test
@@ -275,7 +286,8 @@ class NaiveSplicingTranscriptLocatorTest {
                 .build();
         final SplicingLocationData data = locator.locate(variant, st);
         assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.DONOR));
-        assertThat(data.getFeatureIndex(), is(1));
+        assertThat(data.getExonIdx(), is(1));
+        assertThat(data.getIntronIdx(), is(1));
     }
 
     @Test
@@ -292,7 +304,8 @@ class NaiveSplicingTranscriptLocatorTest {
                 .build();
         final SplicingLocationData data = locator.locate(variant, st);
         assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.INTRON));
-        assertThat(data.getFeatureIndex(), is(1));
+        assertThat(data.getIntronIdx(), is(1));
+        assertThat(data.getExonIdx(), is(-1));
     }
 
 
@@ -310,7 +323,8 @@ class NaiveSplicingTranscriptLocatorTest {
                 .build();
         final SplicingLocationData data = locator.locate(variant, st);
         assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.INTRON));
-        assertThat(data.getFeatureIndex(), is(1));
+        assertThat(data.getIntronIdx(), is(1));
+        assertThat(data.getExonIdx(), is(-1));
     }
 
 
@@ -328,7 +342,8 @@ class NaiveSplicingTranscriptLocatorTest {
                 .build();
         final SplicingLocationData data = locator.locate(variant, st);
         assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.ACCEPTOR));
-        assertThat(data.getFeatureIndex(), is(1));
+        assertThat(data.getIntronIdx(), is(1));
+        assertThat(data.getExonIdx(), is(2));
     }
 
     @Test
@@ -345,7 +360,8 @@ class NaiveSplicingTranscriptLocatorTest {
                 .build();
         final SplicingLocationData data = locator.locate(variant, st);
         assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.ACCEPTOR));
-        assertThat(data.getFeatureIndex(), is(1));
+        assertThat(data.getIntronIdx(), is(1));
+        assertThat(data.getExonIdx(), is(2));
     }
 
 
@@ -363,7 +379,8 @@ class NaiveSplicingTranscriptLocatorTest {
                 .build();
         final SplicingLocationData data = locator.locate(variant, st);
         assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.EXON));
-        assertThat(data.getFeatureIndex(), is(2));
+        assertThat(data.getIntronIdx(), is(-1));
+        assertThat(data.getExonIdx(), is(2));
     }
 
 
@@ -381,7 +398,8 @@ class NaiveSplicingTranscriptLocatorTest {
                 .build();
         final SplicingLocationData data = locator.locate(variant, st);
         assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.EXON));
-        assertThat(data.getFeatureIndex(), is(2));
+        assertThat(data.getIntronIdx(), is(-1));
+        assertThat(data.getExonIdx(), is(2));
     }
 
     @Test
@@ -415,7 +433,8 @@ class NaiveSplicingTranscriptLocatorTest {
                 .build();
         final SplicingLocationData data = locator.locate(variant, se);
         assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.EXON));
-        assertThat(data.getFeatureIndex(), is(0));
+        assertThat(data.getExonIdx(), is(0));
+        assertThat(data.getIntronIdx(), is(-1));
     }
 
 
@@ -434,6 +453,7 @@ class NaiveSplicingTranscriptLocatorTest {
                 .build();
         final SplicingLocationData data = locator.locate(variant, se);
         assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.EXON));
-        assertThat(data.getFeatureIndex(), is(0));
+        assertThat(data.getExonIdx(), is(0));
+        assertThat(data.getIntronIdx(), is(-1));
     }
 }

@@ -53,7 +53,7 @@ public class NaiveSplicingTranscriptLocator implements SplicingTranscriptLocator
                 // nothing more to be solved, variant intersects with transcript as checked above.
                 // SplicingPosition must be EXON
                 return dataBuilder
-                        .setFeatureIndex(0)
+                        .setExonIndex(0)
                         .setSplicingPosition(SplicingLocationData.SplicingPosition.EXON)
                         .build();
             }
@@ -74,7 +74,8 @@ public class NaiveSplicingTranscriptLocator implements SplicingTranscriptLocator
                 if (donor.overlapsWith(varCoor)) {
                     return dataBuilder
                             .setSplicingPosition(SplicingLocationData.SplicingPosition.DONOR)
-                            .setFeatureIndex(i)
+                            .setIntronIndex(i)
+                            .setExonIndex(i)
                             .build();
                 }
 
@@ -90,7 +91,8 @@ public class NaiveSplicingTranscriptLocator implements SplicingTranscriptLocator
                 if (acceptor.overlapsWith(varCoor)) {
                     return dataBuilder
                             .setSplicingPosition(SplicingLocationData.SplicingPosition.ACCEPTOR)
-                            .setFeatureIndex(i)
+                            .setIntronIndex(i)
+                            .setExonIndex(i + 1)
                             .build();
                 }
 
@@ -99,7 +101,7 @@ public class NaiveSplicingTranscriptLocator implements SplicingTranscriptLocator
                 if (intron.getBegin() < varCoor.getEnd() && varCoor.getBegin() < intron.getEnd()) {
                     return dataBuilder
                             .setSplicingPosition(SplicingLocationData.SplicingPosition.INTRON)
-                            .setFeatureIndex(i)
+                            .setIntronIndex(i)
                             .build();
                 }
 
@@ -107,7 +109,7 @@ public class NaiveSplicingTranscriptLocator implements SplicingTranscriptLocator
                 if (exon.getBegin() < varCoor.getEnd() && varCoor.getBegin() < exon.getEnd()) {
                     return dataBuilder
                             .setSplicingPosition(SplicingLocationData.SplicingPosition.EXON)
-                            .setFeatureIndex(i)
+                            .setExonIndex(i)
                             .build();
                 }
             }
@@ -118,7 +120,7 @@ public class NaiveSplicingTranscriptLocator implements SplicingTranscriptLocator
             final int lastExonIdx = transcript.getExons().size() - 1;
             return dataBuilder
                     .setSplicingPosition(SplicingLocationData.SplicingPosition.EXON)
-                    .setFeatureIndex(lastExonIdx)
+                    .setExonIndex(lastExonIdx)
                     .build();
 
         } catch (InvalidCoordinatesException e) {
