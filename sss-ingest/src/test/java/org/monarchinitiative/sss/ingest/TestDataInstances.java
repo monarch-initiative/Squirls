@@ -4,7 +4,7 @@ import org.monarchinitiative.sss.core.model.GenomeCoordinates;
 import org.monarchinitiative.sss.core.model.SplicingExon;
 import org.monarchinitiative.sss.core.model.SplicingIntron;
 import org.monarchinitiative.sss.core.model.SplicingTranscript;
-import org.monarchinitiative.sss.core.reference.InvalidCoordinatesException;
+import org.monarchinitiative.sss.core.reference.fasta.InvalidCoordinatesException;
 
 /**
  *

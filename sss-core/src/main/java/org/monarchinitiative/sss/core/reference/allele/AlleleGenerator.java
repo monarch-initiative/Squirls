@@ -1,4 +1,4 @@
-package org.monarchinitiative.sss.core.reference;
+package org.monarchinitiative.sss.core.reference.allele;
 
 import org.monarchinitiative.sss.core.model.GenomeCoordinates;
 import org.monarchinitiative.sss.core.model.SequenceInterval;
@@ -8,11 +8,11 @@ import org.monarchinitiative.sss.core.pwm.SplicingParameters;
 /**
  *
  */
-public class AlleleStringGenerator {
+public class AlleleGenerator {
 
     private final SplicingParameters splicingParameters;
 
-    public AlleleStringGenerator(SplicingParameters splicingParameters) {
+    public AlleleGenerator(SplicingParameters splicingParameters) {
         this.splicingParameters = splicingParameters;
     }
 
@@ -43,9 +43,8 @@ public class AlleleStringGenerator {
                 result = sequenceInterval.getSubsequence(b, e) + result;
             }
         } else {
-            int upsB = donorBegin;
             int dwnsB = donorBegin + varCoor.getBegin() - donorBegin;
-            result = sequenceInterval.getSubsequence(upsB, dwnsB) + alt;
+            result = sequenceInterval.getSubsequence(donorBegin, dwnsB) + alt;
         }
         // add nothing if the sequence is already longer than the SPLICE_DONOR_SITE_LENGTH
         int dwnsBegin = varCoor.getEnd();
@@ -56,4 +55,43 @@ public class AlleleStringGenerator {
                    appending 'alt' sequence. We need to make sure only 'SPLICE_DONOR_SITE_LENGTH' nucleotides are returned */
         return result.substring(0, splicingParameters.getDonorLength());
     }
+
+    public String getAcceptorSiteWithAltAllele(int anchor, SplicingVariant variant, SequenceInterval sequenceInterval) {
+        String result; // this method creates the result String in 3' --> 5' direction
+
+        final int acceptorBegin = anchor - splicingParameters.getAcceptorIntronic();
+        final int acceptorEnd = anchor + splicingParameters.getAcceptorExonic();
+
+        final GenomeCoordinates varCoor = variant.getCoordinates();
+        if (acceptorBegin >= varCoor.getBegin() && acceptorEnd <= varCoor.getEnd()) {
+            // whole acceptor site is deleted, nothing more to be done here
+            return null;
+        }
+
+        final String alt = variant.getAlt();
+        if (varCoor.contains(acceptorEnd)) {
+            // we should have at least 'idx' nucleotides in result after writing 'alt' but it might be less if there
+            // is a deletion. Write 'alt' to result
+            int idx = acceptorEnd - varCoor.getBegin();
+            result = alt.substring(Math.min(idx, alt.length() - 1));
+
+            int missing = idx - result.length();
+            if (missing > 0) {
+                result = result + sequenceInterval.getSubsequence(
+                        varCoor.getEnd(), varCoor.getEnd() + missing);
+            }
+        } else {
+            result = alt + sequenceInterval.getSubsequence(varCoor.getEnd(), acceptorEnd);
+        }
+
+        // add nothing if the sequence is already longer than the SPLICE_ACCEPTOR_SITE_LENGTH
+        int encore = Math.max(splicingParameters.getAcceptorLength() - result.length(), 0); // running out of English words :)
+
+        result = sequenceInterval.getSubsequence(varCoor.getBegin() - encore, varCoor.getBegin()) + result;
+                /* if the variantRegion is a larger insertion, result.length() might be greater than SPLICE_ACCEPTOR_SITE_LENGTH after
+                   appending 'alt' sequence. We need to make sure only last 'SPLICE_ACCEPTOR_SITE_LENGTH' nucleotides are returned */
+        return result.substring(result.length() - splicingParameters.getAcceptorLength()); // last 'SPLICE_ACCEPTOR_SITE_LENGTH' nucleotides
+    }
+
+
 }

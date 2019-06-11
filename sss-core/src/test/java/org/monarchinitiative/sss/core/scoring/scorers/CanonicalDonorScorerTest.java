@@ -1,4 +1,4 @@
-package org.monarchinitiative.sss.core.scoring;
+package org.monarchinitiative.sss.core.scoring.scorers;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -6,13 +6,11 @@ import org.mockito.Mock;
 import org.monarchinitiative.sss.core.PojosForTesting;
 import org.monarchinitiative.sss.core.TestDataSourceConfig;
 import org.monarchinitiative.sss.core.model.GenomeCoordinates;
-import org.monarchinitiative.sss.core.model.SequenceInterval;
 import org.monarchinitiative.sss.core.model.SplicingTranscript;
 import org.monarchinitiative.sss.core.model.SplicingVariant;
 import org.monarchinitiative.sss.core.pwm.SplicingInformationContentAnnotator;
 import org.monarchinitiative.sss.core.pwm.SplicingParameters;
-import org.monarchinitiative.sss.core.reference.AlleleStringGenerator;
-import org.monarchinitiative.sss.core.reference.SplicingLocationData;
+import org.monarchinitiative.sss.core.reference.allele.AlleleGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
@@ -33,13 +31,7 @@ class CanonicalDonorScorerTest {
     private SplicingInformationContentAnnotator annotator;
 
     @Mock
-    private SplicingTranscriptLocator locator;
-
-    @Mock
-    private SequenceInterval si;
-
-    @Mock
-    private AlleleStringGenerator generator;
+    private AlleleGenerator generator;
 
     private CanonicalDonorScorer scorer;
 
@@ -49,17 +41,13 @@ class CanonicalDonorScorerTest {
     @BeforeEach
     void setUp() {
         when(annotator.getSplicingParameters()).thenReturn(splicingParameters);
-        scorer = new CanonicalDonorScorer(annotator, locator, generator);
+        scorer = new CanonicalDonorScorer(annotator, generator);
         st = PojosForTesting.getTranscriptWithThreeExons();
     }
 
     @Test
     void simpleSnp() {
         when(annotator.getSpliceDonorScore(anyString())).thenReturn(5.0);
-        when(locator.localize(any(), any())).thenReturn(SplicingLocationData.newBuilder()
-                .setFeatureIndex(0)
-                .setSplicingPosition(SplicingLocationData.SplicingPosition.DONOR)
-                .build());
         when(generator.getDonorSiteWithAltAllele(anyInt(), any(), any())).thenReturn("ANY_SEQ");
 
         SplicingVariant variant = SplicingVariant.newBuilder()
@@ -72,7 +60,7 @@ class CanonicalDonorScorerTest {
                 .setRef("C")
                 .setAlt("A")
                 .build();
-        double result = scorer.score(variant, st, si);
+        double result = scorer.score(variant, st.getIntrons().get(0), null);
         assertThat(result, closeTo(0.555, EPSILON));
     }
 
@@ -80,10 +68,6 @@ class CanonicalDonorScorerTest {
     @Test
     void notLocatedInDonor() {
         when(annotator.getSpliceDonorScore(anyString())).thenReturn(5.0);
-        when(locator.localize(any(), any())).thenReturn(SplicingLocationData.newBuilder()
-                .setFeatureIndex(0)
-                .setSplicingPosition(SplicingLocationData.SplicingPosition.ACCEPTOR)
-                .build());
         when(generator.getDonorSiteWithAltAllele(anyInt(), any(), any())).thenReturn(null);
 
         SplicingVariant variant = SplicingVariant.newBuilder()
@@ -96,7 +80,7 @@ class CanonicalDonorScorerTest {
                 .setRef("C")
                 .setAlt("A")
                 .build();
-        final double result = scorer.score(variant, st, si);
+        final double result = scorer.score(variant, st.getIntrons().get(0), null);
         assertThat(result, is(Double.NaN));
     }
 }

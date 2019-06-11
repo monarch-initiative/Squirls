@@ -12,7 +12,7 @@ import org.monarchinitiative.sss.core.model.GenomeCoordinates;
 import org.monarchinitiative.sss.core.model.SequenceInterval;
 import org.monarchinitiative.sss.core.model.SplicingTranscript;
 import org.monarchinitiative.sss.core.pwm.SplicingInformationContentAnnotator;
-import org.monarchinitiative.sss.core.reference.GenomeSequenceAccessor;
+import org.monarchinitiative.sss.core.reference.fasta.GenomeSequenceAccessor;
 import org.monarchinitiative.sss.ingest.MakeSplicePositionWeightMatrices;
 import org.monarchinitiative.sss.ingest.TestDataSourceConfig;
 import org.springframework.beans.factory.annotation.Autowired;

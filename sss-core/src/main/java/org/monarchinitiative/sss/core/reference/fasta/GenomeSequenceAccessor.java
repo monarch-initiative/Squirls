@@ -1,4 +1,4 @@
-package org.monarchinitiative.sss.core.reference;
+package org.monarchinitiative.sss.core.reference.fasta;
 
 import org.monarchinitiative.sss.core.model.SequenceInterval;
 

@@ -1,10 +1,10 @@
-package org.monarchinitiative.sss.core.scoring;
+package org.monarchinitiative.sss.core.reference.transcript;
 
 import org.monarchinitiative.sss.core.model.*;
 import org.monarchinitiative.sss.core.pwm.SplicingParameters;
 import org.monarchinitiative.sss.core.reference.GenomeCoordinatesFlipper;
-import org.monarchinitiative.sss.core.reference.InvalidCoordinatesException;
 import org.monarchinitiative.sss.core.reference.SplicingLocationData;
+import org.monarchinitiative.sss.core.reference.fasta.InvalidCoordinatesException;
 
 import java.util.Optional;
 
@@ -23,11 +23,11 @@ public class NaiveSplicingTranscriptLocator implements SplicingTranscriptLocator
     }
 
     @Override
-    public SplicingLocationData localize(SplicingVariant variant, SplicingTranscript transcript) {
+    public SplicingLocationData locate(SplicingVariant variant, SplicingTranscript transcript) {
         try {
             final SplicingLocationData.Builder dataBuilder = SplicingLocationData.newBuilder();
 
-            GenomeCoordinates coordinates = transcript.getCoordinates();
+            GenomeCoordinates coordinates = transcript.getTxRegionCoordinates();
             // on the same contig
             if (!variant.getContig().equals(coordinates.getContig())) {
                 return SplicingLocationData.outside();

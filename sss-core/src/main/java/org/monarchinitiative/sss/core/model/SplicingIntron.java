@@ -3,19 +3,14 @@ package org.monarchinitiative.sss.core.model;
 /**
  *
  */
-public class SplicingIntron {
-
-    private final int begin;
-
-    private final int end;
+public class SplicingIntron extends SplicingRegion {
 
     private final double donorScore;
 
     private final double acceptorScore;
 
     private SplicingIntron(Builder builder) {
-        begin = builder.begin;
-        end = builder.end;
+        super(builder.begin, builder.end);
         donorScore = builder.donorScore;
         acceptorScore = builder.acceptorScore;
     }
@@ -28,11 +23,10 @@ public class SplicingIntron {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof SplicingIntron)) return false;
+        if (!super.equals(o)) return false;
 
         SplicingIntron that = (SplicingIntron) o;
 
-        if (begin != that.begin) return false;
-        if (end != that.end) return false;
         if (Double.compare(that.donorScore, donorScore) != 0) return false;
         return Double.compare(that.acceptorScore, acceptorScore) == 0;
 
@@ -40,10 +34,8 @@ public class SplicingIntron {
 
     @Override
     public int hashCode() {
-        int result;
+        int result = super.hashCode();
         long temp;
-        result = begin;
-        result = 31 * result + end;
         temp = Double.doubleToLongBits(donorScore);
         result = 31 * result + (int) (temp ^ (temp >>> 32));
         temp = Double.doubleToLongBits(acceptorScore);
@@ -59,14 +51,6 @@ public class SplicingIntron {
                 ", donorScore=" + donorScore +
                 ", acceptorScore=" + acceptorScore +
                 '}';
-    }
-
-    public int getBegin() {
-        return begin;
-    }
-
-    public int getEnd() {
-        return end;
     }
 
     public double getDonorScore() {

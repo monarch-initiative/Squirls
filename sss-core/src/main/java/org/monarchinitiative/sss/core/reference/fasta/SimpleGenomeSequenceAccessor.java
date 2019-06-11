@@ -1,4 +1,4 @@
-package org.monarchinitiative.sss.core.reference;
+package org.monarchinitiative.sss.core.reference.fasta;
 
 import htsjdk.samtools.SAMException;
 import htsjdk.samtools.reference.FastaSequenceIndex;

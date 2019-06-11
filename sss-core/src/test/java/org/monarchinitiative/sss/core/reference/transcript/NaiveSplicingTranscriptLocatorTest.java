@@ -1,4 +1,4 @@
-package org.monarchinitiative.sss.core.scoring;
+package org.monarchinitiative.sss.core.reference.transcript;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -9,8 +9,8 @@ import org.monarchinitiative.sss.core.model.SplicingTranscript;
 import org.monarchinitiative.sss.core.model.SplicingVariant;
 import org.monarchinitiative.sss.core.pwm.SplicingParameters;
 import org.monarchinitiative.sss.core.reference.GenomeCoordinatesFlipper;
-import org.monarchinitiative.sss.core.reference.InvalidCoordinatesException;
 import org.monarchinitiative.sss.core.reference.SplicingLocationData;
+import org.monarchinitiative.sss.core.reference.fasta.InvalidCoordinatesException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
@@ -49,7 +49,7 @@ class NaiveSplicingTranscriptLocatorTest {
                 .setRef("C")
                 .setAlt("G")
                 .build();
-        final SplicingLocationData data = locator.localize(variant, st);
+        final SplicingLocationData data = locator.locate(variant, st);
         assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.OUTSIDE));
     }
 
@@ -66,7 +66,7 @@ class NaiveSplicingTranscriptLocatorTest {
                 .setRef("C")
                 .setAlt("G")
                 .build();
-        final SplicingLocationData data = locator.localize(variant, st);
+        final SplicingLocationData data = locator.locate(variant, st);
         assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.OUTSIDE));
     }
 
@@ -83,7 +83,7 @@ class NaiveSplicingTranscriptLocatorTest {
                 .setRef("C")
                 .setAlt("G")
                 .build();
-        final SplicingLocationData data = locator.localize(variant, st);
+        final SplicingLocationData data = locator.locate(variant, st);
         assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.EXON));
         assertThat(data.getFeatureIndex(), is(0));
     }
@@ -101,7 +101,7 @@ class NaiveSplicingTranscriptLocatorTest {
                 .setRef("C")
                 .setAlt("G")
                 .build();
-        final SplicingLocationData data = locator.localize(variant, st);
+        final SplicingLocationData data = locator.locate(variant, st);
         assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.EXON));
         assertThat(data.getFeatureIndex(), is(0));
     }
@@ -118,7 +118,7 @@ class NaiveSplicingTranscriptLocatorTest {
                 .setRef("C")
                 .setAlt("G")
                 .build();
-        final SplicingLocationData data = locator.localize(variant, st);
+        final SplicingLocationData data = locator.locate(variant, st);
         assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.DONOR));
         assertThat(data.getFeatureIndex(), is(0));
     }
@@ -135,7 +135,7 @@ class NaiveSplicingTranscriptLocatorTest {
                 .setRef("C")
                 .setAlt("G")
                 .build();
-        final SplicingLocationData data = locator.localize(variant, st);
+        final SplicingLocationData data = locator.locate(variant, st);
         assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.DONOR));
         assertThat(data.getFeatureIndex(), is(0));
     }
@@ -153,7 +153,7 @@ class NaiveSplicingTranscriptLocatorTest {
                 .setRef("C")
                 .setAlt("G")
                 .build();
-        final SplicingLocationData data = locator.localize(variant, st);
+        final SplicingLocationData data = locator.locate(variant, st);
         assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.INTRON));
         assertThat(data.getFeatureIndex(), is(0));
     }
@@ -170,7 +170,7 @@ class NaiveSplicingTranscriptLocatorTest {
                 .setRef("C")
                 .setAlt("G")
                 .build();
-        final SplicingLocationData data = locator.localize(variant, st);
+        final SplicingLocationData data = locator.locate(variant, st);
         assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.INTRON));
         assertThat(data.getFeatureIndex(), is(0));
     }
@@ -187,7 +187,7 @@ class NaiveSplicingTranscriptLocatorTest {
                 .setRef("C")
                 .setAlt("G")
                 .build();
-        final SplicingLocationData data = locator.localize(variant, st);
+        final SplicingLocationData data = locator.locate(variant, st);
         assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.ACCEPTOR));
         assertThat(data.getFeatureIndex(), is(0));
     }
@@ -205,7 +205,7 @@ class NaiveSplicingTranscriptLocatorTest {
                 .setRef("C")
                 .setAlt("G")
                 .build();
-        final SplicingLocationData data = locator.localize(variant, st);
+        final SplicingLocationData data = locator.locate(variant, st);
         assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.ACCEPTOR));
         assertThat(data.getFeatureIndex(), is(0));
     }
@@ -222,7 +222,7 @@ class NaiveSplicingTranscriptLocatorTest {
                 .setRef("C")
                 .setAlt("G")
                 .build();
-        final SplicingLocationData data = locator.localize(variant, st);
+        final SplicingLocationData data = locator.locate(variant, st);
         assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.EXON));
         assertThat(data.getFeatureIndex(), is(1));
     }
@@ -239,7 +239,7 @@ class NaiveSplicingTranscriptLocatorTest {
                 .setRef("C")
                 .setAlt("G")
                 .build();
-        final SplicingLocationData data = locator.localize(variant, st);
+        final SplicingLocationData data = locator.locate(variant, st);
         assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.EXON));
         assertThat(data.getFeatureIndex(), is(1));
     }
@@ -256,7 +256,7 @@ class NaiveSplicingTranscriptLocatorTest {
                 .setRef("C")
                 .setAlt("G")
                 .build();
-        final SplicingLocationData data = locator.localize(variant, st);
+        final SplicingLocationData data = locator.locate(variant, st);
         assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.DONOR));
         assertThat(data.getFeatureIndex(), is(1));
     }
@@ -273,7 +273,7 @@ class NaiveSplicingTranscriptLocatorTest {
                 .setRef("C")
                 .setAlt("G")
                 .build();
-        final SplicingLocationData data = locator.localize(variant, st);
+        final SplicingLocationData data = locator.locate(variant, st);
         assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.DONOR));
         assertThat(data.getFeatureIndex(), is(1));
     }
@@ -290,7 +290,7 @@ class NaiveSplicingTranscriptLocatorTest {
                 .setRef("C")
                 .setAlt("G")
                 .build();
-        final SplicingLocationData data = locator.localize(variant, st);
+        final SplicingLocationData data = locator.locate(variant, st);
         assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.INTRON));
         assertThat(data.getFeatureIndex(), is(1));
     }
@@ -308,7 +308,7 @@ class NaiveSplicingTranscriptLocatorTest {
                 .setRef("C")
                 .setAlt("G")
                 .build();
-        final SplicingLocationData data = locator.localize(variant, st);
+        final SplicingLocationData data = locator.locate(variant, st);
         assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.INTRON));
         assertThat(data.getFeatureIndex(), is(1));
     }
@@ -326,7 +326,7 @@ class NaiveSplicingTranscriptLocatorTest {
                 .setRef("C")
                 .setAlt("G")
                 .build();
-        final SplicingLocationData data = locator.localize(variant, st);
+        final SplicingLocationData data = locator.locate(variant, st);
         assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.ACCEPTOR));
         assertThat(data.getFeatureIndex(), is(1));
     }
@@ -343,7 +343,7 @@ class NaiveSplicingTranscriptLocatorTest {
                 .setRef("C")
                 .setAlt("G")
                 .build();
-        final SplicingLocationData data = locator.localize(variant, st);
+        final SplicingLocationData data = locator.locate(variant, st);
         assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.ACCEPTOR));
         assertThat(data.getFeatureIndex(), is(1));
     }
@@ -361,7 +361,7 @@ class NaiveSplicingTranscriptLocatorTest {
                 .setRef("C")
                 .setAlt("G")
                 .build();
-        final SplicingLocationData data = locator.localize(variant, st);
+        final SplicingLocationData data = locator.locate(variant, st);
         assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.EXON));
         assertThat(data.getFeatureIndex(), is(2));
     }
@@ -379,7 +379,7 @@ class NaiveSplicingTranscriptLocatorTest {
                 .setRef("C")
                 .setAlt("G")
                 .build();
-        final SplicingLocationData data = locator.localize(variant, st);
+        final SplicingLocationData data = locator.locate(variant, st);
         assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.EXON));
         assertThat(data.getFeatureIndex(), is(2));
     }
@@ -396,7 +396,7 @@ class NaiveSplicingTranscriptLocatorTest {
                 .setRef("C")
                 .setAlt("G")
                 .build();
-        final SplicingLocationData data = locator.localize(variant, st);
+        final SplicingLocationData data = locator.locate(variant, st);
         assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.OUTSIDE));
     }
 
@@ -413,7 +413,7 @@ class NaiveSplicingTranscriptLocatorTest {
                 .setRef("C")
                 .setAlt("G")
                 .build();
-        final SplicingLocationData data = locator.localize(variant, se);
+        final SplicingLocationData data = locator.locate(variant, se);
         assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.EXON));
         assertThat(data.getFeatureIndex(), is(0));
     }
@@ -432,7 +432,7 @@ class NaiveSplicingTranscriptLocatorTest {
                 .setRef("C")
                 .setAlt("G")
                 .build();
-        final SplicingLocationData data = locator.localize(variant, se);
+        final SplicingLocationData data = locator.locate(variant, se);
         assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.EXON));
         assertThat(data.getFeatureIndex(), is(0));
     }

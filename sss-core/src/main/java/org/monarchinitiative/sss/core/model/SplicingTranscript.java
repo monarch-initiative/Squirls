@@ -13,7 +13,7 @@ public class SplicingTranscript {
 
     private static final SplicingTranscript DEFAULT = SplicingTranscript.newBuilder().build();
 
-    private final GenomeCoordinates coordinates;
+    private final GenomeCoordinates txRegionCoordinates;
 
     private final String accessionId;
 
@@ -22,7 +22,7 @@ public class SplicingTranscript {
     private final ImmutableList<SplicingIntron> introns;
 
     private SplicingTranscript(Builder builder) {
-        coordinates = builder.coordinates;
+        txRegionCoordinates = builder.coordinates;
         exons = ImmutableList.copyOf(builder.exons);
         introns = ImmutableList.copyOf(builder.introns);
         accessionId = builder.accessionId;
@@ -36,8 +36,8 @@ public class SplicingTranscript {
         return new Builder();
     }
 
-    public GenomeCoordinates getCoordinates() {
-        return coordinates;
+    public GenomeCoordinates getTxRegionCoordinates() {
+        return txRegionCoordinates;
     }
 
     public ImmutableList<SplicingExon> getExons() {
@@ -53,22 +53,25 @@ public class SplicingTranscript {
     }
 
     public boolean getStrand() {
-        return coordinates.isStrand();
+        return txRegionCoordinates.isStrand();
     }
 
     public String getContig() {
-        return coordinates.getContig();
+        return txRegionCoordinates.getContig();
     }
 
     public int getTxBegin() {
-        return coordinates.getBegin();
+        return txRegionCoordinates.getBegin();
     }
 
 
     public int getTxEnd() {
-        return coordinates.getEnd();
+        return txRegionCoordinates.getEnd();
     }
 
+    public int getTxLength() {
+        return txRegionCoordinates.getLength();
+    }
 
     public static final class Builder {
 

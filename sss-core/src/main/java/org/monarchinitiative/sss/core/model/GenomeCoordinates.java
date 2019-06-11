@@ -1,6 +1,6 @@
 package org.monarchinitiative.sss.core.model;
 
-import org.monarchinitiative.sss.core.reference.InvalidCoordinatesException;
+import org.monarchinitiative.sss.core.reference.fasta.InvalidCoordinatesException;
 
 /**
  *

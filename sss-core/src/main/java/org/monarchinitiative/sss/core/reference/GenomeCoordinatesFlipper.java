@@ -26,18 +26,14 @@ public class GenomeCoordinatesFlipper {
             return Optional.empty();
         }
         final Integer length = contigLengthMap.get(coordinates.getContig());
-        final GenomeCoordinates flippedCoordinates;
-        try {
-            flippedCoordinates = GenomeCoordinates.newBuilder()
-                    .setContig(coordinates.getContig())
-                    .setBegin(length - coordinates.getEnd())
-                    .setEnd(length - coordinates.getBegin())
-                    .setStrand(!coordinates.isStrand())
-                    .build();
-        } catch (InvalidCoordinatesException e) {
-            LOGGER.warn("Invalid coordinates - {}:{}-{}", coordinates.getContig(), coordinates.getBegin(), coordinates.getEnd());
-            return Optional.empty();
-        }
+
+        final GenomeCoordinates flippedCoordinates = GenomeCoordinates.newBuilder()
+                .setContig(coordinates.getContig())
+                .setBegin(length - coordinates.getEnd())
+                .setEnd(length - coordinates.getBegin())
+                .setStrand(!coordinates.isStrand())
+                .build();
+
         return Optional.of(flippedCoordinates);
     }
 }

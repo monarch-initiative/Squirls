@@ -7,8 +7,8 @@ import de.charite.compbio.jannovar.reference.TranscriptModel;
 import org.monarchinitiative.sss.core.model.*;
 import org.monarchinitiative.sss.core.pwm.SplicingInformationContentAnnotator;
 import org.monarchinitiative.sss.core.pwm.SplicingParameters;
-import org.monarchinitiative.sss.core.reference.GenomeSequenceAccessor;
-import org.monarchinitiative.sss.core.reference.InvalidCoordinatesException;
+import org.monarchinitiative.sss.core.reference.fasta.GenomeSequenceAccessor;
+import org.monarchinitiative.sss.core.reference.fasta.InvalidCoordinatesException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
