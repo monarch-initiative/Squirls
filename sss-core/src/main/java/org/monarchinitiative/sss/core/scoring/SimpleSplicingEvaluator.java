@@ -49,9 +49,9 @@ public class SimpleSplicingEvaluator implements SplicingEvaluator {
             case ACCEPTOR:
                 final int a_i_i = locationData.getIntronIdx();
                 double acceptorScore = factory.getCanonicalAcceptorScorer().score(variant, transcript.getIntrons().get(a_i_i), si);
-
-                resultBuilder.putScore(ScoringStrategy.CANONICAL_ACCEPTOR, acceptorScore);
-
+                double cryptAccScore = factory.getCrypticAcceptorForVariantsInAcceptorSite().score(variant, transcript.getIntrons().get(a_i_i), si);
+                resultBuilder.putScore(ScoringStrategy.CANONICAL_ACCEPTOR, acceptorScore)
+                        .putScore(ScoringStrategy.CRYPTIC_ACCEPTOR_IN_CANONICAL_POSITION, cryptAccScore);
                 break;
             case EXON:
                 final int e_e_i = locationData.getExonIdx();
