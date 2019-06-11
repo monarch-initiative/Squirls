@@ -42,12 +42,16 @@ public class SimpleSplicingEvaluator implements SplicingEvaluator {
             case DONOR:
                 final int d_i_i = locationData.getIntronIdx();
                 double donorScore = factory.getCanonicalDonorScorer().score(variant, transcript.getIntrons().get(d_i_i), si);
-                resultBuilder.putScore(ScoringStrategy.CANONICAL_DONOR, donorScore);
+                double cryptDonScore = factory.getCrypticDonorForVariantsInDonorSite().score(variant, transcript.getIntrons().get(d_i_i), si);
+                resultBuilder.putScore(ScoringStrategy.CANONICAL_DONOR, donorScore)
+                        .putScore(ScoringStrategy.CRYPTIC_DONOR_IN_CANONICAL_POSITION, cryptDonScore);
                 break;
             case ACCEPTOR:
                 final int a_i_i = locationData.getIntronIdx();
                 double acceptorScore = factory.getCanonicalAcceptorScorer().score(variant, transcript.getIntrons().get(a_i_i), si);
+
                 resultBuilder.putScore(ScoringStrategy.CANONICAL_ACCEPTOR, acceptorScore);
+
                 break;
             case EXON:
                 final int e_e_i = locationData.getExonIdx();

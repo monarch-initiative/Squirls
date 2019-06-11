@@ -32,4 +32,8 @@ public class ScorerFactory {
         return new CrypticAcceptorScorer(annotator, alleleGenerator);
     }
 
+    public CrypticDonorForVariantsInDonorSite getCrypticDonorForVariantsInDonorSite() {
+        return new CrypticDonorForVariantsInDonorSite(annotator, alleleGenerator);
+    }
+
 }
