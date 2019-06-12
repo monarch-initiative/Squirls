@@ -1,42 +1,8 @@
 package org.monarchinitiative.sss.core.scoring.scorers;
 
-import org.monarchinitiative.sss.core.pwm.SplicingInformationContentAnnotator;
-import org.monarchinitiative.sss.core.reference.allele.AlleleGenerator;
+import org.monarchinitiative.sss.core.scoring.ScoringStrategy;
 
+public interface ScorerFactory {
 
-public class ScorerFactory {
-
-    private final SplicingInformationContentAnnotator annotator;
-
-    private final AlleleGenerator alleleGenerator;
-
-    public ScorerFactory(SplicingInformationContentAnnotator annotator) {
-        this.annotator = annotator;
-        this.alleleGenerator = new AlleleGenerator(annotator.getSplicingParameters());
-    }
-
-    public CanonicalDonorScorer getCanonicalDonorScorer() {
-
-        return new CanonicalDonorScorer(annotator, alleleGenerator);
-    }
-
-    public CanonicalAcceptorScorer getCanonicalAcceptorScorer() {
-        return new CanonicalAcceptorScorer(annotator, alleleGenerator);
-    }
-
-    public CrypticDonorScorer getCrypticDonorScorer() {
-        return new CrypticDonorScorer(annotator, alleleGenerator);
-    }
-
-    public CrypticAcceptorScorer getCrypticAcceptorScorer() {
-        return new CrypticAcceptorScorer(annotator, alleleGenerator);
-    }
-
-    public CrypticDonorForVariantsInDonorSite getCrypticDonorForVariantsInDonorSite() {
-        return new CrypticDonorForVariantsInDonorSite(annotator, alleleGenerator);
-    }
-
-    public CrypticAcceptorForVariantsInAcceptorSite getCrypticAcceptorForVariantsInAcceptorSite() {
-        return new CrypticAcceptorForVariantsInAcceptorSite(annotator, alleleGenerator);
-    }
+    SplicingScorer scorerForStrategy(ScoringStrategy strategy);
 }

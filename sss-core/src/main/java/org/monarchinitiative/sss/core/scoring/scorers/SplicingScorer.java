@@ -8,9 +8,9 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 @FunctionalInterface
-public interface SplicingScorer<T extends SplicingRegion> {
+public interface SplicingScorer {
 
-    double score(SplicingVariant variant, T region, SequenceInterval sequenceInterval);
+    double score(SplicingVariant variant, SplicingRegion region, SequenceInterval sequenceInterval);
 
 
     /**

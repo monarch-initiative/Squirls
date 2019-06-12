@@ -1,16 +1,13 @@
 package org.monarchinitiative.sss.core.scoring.scorers;
 
-import org.monarchinitiative.sss.core.model.GenomeCoordinates;
-import org.monarchinitiative.sss.core.model.SequenceInterval;
-import org.monarchinitiative.sss.core.model.SplicingIntron;
-import org.monarchinitiative.sss.core.model.SplicingVariant;
+import org.monarchinitiative.sss.core.model.*;
 import org.monarchinitiative.sss.core.pwm.SplicingInformationContentAnnotator;
 import org.monarchinitiative.sss.core.reference.allele.AlleleGenerator;
 
 /**
  *
  */
-public class CrypticDonorScorer implements SplicingScorer<SplicingIntron> {
+public class CrypticDonorScorer implements SplicingScorer {
 
     private static final int MAX_IN_INTRON = -50;
 
@@ -27,10 +24,14 @@ public class CrypticDonorScorer implements SplicingScorer<SplicingIntron> {
     }
 
     @Override
-    public double score(SplicingVariant variant, SplicingIntron region, SequenceInterval sequenceInterval) {
+    public double score(SplicingVariant variant, SplicingRegion region, SequenceInterval sequenceInterval) {
+        if (!(region instanceof SplicingIntron)) {
+            return Double.NaN;
+        }
+        final SplicingIntron intron = (SplicingIntron) region;
         // this scorer is applied when variant does not overlap with canonical donor site. Here we ensure that it really
         // does not overlap the donor site
-        final AlleleGenerator.Region donor = generator.makeDonorRegion(region);
+        final AlleleGenerator.Region donor = generator.makeDonorRegion(intron);
         final GenomeCoordinates varCoor = variant.getCoordinates();
         if (donor.overlapsWith(varCoor.getBegin(), varCoor.getEnd())) {
             return Double.NaN;
@@ -46,7 +47,7 @@ public class CrypticDonorScorer implements SplicingScorer<SplicingIntron> {
                 + variant.getAlt()
                 + sequenceInterval.getSubsequence(varCoor.getEnd(), varCoor.getEnd() + donorLength - 1);
 
-        double wtCanonicalDonorScore = region.getDonorScore();
+        double wtCanonicalDonorScore = intron.getDonorScore();
 
         double altCrypticDonorScore = SplicingScorer.slidingWindow(altSnippet, donorLength)
                 .map(icAnnotator::getSpliceDonorScore)

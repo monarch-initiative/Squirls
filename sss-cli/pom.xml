@@ -9,19 +9,22 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>sss-exomiser-bridge</artifactId>
+    <artifactId>sss-cli</artifactId>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
 
     <dependencies>
         <dependency>
             <groupId>org.monarchinitiative.sss</groupId>
-            <artifactId>sss-core</artifactId>
+            <artifactId>sss-spring-boot-starter</artifactId>
             <version>${project.parent.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.monarchinitiative.exomiser</groupId>
-            <artifactId>exomiser-core</artifactId>
-            <version>11.0.0</version>
         </dependency>
     </dependencies>
 

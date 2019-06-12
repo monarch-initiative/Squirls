@@ -11,7 +11,6 @@
     <modules>
         <module>sss-core</module>
         <module>sss-ingest</module>
-        <module>sss-exomiser-bridge</module>
         <module>sss-spring-boot-autoconfigure</module>
         <module>sss-cli</module>
         <module>sss-spring-boot-starter</module>
@@ -73,7 +72,6 @@
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-junit-jupiter</artifactId>
-            <!--            <version>2.28.2</version>-->
             <scope>test</scope>
         </dependency>
 

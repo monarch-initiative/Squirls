@@ -17,12 +17,10 @@ import org.monarchinitiative.sss.core.reference.transcript.NaiveSplicingTranscri
 import org.monarchinitiative.sss.core.reference.transcript.SplicingTranscriptLocator;
 import org.monarchinitiative.sss.core.scoring.SimpleSplicingEvaluator;
 import org.monarchinitiative.sss.core.scoring.SplicingEvaluator;
-import org.monarchinitiative.sss.core.scoring.TranscriptSplicingEvaluator;
-import org.monarchinitiative.sss.core.scoring.scorers.ScorerFactory;
+import org.monarchinitiative.sss.core.scoring.scorers.ScorerFactoryImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -54,19 +52,8 @@ public class ThreeSAutoConfiguration {
     }
 
     @Bean
-    @ConditionalOnProperty({"sss.strategy.simple"})
-    public SplicingEvaluator simpleSplicingEvaluator(GenomeSequenceAccessor genomeSequenceAccessor,
-                                                     SplicingTranscriptLocator splicingTranscriptLocator,
-                                                     ScorerFactory scorerFactory) {
-        return new SimpleSplicingEvaluator(genomeSequenceAccessor, splicingTranscriptLocator, scorerFactory);
-    }
-
-
-    @Bean
-    @ConditionalOnProperty("sss.strategy.transcript")
-    public SplicingEvaluator transcriptSplicingEvaluator(GenomeSequenceAccessor genomeSequenceAccessor,
-                                                         SplicingTranscriptLocator splicingTranscriptLocator) {
-        return new TranscriptSplicingEvaluator();
+    public SplicingEvaluator splicingEvaluator(SplicingTranscriptLocator splicingTranscriptLocator, ScorerFactoryImpl scorerFactory) {
+        return new SimpleSplicingEvaluator(splicingTranscriptLocator, scorerFactory);
     }
 
     @Bean
