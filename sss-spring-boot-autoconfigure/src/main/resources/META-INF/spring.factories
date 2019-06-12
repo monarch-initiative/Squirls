@@ -1,0 +1,4 @@
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+org.monarchinitiative.sss.autoconfigure.DataDirectoryAutoConfiguration,\
+org.monarchinitiative.sss.autoconfigure.ThreeSAutoConfiguration
+org.springframework.boot.diagnostics.FailureAnalyzer=org.jax.uni_phenominer.autoconfigure.UndefinedDataDirectoryFailureAnalyzer

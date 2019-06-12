@@ -12,6 +12,9 @@
         <module>sss-core</module>
         <module>sss-ingest</module>
         <module>sss-exomiser-bridge</module>
+        <module>sss-spring-boot-autoconfigure</module>
+        <module>sss-cli</module>
+        <module>sss-spring-boot-starter</module>
     </modules>
 
     <properties>

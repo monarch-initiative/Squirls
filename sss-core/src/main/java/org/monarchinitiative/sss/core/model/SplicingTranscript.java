@@ -73,6 +73,16 @@ public class SplicingTranscript {
         return txRegionCoordinates.getLength();
     }
 
+    @Override
+    public String toString() {
+        return "SplicingTranscript{" +
+                "txRegionCoordinates=" + txRegionCoordinates +
+                ", accessionId='" + accessionId + '\'' +
+                ", exons=" + exons +
+                ", introns=" + introns +
+                '}';
+    }
+
     public static final class Builder {
 
         private GenomeCoordinates coordinates;
