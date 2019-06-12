@@ -17,6 +17,7 @@ import org.monarchinitiative.sss.core.reference.transcript.NaiveSplicingTranscri
 import org.monarchinitiative.sss.core.reference.transcript.SplicingTranscriptLocator;
 import org.monarchinitiative.sss.core.scoring.SimpleSplicingEvaluator;
 import org.monarchinitiative.sss.core.scoring.SplicingEvaluator;
+import org.monarchinitiative.sss.core.scoring.scorers.ScorerFactory;
 import org.monarchinitiative.sss.core.scoring.scorers.ScorerFactoryImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,8 +53,13 @@ public class ThreeSAutoConfiguration {
     }
 
     @Bean
-    public SplicingEvaluator splicingEvaluator(SplicingTranscriptLocator splicingTranscriptLocator, ScorerFactoryImpl scorerFactory) {
+    public SplicingEvaluator splicingEvaluator(SplicingTranscriptLocator splicingTranscriptLocator, ScorerFactory scorerFactory) {
         return new SimpleSplicingEvaluator(splicingTranscriptLocator, scorerFactory);
+    }
+
+    @Bean
+    public ScorerFactory scorerFactory(SplicingInformationContentAnnotator splicingInformationContentAnnotator) {
+        return new ScorerFactoryImpl(splicingInformationContentAnnotator);
     }
 
     @Bean

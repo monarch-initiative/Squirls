@@ -5,7 +5,7 @@ import org.monarchinitiative.sss.core.model.SplicingTranscript;
 import org.monarchinitiative.sss.core.model.SplicingVariant;
 import org.monarchinitiative.sss.core.reference.SplicingLocationData;
 import org.monarchinitiative.sss.core.reference.transcript.SplicingTranscriptLocator;
-import org.monarchinitiative.sss.core.scoring.scorers.ScorerFactoryImpl;
+import org.monarchinitiative.sss.core.scoring.scorers.ScorerFactory;
 
 /**
  * Simplest evaluation strategy:<br>
@@ -18,9 +18,9 @@ public class SimpleSplicingEvaluator implements SplicingEvaluator {
 
     private final SplicingTranscriptLocator transcriptLocator;
 
-    private final ScorerFactoryImpl factory;
+    private final ScorerFactory factory;
 
-    public SimpleSplicingEvaluator(SplicingTranscriptLocator transcriptLocator, ScorerFactoryImpl factory) {
+    public SimpleSplicingEvaluator(SplicingTranscriptLocator transcriptLocator, ScorerFactory factory) {
         this.transcriptLocator = transcriptLocator;
         this.factory = factory;
     }
