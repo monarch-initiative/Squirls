@@ -7,27 +7,28 @@ import org.junit.jupiter.api.Test;
 import org.monarchinitiative.sss.core.model.GenomeCoordinates;
 import org.monarchinitiative.sss.core.model.SequenceInterval;
 
-import java.io.File;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 class PrefixHandlingGenomeSequenceAccessorTest {
 
-    private static File FASTA_PATH;
+    private static Path FASTA_PATH;
 
-    private static File FASTA_IDX_PATH;
+    private static Path FASTA_IDX_PATH;
 
     private PrefixHandlingGenomeSequenceAccessor instance;
 
 
     @BeforeAll
-    static void setUpBefore() {
+    static void setUpBefore() throws Exception {
         /*
         This FASTA file contains first 49950 nucleotides of all canonical chromosomes. Chromosomes are labeled '1, 2, ..., 22, X, Y, M'.
          */
-        FASTA_PATH = new File(PrefixHandlingGenomeSequenceAccessor.class.getResource("shortHg19.fa").getFile());
-        FASTA_IDX_PATH = new File(PrefixHandlingGenomeSequenceAccessor.class.getResource("shortHg19.fa.fai").getFile());
+        FASTA_PATH = Paths.get(PrefixHandlingGenomeSequenceAccessor.class.getResource("shortHg19.fa").toURI());
+        FASTA_IDX_PATH = Paths.get(PrefixHandlingGenomeSequenceAccessor.class.getResource("shortHg19.fa.fai").toURI());
     }
 
 

@@ -58,7 +58,7 @@ public class IngestConfiguration {
 
     @Bean
     public GenomeSequenceAccessor genomeSequenceAccessor() throws InvalidFastaFileException {
-        return new PrefixHandlingGenomeSequenceAccessor(ingestProperties.getFastaPath().toFile(), ingestProperties.getFastaIndexPath().toFile());
+        return new PrefixHandlingGenomeSequenceAccessor(ingestProperties.getFastaPath(), ingestProperties.getFastaIndexPath());
     }
 
     @Bean

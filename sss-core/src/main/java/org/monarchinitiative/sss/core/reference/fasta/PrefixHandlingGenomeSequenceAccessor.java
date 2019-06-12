@@ -10,7 +10,7 @@ import org.monarchinitiative.sss.core.model.SequenceInterval;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -28,7 +28,7 @@ public class PrefixHandlingGenomeSequenceAccessor implements GenomeSequenceAcces
 
     private final FastaSequenceIndex index;
 
-    private final File fastaPath;
+    private final Path fastaPath;
 
     /**
      * True if contigs in the reference FASTA file look like chr1, chr2, ..., chrX, chrY
@@ -40,7 +40,7 @@ public class PrefixHandlingGenomeSequenceAccessor implements GenomeSequenceAcces
      */
     private final boolean mitochondrialIsMt;
 
-    public PrefixHandlingGenomeSequenceAccessor(File fasta, File fastaIdx) throws InvalidFastaFileException {
+    public PrefixHandlingGenomeSequenceAccessor(Path fasta, Path fastaIdx) throws InvalidFastaFileException {
         this.index = new FastaSequenceIndex(fastaIdx);
         this.fasta = new IndexedFastaSequenceFile(fasta, index);
         this.fastaPath = fasta;
@@ -162,7 +162,7 @@ public class PrefixHandlingGenomeSequenceAccessor implements GenomeSequenceAcces
 
     @Override
     public void close() throws Exception {
-        LOGGER.debug("Closing fasta file {}", fastaPath.getAbsolutePath());
+        LOGGER.debug("Closing fasta file {}", fastaPath.toAbsolutePath());
         this.fasta.close();
     }
 }

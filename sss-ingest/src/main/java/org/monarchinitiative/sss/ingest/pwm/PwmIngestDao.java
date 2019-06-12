@@ -37,12 +37,12 @@ public class PwmIngestDao {
                 // store PWM data
                 List<List<Double>> matrix = posWeightMatrix.getMatrix();
                 dataStatement.setString(1, posWeightMatrix.getName());
-                for (int colIdx = 0; colIdx < matrix.size(); colIdx++) {
-                    List<Double> row = matrix.get(colIdx);
-                    for (int rowIdx = 0; rowIdx < row.size(); rowIdx++) {
+                for (int rowIdx = 0; rowIdx < matrix.size(); rowIdx++) { // outer list, corresponds to 4 rows (4 nucleotides)
+                    List<Double> col = matrix.get(rowIdx);
+                    for (int colIdx = 0; colIdx < col.size(); colIdx++) { // inner list, corresponds to n positions of PWM
                         dataStatement.setInt(2, rowIdx);
                         dataStatement.setInt(3, colIdx);
-                        dataStatement.setDouble(4, row.get(rowIdx));
+                        dataStatement.setDouble(4, col.get(colIdx));
                         nRows += dataStatement.executeUpdate();
                     }
                 }
