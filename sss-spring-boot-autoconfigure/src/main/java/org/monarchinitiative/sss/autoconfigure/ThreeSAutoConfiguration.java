@@ -120,7 +120,7 @@ public class ThreeSAutoConfiguration {
             throw new IllegalArgumentException("sss.datasource.path has not been specified");
         }
 
-        String jdbcUrl = String.format("jdbc:h2:file:%s;%s", ds.getPath(), ds.getStartupArgs());
+        String jdbcUrl = String.format("jdbc:h2:file:%s", ds.getPath());
         final HikariConfig config = new HikariConfig();
         config.setUsername(ds.getUsername());
         config.setPassword(ds.getPassword());
