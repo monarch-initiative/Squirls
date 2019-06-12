@@ -34,6 +34,13 @@ public class SplicingPathogenicityData {
         return scoresMap.getOrDefault(strategy, defaultValue);
     }
 
+    public double getMaxScore() {
+        return scoresMap.values().stream()
+                .filter(score -> !score.isNaN())
+                .max(Double::compareTo)
+                .orElse(Double.NaN);
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
