@@ -4,16 +4,16 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>org.monarchinitiative.sss</groupId>
-    <artifactId>ThreeSplicing</artifactId>
+    <groupId>org.monarchinitiative.threes</groupId>
+    <artifactId>3S</artifactId>
     <packaging>pom</packaging>
     <version>1.0.0</version>
     <modules>
-        <module>sss-core</module>
-        <module>sss-ingest</module>
-        <module>sss-spring-boot-autoconfigure</module>
-        <module>sss-cli</module>
-        <module>sss-spring-boot-starter</module>
+        <module>threes-core</module>
+        <module>threes-ingest</module>
+        <module>threes-spring-boot-autoconfigure</module>
+        <module>threes-spring-boot-starter</module>
+        <module>threes-cli</module>
     </modules>
 
     <properties>
