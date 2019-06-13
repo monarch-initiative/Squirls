@@ -36,7 +36,7 @@ public class NaiveSplicingTranscriptLocator implements SplicingTranscriptLocator
             // ensure tx coordinates are on FWD strand
             if (!coordinates.isStrand()) {
                 final Optional<GenomeCoordinates> op = flipper.flip(coordinates);
-                if (op.isEmpty()) {
+                if (!op.isPresent()) {
                     return SplicingLocationData.outside();
                 }
                 coordinates = op.get();

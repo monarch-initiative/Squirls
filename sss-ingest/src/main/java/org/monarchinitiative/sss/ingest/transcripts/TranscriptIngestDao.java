@@ -61,7 +61,7 @@ public class TranscriptIngestDao {
                 if (!coordinates.isStrand()) {
                     // we need to flip the coordinates to FWD strand
                     final Optional<GenomeCoordinates> flipOp = genomeCoordinatesFlipper.flip(coordinates);
-                    if (flipOp.isEmpty()) {
+                    if (!flipOp.isPresent()) {
                         // complaint made in coordinates flipper
                         return 0;
                     }
