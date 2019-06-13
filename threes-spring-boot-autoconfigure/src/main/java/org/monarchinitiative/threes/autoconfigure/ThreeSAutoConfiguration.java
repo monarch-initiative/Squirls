@@ -135,5 +135,4 @@ public class ThreeSAutoConfiguration {
 
         return new HikariDataSource(config);
     }
-
 }
