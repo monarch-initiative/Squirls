@@ -17,8 +17,8 @@ import org.monarchinitiative.sss.core.reference.transcript.NaiveSplicingTranscri
 import org.monarchinitiative.sss.core.reference.transcript.SplicingTranscriptLocator;
 import org.monarchinitiative.sss.core.scoring.SimpleSplicingEvaluator;
 import org.monarchinitiative.sss.core.scoring.SplicingEvaluator;
+import org.monarchinitiative.sss.core.scoring.scorers.ScalingScorerFactory;
 import org.monarchinitiative.sss.core.scoring.scorers.ScorerFactory;
-import org.monarchinitiative.sss.core.scoring.scorers.ScorerFactoryImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -59,7 +59,7 @@ public class ThreeSAutoConfiguration {
 
     @Bean
     public ScorerFactory scorerFactory(SplicingInformationContentAnnotator splicingInformationContentAnnotator) {
-        return new ScorerFactoryImpl(splicingInformationContentAnnotator);
+        return new ScalingScorerFactory(splicingInformationContentAnnotator);
     }
 
     @Bean

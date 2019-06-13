@@ -7,15 +7,18 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
-public class ScorerFactoryImpl implements ScorerFactory {
+/**
+ *
+ */
+public class RawScoringFactory implements ScorerFactory {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(ScorerFactoryImpl.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(RawScoringFactory.class);
 
     private final SplicingInformationContentAnnotator annotator;
 
     private final AlleleGenerator generator;
 
-    public ScorerFactoryImpl(SplicingInformationContentAnnotator annotator) {
+    public RawScoringFactory(SplicingInformationContentAnnotator annotator) {
         this.annotator = annotator;
         this.generator = new AlleleGenerator(annotator.getSplicingParameters());
     }
