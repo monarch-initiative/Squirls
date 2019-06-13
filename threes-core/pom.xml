@@ -83,6 +83,7 @@
                     <artifactId>junit</artifactId>
                 </exclusion>
             </exclusions>
+            <scope>test</scope>
         </dependency>
 
     </dependencies>
