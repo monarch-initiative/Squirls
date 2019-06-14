@@ -30,7 +30,7 @@ public class TestDataSourceConfig {
      */
     @Bean
     public DataSource dataSource() {
-        String jdbcUrl = "jdbc:h2:mem:pbga;INIT=CREATE SCHEMA IF NOT EXISTS SPLICING";
+        String jdbcUrl = "jdbc:h2:mem:splicing;INIT=CREATE SCHEMA IF NOT EXISTS SPLICING";
         final HikariConfig config = new HikariConfig();
         config.setUsername("sa");
 //        config.setPassword("");

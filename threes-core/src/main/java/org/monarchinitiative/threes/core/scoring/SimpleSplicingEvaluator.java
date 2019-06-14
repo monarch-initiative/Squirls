@@ -9,10 +9,10 @@ import org.monarchinitiative.threes.core.reference.transcript.SplicingTranscript
 import org.monarchinitiative.threes.core.scoring.scorers.ScorerFactory;
 
 /**
- * Simplest evaluation strategy:<br>
+ * The simplest evaluation strategy:<br>
  * <ul>
- * <li>find overlapping transcripts</li>
- * <li></li>
+ * <li>find location of variant with respect to transcript</li>
+ * <li>apply scorers for each location</li>
  * </ul>
  */
 public class SimpleSplicingEvaluator implements SplicingEvaluator {
