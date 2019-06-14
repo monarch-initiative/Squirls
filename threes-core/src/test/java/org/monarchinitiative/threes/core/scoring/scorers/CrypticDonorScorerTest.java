@@ -5,10 +5,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.monarchinitiative.threes.core.PojosForTesting;
 import org.monarchinitiative.threes.core.TestDataSourceConfig;
-import org.monarchinitiative.threes.core.model.GenomeCoordinates;
-import org.monarchinitiative.threes.core.model.SequenceInterval;
-import org.monarchinitiative.threes.core.model.SplicingTranscript;
-import org.monarchinitiative.threes.core.model.SplicingVariant;
+import org.monarchinitiative.threes.core.model.*;
 import org.monarchinitiative.threes.core.pwm.SplicingInformationContentAnnotator;
 import org.monarchinitiative.threes.core.pwm.SplicingParameters;
 import org.monarchinitiative.threes.core.reference.allele.AlleleGenerator;
@@ -64,7 +61,8 @@ class CrypticDonorScorerTest {
                 .setRef("C")
                 .setAlt("A")
                 .build();
-        double result = scorer.score(variant, st.getIntrons().get(0), null);
+        SplicingTernate ternate = SplicingTernate.of(variant, st.getIntrons().get(0), null);
+        double result = scorer.scoringFunction().apply(ternate);
         assertThat(result, is(Double.NaN));
     }
 
@@ -83,7 +81,8 @@ class CrypticDonorScorerTest {
                 .setRef("C")
                 .setAlt("A")
                 .build();
-        double result = scorer.score(variant, st.getIntrons().get(0), sequenceInterval);
+        SplicingTernate ternate = SplicingTernate.of(variant, st.getIntrons().get(0), sequenceInterval);
+        double result = scorer.scoringFunction().apply(ternate);
         assertThat(result, is(closeTo(-0.555, EPSILON)));
     }
 
@@ -103,7 +102,8 @@ class CrypticDonorScorerTest {
                 .setRef("C")
                 .setAlt("A")
                 .build();
-        double result = scorer.score(variant, st.getIntrons().get(0), sequenceInterval);
+        SplicingTernate ternate = SplicingTernate.of(variant, st.getIntrons().get(0), sequenceInterval);
+        double result = scorer.scoringFunction().apply(ternate);
         assertThat(result, is(closeTo(-0.555, EPSILON)));
     }
 
@@ -122,7 +122,8 @@ class CrypticDonorScorerTest {
                 .setRef("C")
                 .setAlt("A")
                 .build();
-        double result = scorer.score(variant, st.getIntrons().get(0), sequenceInterval);
+        SplicingTernate ternate = SplicingTernate.of(variant, st.getIntrons().get(0), sequenceInterval);
+        double result = scorer.scoringFunction().apply(ternate);
         assertThat(result, is(Double.NaN));
     }
 }
