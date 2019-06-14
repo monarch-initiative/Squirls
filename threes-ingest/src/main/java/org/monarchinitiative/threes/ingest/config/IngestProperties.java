@@ -1,13 +1,19 @@
 package org.monarchinitiative.threes.ingest.config;
 
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
 import org.monarchinitiative.threes.ingest.GenomeAssembly;
 import org.monarchinitiative.threes.ingest.JannovarTranscriptSource;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 
+import javax.sql.DataSource;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Objects;
 
 /**
  *
@@ -18,49 +24,44 @@ public class IngestProperties {
 
     private final Environment env;
 
-    private DbConfig dbConfig;
+    private final String propertyKey = "build-dir";
+
+    private final Path buildDir;
+
+    private String hg19FastaUrl;
+
+    private String hg38FastaUrl;
 
     public IngestProperties(Environment env) {
         this.env = env;
+        String buildDirPath = Objects.requireNonNull(env.getProperty(propertyKey), String.format("'%s' has not been specified", propertyKey));
+        this.buildDir = Paths.get(buildDirPath);
     }
 
-    public DbConfig getDbConfig() {
-        return dbConfig;
+    public Path getBuildDir() {
+        return buildDir;
     }
 
-    public void setDbConfig(DbConfig dbConfig) {
-        this.dbConfig = dbConfig;
+    public String getHg19FastaUrl() {
+        return hg19FastaUrl;
+    }
+
+    public void setHg19FastaUrl(String hg19FastaUrl) {
+        this.hg19FastaUrl = hg19FastaUrl;
+    }
+
+    public String getHg38FastaUrl() {
+        return hg38FastaUrl;
+    }
+
+    public void setHg38FastaUrl(String hg38FastaUrl) {
+        this.hg38FastaUrl = hg38FastaUrl;
     }
 
 
     public Path getJannovarCachePath() {
         String propertyKey = "jannovar-transcript-db-path";
         return getPathOrThrow(propertyKey, String.format("'%s' has not been specified", propertyKey));
-    }
-
-    public Path getFastaPath() {
-        String propertyKey = "ref-genome-fasta";
-        return getPathOrThrow(propertyKey, String.format("'%s' has not been specified", propertyKey));
-    }
-
-    public Path getFastaIndexPath() {
-        String propertyKey = "ref-genome-fasta";
-        return Paths.get(getPathOrThrow(propertyKey, String.format("'%s' has not been specified", propertyKey)).toString() + ".fai");
-    }
-
-    public GenomeAssembly getGenomeAssembly() {
-        String ga = env.getProperty("genome-assembly");
-        if (ga == null || ga.isEmpty()) {
-            throw new IllegalArgumentException("genome-assembly has not been specified");
-        }
-        switch (ga.toUpperCase()) {
-            case "HG19":
-                return GenomeAssembly.HG19;
-            case "HG38":
-                return GenomeAssembly.HG38;
-            default:
-                throw new IllegalArgumentException("Unknown genome assembly " + ga);
-        }
     }
 
     public JannovarTranscriptSource getJannovarTranscriptSource() {
@@ -87,11 +88,21 @@ public class IngestProperties {
         return getPathOrThrow(propertyKey, String.format("'%s' has not been specified", propertyKey));
     }
 
-    public Path buildDir() {
-        String propertyKey = "build-dir";
-        return getPathOrThrow(propertyKey, String.format("'%s' has not been specified", propertyKey));
+    public Path resolveBuildDirForGenome(String version, GenomeAssembly genomeAssembly) throws IOException {
+        final Path targetDir = buildDir.resolve(genomeAssembly.getValue());
+        return Files.createDirectories(targetDir);
     }
 
+    public DataSource makeDatasourceForGenome(Path databasePath) {
+        String jdbcUrl = String.format("jdbc:h2:file:%s", databasePath.toString());
+        HikariConfig config = new HikariConfig();
+        config.setUsername("sa");
+        config.setPassword("");
+        config.setDriverClassName("org.h2.Driver");
+        config.setJdbcUrl(jdbcUrl);
+
+        return new HikariDataSource(config);
+    }
 
     private Path getPathOrThrow(String propertyKey, String message) {
         String path = env.getProperty(propertyKey, "");
