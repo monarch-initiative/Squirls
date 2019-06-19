@@ -1,17 +1,12 @@
 package org.monarchinitiative.threes.core.scoring.scorers;
 
-import org.monarchinitiative.threes.core.model.SequenceInterval;
-import org.monarchinitiative.threes.core.model.SplicingRegion;
-import org.monarchinitiative.threes.core.model.SplicingVariant;
+import org.monarchinitiative.threes.core.model.SplicingTernate;
 
+import java.util.function.Function;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-@FunctionalInterface
 public interface SplicingScorer {
-
-    double score(SplicingVariant variant, SplicingRegion region, SequenceInterval sequenceInterval);
-
 
     /**
      * Create subsequences/windows of size <code>'ws'</code> from nucleotide <code>sequence</code>.
@@ -28,4 +23,6 @@ public interface SplicingScorer {
                 .boxed()
                 .map(idx -> sequence.substring(idx, idx + ws));
     }
+
+    Function<SplicingTernate, Double> scoringFunction();
 }

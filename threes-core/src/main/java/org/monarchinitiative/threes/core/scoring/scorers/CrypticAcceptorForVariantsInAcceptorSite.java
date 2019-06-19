@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -30,65 +31,71 @@ public class CrypticAcceptorForVariantsInAcceptorSite implements SplicingScorer 
         this.acceptorLength = icAnnotator.getSplicingParameters().getAcceptorLength();
     }
 
+
     @Override
-    public double score(SplicingVariant variant, SplicingRegion region, SequenceInterval sequenceInterval) {
-        if (!(region instanceof SplicingIntron)) {
-            return Double.NaN;
-        }
-        final SplicingIntron intron = (SplicingIntron) region;
-        // score SNPs that are located in the splice acceptor site and evaluate if they are likely to introduce new 3' CSS
+    public Function<SplicingTernate, Double> scoringFunction() {
+        return t -> {
+            final SplicingRegion region = t.getRegion();
+            final SequenceInterval sequenceInterval = t.getSequenceInterval();
+            final SplicingVariant variant = t.getVariant();
 
-        // this only scores SNPs at the moment
-        if (variant.getRef().length() != 1 || variant.getAlt().length() != 1) {
-            return Double.NaN;
-        }
+            if (!(region instanceof SplicingIntron)) {
+                return Double.NaN;
+            }
+            final SplicingIntron intron = (SplicingIntron) region;
+            // score SNPs that are located in the splice acceptor site and evaluate if they are likely to introduce new 3' CSS
 
-        final GenomeCoordinates varCoor = variant.getCoordinates();
-        final AlleleGenerator.Region acceptor = generator.makeAcceptorRegion(intron);
-        if (!acceptor.overlapsWith(varCoor.getBegin(), varCoor.getEnd())) {
-            // we only score SNPs that are located in the splice acceptor site
-            return Double.NaN;
-        }
+            // this only scores SNPs at the moment
+            if (variant.getRef().length() != 1 || variant.getAlt().length() != 1) {
+                return Double.NaN;
+            }
 
-        double refConsensusAcceptorScore = intron.getAcceptorScore();
+            final GenomeCoordinates varCoor = variant.getCoordinates();
+            final AlleleGenerator.Region acceptor = generator.makeAcceptorRegion(intron);
+            if (!acceptor.overlapsWith(varCoor.getBegin(), varCoor.getEnd())) {
+                // we only score SNPs that are located in the splice acceptor site
+                return Double.NaN;
+            }
 
-        String wtConsensusAcceptorSnippet = sequenceInterval.getSubsequence(varCoor.getBegin() - acceptorLength + 1, varCoor.getBegin())
-                + variant.getRef()
-                + sequenceInterval.getSubsequence(varCoor.getEnd(), varCoor.getEnd() + acceptorLength - 1);
-        List<String> refWindows = SplicingScorer.slidingWindow(wtConsensusAcceptorSnippet, acceptorLength).collect(Collectors.toList());
-        List<Double> refScores = new ArrayList<>(refWindows.size());
+            double refConsensusAcceptorScore = intron.getAcceptorScore();
 
-        for (String window : refWindows) {
-            refScores.add(icAnnotator.getSpliceAcceptorScore(window));
-        }
+            String wtConsensusAcceptorSnippet = sequenceInterval.getSubsequence(varCoor.getBegin() - acceptorLength + 1, varCoor.getBegin())
+                    + variant.getRef()
+                    + sequenceInterval.getSubsequence(varCoor.getEnd(), varCoor.getEnd() + acceptorLength - 1);
+            List<String> refWindows = SplicingScorer.slidingWindow(wtConsensusAcceptorSnippet, acceptorLength).collect(Collectors.toList());
+            List<Double> refScores = new ArrayList<>(refWindows.size());
 
-        ArgMaxIndexer<Double> refComparator = ArgMaxIndexer.makeIndexerFor(refScores, Comparator.reverseOrder());
-        List<Integer> refIndices = refComparator.makeIndexList();
-        refIndices.sort(refComparator);
+            for (String window : refWindows) {
+                refScores.add(icAnnotator.getSpliceAcceptorScore(window));
+            }
 
-        // -------------------------------------------------------------
+            ArgMaxIndexer<Double> refComparator = ArgMaxIndexer.makeIndexerFor(refScores, Comparator.reverseOrder());
+            List<Integer> refIndices = refComparator.makeIndexList();
+            refIndices.sort(refComparator);
 
-        String altCrypticAcceptorSnippet = sequenceInterval.getSubsequence(varCoor.getBegin() - acceptorLength + 1, varCoor.getBegin())
-                + variant.getAlt()
-                + sequenceInterval.getSubsequence(varCoor.getEnd(), varCoor.getEnd() + acceptorLength - 1);
-        List<String> altWindows = SplicingScorer.slidingWindow(altCrypticAcceptorSnippet, acceptorLength).collect(Collectors.toList());
-        List<Double> altScores = new ArrayList<>(altWindows.size());
+            // -------------------------------------------------------------
 
-        for (String window : altWindows) {
-            altScores.add(icAnnotator.getSpliceAcceptorScore(window));
-        }
+            String altCrypticAcceptorSnippet = sequenceInterval.getSubsequence(varCoor.getBegin() - acceptorLength + 1, varCoor.getBegin())
+                    + variant.getAlt()
+                    + sequenceInterval.getSubsequence(varCoor.getEnd(), varCoor.getEnd() + acceptorLength - 1);
+            List<String> altWindows = SplicingScorer.slidingWindow(altCrypticAcceptorSnippet, acceptorLength).collect(Collectors.toList());
+            List<Double> altScores = new ArrayList<>(altWindows.size());
 
-        ArgMaxIndexer<Double> altComparator = ArgMaxIndexer.makeIndexerFor(altScores, Comparator.reverseOrder());
-        List<Integer> altIndices = altComparator.makeIndexList();
-        altIndices.sort(altComparator);
+            for (String window : altWindows) {
+                altScores.add(icAnnotator.getSpliceAcceptorScore(window));
+            }
 
-        // -------------------------------------------------------------
-        // the position of consensus splice site within sliding window
-        int indexOfRefConsensus = refScores.indexOf(refConsensusAcceptorScore);
-        if (indexOfRefConsensus != refIndices.get(0)) {
-            // acceptor site does not have the largest IC score. Bizarre situation, but might happen
-            LOGGER.debug("****\nAcceptor site does not have the largest IC score\n\n{}\n", variant);
-        }
+            ArgMaxIndexer<Double> altComparator = ArgMaxIndexer.makeIndexerFor(altScores, Comparator.reverseOrder());
+            List<Integer> altIndices = altComparator.makeIndexList();
+            altIndices.sort(altComparator);
+
+            // -------------------------------------------------------------
+            // the position of consensus splice site within sliding window
+            int indexOfRefConsensus = refScores.indexOf(refConsensusAcceptorScore);
+            if (indexOfRefConsensus != refIndices.get(0)) {
+                // acceptor site does not have the largest IC score. Bizarre situation, but might happen
+                LOGGER.debug("****\nAcceptor site does not have the largest IC score\n\n{}\n", variant);
+            }
 
          /*
         Get the second largest score in ref snippet. If there is a second site with high score, then the exon
@@ -100,30 +107,31 @@ public class CrypticAcceptorForVariantsInAcceptorSite implements SplicingScorer 
          */
 
 
-        int crypticSiteIdx;
-        if (indexOfRefConsensus == altIndices.get(0)) {
-            // if the consensus site is still the strongest acceptor candidate from all positions in sliding window
-            // then, the cryptic site idx is the position with the second highest score
-            crypticSiteIdx = altIndices.get(1);
-        } else {
-            // if consensus site is not the strongest acceptor candidate anymore
-            // then, the cryptic site idx is the first position in the window
-            crypticSiteIdx = altIndices.get(0);
-        }
+            int crypticSiteIdx;
+            if (indexOfRefConsensus == altIndices.get(0)) {
+                // if the consensus site is still the strongest acceptor candidate from all positions in sliding window
+                // then, the cryptic site idx is the position with the second highest score
+                crypticSiteIdx = altIndices.get(1);
+            } else {
+                // if consensus site is not the strongest acceptor candidate anymore
+                // then, the cryptic site idx is the first position in the window
+                crypticSiteIdx = altIndices.get(0);
+            }
 
-        // get score of the position that results from alt allele presence
-        String acceptorSiteWithAltAllele = generator.getAcceptorSiteWithAltAllele(intron.getEnd(), variant, sequenceInterval);
-        if (acceptorSiteWithAltAllele == null) {
-            // e.g. when the whole site is deleted. Other parts of analysis pipeline should interpret such events
-            return Double.NaN;
-        }
+            // get score of the position that results from alt allele presence
+            String acceptorSiteWithAltAllele = generator.getAcceptorSiteWithAltAllele(intron.getEnd(), variant, sequenceInterval);
+            if (acceptorSiteWithAltAllele == null) {
+                // e.g. when the whole site is deleted. Other parts of analysis pipeline should interpret such events
+                return Double.NaN;
+            }
 
-        double altConsensusAcceptorScore = icAnnotator.getSpliceAcceptorScore(acceptorSiteWithAltAllele);
+            double altConsensusAcceptorScore = icAnnotator.getSpliceAcceptorScore(acceptorSiteWithAltAllele);
 
-        Double refCrypticScore = refScores.get(crypticSiteIdx);
-        Double altCrypticScore = altScores.get(crypticSiteIdx);
+            Double refCrypticScore = refScores.get(crypticSiteIdx);
+            Double altCrypticScore = altScores.get(crypticSiteIdx);
 
-        return -altConsensusAcceptorScore
-                + altCrypticScore - refCrypticScore; // consider the cryptic site, how much did it gain?
+            return -altConsensusAcceptorScore
+                    + altCrypticScore - refCrypticScore; // consider the cryptic site, how much did it gain?
+        };
     }
 }

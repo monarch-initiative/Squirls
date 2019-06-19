@@ -11,8 +11,6 @@
     <modules>
         <module>threes-core</module>
         <module>threes-ingest</module>
-        <module>threes-spring-boot-autoconfigure</module>
-        <module>threes-spring-boot-starter</module>
         <module>threes-cli</module>
     </modules>
 

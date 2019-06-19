@@ -9,7 +9,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>sss-ingest</artifactId>
+    <artifactId>threes-ingest</artifactId>
 
     <dependencies>
         <dependency>
