@@ -1,5 +1,6 @@
 package org.monarchinitiative.threes.autoconfigure;
 
+
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import org.monarchinitiative.threes.core.data.ContigLengthDao;
@@ -22,114 +23,154 @@ import org.monarchinitiative.threes.core.scoring.scorers.ScorerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.env.Environment;
 
 import javax.sql.DataSource;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Objects;
 
 
 /**
  * @author Daniel Danis <daniel.danis@jax.org>
  */
 @Configuration
-@EnableConfigurationProperties({ThreeSProperties.class})
-public class ThreeSAutoConfiguration {
+public class ThreesAutoConfiguration {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(ThreeSAutoConfiguration.class);
-
-    private final ThreeSProperties threeSProperties;
-
-    public ThreeSAutoConfiguration(ThreeSProperties threeSProperties) {
-        this.threeSProperties = threeSProperties;
-    }
+    private static final Logger LOGGER = LoggerFactory.getLogger(ThreesAutoConfiguration.class);
 
     @Bean
-    public SplicingTranscriptSource splicingTranscriptSource(DataSource sssDataSource, ContigLengthDao contigLengthDao) {
-        return new DbSplicingTranscriptSource(sssDataSource, contigLengthDao.getContigLengths());
+    @ConditionalOnMissingBean(name = "threesDataDirectory")
+    public Path threesDataDirectory(Environment environment) throws UndefinedThreesResourceException {
+        String dataDir = environment.getProperty("threes.data-directory");
+        if (dataDir == null) {
+            throw new UndefinedThreesResourceException("Path to threes data directory (`--threes.data-directory`) is not specified");
+        } else {
+            return Paths.get(dataDir);
+        }
     }
+
+
+    @Bean
+    @ConditionalOnMissingBean(name = "genomeAssembly")
+    public String genomeAssembly(Environment environment) throws UndefinedThreesResourceException {
+        String assembly = environment.getProperty("threes.genome-assembly");
+        if (assembly == null) {
+            throw new UndefinedThreesResourceException("Genome assembly (`--threes.genome-assembly`) is not specified");
+        }
+        return assembly;
+    }
+
+
+    @Bean
+    @ConditionalOnMissingBean(name = "dataVersion")
+    public String dataVersion(Environment environment) throws UndefinedThreesResourceException {
+        String dataVersion = environment.getProperty("threes.data-version");
+        if (dataVersion == null) {
+            throw new UndefinedThreesResourceException("Data version (`--threes.data-version`) is not specified");
+        }
+        return dataVersion;
+    }
+
+
+    @Bean
+    @ConditionalOnMissingBean(name = "transcriptSource")
+    public String transcriptSource(Environment environment) throws UndefinedThreesResourceException {
+        String transcriptSource = environment.getProperty("threes.transcript-source");
+        if (transcriptSource == null) {
+            throw new UndefinedThreesResourceException("Transcript source (`--threes.transcript-source`) is not specified");
+        }
+        return transcriptSource;
+    }
+
+
+    @Bean
+    public ThreesDataResolver threesDataResolver(Path threesDataDirectory, String genomeAssembly, String dataVersion, String transcriptSource) {
+        return new ThreesDataResolver(threesDataDirectory, dataVersion, genomeAssembly, transcriptSource);
+    }
+
+
+    @Bean
+    public SplicingTranscriptSource splicingTranscriptSource(DataSource threesDatasource, ContigLengthDao contigLengthDao) {
+        return new DbSplicingTranscriptSource(threesDatasource, contigLengthDao.getContigLengths());
+    }
+
 
     @Bean
     public SplicingEvaluator splicingEvaluator(SplicingTranscriptLocator splicingTranscriptLocator, ScorerFactory scorerFactory) {
         return new SimpleSplicingEvaluator(splicingTranscriptLocator, scorerFactory);
     }
 
+
     @Bean
     public ScorerFactory scorerFactory(SplicingInformationContentAnnotator splicingInformationContentAnnotator) {
         return new ScalingScorerFactory(splicingInformationContentAnnotator);
     }
 
+
     @Bean
-    @ConditionalOnMissingBean
     public GenomeSequenceAccessor genomeSequenceAccessor(Path genomeFasta, Path genomeFastaFai) throws InvalidFastaFileException {
         return new PrefixHandlingGenomeSequenceAccessor(genomeFasta, genomeFastaFai);
     }
 
-    @Bean
-    public Path genomeFasta() {
-        return Paths.get(Objects.requireNonNull(threeSProperties.getGenomeFastaPath()));
-    }
 
     @Bean
-    public Path genomeFastaFai() {
-        return Paths.get(Objects.requireNonNull(threeSProperties.getGenomeFastaFaiPath()));
+    public Path genomeFasta(ThreesDataResolver threesDataResolver) {
+        return threesDataResolver.genomeFastaPath();
     }
 
+
     @Bean
-    @ConditionalOnMissingBean
+    public Path genomeFastaFai(ThreesDataResolver threesDataResolver) {
+        return threesDataResolver.genomeFastaFaiPath();
+    }
+
+
+    @Bean
     public SplicingTranscriptLocator splicingTranscriptLocator(SplicingParameters splicingParameters, GenomeCoordinatesFlipper genomeCoordinatesFlipper) {
         return new NaiveSplicingTranscriptLocator(splicingParameters, genomeCoordinatesFlipper);
     }
 
+
     @Bean
-    @ConditionalOnMissingBean
     public GenomeCoordinatesFlipper genomeCoordinatesFlipper(ContigLengthDao contigLengthDao) {
         return new GenomeCoordinatesFlipper(contigLengthDao.getContigLengths());
     }
 
+
     @Bean
-    @ConditionalOnMissingBean
-    public ContigLengthDao contigLengthDao(DataSource sssDataSource) {
-        return new ContigLengthDao(sssDataSource);
+    public ContigLengthDao contigLengthDao(DataSource threesDatasource) {
+        return new ContigLengthDao(threesDatasource);
     }
 
 
     @Bean
-    @ConditionalOnMissingBean
     public SplicingParameters splicingParameters(SplicingInformationContentAnnotator splicingInformationContentAnnotator) {
         return splicingInformationContentAnnotator.getSplicingParameters();
     }
 
 
     @Bean
-    @ConditionalOnMissingBean
     public SplicingInformationContentAnnotator splicingInformationContentAnnotator(SplicingPositionalWeightMatrixParser splicingPositionalWeightMatrixParser) {
         return new SplicingInformationContentAnnotator(splicingPositionalWeightMatrixParser.getDonorMatrix(), splicingPositionalWeightMatrixParser.getAcceptorMatrix(), splicingPositionalWeightMatrixParser.getSplicingParameters());
     }
 
 
     @Bean
-    @ConditionalOnMissingBean
-    public SplicingPositionalWeightMatrixParser splicingPositionalWeightMatrixParser(DataSource sssDataSource) {
-        return new DbSplicingPositionalWeightMatrixParser(sssDataSource);
+    public SplicingPositionalWeightMatrixParser splicingPositionalWeightMatrixParser(DataSource threesDatasource) {
+        return new DbSplicingPositionalWeightMatrixParser(threesDatasource);
     }
 
 
     @Bean
-    @ConditionalOnMissingBean(name = "sssDataSource")
-    public DataSource sssDataSource() {
-        final DataSourceProperties ds = threeSProperties.getDatasource();
-        if (ds.getPath() == null || ds.getPath().isEmpty()) {
-            throw new IllegalArgumentException("sss.datasource.path has not been specified");
-        }
+    public DataSource threesDatasource(ThreesDataResolver threesDataResolver) {
+        Path datasourcePath = threesDataResolver.getDatasourcePath();
 
-        String jdbcUrl = String.format("jdbc:h2:file:%s", ds.getPath());
+        String jdbcUrl = String.format("jdbc:h2:file:%s", datasourcePath);
         final HikariConfig config = new HikariConfig();
-        config.setUsername(ds.getUsername());
-        config.setPassword(ds.getPassword());
+        config.setUsername("sa");
+        config.setPassword("");
         config.setDriverClassName("org.h2.Driver");
         config.setJdbcUrl(jdbcUrl);
 

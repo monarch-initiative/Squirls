@@ -12,6 +12,7 @@
         <module>threes-core</module>
         <module>threes-ingest</module>
         <module>threes-cli</module>
+        <module>threes-spring-boot-autoconfigure</module>
     </modules>
 
     <properties>
