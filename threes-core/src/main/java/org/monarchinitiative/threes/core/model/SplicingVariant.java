@@ -44,6 +44,27 @@ public class SplicingVariant {
     }
 
     @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof SplicingVariant)) return false;
+
+        SplicingVariant that = (SplicingVariant) o;
+
+        if (coordinates != null ? !coordinates.equals(that.coordinates) : that.coordinates != null) return false;
+        if (ref != null ? !ref.equals(that.ref) : that.ref != null) return false;
+        return alt != null ? alt.equals(that.alt) : that.alt == null;
+
+    }
+
+    @Override
+    public int hashCode() {
+        int result = coordinates != null ? coordinates.hashCode() : 0;
+        result = 31 * result + (ref != null ? ref.hashCode() : 0);
+        result = 31 * result + (alt != null ? alt.hashCode() : 0);
+        return result;
+    }
+
+    @Override
     public String toString() {
         return "spl v [" + getContig() + ":" + getPos() + ref + ">" + alt + "]";
     }
