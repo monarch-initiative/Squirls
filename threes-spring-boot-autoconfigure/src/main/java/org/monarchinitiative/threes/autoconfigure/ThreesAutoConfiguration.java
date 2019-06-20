@@ -28,6 +28,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
 
 import javax.sql.DataSource;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -44,11 +45,14 @@ public class ThreesAutoConfiguration {
     @ConditionalOnMissingBean(name = "threesDataDirectory")
     public Path threesDataDirectory(Environment environment) throws UndefinedThreesResourceException {
         String dataDir = environment.getProperty("threes.data-directory");
-        if (dataDir == null) {
-            throw new UndefinedThreesResourceException("Path to threes data directory (`--threes.data-directory`) is not specified");
-        } else {
-            return Paths.get(dataDir);
+        if (dataDir == null || dataDir.isEmpty()) {
+            throw new UndefinedThreesResourceException("Path to 3S data directory (`--threes.data-directory`) is not specified");
         }
+        Path dataDirPath = Paths.get(dataDir);
+        if (!Files.isDirectory(dataDirPath)) {
+            throw new UndefinedThreesResourceException(String.format("Path to 3S data directory '%s' does not point to real directory", dataDirPath));
+        }
+        return dataDirPath;
     }
 
 

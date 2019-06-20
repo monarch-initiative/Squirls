@@ -28,7 +28,18 @@ class ThreesAutoConfigurationTest extends AbstractAutoConfigurationTest {
                 "threes.genome-assembly=hg19",
                 "threes.data-version=1710",
                 "threes.transcript-source=refseq"));
-        assertThat(thrown.getMessage(), containsString("Path to threes data directory (`--threes.data-directory`) is not specified"));
+        assertThat(thrown.getMessage(), containsString("Path to 3S data directory (`--threes.data-directory`) is not specified"));
+    }
+
+    @Test
+    void testProvidedPathDoesNotPointToDirectory() {
+        Throwable thrown = assertThrows(BeanCreationException.class, () -> load(ThreesAutoConfiguration.class,
+                "threes.data-directory=" + TEST_DATA + "/rocket",
+                "threes.genome-assembly=hg19",
+                "threes.data-version=1710",
+                "threes.transcript-source=refseq"));
+        assertThat(thrown.getMessage(), containsString("Path to 3S data directory 'src/test/resources/data/rocket' does not point to real directory"));
+
     }
 
     @Test

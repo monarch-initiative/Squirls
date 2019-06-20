@@ -13,6 +13,7 @@
         <module>threes-ingest</module>
         <module>threes-cli</module>
         <module>threes-spring-boot-autoconfigure</module>
+        <module>threes-spring-boot-starter</module>
     </modules>
 
     <properties>
