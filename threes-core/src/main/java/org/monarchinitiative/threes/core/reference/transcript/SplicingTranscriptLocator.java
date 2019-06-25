@@ -7,4 +7,6 @@ import org.monarchinitiative.threes.core.reference.SplicingLocationData;
 public interface SplicingTranscriptLocator {
 
     SplicingLocationData locate(SplicingVariant variant, SplicingTranscript transcript);
+
+
 }

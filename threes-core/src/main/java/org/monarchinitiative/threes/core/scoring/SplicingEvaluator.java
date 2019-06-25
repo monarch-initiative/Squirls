@@ -10,6 +10,14 @@ import org.monarchinitiative.threes.core.model.SplicingVariant;
  */
 public interface SplicingEvaluator {
 
+    /**
+     * Evaluate {@code variant} with respect to given {@code transcript}.
+     *
+     * @param variant          variant adjusted to {@code transcript}'s trand
+     * @param transcript       with respect to which the variant is evaluated
+     * @param sequenceInterval reference sequence
+     * @return splicing pathogenicity data
+     */
     SplicingPathogenicityData evaluate(SplicingVariant variant, SplicingTranscript transcript, SequenceInterval sequenceInterval);
 
 }

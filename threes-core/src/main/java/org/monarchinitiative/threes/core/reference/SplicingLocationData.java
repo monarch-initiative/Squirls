@@ -1,15 +1,12 @@
 package org.monarchinitiative.threes.core.reference;
 
+import org.monarchinitiative.threes.core.model.SplicingTranscript;
+import org.monarchinitiative.threes.core.model.SplicingVariant;
+
 /**
  * POJO for grouping location data of variant with respect to transcript.
  */
 public class SplicingLocationData {
-
-    private static final SplicingLocationData OUTSIDE = newBuilder()
-            .setSplicingPosition(SplicingPosition.OUTSIDE)
-            .setExonIndex(-1)
-            .setIntronIndex(-1)
-            .build();
 
     private final SplicingPosition position;
 
@@ -17,18 +14,38 @@ public class SplicingLocationData {
 
     private final int exonIdx;
 
+    private final SplicingVariant variant;
+
+    private final SplicingTranscript splicingTranscript;
+
     private SplicingLocationData(Builder builder) {
         intronIdx = builder.intronIdx;
         exonIdx = builder.exonIdx;
         position = builder.position;
+        variant = builder.variant;
+        splicingTranscript = builder.splicingTranscript;
     }
 
-    public static SplicingLocationData outside() {
-        return OUTSIDE;
+    public static SplicingLocationData outside(SplicingVariant variant, SplicingTranscript transcript) {
+        return newBuilder()
+                .setSplicingPosition(SplicingPosition.OUTSIDE)
+                .setExonIndex(-1)
+                .setIntronIndex(-1)
+                .setVariant(variant)
+                .setTranscript(transcript)
+                .build();
     }
 
     public static Builder newBuilder() {
         return new Builder();
+    }
+
+    public SplicingVariant getVariant() {
+        return variant;
+    }
+
+    public SplicingTranscript getSplicingTranscript() {
+        return splicingTranscript;
     }
 
     public int getIntronIdx() {
@@ -43,7 +60,6 @@ public class SplicingLocationData {
         return position;
     }
 
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -53,7 +69,9 @@ public class SplicingLocationData {
 
         if (intronIdx != that.intronIdx) return false;
         if (exonIdx != that.exonIdx) return false;
-        return position == that.position;
+        if (position != that.position) return false;
+        if (variant != null ? !variant.equals(that.variant) : that.variant != null) return false;
+        return splicingTranscript != null ? splicingTranscript.equals(that.splicingTranscript) : that.splicingTranscript == null;
 
     }
 
@@ -62,6 +80,8 @@ public class SplicingLocationData {
         int result = position != null ? position.hashCode() : 0;
         result = 31 * result + intronIdx;
         result = 31 * result + exonIdx;
+        result = 31 * result + (variant != null ? variant.hashCode() : 0);
+        result = 31 * result + (splicingTranscript != null ? splicingTranscript.hashCode() : 0);
         return result;
     }
 
@@ -102,6 +122,10 @@ public class SplicingLocationData {
 
         private SplicingPosition position;
 
+        private SplicingVariant variant;
+
+        private SplicingTranscript splicingTranscript;
+
         private Builder() {
         }
 
@@ -119,6 +143,17 @@ public class SplicingLocationData {
             this.position = position;
             return this;
         }
+
+        public Builder setVariant(SplicingVariant variant) {
+            this.variant = variant;
+            return this;
+        }
+
+        public Builder setTranscript(SplicingTranscript transcript) {
+            this.splicingTranscript = transcript;
+            return this;
+        }
+
 
         public SplicingLocationData build() {
             return new SplicingLocationData(this);

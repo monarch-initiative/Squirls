@@ -25,28 +25,33 @@ public class NaiveSplicingTranscriptLocator implements SplicingTranscriptLocator
     @Override
     public SplicingLocationData locate(SplicingVariant variant, SplicingTranscript transcript) {
         try {
-            final SplicingLocationData.Builder dataBuilder = SplicingLocationData.newBuilder();
-
+            // variant and transcript must be present on the same contig
             GenomeCoordinates txCoordinates = transcript.getTxRegionCoordinates();
-            GenomeCoordinates varCoordinates = variant.getCoordinates();
-            // on the same contig
-            if (!varCoordinates.getContig().equals(txCoordinates.getContig())) {
-                return SplicingLocationData.outside();
+            if (!variant.getContig().equals(txCoordinates.getContig())) {
+                return SplicingLocationData.outside(variant, transcript);
             }
 
             // Variant coordinates are flipped to transcript's strand.
-            if (txCoordinates.isStrand() != varCoordinates.isStrand()) {
-                final Optional<GenomeCoordinates> op = flipper.flip(varCoordinates);
+            SplicingVariant variantOnStrand;
+            if (txCoordinates.isStrand() != variant.getCoordinates().isStrand()) {
+                final Optional<SplicingVariant> op = flipper.flip(variant);
                 if (!op.isPresent()) {
-                    return SplicingLocationData.outside();
+                    return SplicingLocationData.outside(variant, transcript);
                 }
-                varCoordinates = op.get();
+                variantOnStrand = op.get();
+            } else {
+                variantOnStrand = variant;
             }
 
             // return outside if variant does not intersect with transcript
+            GenomeCoordinates varCoordinates = variantOnStrand.getCoordinates();
             if (!txCoordinates.overlapsWith(varCoordinates)) {
-                return SplicingLocationData.outside();
+                return SplicingLocationData.outside(variant, transcript);
             }
+
+            final SplicingLocationData.Builder dataBuilder = SplicingLocationData.newBuilder()
+                    .setVariant(variantOnStrand)
+                    .setTranscript(transcript);
 
             // is this a single exon gene?
             if (transcript.getExons().size() == 1) {
@@ -124,7 +129,7 @@ public class NaiveSplicingTranscriptLocator implements SplicingTranscriptLocator
                     .build();
 
         } catch (InvalidCoordinatesException e) {
-            return SplicingLocationData.outside();
+            return SplicingLocationData.outside(variant, transcript);
         }
     }
 }

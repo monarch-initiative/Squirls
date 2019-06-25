@@ -4,6 +4,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.monarchinitiative.threes.core.model.GenomeCoordinates;
+import org.monarchinitiative.threes.core.model.SplicingVariant;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -85,5 +86,36 @@ class GenomeCoordinatesFlipperTest {
 
         final Optional<GenomeCoordinates> flip = flipper.flip(gc);
         assertThat(flip.isPresent(), is(false));
+    }
+
+    @Test
+    void flipVariantFromFwdToRev() {
+        SplicingVariant variant = SplicingVariant.newBuilder()
+                .setCoordinates(GenomeCoordinates.newBuilder()
+                        .setContig("chr1")
+                        .setBegin(10)
+                        .setEnd(11)
+                        .setStrand(true)
+                        .build())
+                .setRef("C")
+                .setAlt("T")
+                .build();
+
+        Optional<SplicingVariant> op = flipper.flip(variant);
+
+        assertThat(op.isPresent(), is(true));
+
+        SplicingVariant sv = op.get();
+        GenomeCoordinates gc = sv.getCoordinates();
+
+        assertThat(gc, is(GenomeCoordinates.newBuilder()
+                .setContig("chr1")
+                .setBegin(89)
+                .setEnd(90)
+                .setStrand(false)
+                .build()));
+
+        assertThat(sv.getRef(), is("G"));
+        assertThat(sv.getAlt(), is("A"));
     }
 }

@@ -1,6 +1,8 @@
 package org.monarchinitiative.threes.core.reference;
 
 import org.monarchinitiative.threes.core.model.GenomeCoordinates;
+import org.monarchinitiative.threes.core.model.SequenceInterval;
+import org.monarchinitiative.threes.core.model.SplicingVariant;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,5 +37,15 @@ public class GenomeCoordinatesFlipper {
                 .build();
 
         return Optional.of(flippedCoordinates);
+    }
+
+    public Optional<SplicingVariant> flip(SplicingVariant variant) {
+        Optional<GenomeCoordinates> coordiantesOp = flip(variant.getCoordinates());
+
+        return coordiantesOp.map(coors -> SplicingVariant.newBuilder()
+                .setCoordinates(coors)
+                .setRef(SequenceInterval.reverseComplement(variant.getRef()))
+                .setAlt(SequenceInterval.reverseComplement(variant.getAlt()))
+                .build());
     }
 }
