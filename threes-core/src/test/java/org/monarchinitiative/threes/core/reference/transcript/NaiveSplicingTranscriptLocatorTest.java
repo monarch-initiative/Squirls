@@ -28,11 +28,14 @@ class NaiveSplicingTranscriptLocatorTest {
     @Autowired
     private SplicingParameters splicingParameters;
 
-    private SplicingTranscript st;
+    private SplicingTranscript fwdTranscript;
+
+    private SplicingTranscript revTranscript;
 
     @BeforeEach
     void setUp() throws Exception {
-        st = PojosForTesting.getTranscriptWithThreeExons();
+        fwdTranscript = PojosForTesting.getTranscriptWithThreeExons();
+        revTranscript = PojosForTesting.getTranscriptWithThreeExonsOnRevStrand();
         locator = new NaiveSplicingTranscriptLocator(splicingParameters, genomeCoordinatesFlipper);
     }
 
@@ -49,7 +52,7 @@ class NaiveSplicingTranscriptLocatorTest {
                 .setRef("C")
                 .setAlt("G")
                 .build();
-        final SplicingLocationData data = locator.locate(variant, st);
+        final SplicingLocationData data = locator.locate(variant, fwdTranscript);
         assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.OUTSIDE));
     }
 
@@ -66,7 +69,7 @@ class NaiveSplicingTranscriptLocatorTest {
                 .setRef("C")
                 .setAlt("G")
                 .build();
-        final SplicingLocationData data = locator.locate(variant, st);
+        final SplicingLocationData data = locator.locate(variant, fwdTranscript);
         assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.OUTSIDE));
     }
 
@@ -83,7 +86,7 @@ class NaiveSplicingTranscriptLocatorTest {
                 .setRef("C")
                 .setAlt("G")
                 .build();
-        final SplicingLocationData data = locator.locate(variant, st);
+        final SplicingLocationData data = locator.locate(variant, fwdTranscript);
         assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.EXON));
         assertThat(data.getExonIdx(), is(0));
         assertThat(data.getIntronIdx(), is(-1));
@@ -102,7 +105,7 @@ class NaiveSplicingTranscriptLocatorTest {
                 .setRef("C")
                 .setAlt("G")
                 .build();
-        final SplicingLocationData data = locator.locate(variant, st);
+        final SplicingLocationData data = locator.locate(variant, fwdTranscript);
         assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.EXON));
         assertThat(data.getExonIdx(), is(0));
         assertThat(data.getIntronIdx(), is(-1));
@@ -120,7 +123,7 @@ class NaiveSplicingTranscriptLocatorTest {
                 .setRef("C")
                 .setAlt("G")
                 .build();
-        final SplicingLocationData data = locator.locate(variant, st);
+        final SplicingLocationData data = locator.locate(variant, fwdTranscript);
         assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.DONOR));
         assertThat(data.getIntronIdx(), is(0));
         assertThat(data.getExonIdx(), is(0));
@@ -138,7 +141,7 @@ class NaiveSplicingTranscriptLocatorTest {
                 .setRef("C")
                 .setAlt("G")
                 .build();
-        final SplicingLocationData data = locator.locate(variant, st);
+        final SplicingLocationData data = locator.locate(variant, fwdTranscript);
         assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.DONOR));
         assertThat(data.getIntronIdx(), is(0));
         assertThat(data.getExonIdx(), is(0));
@@ -157,7 +160,7 @@ class NaiveSplicingTranscriptLocatorTest {
                 .setRef("C")
                 .setAlt("G")
                 .build();
-        final SplicingLocationData data = locator.locate(variant, st);
+        final SplicingLocationData data = locator.locate(variant, fwdTranscript);
         assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.INTRON));
         assertThat(data.getIntronIdx(), is(0));
         assertThat(data.getExonIdx(), is(-1));
@@ -175,7 +178,7 @@ class NaiveSplicingTranscriptLocatorTest {
                 .setRef("C")
                 .setAlt("G")
                 .build();
-        final SplicingLocationData data = locator.locate(variant, st);
+        final SplicingLocationData data = locator.locate(variant, fwdTranscript);
         assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.INTRON));
         assertThat(data.getIntronIdx(), is(0));
         assertThat(data.getExonIdx(), is(-1));
@@ -193,7 +196,7 @@ class NaiveSplicingTranscriptLocatorTest {
                 .setRef("C")
                 .setAlt("G")
                 .build();
-        final SplicingLocationData data = locator.locate(variant, st);
+        final SplicingLocationData data = locator.locate(variant, fwdTranscript);
         assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.ACCEPTOR));
         assertThat(data.getIntronIdx(), is(0));
         assertThat(data.getExonIdx(), is(1));
@@ -212,7 +215,7 @@ class NaiveSplicingTranscriptLocatorTest {
                 .setRef("C")
                 .setAlt("G")
                 .build();
-        final SplicingLocationData data = locator.locate(variant, st);
+        final SplicingLocationData data = locator.locate(variant, fwdTranscript);
         assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.ACCEPTOR));
         assertThat(data.getIntronIdx(), is(0));
         assertThat(data.getExonIdx(), is(1));
@@ -230,7 +233,7 @@ class NaiveSplicingTranscriptLocatorTest {
                 .setRef("C")
                 .setAlt("G")
                 .build();
-        final SplicingLocationData data = locator.locate(variant, st);
+        final SplicingLocationData data = locator.locate(variant, fwdTranscript);
         assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.EXON));
         assertThat(data.getExonIdx(), is(1));
         assertThat(data.getIntronIdx(), is(-1));
@@ -248,7 +251,7 @@ class NaiveSplicingTranscriptLocatorTest {
                 .setRef("C")
                 .setAlt("G")
                 .build();
-        final SplicingLocationData data = locator.locate(variant, st);
+        final SplicingLocationData data = locator.locate(variant, fwdTranscript);
         assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.EXON));
         assertThat(data.getExonIdx(), is(1));
         assertThat(data.getIntronIdx(), is(-1));
@@ -266,7 +269,7 @@ class NaiveSplicingTranscriptLocatorTest {
                 .setRef("C")
                 .setAlt("G")
                 .build();
-        final SplicingLocationData data = locator.locate(variant, st);
+        final SplicingLocationData data = locator.locate(variant, fwdTranscript);
         assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.DONOR));
         assertThat(data.getIntronIdx(), is(1));
         assertThat(data.getExonIdx(), is(1));
@@ -284,7 +287,7 @@ class NaiveSplicingTranscriptLocatorTest {
                 .setRef("C")
                 .setAlt("G")
                 .build();
-        final SplicingLocationData data = locator.locate(variant, st);
+        final SplicingLocationData data = locator.locate(variant, fwdTranscript);
         assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.DONOR));
         assertThat(data.getExonIdx(), is(1));
         assertThat(data.getIntronIdx(), is(1));
@@ -302,7 +305,7 @@ class NaiveSplicingTranscriptLocatorTest {
                 .setRef("C")
                 .setAlt("G")
                 .build();
-        final SplicingLocationData data = locator.locate(variant, st);
+        final SplicingLocationData data = locator.locate(variant, fwdTranscript);
         assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.INTRON));
         assertThat(data.getIntronIdx(), is(1));
         assertThat(data.getExonIdx(), is(-1));
@@ -321,7 +324,7 @@ class NaiveSplicingTranscriptLocatorTest {
                 .setRef("C")
                 .setAlt("G")
                 .build();
-        final SplicingLocationData data = locator.locate(variant, st);
+        final SplicingLocationData data = locator.locate(variant, fwdTranscript);
         assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.INTRON));
         assertThat(data.getIntronIdx(), is(1));
         assertThat(data.getExonIdx(), is(-1));
@@ -340,7 +343,7 @@ class NaiveSplicingTranscriptLocatorTest {
                 .setRef("C")
                 .setAlt("G")
                 .build();
-        final SplicingLocationData data = locator.locate(variant, st);
+        final SplicingLocationData data = locator.locate(variant, fwdTranscript);
         assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.ACCEPTOR));
         assertThat(data.getIntronIdx(), is(1));
         assertThat(data.getExonIdx(), is(2));
@@ -358,7 +361,7 @@ class NaiveSplicingTranscriptLocatorTest {
                 .setRef("C")
                 .setAlt("G")
                 .build();
-        final SplicingLocationData data = locator.locate(variant, st);
+        final SplicingLocationData data = locator.locate(variant, fwdTranscript);
         assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.ACCEPTOR));
         assertThat(data.getIntronIdx(), is(1));
         assertThat(data.getExonIdx(), is(2));
@@ -377,7 +380,7 @@ class NaiveSplicingTranscriptLocatorTest {
                 .setRef("C")
                 .setAlt("G")
                 .build();
-        final SplicingLocationData data = locator.locate(variant, st);
+        final SplicingLocationData data = locator.locate(variant, fwdTranscript);
         assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.EXON));
         assertThat(data.getIntronIdx(), is(-1));
         assertThat(data.getExonIdx(), is(2));
@@ -396,7 +399,7 @@ class NaiveSplicingTranscriptLocatorTest {
                 .setRef("C")
                 .setAlt("G")
                 .build();
-        final SplicingLocationData data = locator.locate(variant, st);
+        final SplicingLocationData data = locator.locate(variant, fwdTranscript);
         assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.EXON));
         assertThat(data.getIntronIdx(), is(-1));
         assertThat(data.getExonIdx(), is(2));
@@ -414,7 +417,7 @@ class NaiveSplicingTranscriptLocatorTest {
                 .setRef("C")
                 .setAlt("G")
                 .build();
-        final SplicingLocationData data = locator.locate(variant, st);
+        final SplicingLocationData data = locator.locate(variant, fwdTranscript);
         assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.OUTSIDE));
     }
 
@@ -455,5 +458,376 @@ class NaiveSplicingTranscriptLocatorTest {
         assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.EXON));
         assertThat(data.getExonIdx(), is(0));
         assertThat(data.getIntronIdx(), is(-1));
+    }
+
+
+    // ------------------------       REVERSE STRAND          ----------------------------------------------------------
+    //
+    // The chr1 has length = 10000, as it is defined in TestDataSourceConfig#contigLengthMap bean.
+    // The transcript is located at chr1:8000-9000
+    //
+    // -----------------------------------------------------------------------------------------------------------------
+    @Test
+    void oneBaseBeforeCdsRevStrand() throws Exception {
+        SplicingVariant variant = SplicingVariant.newBuilder()
+                .setCoordinates(GenomeCoordinates.newBuilder()
+                        .setContig("chr1")
+                        .setBegin(9000)
+                        .setEnd(9001)
+                        .setStrand(true)
+                        .build())
+                .setRef("C")
+                .setAlt("G")
+                .build();
+        final SplicingLocationData data = locator.locate(variant, revTranscript);
+        assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.OUTSIDE));
+    }
+
+
+    @Test
+    void firstBaseOfCdsRevStrand() throws Exception {
+        SplicingVariant variant = SplicingVariant.newBuilder()
+                .setCoordinates(GenomeCoordinates.newBuilder()
+                        .setContig("chr1")
+                        .setBegin(8999)
+                        .setEnd(9000)
+                        .setStrand(true)
+                        .build())
+                .setRef("C")
+                .setAlt("G")
+                .build();
+        final SplicingLocationData data = locator.locate(variant, revTranscript);
+        assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.EXON));
+        assertThat(data.getExonIdx(), is(0));
+        assertThat(data.getIntronIdx(), is(-1));
+    }
+
+
+    @Test
+    void oneBaseBeforeFirstDonorRevStrand() throws Exception {
+        SplicingVariant variant = SplicingVariant.newBuilder()
+                .setCoordinates(GenomeCoordinates.newBuilder()
+                        .setContig("chr1")
+                        .setBegin(8803)
+                        .setEnd(8804)
+                        .setStrand(true)
+                        .build())
+                .setRef("C")
+                .setAlt("G")
+                .build();
+        final SplicingLocationData data = locator.locate(variant, revTranscript);
+        assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.EXON));
+        assertThat(data.getExonIdx(), is(0));
+        assertThat(data.getIntronIdx(), is(-1));
+    }
+
+    @Test
+    void firstBaseOfFirstDonorRevStrand() throws Exception {
+        SplicingVariant variant = SplicingVariant.newBuilder()
+                .setCoordinates(GenomeCoordinates.newBuilder()
+                        .setContig("chr1")
+                        .setBegin(8802)
+                        .setEnd(8803)
+                        .setStrand(true)
+                        .build())
+                .setRef("C")
+                .setAlt("G")
+                .build();
+        final SplicingLocationData data = locator.locate(variant, revTranscript);
+        assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.DONOR));
+        assertThat(data.getIntronIdx(), is(0));
+        assertThat(data.getExonIdx(), is(0));
+    }
+
+    @Test
+    void lastBaseOfFirstDonorRevStrand() throws Exception {
+        SplicingVariant variant = SplicingVariant.newBuilder()
+                .setCoordinates(GenomeCoordinates.newBuilder()
+                        .setContig("chr1")
+                        .setBegin(8794)
+                        .setEnd(8795)
+                        .setStrand(true)
+                        .build())
+                .setRef("C")
+                .setAlt("G")
+                .build();
+        final SplicingLocationData data = locator.locate(variant, revTranscript);
+        assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.DONOR));
+        assertThat(data.getIntronIdx(), is(0));
+        assertThat(data.getExonIdx(), is(0));
+    }
+
+
+    @Test
+    void firstBaseAfterFirstDonorRevStrand() throws Exception {
+        SplicingVariant variant = SplicingVariant.newBuilder()
+                .setCoordinates(GenomeCoordinates.newBuilder()
+                        .setContig("chr1")
+                        .setBegin(8793)
+                        .setEnd(8794)
+                        .setStrand(true)
+                        .build())
+                .setRef("C")
+                .setAlt("G")
+                .build();
+        final SplicingLocationData data = locator.locate(variant, revTranscript);
+        assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.INTRON));
+        assertThat(data.getIntronIdx(), is(0));
+        assertThat(data.getExonIdx(), is(-1));
+    }
+
+    @Test
+    void oneBaseBeforeFirstAcceptorRevStrand() throws Exception {
+        SplicingVariant variant = SplicingVariant.newBuilder()
+                .setCoordinates(GenomeCoordinates.newBuilder()
+                        .setContig("chr1")
+                        .setBegin(8625)
+                        .setEnd(8626)
+                        .setStrand(true)
+                        .build())
+                .setRef("C")
+                .setAlt("G")
+                .build();
+        final SplicingLocationData data = locator.locate(variant, revTranscript);
+        assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.INTRON));
+        assertThat(data.getIntronIdx(), is(0));
+        assertThat(data.getExonIdx(), is(-1));
+    }
+
+    @Test
+    void firstBaseOfFirstAcceptorRevStrand() throws Exception {
+        SplicingVariant variant = SplicingVariant.newBuilder()
+                .setCoordinates(GenomeCoordinates.newBuilder()
+                        .setContig("chr1")
+                        .setBegin(8624)
+                        .setEnd(8625)
+                        .setStrand(true)
+                        .build())
+                .setRef("C")
+                .setAlt("G")
+                .build();
+        final SplicingLocationData data = locator.locate(variant, revTranscript);
+        assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.ACCEPTOR));
+        assertThat(data.getIntronIdx(), is(0));
+        assertThat(data.getExonIdx(), is(1));
+    }
+
+
+    @Test
+    void lastBaseOfFirstAcceptorRevStrand() throws Exception {
+        SplicingVariant variant = SplicingVariant.newBuilder()
+                .setCoordinates(GenomeCoordinates.newBuilder()
+                        .setContig("chr1")
+                        .setBegin(8598)
+                        .setEnd(8599)
+                        .setStrand(true)
+                        .build())
+                .setRef("C")
+                .setAlt("G")
+                .build();
+        final SplicingLocationData data = locator.locate(variant, revTranscript);
+        assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.ACCEPTOR));
+        assertThat(data.getIntronIdx(), is(0));
+        assertThat(data.getExonIdx(), is(1));
+    }
+
+    @Test
+    void oneBaseAfterFirstAcceptorRevStrand() throws Exception {
+        SplicingVariant variant = SplicingVariant.newBuilder()
+                .setCoordinates(GenomeCoordinates.newBuilder()
+                        .setContig("chr1")
+                        .setBegin(8597)
+                        .setEnd(8598)
+                        .setStrand(true)
+                        .build())
+                .setRef("C")
+                .setAlt("G")
+                .build();
+        final SplicingLocationData data = locator.locate(variant, revTranscript);
+        assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.EXON));
+        assertThat(data.getExonIdx(), is(1));
+        assertThat(data.getIntronIdx(), is(-1));
+    }
+
+    @Test
+    void oneBaseBeforeSecondDonorRevStrand() throws Exception {
+        SplicingVariant variant = SplicingVariant.newBuilder()
+                .setCoordinates(GenomeCoordinates.newBuilder()
+                        .setContig("chr1")
+                        .setBegin(8403)
+                        .setEnd(8404)
+                        .setStrand(true)
+                        .build())
+                .setRef("C")
+                .setAlt("G")
+                .build();
+        final SplicingLocationData data = locator.locate(variant, revTranscript);
+        assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.EXON));
+        assertThat(data.getExonIdx(), is(1));
+        assertThat(data.getIntronIdx(), is(-1));
+    }
+
+    @Test
+    void firstBaseOfSecondDonorRevStrand() throws Exception {
+        SplicingVariant variant = SplicingVariant.newBuilder()
+                .setCoordinates(GenomeCoordinates.newBuilder()
+                        .setContig("chr1")
+                        .setBegin(8402)
+                        .setEnd(8403)
+                        .setStrand(true)
+                        .build())
+                .setRef("C")
+                .setAlt("G")
+                .build();
+        final SplicingLocationData data = locator.locate(variant, revTranscript);
+        assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.DONOR));
+        assertThat(data.getIntronIdx(), is(1));
+        assertThat(data.getExonIdx(), is(1));
+    }
+
+    @Test
+    void lastBaseOfSecondDonorRevStrand() throws Exception {
+        SplicingVariant variant = SplicingVariant.newBuilder()
+                .setCoordinates(GenomeCoordinates.newBuilder()
+                        .setContig("chr1")
+                        .setBegin(8394)
+                        .setEnd(8395)
+                        .setStrand(true)
+                        .build())
+                .setRef("C")
+                .setAlt("G")
+                .build();
+        final SplicingLocationData data = locator.locate(variant, revTranscript);
+        assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.DONOR));
+        assertThat(data.getExonIdx(), is(1));
+        assertThat(data.getIntronIdx(), is(1));
+    }
+
+    @Test
+    void oneBaseAfterSecondDonorRevStrand() throws Exception {
+        SplicingVariant variant = SplicingVariant.newBuilder()
+                .setCoordinates(GenomeCoordinates.newBuilder()
+                        .setContig("chr1")
+                        .setBegin(8393)
+                        .setEnd(8394)
+                        .setStrand(true)
+                        .build())
+                .setRef("C")
+                .setAlt("G")
+                .build();
+        final SplicingLocationData data = locator.locate(variant, revTranscript);
+        assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.INTRON));
+        assertThat(data.getIntronIdx(), is(1));
+        assertThat(data.getExonIdx(), is(-1));
+    }
+
+
+    @Test
+    void oneBaseBeforeSecondAcceptorRevStrand() throws Exception {
+        SplicingVariant variant = SplicingVariant.newBuilder()
+                .setCoordinates(GenomeCoordinates.newBuilder()
+                        .setContig("chr1")
+                        .setBegin(8225)
+                        .setEnd(8226)
+                        .setStrand(true)
+                        .build())
+                .setRef("C")
+                .setAlt("G")
+                .build();
+        final SplicingLocationData data = locator.locate(variant, revTranscript);
+        assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.INTRON));
+        assertThat(data.getIntronIdx(), is(1));
+        assertThat(data.getExonIdx(), is(-1));
+    }
+
+
+    @Test
+    void firstBaseOfSecondAcceptorRevStrand() throws Exception {
+        SplicingVariant variant = SplicingVariant.newBuilder()
+                .setCoordinates(GenomeCoordinates.newBuilder()
+                        .setContig("chr1")
+                        .setBegin(8224)
+                        .setEnd(8225)
+                        .setStrand(true)
+                        .build())
+                .setRef("C")
+                .setAlt("G")
+                .build();
+        final SplicingLocationData data = locator.locate(variant, revTranscript);
+        assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.ACCEPTOR));
+        assertThat(data.getIntronIdx(), is(1));
+        assertThat(data.getExonIdx(), is(2));
+    }
+
+    @Test
+    void lastBaseOfSecondAcceptorRevStrand() throws Exception {
+        SplicingVariant variant = SplicingVariant.newBuilder()
+                .setCoordinates(GenomeCoordinates.newBuilder()
+                        .setContig("chr1")
+                        .setBegin(8198)
+                        .setEnd(8199)
+                        .setStrand(true)
+                        .build())
+                .setRef("C")
+                .setAlt("G")
+                .build();
+        final SplicingLocationData data = locator.locate(variant, revTranscript);
+        assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.ACCEPTOR));
+        assertThat(data.getIntronIdx(), is(1));
+        assertThat(data.getExonIdx(), is(2));
+    }
+
+
+    @Test
+    void oneBaseAfterSecondAcceptorRevStrand() throws Exception {
+        SplicingVariant variant = SplicingVariant.newBuilder()
+                .setCoordinates(GenomeCoordinates.newBuilder()
+                        .setContig("chr1")
+                        .setBegin(8197)
+                        .setEnd(8198)
+                        .setStrand(true)
+                        .build())
+                .setRef("C")
+                .setAlt("G")
+                .build();
+        final SplicingLocationData data = locator.locate(variant, revTranscript);
+        assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.EXON));
+        assertThat(data.getIntronIdx(), is(-1));
+        assertThat(data.getExonIdx(), is(2));
+    }
+
+
+    @Test
+    void lastBaseOfCdsRevStrand() throws Exception {
+        SplicingVariant variant = SplicingVariant.newBuilder()
+                .setCoordinates(GenomeCoordinates.newBuilder()
+                        .setContig("chr1")
+                        .setBegin(8000)
+                        .setEnd(8001)
+                        .setStrand(true)
+                        .build())
+                .setRef("C")
+                .setAlt("G")
+                .build();
+        final SplicingLocationData data = locator.locate(variant, revTranscript);
+        assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.EXON));
+        assertThat(data.getIntronIdx(), is(-1));
+        assertThat(data.getExonIdx(), is(2));
+    }
+
+    @Test
+    void oneBaseAfterCdsRevStrand() throws Exception {
+        SplicingVariant variant = SplicingVariant.newBuilder()
+                .setCoordinates(GenomeCoordinates.newBuilder()
+                        .setContig("chr1")
+                        .setBegin(7999)
+                        .setEnd(8000)
+                        .setStrand(true)
+                        .build())
+                .setRef("C")
+                .setAlt("G")
+                .build();
+        final SplicingLocationData data = locator.locate(variant, revTranscript);
+        assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.OUTSIDE));
     }
 }

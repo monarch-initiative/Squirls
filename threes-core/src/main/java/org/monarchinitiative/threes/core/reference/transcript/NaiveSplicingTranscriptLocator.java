@@ -27,24 +27,24 @@ public class NaiveSplicingTranscriptLocator implements SplicingTranscriptLocator
         try {
             final SplicingLocationData.Builder dataBuilder = SplicingLocationData.newBuilder();
 
-            GenomeCoordinates coordinates = transcript.getTxRegionCoordinates();
+            GenomeCoordinates txCoordinates = transcript.getTxRegionCoordinates();
+            GenomeCoordinates varCoordinates = variant.getCoordinates();
             // on the same contig
-            if (!variant.getContig().equals(coordinates.getContig())) {
+            if (!varCoordinates.getContig().equals(txCoordinates.getContig())) {
                 return SplicingLocationData.outside();
             }
 
-            // ensure tx coordinates are on FWD strand
-            if (!coordinates.isStrand()) {
-                final Optional<GenomeCoordinates> op = flipper.flip(coordinates);
+            // Variant coordinates are flipped to transcript's strand.
+            if (txCoordinates.isStrand() != varCoordinates.isStrand()) {
+                final Optional<GenomeCoordinates> op = flipper.flip(varCoordinates);
                 if (!op.isPresent()) {
                     return SplicingLocationData.outside();
                 }
-                coordinates = op.get();
+                varCoordinates = op.get();
             }
 
-            // intersects with transcript
-            final GenomeCoordinates varCoor = variant.getCoordinates();
-            if (!coordinates.overlapsWith(varCoor)) {
+            // return outside if variant does not intersect with transcript
+            if (!txCoordinates.overlapsWith(varCoordinates)) {
                 return SplicingLocationData.outside();
             }
 
@@ -71,7 +71,7 @@ public class NaiveSplicingTranscriptLocator implements SplicingTranscriptLocator
                         .setStrand(transcript.getStrand())
                         .build();
 
-                if (donor.overlapsWith(varCoor)) {
+                if (donor.overlapsWith(varCoordinates)) {
                     return dataBuilder
                             .setSplicingPosition(SplicingLocationData.SplicingPosition.DONOR)
                             .setIntronIndex(i)
@@ -88,7 +88,7 @@ public class NaiveSplicingTranscriptLocator implements SplicingTranscriptLocator
                         .setStrand(transcript.getStrand())
                         .build();
 
-                if (acceptor.overlapsWith(varCoor)) {
+                if (acceptor.overlapsWith(varCoordinates)) {
                     return dataBuilder
                             .setSplicingPosition(SplicingLocationData.SplicingPosition.ACCEPTOR)
                             .setIntronIndex(i)
@@ -98,7 +98,7 @@ public class NaiveSplicingTranscriptLocator implements SplicingTranscriptLocator
 
 
                 // 3 - does the variant overlap with the current intron?
-                if (intron.getBegin() < varCoor.getEnd() && varCoor.getBegin() < intron.getEnd()) {
+                if (intron.getBegin() < varCoordinates.getEnd() && varCoordinates.getBegin() < intron.getEnd()) {
                     return dataBuilder
                             .setSplicingPosition(SplicingLocationData.SplicingPosition.INTRON)
                             .setIntronIndex(i)
@@ -106,7 +106,7 @@ public class NaiveSplicingTranscriptLocator implements SplicingTranscriptLocator
                 }
 
                 // 4 - does the variant overlap with the current exon?
-                if (exon.getBegin() < varCoor.getEnd() && varCoor.getBegin() < exon.getEnd()) {
+                if (exon.getBegin() < varCoordinates.getEnd() && varCoordinates.getBegin() < exon.getEnd()) {
                     return dataBuilder
                             .setSplicingPosition(SplicingLocationData.SplicingPosition.EXON)
                             .setExonIndex(i)
