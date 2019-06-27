@@ -60,7 +60,7 @@ Use following dependency after installing the project into your local Maven repo
 <dependency>
     <groupId>org.monarchinitiative.threes</groupId>
     <artifactId>threes-core</artifactId>
-    <version>1.0.0</version>
+    <version>1.0.2</version>
     <exclusions>
         <exclusion>
             <groupId>org.springframework.boot</groupId>
