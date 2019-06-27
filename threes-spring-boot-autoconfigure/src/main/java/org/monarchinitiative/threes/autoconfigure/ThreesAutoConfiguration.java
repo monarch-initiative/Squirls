@@ -3,23 +3,26 @@ package org.monarchinitiative.threes.autoconfigure;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
+import org.monarchinitiative.threes.core.calculators.ic.DbSplicingPositionalWeightMatrixParser;
+import org.monarchinitiative.threes.core.calculators.ic.SplicingInformationContentCalculator;
+import org.monarchinitiative.threes.core.calculators.ic.SplicingPositionalWeightMatrixParser;
+import org.monarchinitiative.threes.core.calculators.sms.DbSmsDao;
+import org.monarchinitiative.threes.core.calculators.sms.SMSCalculator;
+import org.monarchinitiative.threes.core.calculators.sms.SMSParser;
 import org.monarchinitiative.threes.core.data.ContigLengthDao;
 import org.monarchinitiative.threes.core.data.DbSplicingTranscriptSource;
 import org.monarchinitiative.threes.core.data.SplicingTranscriptSource;
-import org.monarchinitiative.threes.core.pwm.DbSplicingPositionalWeightMatrixParser;
-import org.monarchinitiative.threes.core.pwm.SplicingInformationContentAnnotator;
-import org.monarchinitiative.threes.core.pwm.SplicingParameters;
-import org.monarchinitiative.threes.core.pwm.SplicingPositionalWeightMatrixParser;
+import org.monarchinitiative.threes.core.model.SplicingParameters;
 import org.monarchinitiative.threes.core.reference.GenomeCoordinatesFlipper;
 import org.monarchinitiative.threes.core.reference.fasta.GenomeSequenceAccessor;
 import org.monarchinitiative.threes.core.reference.fasta.InvalidFastaFileException;
 import org.monarchinitiative.threes.core.reference.fasta.PrefixHandlingGenomeSequenceAccessor;
 import org.monarchinitiative.threes.core.reference.transcript.NaiveSplicingTranscriptLocator;
 import org.monarchinitiative.threes.core.reference.transcript.SplicingTranscriptLocator;
+import org.monarchinitiative.threes.core.scoring.ScalingScorerFactory;
+import org.monarchinitiative.threes.core.scoring.ScorerFactory;
 import org.monarchinitiative.threes.core.scoring.SimpleSplicingEvaluator;
 import org.monarchinitiative.threes.core.scoring.SplicingEvaluator;
-import org.monarchinitiative.threes.core.scoring.scorers.ScalingScorerFactory;
-import org.monarchinitiative.threes.core.scoring.scorers.ScorerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -96,20 +99,20 @@ public class ThreesAutoConfiguration {
 
 
     @Bean
-    public SplicingTranscriptSource splicingTranscriptSource(DataSource threesDatasource, ContigLengthDao contigLengthDao) {
-        return new DbSplicingTranscriptSource(threesDatasource, contigLengthDao.getContigLengths());
+    public SplicingTranscriptSource splicingTranscriptSource(DataSource threesDatasource) {
+        return new DbSplicingTranscriptSource(threesDatasource);
     }
 
 
     @Bean
-    public SplicingEvaluator splicingEvaluator(SplicingTranscriptLocator splicingTranscriptLocator, ScorerFactory scorerFactory) {
-        return new SimpleSplicingEvaluator(splicingTranscriptLocator, scorerFactory);
+    public SplicingEvaluator splicingEvaluator(SplicingTranscriptLocator splicingTranscriptLocator, ScorerFactory scorerFactory, GenomeCoordinatesFlipper genomeCoordinatesFlipper) {
+        return new SimpleSplicingEvaluator(scorerFactory, splicingTranscriptLocator, genomeCoordinatesFlipper);
     }
 
 
     @Bean
-    public ScorerFactory scorerFactory(SplicingInformationContentAnnotator splicingInformationContentAnnotator) {
-        return new ScalingScorerFactory(splicingInformationContentAnnotator);
+    public ScorerFactory scorerFactory(SplicingInformationContentCalculator splicingInformationContentAnnotator, SMSCalculator smsCalculator) {
+        return new ScalingScorerFactory(splicingInformationContentAnnotator, smsCalculator);
     }
 
 
@@ -132,8 +135,8 @@ public class ThreesAutoConfiguration {
 
 
     @Bean
-    public SplicingTranscriptLocator splicingTranscriptLocator(SplicingParameters splicingParameters, GenomeCoordinatesFlipper genomeCoordinatesFlipper) {
-        return new NaiveSplicingTranscriptLocator(splicingParameters, genomeCoordinatesFlipper);
+    public SplicingTranscriptLocator splicingTranscriptLocator(SplicingParameters splicingParameters) {
+        return new NaiveSplicingTranscriptLocator(splicingParameters);
     }
 
 
@@ -150,14 +153,14 @@ public class ThreesAutoConfiguration {
 
 
     @Bean
-    public SplicingParameters splicingParameters(SplicingInformationContentAnnotator splicingInformationContentAnnotator) {
+    public SplicingParameters splicingParameters(SplicingInformationContentCalculator splicingInformationContentAnnotator) {
         return splicingInformationContentAnnotator.getSplicingParameters();
     }
 
 
     @Bean
-    public SplicingInformationContentAnnotator splicingInformationContentAnnotator(SplicingPositionalWeightMatrixParser splicingPositionalWeightMatrixParser) {
-        return new SplicingInformationContentAnnotator(splicingPositionalWeightMatrixParser.getDonorMatrix(), splicingPositionalWeightMatrixParser.getAcceptorMatrix(), splicingPositionalWeightMatrixParser.getSplicingParameters());
+    public SplicingInformationContentCalculator splicingInformationContentAnnotator(SplicingPositionalWeightMatrixParser splicingPositionalWeightMatrixParser) {
+        return new SplicingInformationContentCalculator(splicingPositionalWeightMatrixParser.getDonorMatrix(), splicingPositionalWeightMatrixParser.getAcceptorMatrix(), splicingPositionalWeightMatrixParser.getSplicingParameters());
     }
 
 
@@ -166,6 +169,17 @@ public class ThreesAutoConfiguration {
         return new DbSplicingPositionalWeightMatrixParser(threesDatasource);
     }
 
+
+    @Bean
+    public SMSCalculator smsCalculator(SMSParser smsParser) {
+        return new SMSCalculator(smsParser.getSeptamerMap());
+    }
+
+
+    @Bean
+    public SMSParser smsParser(DataSource threesDatasource) {
+        return new DbSmsDao(threesDatasource);
+    }
 
     @Bean
     public DataSource threesDatasource(ThreesDataResolver threesDataResolver) {

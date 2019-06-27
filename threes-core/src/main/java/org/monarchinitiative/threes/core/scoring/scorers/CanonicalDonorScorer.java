@@ -1,7 +1,7 @@
 package org.monarchinitiative.threes.core.scoring.scorers;
 
+import org.monarchinitiative.threes.core.calculators.ic.SplicingInformationContentCalculator;
 import org.monarchinitiative.threes.core.model.*;
-import org.monarchinitiative.threes.core.pwm.SplicingInformationContentAnnotator;
 import org.monarchinitiative.threes.core.reference.allele.AlleleGenerator;
 
 import java.util.function.Function;
@@ -9,11 +9,11 @@ import java.util.function.Function;
 
 public class CanonicalDonorScorer implements SplicingScorer {
 
-    private final SplicingInformationContentAnnotator annotator;
+    private final SplicingInformationContentCalculator annotator;
 
     private final AlleleGenerator generator;
 
-    public CanonicalDonorScorer(SplicingInformationContentAnnotator annotator,
+    public CanonicalDonorScorer(SplicingInformationContentCalculator annotator,
                                 AlleleGenerator generator) {
         this.annotator = annotator;
         this.generator = generator;

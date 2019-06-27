@@ -1,8 +1,8 @@
 package org.monarchinitiative.threes.core.scoring.scorers;
 
+import org.monarchinitiative.threes.core.calculators.ic.SplicingInformationContentCalculator;
 import org.monarchinitiative.threes.core.model.SplicingIntron;
 import org.monarchinitiative.threes.core.model.SplicingTernate;
-import org.monarchinitiative.threes.core.pwm.SplicingInformationContentAnnotator;
 import org.monarchinitiative.threes.core.reference.allele.AlleleGenerator;
 
 import java.util.function.Function;
@@ -12,11 +12,11 @@ import java.util.function.Function;
  */
 public class CanonicalAcceptorScorer implements SplicingScorer {
 
-    private final SplicingInformationContentAnnotator annotator;
+    private final SplicingInformationContentCalculator annotator;
 
     private final AlleleGenerator generator;
 
-    public CanonicalAcceptorScorer(SplicingInformationContentAnnotator annotator, AlleleGenerator generator) {
+    public CanonicalAcceptorScorer(SplicingInformationContentCalculator annotator, AlleleGenerator generator) {
         this.annotator = annotator;
         this.generator = generator;
     }

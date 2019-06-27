@@ -4,9 +4,8 @@ import com.google.common.collect.ImmutableList;
 import de.charite.compbio.jannovar.data.ReferenceDictionary;
 import de.charite.compbio.jannovar.reference.GenomeInterval;
 import de.charite.compbio.jannovar.reference.TranscriptModel;
+import org.monarchinitiative.threes.core.calculators.ic.SplicingInformationContentCalculator;
 import org.monarchinitiative.threes.core.model.*;
-import org.monarchinitiative.threes.core.pwm.SplicingInformationContentAnnotator;
-import org.monarchinitiative.threes.core.pwm.SplicingParameters;
 import org.monarchinitiative.threes.core.reference.fasta.GenomeSequenceAccessor;
 import org.monarchinitiative.threes.core.reference.fasta.InvalidCoordinatesException;
 import org.slf4j.Logger;
@@ -28,10 +27,10 @@ public class SplicingCalculatorImpl implements SplicingCalculator {
 
     private final GenomeSequenceAccessor accessor;
 
-    private final SplicingInformationContentAnnotator annotator;
+    private final SplicingInformationContentCalculator annotator;
 
 
-    public SplicingCalculatorImpl(GenomeSequenceAccessor accessor, SplicingInformationContentAnnotator splicingInformationContentAnnotator) {
+    public SplicingCalculatorImpl(GenomeSequenceAccessor accessor, SplicingInformationContentCalculator splicingInformationContentAnnotator) {
         this.accessor = accessor;
         this.annotator = splicingInformationContentAnnotator;
     }

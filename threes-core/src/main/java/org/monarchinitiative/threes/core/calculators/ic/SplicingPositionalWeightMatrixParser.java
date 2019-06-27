@@ -1,6 +1,7 @@
-package org.monarchinitiative.threes.core.pwm;
+package org.monarchinitiative.threes.core.calculators.ic;
 
 import org.jblas.DoubleMatrix;
+import org.monarchinitiative.threes.core.model.SplicingParameters;
 
 public interface SplicingPositionalWeightMatrixParser {
 

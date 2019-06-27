@@ -53,7 +53,7 @@ public class GenomeCoordinates {
         return end;
     }
 
-    public boolean isStrand() {
+    public boolean getStrand() {
         return strand;
     }
 

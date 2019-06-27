@@ -149,15 +149,14 @@ public class PrefixHandlingGenomeSequenceAccessor implements GenomeSequenceAcces
             sequence = SequenceInterval.reverseComplement(referenceSequence.getBaseString());
         }
 
-        return SequenceInterval.newBuilder()
-                .setCoordinates(GenomeCoordinates.newBuilder()
+        return SequenceInterval.of(
+                GenomeCoordinates.newBuilder()
                         .setContig(contig)
                         .setBegin(begin)
                         .setEnd(end)
                         .setStrand(strand)
-                        .build())
-                .setSequence(sequence)
-                .build();
+                        .build(),
+                sequence);
     }
 
     @Override

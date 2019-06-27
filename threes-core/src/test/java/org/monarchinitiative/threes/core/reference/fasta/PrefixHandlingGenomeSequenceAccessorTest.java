@@ -46,15 +46,13 @@ class PrefixHandlingGenomeSequenceAccessorTest {
     @Test
     void fetchSequenceFromPrefixedChromosome() throws Exception {
         SequenceInterval si = instance.fetchSequence("chr2", 10000, 10100, true);
-        assertThat(si, is(SequenceInterval.newBuilder()
-                .setCoordinates(GenomeCoordinates.newBuilder()
+        assertThat(si, is(SequenceInterval.of(GenomeCoordinates.newBuilder()
                         .setContig("chr2")
                         .setBegin(10000)
                         .setEnd(10100)
                         .setStrand(true)
-                        .build())
-                .setSequence("CGTATCCcacacaccacacccacacaccacacccacacacacccacacccacacccacacacaccacacccacacaccacacccacacccacacaccaca")
-                .build()));
+                        .build(),
+                "CGTATCCcacacaccacacccacacaccacacccacacacacccacacccacacccacacacaccacacccacacaccacacccacacccacacaccaca")));
     }
 
 }

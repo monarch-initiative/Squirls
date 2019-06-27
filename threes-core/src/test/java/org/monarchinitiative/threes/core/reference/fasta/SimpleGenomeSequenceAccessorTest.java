@@ -59,45 +59,40 @@ class SimpleGenomeSequenceAccessorTest {
     void testSingleFileConstructor() throws Exception {
         GenomeSequenceAccessor accessor = new SimpleGenomeSequenceAccessor(FASTA_PATH);
         assertThat(accessor.fetchSequence("7", 44580, 44620, true),
-                is(SequenceInterval.newBuilder()
-                        .setCoordinates(GenomeCoordinates.newBuilder()
+                is(SequenceInterval.of(GenomeCoordinates.newBuilder()
                                 .setContig("7")
                                 .setBegin(44580)
                                 .setEnd(44620)
                                 .setStrand(true)
-                                .build())
-                        .setSequence("AGAGGAGGAAACGTGAATAGTATGCAGCTTCCCGCACACA")
-                        .build()
-                ));
+                                .build(),
+                        "AGAGGAGGAAACGTGAATAGTATGCAGCTTCCCGCACACA")));
     }
 
 
     @Test
     void fetchSequenceOnFwdStrand() throws Exception {
         SequenceInterval si = instance.fetchSequence("1", 10000, 10100, true);
-        assertThat(si, is(SequenceInterval.newBuilder()
-                .setCoordinates(GenomeCoordinates.newBuilder()
+        assertThat(si, is(SequenceInterval.of(
+                GenomeCoordinates.newBuilder()
                         .setContig("1")
                         .setBegin(10000)
                         .setEnd(10100)
                         .setStrand(true)
-                        .build())
-                .setSequence("taaccctaaccctaaccctaaccctaaccctaaccctaaccctaaccctaaccctaaccctaaccctaaccctaaccctaaccctaaccctaaccctaac")
-                .build()));
+                        .build(),
+                "taaccctaaccctaaccctaaccctaaccctaaccctaaccctaaccctaaccctaaccctaaccctaaccctaaccctaaccctaaccctaaccctaac")));
     }
 
     @Test
     void fetchSequenceOnRevStrand() throws Exception {
         SequenceInterval si = instance.fetchSequence("2", 10000, 10100, false);
-        assertThat(si, is(SequenceInterval.newBuilder()
-                .setCoordinates(GenomeCoordinates.newBuilder()
+        assertThat(si, is(SequenceInterval.of(
+                GenomeCoordinates.newBuilder()
                         .setContig("2")
                         .setBegin(10000)
                         .setEnd(10100)
                         .setStrand(false)
-                        .build())
-                .setSequence("TGGTTGCTCTAAAAATGCTGCTATTTTGCTGTTCACTGTATTGCACTTAGTTAAAAAGAAGATAATGTGAAAGATGAGAGCAGTTTTTTAAAGGATCTTT")
-                .build()));
+                        .build(),
+                "TGGTTGCTCTAAAAATGCTGCTATTTTGCTGTTCACTGTATTGCACTTAGTTAAAAAGAAGATAATGTGAAAGATGAGAGCAGTTTTTTAAAGGATCTTT")));
     }
 
     @Test

@@ -1,7 +1,7 @@
 package org.monarchinitiative.threes.ingest;
 
 import org.jblas.DoubleMatrix;
-import org.monarchinitiative.threes.core.pwm.SplicingParameters;
+import org.monarchinitiative.threes.core.model.SplicingParameters;
 
 
 public class MakeSplicePositionWeightMatrices {

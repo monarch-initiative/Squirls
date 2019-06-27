@@ -11,17 +11,15 @@ public class SequenceInterval {
 
     private final String sequence;
 
-
-    private SequenceInterval(Builder builder) {
-        this.coordinates = builder.coordinates;
-        this.sequence = builder.sequence;
+    private SequenceInterval(GenomeCoordinates coordinates, String sequence) {
+        this.coordinates = coordinates;
+        this.sequence = sequence;
 
         // sanity checks
         if (coordinates.getLength() != sequence.length()) {
             throw new IllegalArgumentException(String.format("Sequence with length %d for coordinates %d", sequence.length(), coordinates.getLength()));
         }
     }
-
 
     /**
      * Convert nucleotide sequence to reverse complement.
@@ -62,15 +60,18 @@ public class SequenceInterval {
         return new String(newSeq);
     }
 
-    public static Builder newBuilder() {
-        return new Builder();
+    public static SequenceInterval of(GenomeCoordinates coordinates, String sequence) {
+        return new SequenceInterval(coordinates, sequence);
     }
 
+    public GenomeCoordinates getCoordinates() {
+        return coordinates;
+    }
 
     @Override
     public String toString() {
         return String.format("%s:[%d-%d]%s %s",
-                coordinates.getContig(), coordinates.getBegin(), coordinates.getEnd(), coordinates.isStrand() ? "+" : "-", sequence);
+                coordinates.getContig(), coordinates.getBegin(), coordinates.getEnd(), coordinates.getStrand() ? "+" : "-", sequence);
     }
 
     public String getSequence() {
@@ -109,46 +110,20 @@ public class SequenceInterval {
         return sequence.substring(begin, end);
     }
 
+
+    /**
+     * Get sequence present between given begin and end coordinates.
+     * <p>
+     * If this sequence interval represents regino chr1:10-20, then {@code begin}=10 and {@code end}=11 will return the \
+     * first base.
+     *
+     * @param begin 0-based exclusive begin coordinate
+     * @param end   0-based inclusive end coordinate
+     * @return String subsequence
+     * @throws IndexOutOfBoundsException if the {@code begin} and {@code end} coordinates are not represented
+     */
     public String getSubsequence(int begin, int end) {
         return getLocalSequence(begin - coordinates.getBegin(), end - coordinates.getBegin());
     }
 
-    /**
-     * {@code SequenceInterval} builder static inner class.
-     */
-    public static final class Builder {
-
-        private GenomeCoordinates coordinates;
-
-        private String sequence;
-
-        private Builder() {
-        }
-
-        public Builder setCoordinates(GenomeCoordinates coordinates) {
-            this.coordinates = coordinates;
-            return this;
-        }
-
-        /**
-         * Sets the {@code sequence} and returns a reference to this Builder so that the methods can be chained together.
-         *
-         * @param sequence the {@code sequence} to set
-         * @return a reference to this Builder
-         */
-        public Builder setSequence(String sequence) {
-            this.sequence = sequence;
-            return this;
-        }
-
-
-        /**
-         * Returns a {@code SequenceInterval} built from the parameters previously set.
-         *
-         * @return a {@code SequenceInterval} built with parameters of this {@code SequenceInterval.Builder}
-         */
-        public SequenceInterval build() {
-            return new SequenceInterval(this);
-        }
-    }
 }

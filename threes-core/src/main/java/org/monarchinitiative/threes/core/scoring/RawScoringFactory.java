@@ -1,10 +1,11 @@
-package org.monarchinitiative.threes.core.scoring.scorers;
+package org.monarchinitiative.threes.core.scoring;
 
 import com.google.common.collect.ImmutableMap;
+import org.monarchinitiative.threes.core.calculators.ic.SplicingInformationContentCalculator;
+import org.monarchinitiative.threes.core.calculators.sms.SMSCalculator;
 import org.monarchinitiative.threes.core.model.SplicingTernate;
-import org.monarchinitiative.threes.core.pwm.SplicingInformationContentAnnotator;
 import org.monarchinitiative.threes.core.reference.allele.AlleleGenerator;
-import org.monarchinitiative.threes.core.scoring.ScoringStrategy;
+import org.monarchinitiative.threes.core.scoring.scorers.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,7 +21,7 @@ public class RawScoringFactory implements ScorerFactory {
 
     private final ImmutableMap<ScoringStrategy, SplicingScorer> scorerMap;
 
-    public RawScoringFactory(SplicingInformationContentAnnotator annotator) {
+    public RawScoringFactory(SplicingInformationContentCalculator annotator, SMSCalculator calculator) {
         AlleleGenerator generator = new AlleleGenerator(annotator.getSplicingParameters());
         this.scorerMap = ImmutableMap.<ScoringStrategy, SplicingScorer>builder()
                 .put(ScoringStrategy.CANONICAL_DONOR, new CanonicalDonorScorer(annotator, generator))
@@ -29,6 +30,7 @@ public class RawScoringFactory implements ScorerFactory {
                 .put(ScoringStrategy.CANONICAL_ACCEPTOR, new CanonicalAcceptorScorer(annotator, generator))
                 .put(ScoringStrategy.CRYPTIC_ACCEPTOR, new CrypticAcceptorScorer(annotator, generator))
                 .put(ScoringStrategy.CRYPTIC_ACCEPTOR_IN_CANONICAL_POSITION, new CrypticAcceptorForVariantsInAcceptorSite(annotator, generator))
+                .put(ScoringStrategy.SMS, new SMSScorer(calculator))
                 .build();
     }
 

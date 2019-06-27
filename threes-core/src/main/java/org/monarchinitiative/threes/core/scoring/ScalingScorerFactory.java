@@ -1,9 +1,9 @@
-package org.monarchinitiative.threes.core.scoring.scorers;
+package org.monarchinitiative.threes.core.scoring;
 
 import com.google.common.collect.ImmutableMap;
+import org.monarchinitiative.threes.core.calculators.ic.SplicingInformationContentCalculator;
+import org.monarchinitiative.threes.core.calculators.sms.SMSCalculator;
 import org.monarchinitiative.threes.core.model.SplicingTernate;
-import org.monarchinitiative.threes.core.pwm.SplicingInformationContentAnnotator;
-import org.monarchinitiative.threes.core.scoring.ScoringStrategy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,15 +21,17 @@ public class ScalingScorerFactory implements ScorerFactory {
 
     private final ImmutableMap<ScoringStrategy, UnaryOperator<Double>> scalerMap;
 
-    public ScalingScorerFactory(SplicingInformationContentAnnotator annotator) {
-        this.rawScoringFactory = new RawScoringFactory(annotator);
+    public ScalingScorerFactory(SplicingInformationContentCalculator annotator, SMSCalculator calculator) {
+        this.rawScoringFactory = new RawScoringFactory(annotator, calculator);
         this.scalerMap = ImmutableMap.<ScoringStrategy, UnaryOperator<Double>>builder()
+                // TODO - MANY HARDCODED VALUES ARE PRESENT HERE
                 .put(ScoringStrategy.CANONICAL_DONOR, sigmoidScaler(0.29, -1))
                 .put(ScoringStrategy.CRYPTIC_DONOR, sigmoidScaler(-5.52, -1))
                 .put(ScoringStrategy.CRYPTIC_DONOR_IN_CANONICAL_POSITION, sigmoidScaler(-4.56, -1))
                 .put(ScoringStrategy.CANONICAL_ACCEPTOR, sigmoidScaler(-1.50, -1))
                 .put(ScoringStrategy.CRYPTIC_ACCEPTOR, sigmoidScaler(-8.24, -1))
                 .put(ScoringStrategy.CRYPTIC_ACCEPTOR_IN_CANONICAL_POSITION, sigmoidScaler(-4.59, -1))
+                .put(ScoringStrategy.SMS, UnaryOperator.identity()) // TODO - decide how to scale the scores
                 .build();
     }
 

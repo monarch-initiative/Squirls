@@ -1,8 +1,9 @@
-package org.monarchinitiative.threes.core.pwm;
+package org.monarchinitiative.threes.core.calculators.ic;
 
 import org.jblas.DoubleMatrix;
 import org.junit.jupiter.api.Test;
 import org.monarchinitiative.threes.core.TestDataSourceConfig;
+import org.monarchinitiative.threes.core.model.SplicingParameters;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.jdbc.Sql;

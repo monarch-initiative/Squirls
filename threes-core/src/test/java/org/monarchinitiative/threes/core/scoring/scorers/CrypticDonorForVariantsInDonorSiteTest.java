@@ -3,22 +3,21 @@ package org.monarchinitiative.threes.core.scoring.scorers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
-import org.monarchinitiative.threes.core.PojosForTesting;
-import org.monarchinitiative.threes.core.TestDataSourceConfig;
-import org.monarchinitiative.threes.core.model.*;
-import org.monarchinitiative.threes.core.pwm.SplicingInformationContentAnnotator;
-import org.monarchinitiative.threes.core.pwm.SplicingParameters;
+import org.monarchinitiative.threes.core.calculators.ic.SplicingInformationContentCalculator;
+import org.monarchinitiative.threes.core.model.GenomeCoordinates;
+import org.monarchinitiative.threes.core.model.SplicingParameters;
+import org.monarchinitiative.threes.core.model.SplicingTernate;
+import org.monarchinitiative.threes.core.model.SplicingVariant;
 import org.monarchinitiative.threes.core.reference.allele.AlleleGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.closeTo;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.when;
 
-@SpringBootTest(classes = {TestDataSourceConfig.class})
-class CrypticDonorForVariantsInDonorSiteTest {
+class CrypticDonorForVariantsInDonorSiteTest extends ScorerTestBase {
 
 
     private static final double EPSILON = 0.0005;
@@ -27,14 +26,9 @@ class CrypticDonorForVariantsInDonorSiteTest {
     private SplicingParameters splicingParameters;
 
     @Mock
-    private SplicingInformationContentAnnotator annotator;
-
-    @Mock
-    private SequenceInterval sequenceInterval;
+    private SplicingInformationContentCalculator annotator;
 
     private CrypticDonorForVariantsInDonorSite scorer;
-
-    private SplicingTranscript st;
 
 
     @BeforeEach
@@ -42,13 +36,11 @@ class CrypticDonorForVariantsInDonorSiteTest {
         when(annotator.getSplicingParameters()).thenReturn(splicingParameters);
         AlleleGenerator generator = new AlleleGenerator(splicingParameters);
         scorer = new CrypticDonorForVariantsInDonorSite(annotator, generator);
-        st = PojosForTesting.getTranscriptWithThreeExons();
     }
 
     @Test
     void snpInDonorSite() {
         when(annotator.getSpliceDonorScore(anyString())).thenReturn(5.0);
-        when(sequenceInterval.getSubsequence(anyInt(), anyInt())).thenReturn("ACGTACGTA");
         SplicingVariant variant = SplicingVariant.newBuilder()
                 .setCoordinates(GenomeCoordinates.newBuilder()
                         .setContig("chr1")
@@ -67,7 +59,6 @@ class CrypticDonorForVariantsInDonorSiteTest {
     @Test
     void notScoringIndelInDonorSite() {
         when(annotator.getSpliceDonorScore(anyString())).thenReturn(5.0);
-        when(sequenceInterval.getSubsequence(anyInt(), anyInt())).thenReturn("ACGTACGTA");
         SplicingVariant variant = SplicingVariant.newBuilder()
                 .setCoordinates(GenomeCoordinates.newBuilder()
                         .setContig("chr1")
@@ -86,7 +77,6 @@ class CrypticDonorForVariantsInDonorSiteTest {
     @Test
     void notScoringSnpsNotPresentInDonorSite() {
         when(annotator.getSpliceDonorScore(anyString())).thenReturn(5.0);
-        when(sequenceInterval.getSubsequence(anyInt(), anyInt())).thenReturn("ACGTACGTA");
         SplicingVariant variant = SplicingVariant.newBuilder()
                 .setCoordinates(GenomeCoordinates.newBuilder()
                         .setContig("chr1")

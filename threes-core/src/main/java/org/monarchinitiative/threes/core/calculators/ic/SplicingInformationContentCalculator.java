@@ -1,6 +1,7 @@
-package org.monarchinitiative.threes.core.pwm;
+package org.monarchinitiative.threes.core.calculators.ic;
 
 import org.jblas.DoubleMatrix;
+import org.monarchinitiative.threes.core.model.SplicingParameters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -13,9 +14,9 @@ import org.slf4j.LoggerFactory;
  * @version 0.0.1
  * @since 0.0
  */
-public class SplicingInformationContentAnnotator {
+public class SplicingInformationContentCalculator {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(SplicingInformationContentAnnotator.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(SplicingInformationContentCalculator.class);
 
     /**
      * Nucleotide sequence submitted for scoring must match this pattern.
@@ -36,7 +37,7 @@ public class SplicingInformationContentAnnotator {
      * @param donorMatrix    - matrix of nucleotide frequencies observed on splice donor sites genome-wise
      * @param acceptorMatrix - matrix of nucleotide frequencies observed on splice acceptor sites genome-wise
      */
-    public SplicingInformationContentAnnotator(DoubleMatrix donorMatrix, DoubleMatrix acceptorMatrix, SplicingParameters splicingParameters) {
+    public SplicingInformationContentCalculator(DoubleMatrix donorMatrix, DoubleMatrix acceptorMatrix, SplicingParameters splicingParameters) {
         this.donorMatrix = createICMatrix(donorMatrix);
         this.acceptorMatrix = createICMatrix(acceptorMatrix);
         this.splicingParameters = splicingParameters;
@@ -54,7 +55,7 @@ public class SplicingInformationContentAnnotator {
     private static DoubleMatrix createICMatrix(DoubleMatrix freqMatrix) {
         DoubleMatrix icm = new DoubleMatrix(freqMatrix.rows, freqMatrix.columns);
 
-        for (int i = 0; i < freqMatrix.rows; i++) { // iterate through positions/rows of pwm
+        for (int i = 0; i < freqMatrix.rows; i++) { // iterate through positions/rows of io
             DoubleMatrix row = freqMatrix.getRow(i);
             for (int j = 0; j < row.columns; j++) { // iterate through nucleotides at position
                 icm.put(i, j, calculateIC(row.get(j)));

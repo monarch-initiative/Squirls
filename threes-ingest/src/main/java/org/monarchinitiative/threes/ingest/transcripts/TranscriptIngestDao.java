@@ -58,7 +58,7 @@ public class TranscriptIngestDao {
                  PreparedStatement introns = connection.prepareStatement(intronsSql)) {
 
                 GenomeCoordinates coordinates = transcript.getTxRegionCoordinates();
-                if (!coordinates.isStrand()) {
+                if (!coordinates.getStrand()) {
                     // we need to flip the coordinates to FWD strand
                     final Optional<GenomeCoordinates> flipOp = genomeCoordinatesFlipper.flip(coordinates);
                     if (!flipOp.isPresent()) {

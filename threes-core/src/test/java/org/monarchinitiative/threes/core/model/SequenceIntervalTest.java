@@ -15,15 +15,13 @@ class SequenceIntervalTest {
 
     @BeforeEach
     void setUp() throws Exception {
-        instance = SequenceInterval.newBuilder()
-                .setCoordinates(GenomeCoordinates.newBuilder()
+        instance = SequenceInterval.of(GenomeCoordinates.newBuilder()
                         .setContig("10")
                         .setBegin(10)
                         .setEnd(20)
                         .setStrand(true)
-                        .build())
-                .setSequence("ACGTACGTAC")
-                .build();
+                        .build(),
+                "ACGTACGTAC");
     }
 
 //    @Test
@@ -67,7 +65,7 @@ class SequenceIntervalTest {
                 .setStrand(true)
                 .build();
         assertThrows(IllegalArgumentException.class,
-                () -> SequenceInterval.newBuilder().setSequence(sequence).setCoordinates(shorter).build());
+                () -> SequenceInterval.of(shorter, sequence));
 
         GenomeCoordinates longer = GenomeCoordinates.newBuilder()
                 .setContig("chr10")
@@ -76,7 +74,7 @@ class SequenceIntervalTest {
                 .setStrand(true)
                 .build();
         assertThrows(IllegalArgumentException.class,
-                () -> SequenceInterval.newBuilder().setSequence(sequence).setCoordinates(longer).build());
+                () -> SequenceInterval.of(longer, sequence));
     }
 }
 

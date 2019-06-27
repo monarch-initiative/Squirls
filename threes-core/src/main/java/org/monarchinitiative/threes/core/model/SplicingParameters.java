@@ -1,4 +1,4 @@
-package org.monarchinitiative.threes.core.pwm;
+package org.monarchinitiative.threes.core.model;
 
 /**
  * Container for tunable parameters for scoring of splicing variants.

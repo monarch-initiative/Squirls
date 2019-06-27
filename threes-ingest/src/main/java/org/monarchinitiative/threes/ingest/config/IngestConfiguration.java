@@ -3,9 +3,9 @@ package org.monarchinitiative.threes.ingest.config;
 import de.charite.compbio.jannovar.data.JannovarData;
 import de.charite.compbio.jannovar.data.JannovarDataSerializer;
 import de.charite.compbio.jannovar.data.SerializationException;
-import org.monarchinitiative.threes.core.pwm.FileBasedSplicingPositionalWeightMatrixParser;
-import org.monarchinitiative.threes.core.pwm.SplicingInformationContentAnnotator;
-import org.monarchinitiative.threes.core.pwm.SplicingPositionalWeightMatrixParser;
+import org.monarchinitiative.threes.core.calculators.ic.FileBasedSplicingPositionalWeightMatrixParser;
+import org.monarchinitiative.threes.core.calculators.ic.SplicingInformationContentCalculator;
+import org.monarchinitiative.threes.core.calculators.ic.SplicingPositionalWeightMatrixParser;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -33,8 +33,8 @@ public class IngestConfiguration {
 
 
     @Bean
-    public SplicingInformationContentAnnotator splicingInformationContentAnnotator(SplicingPositionalWeightMatrixParser splicingPositionalWeightMatrixParser) {
-        return new SplicingInformationContentAnnotator(splicingPositionalWeightMatrixParser.getDonorMatrix(),
+    public SplicingInformationContentCalculator splicingInformationContentAnnotator(SplicingPositionalWeightMatrixParser splicingPositionalWeightMatrixParser) {
+        return new SplicingInformationContentCalculator(splicingPositionalWeightMatrixParser.getDonorMatrix(),
                 splicingPositionalWeightMatrixParser.getAcceptorMatrix(),
                 splicingPositionalWeightMatrixParser.getSplicingParameters());
     }

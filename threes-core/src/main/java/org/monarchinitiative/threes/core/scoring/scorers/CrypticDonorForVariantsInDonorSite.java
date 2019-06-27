@@ -1,7 +1,8 @@
 package org.monarchinitiative.threes.core.scoring.scorers;
 
+import org.monarchinitiative.threes.core.Utils;
+import org.monarchinitiative.threes.core.calculators.ic.SplicingInformationContentCalculator;
 import org.monarchinitiative.threes.core.model.*;
-import org.monarchinitiative.threes.core.pwm.SplicingInformationContentAnnotator;
 import org.monarchinitiative.threes.core.reference.allele.AlleleGenerator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,13 +20,13 @@ public class CrypticDonorForVariantsInDonorSite implements SplicingScorer {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CrypticDonorForVariantsInDonorSite.class);
 
-    private final SplicingInformationContentAnnotator icAnnotator;
+    private final SplicingInformationContentCalculator icAnnotator;
 
     private final AlleleGenerator generator;
 
     private final int donorLength;
 
-    public CrypticDonorForVariantsInDonorSite(SplicingInformationContentAnnotator icAnnotator, AlleleGenerator generator) {
+    public CrypticDonorForVariantsInDonorSite(SplicingInformationContentCalculator icAnnotator, AlleleGenerator generator) {
         this.icAnnotator = icAnnotator;
         this.generator = generator;
         this.donorLength = icAnnotator.getSplicingParameters().getDonorLength();
@@ -64,7 +65,7 @@ public class CrypticDonorForVariantsInDonorSite implements SplicingScorer {
                     + variant.getRef()
                     + sequenceInterval.getSubsequence(varCoor.getEnd(), varCoor.getEnd() + donorLength - 1);
 
-            List<String> refWindows = SplicingScorer.slidingWindow(wtConsensusDonorSnippet, donorLength).collect(Collectors.toList());
+            List<String> refWindows = Utils.slidingWindow(wtConsensusDonorSnippet, donorLength).collect(Collectors.toList());
             List<Double> refScores = new ArrayList<>(refWindows.size());
 
             for (String window : refWindows) {
@@ -82,7 +83,7 @@ public class CrypticDonorForVariantsInDonorSite implements SplicingScorer {
                     + sequenceInterval.getSubsequence(varCoor.getEnd(), varCoor.getEnd() + donorLength - 1);
 
 
-            List<String> altWindows = SplicingScorer.slidingWindow(altCrypticDonorSnippet, donorLength).collect(Collectors.toList());
+            List<String> altWindows = Utils.slidingWindow(altCrypticDonorSnippet, donorLength).collect(Collectors.toList());
             List<Double> altScores = new ArrayList<>(altWindows.size());
 
             for (String window : altWindows) {

@@ -2,7 +2,9 @@ package org.monarchinitiative.threes.ingest;
 
 import de.charite.compbio.jannovar.data.JannovarData;
 import org.flywaydb.core.Flyway;
-import org.monarchinitiative.threes.core.pwm.SplicingInformationContentAnnotator;
+import org.monarchinitiative.threes.core.calculators.ic.SplicingInformationContentCalculator;
+import org.monarchinitiative.threes.core.calculators.sms.FileSMSParser;
+import org.monarchinitiative.threes.core.calculators.sms.SMSParser;
 import org.monarchinitiative.threes.core.reference.GenomeCoordinatesFlipper;
 import org.monarchinitiative.threes.core.reference.fasta.GenomeSequenceAccessor;
 import org.monarchinitiative.threes.core.reference.fasta.PrefixHandlingGenomeSequenceAccessor;
@@ -12,6 +14,8 @@ import org.monarchinitiative.threes.ingest.pwm.PwmIngestRunner;
 import org.monarchinitiative.threes.ingest.reference.ContigIngestDao;
 import org.monarchinitiative.threes.ingest.reference.ContigIngestRunner;
 import org.monarchinitiative.threes.ingest.reference.GenomeAssemblyDownloader;
+import org.monarchinitiative.threes.ingest.septamers.SeptamerIngestDao;
+import org.monarchinitiative.threes.ingest.septamers.SeptamerIngestRunner;
 import org.monarchinitiative.threes.ingest.transcripts.SplicingCalculator;
 import org.monarchinitiative.threes.ingest.transcripts.SplicingCalculatorImpl;
 import org.monarchinitiative.threes.ingest.transcripts.TranscriptIngestDao;
@@ -20,7 +24,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
-import org.springframework.stereotype.Component;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 import javax.sql.DataSource;
 import java.net.URL;
@@ -33,25 +38,27 @@ import java.util.stream.Collectors;
 /**
  *
  */
-@Component
-public class MainIngestRunner implements ApplicationRunner {
+@SpringBootApplication
+public class Main implements ApplicationRunner {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(MainIngestRunner.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(Main.class);
 
     private final IngestProperties ingestProperties;
 
     private final JannovarData jannovarData;
 
-    private final SplicingInformationContentAnnotator splicingInformationContentAnnotator;
+    private final SplicingInformationContentCalculator splicingInformationContentAnnotator;
 
-    public MainIngestRunner(IngestProperties ingestProperties,
-                            JannovarData jannovarData,
-                            SplicingInformationContentAnnotator splicingInformationContentAnnotator) {
+    public Main(IngestProperties ingestProperties, JannovarData jannovarData, SplicingInformationContentCalculator splicingInformationContentAnnotator) {
         this.ingestProperties = ingestProperties;
 
         // read Jannovar TODO - replace local Jannovar db with in situ building
         this.jannovarData = jannovarData;
         this.splicingInformationContentAnnotator = splicingInformationContentAnnotator;
+    }
+
+    public static void main(String[] args) {
+        SpringApplication.run(Main.class, args);
     }
 
     private static int applyMigrations(DataSource dataSource, String locations) {
@@ -119,26 +126,33 @@ public class MainIngestRunner implements ApplicationRunner {
             int migrations = applyMigrations(dataSource, locations);
             LOGGER.info("Applied {} migrations", migrations);
 
-            ContigIngestDao dao = new ContigIngestDao(dataSource);
-            ContigIngestRunner contigIngestRunner = new ContigIngestRunner(dao, jannovarData);
+            ContigIngestDao contigIngestDao = new ContigIngestDao(dataSource);
+            ContigIngestRunner contigIngestRunner = new ContigIngestRunner(contigIngestDao, jannovarData);
             contigIngestRunner.run();
 
             // process PWMs
-            PwmIngestDao pwm = new PwmIngestDao(dataSource);
-            PwmIngestRunner pwmIngestRunner = new PwmIngestRunner(pwm, ingestProperties.getSplicingInformationContentMatrixPath());
+            PwmIngestDao pwmIngestDao = new PwmIngestDao(dataSource);
+            PwmIngestRunner pwmIngestRunner = new PwmIngestRunner(pwmIngestDao, ingestProperties.getSplicingInformationContentMatrixPath());
             pwmIngestRunner.run();
 
+            // process transcripts
             try (GenomeSequenceAccessor accessor = new PrefixHandlingGenomeSequenceAccessor(genomeFastaPath, genomeFastaFaiPath)) {
-                // process transcripts
-                final Map<String, Integer> contigLengths = jannovarData.getRefDict().getContigNameToID().keySet().stream()
+                Map<String, Integer> contigLengths = jannovarData.getRefDict().getContigNameToID().keySet().stream()
                         .collect(Collectors.toMap(Function.identity(),
                                 idx -> jannovarData.getRefDict().getContigIDToLength().get(jannovarData.getRefDict().getContigNameToID().get(idx))));
-                final GenomeCoordinatesFlipper genomeCoordinatesFlipper = new GenomeCoordinatesFlipper(contigLengths);
-                final TranscriptIngestDao transcriptIngestDao = new TranscriptIngestDao(dataSource, genomeCoordinatesFlipper);
+                GenomeCoordinatesFlipper genomeCoordinatesFlipper = new GenomeCoordinatesFlipper(contigLengths);
+                TranscriptIngestDao transcriptIngestDao = new TranscriptIngestDao(dataSource, genomeCoordinatesFlipper);
                 SplicingCalculator splicingCalculator = new SplicingCalculatorImpl(accessor, splicingInformationContentAnnotator);
                 TranscriptsIngestRunner transcriptsIngestRunner = new TranscriptsIngestRunner(splicingCalculator, transcriptIngestDao, jannovarData);
                 transcriptsIngestRunner.run();
             }
+
+            // store septamers for SMS score
+            SMSParser smsParser = new FileSMSParser(ingestProperties.getSeptamersTsvPath());
+            SeptamerIngestDao septamerIngestDao = new SeptamerIngestDao(dataSource);
+            SeptamerIngestRunner septamerIngestRunner = new SeptamerIngestRunner(septamerIngestDao, smsParser);
+            septamerIngestRunner.run();
+
         } catch (Exception e) {
             LOGGER.error("Error: ", e);
             throw e;

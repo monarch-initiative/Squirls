@@ -25,6 +25,6 @@ class SplicingVariantTest {
         assertThat(co.getContig(), is("chr1"));
         assertThat(co.getBegin(), is(99));
         assertThat(co.getEnd(), is(100));
-        assertThat(co.isStrand(), is(true));
+        assertThat(co.getStrand(), is(true));
     }
 }

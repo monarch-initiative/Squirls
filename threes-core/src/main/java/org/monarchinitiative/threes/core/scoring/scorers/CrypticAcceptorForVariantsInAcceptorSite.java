@@ -1,7 +1,8 @@
 package org.monarchinitiative.threes.core.scoring.scorers;
 
+import org.monarchinitiative.threes.core.Utils;
+import org.monarchinitiative.threes.core.calculators.ic.SplicingInformationContentCalculator;
 import org.monarchinitiative.threes.core.model.*;
-import org.monarchinitiative.threes.core.pwm.SplicingInformationContentAnnotator;
 import org.monarchinitiative.threes.core.reference.allele.AlleleGenerator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,13 +20,13 @@ public class CrypticAcceptorForVariantsInAcceptorSite implements SplicingScorer 
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CrypticDonorForVariantsInDonorSite.class);
 
-    private final SplicingInformationContentAnnotator icAnnotator;
+    private final SplicingInformationContentCalculator icAnnotator;
 
     private final AlleleGenerator generator;
 
     private final int acceptorLength;
 
-    public CrypticAcceptorForVariantsInAcceptorSite(SplicingInformationContentAnnotator icAnnotator, AlleleGenerator generator) {
+    public CrypticAcceptorForVariantsInAcceptorSite(SplicingInformationContentCalculator icAnnotator, AlleleGenerator generator) {
         this.icAnnotator = icAnnotator;
         this.generator = generator;
         this.acceptorLength = icAnnotator.getSplicingParameters().getAcceptorLength();
@@ -59,10 +60,11 @@ public class CrypticAcceptorForVariantsInAcceptorSite implements SplicingScorer 
 
             double refConsensusAcceptorScore = intron.getAcceptorScore();
 
-            String wtConsensusAcceptorSnippet = sequenceInterval.getSubsequence(varCoor.getBegin() - acceptorLength + 1, varCoor.getBegin())
-                    + variant.getRef()
-                    + sequenceInterval.getSubsequence(varCoor.getEnd(), varCoor.getEnd() + acceptorLength - 1);
-            List<String> refWindows = SplicingScorer.slidingWindow(wtConsensusAcceptorSnippet, acceptorLength).collect(Collectors.toList());
+            final String upstream = sequenceInterval.getSubsequence(varCoor.getBegin() - acceptorLength + 1, varCoor.getBegin());
+            final String downstream = sequenceInterval.getSubsequence(varCoor.getEnd(), varCoor.getEnd() + acceptorLength - 1);
+
+            String wtConsensusAcceptorSnippet = upstream + variant.getRef() + downstream;
+            List<String> refWindows = Utils.slidingWindow(wtConsensusAcceptorSnippet, acceptorLength).collect(Collectors.toList());
             List<Double> refScores = new ArrayList<>(refWindows.size());
 
             for (String window : refWindows) {
@@ -75,10 +77,10 @@ public class CrypticAcceptorForVariantsInAcceptorSite implements SplicingScorer 
 
             // -------------------------------------------------------------
 
-            String altCrypticAcceptorSnippet = sequenceInterval.getSubsequence(varCoor.getBegin() - acceptorLength + 1, varCoor.getBegin())
+            String altCrypticAcceptorSnippet = upstream
                     + variant.getAlt()
-                    + sequenceInterval.getSubsequence(varCoor.getEnd(), varCoor.getEnd() + acceptorLength - 1);
-            List<String> altWindows = SplicingScorer.slidingWindow(altCrypticAcceptorSnippet, acceptorLength).collect(Collectors.toList());
+                    + downstream;
+            List<String> altWindows = Utils.slidingWindow(altCrypticAcceptorSnippet, acceptorLength).collect(Collectors.toList());
             List<Double> altScores = new ArrayList<>(altWindows.size());
 
             for (String window : altWindows) {

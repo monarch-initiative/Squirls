@@ -1,6 +1,7 @@
-package org.monarchinitiative.threes.core.pwm;
+package org.monarchinitiative.threes.core.calculators.ic;
 
 import org.jblas.DoubleMatrix;
+import org.monarchinitiative.threes.core.model.SplicingParameters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yaml.snakeyaml.Yaml;
@@ -10,7 +11,7 @@ import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.monarchinitiative.threes.core.pwm.PwmUtils.mapToDoubleMatrix;
+import static org.monarchinitiative.threes.core.calculators.ic.PwmUtils.mapToDoubleMatrix;
 
 
 /**

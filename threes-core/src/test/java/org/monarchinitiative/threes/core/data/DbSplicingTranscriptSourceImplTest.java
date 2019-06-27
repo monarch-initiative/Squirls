@@ -1,6 +1,5 @@
 package org.monarchinitiative.threes.core.data;
 
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.monarchinitiative.threes.core.TestDataSourceConfig;
@@ -13,9 +12,7 @@ import org.springframework.test.context.jdbc.Sql;
 
 import javax.sql.DataSource;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import static org.hamcrest.CoreMatchers.hasItems;
 import static org.hamcrest.CoreMatchers.is;
@@ -27,22 +24,15 @@ import static org.hamcrest.Matchers.hasSize;
         "file:src/test/resources/sql/insert_transcripts_data.sql"})
 class DbSplicingTranscriptSourceImplTest {
 
-    private static Map<String, Integer> contigLengthMap;
 
     @Autowired
     private DataSource dataSource;
 
     private DbSplicingTranscriptSource source;
 
-    @BeforeAll
-    static void setUpBefore() {
-        contigLengthMap = new HashMap<>();
-        contigLengthMap.put("chr1", 11_000);
-    }
-
     @BeforeEach
     void setUp() {
-        source = new DbSplicingTranscriptSource(dataSource, contigLengthMap);
+        source = new DbSplicingTranscriptSource(dataSource);
     }
 
     @Test
