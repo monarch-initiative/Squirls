@@ -19,10 +19,7 @@ import org.monarchinitiative.threes.core.reference.fasta.InvalidFastaFileExcepti
 import org.monarchinitiative.threes.core.reference.fasta.PrefixHandlingGenomeSequenceAccessor;
 import org.monarchinitiative.threes.core.reference.transcript.NaiveSplicingTranscriptLocator;
 import org.monarchinitiative.threes.core.reference.transcript.SplicingTranscriptLocator;
-import org.monarchinitiative.threes.core.scoring.ScalingScorerFactory;
-import org.monarchinitiative.threes.core.scoring.ScorerFactory;
-import org.monarchinitiative.threes.core.scoring.SimpleSplicingEvaluator;
-import org.monarchinitiative.threes.core.scoring.SplicingEvaluator;
+import org.monarchinitiative.threes.core.scoring.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -91,6 +88,12 @@ public class ThreesAutoConfiguration {
         return transcriptSource;
     }
 
+    @Bean
+    @ConditionalOnMissingBean(name = "scorerFactoryType")
+    public String scorerFactoryType(Environment environment) {
+        return environment.getProperty("threes.scorer-factory-type", "scaling");
+    }
+
 
     @Bean
     public ThreesDataResolver threesDataResolver(Path threesDataDirectory, String genomeAssembly, String dataVersion, String transcriptSource) {
@@ -111,8 +114,20 @@ public class ThreesAutoConfiguration {
 
 
     @Bean
-    public ScorerFactory scorerFactory(SplicingInformationContentCalculator splicingInformationContentAnnotator, SMSCalculator smsCalculator) {
-        return new ScalingScorerFactory(splicingInformationContentAnnotator, smsCalculator);
+    public ScorerFactory scorerFactory(SplicingInformationContentCalculator splicingInformationContentAnnotator,
+                                       SMSCalculator smsCalculator,
+                                       String scorerFactoryType) {
+        switch (scorerFactoryType) {
+            case "raw":
+                LOGGER.info("Using raw scorer factory");
+                return new RawScorerFactory(splicingInformationContentAnnotator, smsCalculator);
+            default:
+                LOGGER.warn("Unknown scorer factory type '{}', using scaling scorer factory", scorerFactoryType);
+            case "scaling":
+                LOGGER.info("Using scaling scorer factory");
+                return new ScalingScorerFactory(splicingInformationContentAnnotator, smsCalculator);
+        }
+
     }
 
 

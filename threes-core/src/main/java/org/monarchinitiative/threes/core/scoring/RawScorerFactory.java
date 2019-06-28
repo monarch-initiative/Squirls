@@ -15,13 +15,13 @@ import java.util.function.Function;
 /**
  *
  */
-public class RawScoringFactory implements ScorerFactory {
+public class RawScorerFactory implements ScorerFactory {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(RawScoringFactory.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(RawScorerFactory.class);
 
     private final ImmutableMap<ScoringStrategy, SplicingScorer> scorerMap;
 
-    public RawScoringFactory(SplicingInformationContentCalculator annotator, SMSCalculator calculator) {
+    public RawScorerFactory(SplicingInformationContentCalculator annotator, SMSCalculator calculator) {
         AlleleGenerator generator = new AlleleGenerator(annotator.getSplicingParameters());
         this.scorerMap = ImmutableMap.<ScoringStrategy, SplicingScorer>builder()
                 .put(ScoringStrategy.CANONICAL_DONOR, new CanonicalDonorScorer(annotator, generator))

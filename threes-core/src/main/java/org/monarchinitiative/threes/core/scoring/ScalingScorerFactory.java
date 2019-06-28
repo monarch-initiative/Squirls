@@ -15,14 +15,14 @@ import java.util.function.UnaryOperator;
  */
 public class ScalingScorerFactory implements ScorerFactory {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(RawScoringFactory.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(RawScorerFactory.class);
 
-    private final RawScoringFactory rawScoringFactory;
+    private final RawScorerFactory rawScoringFactory;
 
     private final ImmutableMap<ScoringStrategy, UnaryOperator<Double>> scalerMap;
 
     public ScalingScorerFactory(SplicingInformationContentCalculator annotator, SMSCalculator calculator) {
-        this.rawScoringFactory = new RawScoringFactory(annotator, calculator);
+        this.rawScoringFactory = new RawScorerFactory(annotator, calculator);
         this.scalerMap = ImmutableMap.<ScoringStrategy, UnaryOperator<Double>>builder()
                 // TODO - MANY HARDCODED VALUES ARE PRESENT HERE
                 .put(ScoringStrategy.CANONICAL_DONOR, sigmoidScaler(0.29, -1))
