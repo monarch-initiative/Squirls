@@ -47,13 +47,13 @@ public class FakeUpDatabase {
     // Databases will be created only if the paths below point to meaningful files
     //
 
-    private static final Path HG19_FASTA_PATH = Paths.get("/home/ielis/genomes/hg19/hg19.fa");
+    private static final Path HG19_FASTA_PATH = Paths.get("/home/ielis/dub/genomes/hg19/hg19.fa");
 
-    private static final Path HG19_FASTA_IDX_PATH = Paths.get("/home/ielis/genomes/hg19/hg19.fa.fai");
+    private static final Path HG19_FASTA_IDX_PATH = Paths.get("/home/ielis/dub/genomes/hg19/hg19.fa.fai");
 
-    private static final Path HG38_FASTA_PATH = Paths.get("/home/ielis/tempelhof/genomes/hg38/hg38.fa");
+    private static final Path HG38_FASTA_PATH = Paths.get("/home/ielis/dub/genomes/hg38/hg38.fa");
 
-    private static final Path HG38_FASTA_IDX_PATH = Paths.get("/home/ielis/tempelhof/genomes/hg38/hg38.fa.fai");
+    private static final Path HG38_FASTA_IDX_PATH = Paths.get("/home/ielis/dub/genomes/hg38/hg38.fa.fai");
 
     private static final Path HG19_JANNOVAR_DB = Paths.get("/home/ielis/jannovar/v0.28/hg19_ucsc.ser");
 
