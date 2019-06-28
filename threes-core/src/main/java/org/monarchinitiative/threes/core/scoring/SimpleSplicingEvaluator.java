@@ -89,16 +89,22 @@ public class SimpleSplicingEvaluator implements SplicingEvaluator {
                     break;
                 case EXON:
                     final int e_e_i = ld.getExonIdx();
-                    if (e_e_i != 0) { // variant is not in the first exon
+                    if (e_e_i != 0) {
+                        // variant is not in the first exon, the exon has the acceptor site
                         // use the previous intron to calculate acceptor score
                         final SplicingTernate crypticAccT = SplicingTernate.of(variant, transcript.getIntrons().get(e_e_i - 1), sequence);
                         final double exonCryptAccSc = factory.scorerForStrategy(ScoringStrategy.CRYPTIC_ACCEPTOR).apply(crypticAccT);
                         resultBuilder.putScore(ScoringStrategy.CRYPTIC_ACCEPTOR, exonCryptAccSc);
-                    } else if (transcript.getExons().size() - 1 != e_e_i) { // variant is not in the last exon
+                    } else if (e_e_i != transcript.getExons().size() - 1) {
+                        // variant is not in the last exon, the exon has the donor site
                         final SplicingTernate crypticDonT = SplicingTernate.of(variant, transcript.getIntrons().get(e_e_i), sequence);
                         final double exonCryptDonSc = factory.scorerForStrategy(ScoringStrategy.CRYPTIC_DONOR).apply(crypticDonT);
                         resultBuilder.putScore(ScoringStrategy.CRYPTIC_DONOR, exonCryptDonSc);
                     }
+                    // calculate septamer scores
+                    final SplicingTernate exonTernate = SplicingTernate.of(variant, transcript.getExons().get(e_e_i), sequence);
+                    final double smsSc = factory.scorerForStrategy(ScoringStrategy.SMS).apply(exonTernate);
+                    resultBuilder.putScore(ScoringStrategy.SMS, smsSc);
                     break;
                 case INTRON:
                     final int i_i = ld.getIntronIdx();
