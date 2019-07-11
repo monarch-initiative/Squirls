@@ -36,6 +36,7 @@ class CrypticDonorScorerTest extends ScorerTestBase {
 
     @Test
     void snpInDonorSite() {
+        // this scorer does not analyze variants overlapping with the donor site
         when(annotator.getSpliceDonorScore(anyString())).thenReturn(5.0);
 
         SplicingVariant variant = SplicingVariant.newBuilder()

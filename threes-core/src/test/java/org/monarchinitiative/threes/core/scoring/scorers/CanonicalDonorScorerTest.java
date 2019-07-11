@@ -33,8 +33,8 @@ class CanonicalDonorScorerTest extends ScorerTestBase {
 
     @Test
     void simpleSnp() {
-        when(annotator.getSpliceDonorScore(anyString())).thenReturn(5.0);
-        when(generator.getDonorSiteWithAltAllele(anyInt(), any(), any())).thenReturn("ANY_SEQ");
+        when(generator.getDonorSiteWithAltAllele(anyInt(), any(), any())).thenReturn("TCAAATGTA");
+        when(annotator.getSpliceDonorScore("TCAAATGTA")).thenReturn(5.0);
 
         SplicingVariant variant = SplicingVariant.newBuilder()
                 .setCoordinates(GenomeCoordinates.newBuilder()
@@ -53,8 +53,8 @@ class CanonicalDonorScorerTest extends ScorerTestBase {
 
 
     @Test
-    void notLocatedInDonor() {
-        when(annotator.getSpliceDonorScore(anyString())).thenReturn(5.0);
+    void wholeDonorSiteIsDeleted() {
+        // generator returns null when the whole site is deleted. This is being tested elsewhere
         when(generator.getDonorSiteWithAltAllele(anyInt(), any(), any())).thenReturn(null);
 
         SplicingVariant variant = SplicingVariant.newBuilder()
@@ -68,6 +68,23 @@ class CanonicalDonorScorerTest extends ScorerTestBase {
                 .setAlt("A")
                 .build();
         SplicingTernate ternate = SplicingTernate.of(variant, st.getIntrons().get(0), sequenceInterval);
+        double result = scorer.scoringFunction().apply(ternate);
+        assertThat(result, is(Double.NaN));
+    }
+
+    @Test
+    void exonIsGivenInsteadOfIntron() {
+        SplicingVariant variant = SplicingVariant.newBuilder()
+                .setCoordinates(GenomeCoordinates.newBuilder()
+                        .setContig("chr1")
+                        .setBegin(1200)
+                        .setEnd(1201)
+                        .setStrand(true)
+                        .build())
+                .setRef("C")
+                .setAlt("A")
+                .build();
+        SplicingTernate ternate = SplicingTernate.of(variant, st.getExons().get(0), sequenceInterval);
         double result = scorer.scoringFunction().apply(ternate);
         assertThat(result, is(Double.NaN));
     }

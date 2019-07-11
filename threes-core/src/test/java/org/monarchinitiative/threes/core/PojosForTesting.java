@@ -15,13 +15,17 @@ public class PojosForTesting {
                         .setEnd(2100)
                         .setStrand(true)
                         .build(),
-                "AAACAGGTTAATCGCCACGACATAGTAGTATTTAGAGTTACTAGTAAGCCTGATGCCACT" +
-                        "ACACAATTCTAGCTTTTCTCTTTAGGATGATTGTTTCATTCAGTCTTATCTCTTTTAGAA" +
-                        "AACATAGGaaaaaattatttaataataaaatttaattGGCAAAATGAAGGTATGGCTTAT" +
-                        "AAGAGTGTTTTCCTATTGTTTTCAGTGTAGGACTCACTGTTCTAAATAACTGGGACACCC" +
-                        "AAGGATTCTGTAAAATGCCATCCAGTTATCATTTATATTCCCTAACTCAAAATTCATTCA" +
+                "AAACAGGTTAATCGCCACGACATAGTAGTATTTAGAGTTACTAGTAAGCCTGATGCCACT" + // 960
+                        "ACACAATTCTAGCTTTTCTCTTTAGGATGATTGTTTCATT" + // 1000
+                        "CAGTCTTATCTCTTTTAGAA" + // 1020
+                        "AACATAGGaaaaaattatttaataataaaatttaattGGCAAAATGAAGGTATGGCTTAT" + // 1080
+                        "AAGAGTGTTTTCCTATTGTTTTCAGTGTAGGACTCACTGTTCTAAATAACTGGGACACCC" + // 1140
+                        //                                      v  <- 1200  (end of the 0th exon)
+                        "AAGGATTCTGTAAAATGCCATCCAGTTATCATTTATATTC" +
+                        "CCTAACTCAAAATTCATTCA" +
                         "CATGTATTCATTTTTTTCTAAACAAATTAGCATGTAGAATTCTGGTTAAAATTTGGCATA" +
                         "GAACACCCGGGTATTTTTTCATAATGCACCCAATAACTGTCATTCACTAATTGAGAATGG" +
+                        //                                                          v  <- 1400 (end of the 0th intron)
                         "TGATTTAACAAAGGATAATAAAGTTATGAAACCAATGCCACAAAACATCTGTCTCTAACT" +
                         "GgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtAAGAGGGAGAGAGAGAAAATTTCACTC" +
                         "CCTCCATAAATCTCACAGTATTCTTTTCTTtttcctttcctttccttgctcttctttctc" +

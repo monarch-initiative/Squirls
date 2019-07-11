@@ -13,7 +13,8 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.closeTo;
 import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.when;
 
 
 class CanonicalAcceptorScorerTest extends ScorerTestBase {
@@ -35,8 +36,8 @@ class CanonicalAcceptorScorerTest extends ScorerTestBase {
 
     @Test
     void simpleSnp() {
-        when(annotator.getSpliceAcceptorScore(anyString())).thenReturn(6.0);
         when(generator.getAcceptorSiteWithAltAllele(anyInt(), any(), any())).thenReturn("ANY_SEQ");
+        when(annotator.getSpliceAcceptorScore("ANY_SEQ")).thenReturn(6.0);
 
         SplicingVariant variant = SplicingVariant.newBuilder()
                 .setCoordinates(GenomeCoordinates.newBuilder()
@@ -54,8 +55,7 @@ class CanonicalAcceptorScorerTest extends ScorerTestBase {
     }
 
     @Test
-    void notLocatedInDonor() {
-        when(annotator.getSpliceAcceptorScore(anyString())).thenReturn(5.0);
+    void wholeAcceptorSiteIsDeleted() {
         when(generator.getAcceptorSiteWithAltAllele(anyInt(), any(), any())).thenReturn(null);
 
         SplicingVariant variant = SplicingVariant.newBuilder()
@@ -69,6 +69,23 @@ class CanonicalAcceptorScorerTest extends ScorerTestBase {
                 .setAlt("A")
                 .build();
         SplicingTernate ternate = SplicingTernate.of(variant, st.getIntrons().get(0), sequenceInterval);
+        double result = scorer.scoringFunction().apply(ternate);
+        assertThat(result, is(Double.NaN));
+    }
+
+    @Test
+    void exonIsGivenInsteadOfIntron() {
+        SplicingVariant variant = SplicingVariant.newBuilder()
+                .setCoordinates(GenomeCoordinates.newBuilder()
+                        .setContig("chr1")
+                        .setBegin(1200)
+                        .setEnd(1201)
+                        .setStrand(true)
+                        .build())
+                .setRef("C")
+                .setAlt("A")
+                .build();
+        SplicingTernate ternate = SplicingTernate.of(variant, st.getExons().get(0), sequenceInterval);
         double result = scorer.scoringFunction().apply(ternate);
         assertThat(result, is(Double.NaN));
     }
