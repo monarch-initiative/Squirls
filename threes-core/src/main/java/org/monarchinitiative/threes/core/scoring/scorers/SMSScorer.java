@@ -31,15 +31,16 @@ public class SMSScorer implements SplicingScorer {
             int varBegin = variant.getCoordinates().getBegin();
             int varEnd = variant.getCoordinates().getEnd();
 
-            String upstream = si.getSubsequence(varBegin - PADDING, varBegin);
-            String downstream = si.getSubsequence(varEnd, varEnd + PADDING);
-            String refAllele = upstream + variant.getRef() + downstream;
-            String altAllele = upstream + variant.getAlt() + downstream;
+            String upstreamSequence = si.getSubsequence(varBegin - PADDING, varBegin);
+            String downstreamSequence = si.getSubsequence(varEnd, varEnd + PADDING);
+            String paddedRefAllele = upstreamSequence + variant.getRef() + downstreamSequence;
+            String paddedAltAllele = upstreamSequence + variant.getAlt() + downstreamSequence;
 
-            double ref = calculator.scoreSequence(refAllele);
-            double alt = calculator.scoreSequence(altAllele);
-            // total ref from total alt
-            return alt - ref;
+            double ref = calculator.scoreSequence(paddedRefAllele);
+            double alt = calculator.scoreSequence(paddedAltAllele);
+            // subtract total alt from total ref
+            // the score should be high if the alt allele abolishes ESE element in ref allele
+            return ref - alt;
         };
     }
 }

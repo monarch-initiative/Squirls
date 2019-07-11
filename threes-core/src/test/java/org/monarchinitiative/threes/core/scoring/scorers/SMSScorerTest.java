@@ -47,7 +47,7 @@ class SMSScorerTest extends ScorerTestBase {
         double score = scorer.scoringFunction().apply(ternate);
 
         // assert
-        assertThat(score, is(closeTo(1.0703D, EPSILON)));
+        assertThat(score, is(closeTo(-1.0703D, EPSILON)));
     }
 
 
@@ -71,7 +71,7 @@ class SMSScorerTest extends ScorerTestBase {
         double score = scorer.scoringFunction().apply(ternate);
 
         // assert
-        assertThat(score, is(closeTo(-0.7605D, EPSILON)));
+        assertThat(score, is(closeTo(0.7605D, EPSILON)));
     }
 
 
@@ -95,6 +95,6 @@ class SMSScorerTest extends ScorerTestBase {
         double score = scorer.scoringFunction().apply(ternate);
 
         // assert
-        assertThat(score, is(closeTo(0.0587D, EPSILON)));
+        assertThat(score, is(closeTo(-0.0587D, EPSILON)));
     }
 }
