@@ -11,6 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Optional;
+import java.util.Set;
 
 /**
  * The simplest evaluation strategy:<br>
@@ -37,7 +38,7 @@ public class SimpleSplicingEvaluator implements SplicingEvaluator {
 
 
     @Override
-    public SplicingPathogenicityData evaluate(SplicingVariant variant, SplicingTranscript transcript, SequenceInterval sequence) {
+    public SplicingPathogenicityData evaluate(SplicingVariant variant, SplicingTranscript transcript, SequenceInterval sequence, Set<ScoringStrategy> strategies) {
 
         try {
             final SplicingPathogenicityData.Builder resultBuilder = SplicingPathogenicityData.newBuilder();
@@ -79,10 +80,14 @@ public class SimpleSplicingEvaluator implements SplicingEvaluator {
                 // apply canonical donor & cryptic donor in canonical position
                 featureIdx = ld.getIntronIdx(); // with respect to intron
                 SplicingTernate donorTernate = SplicingTernate.of(variant, transcript.getIntrons().get(featureIdx), sequence);
-                double donorScore = factory.scorerForStrategy(ScoringStrategy.CANONICAL_DONOR).apply(donorTernate);
-                double cryptDonScore = factory.scorerForStrategy(ScoringStrategy.CRYPTIC_DONOR_IN_CANONICAL_POSITION).apply(donorTernate);
-                resultBuilder.putScore(ScoringStrategy.CANONICAL_DONOR, donorScore)
-                        .putScore(ScoringStrategy.CRYPTIC_DONOR_IN_CANONICAL_POSITION, cryptDonScore);
+                if (strategies.contains(ScoringStrategy.CANONICAL_DONOR)) {
+                    double donorScore = factory.scorerForStrategy(ScoringStrategy.CANONICAL_DONOR).apply(donorTernate);
+                    resultBuilder.putScore(ScoringStrategy.CANONICAL_DONOR, donorScore);
+                }
+                if (strategies.contains(ScoringStrategy.CRYPTIC_DONOR_IN_CANONICAL_POSITION)) {
+                    double cryptDonScore = factory.scorerForStrategy(ScoringStrategy.CRYPTIC_DONOR_IN_CANONICAL_POSITION).apply(donorTernate);
+                    resultBuilder.putScore(ScoringStrategy.CRYPTIC_DONOR_IN_CANONICAL_POSITION, cryptDonScore);
+                }
 
             } else if (position.equals(SplicingLocationData.SplicingPosition.ACCEPTOR)) {
                 /*
@@ -91,41 +96,54 @@ public class SimpleSplicingEvaluator implements SplicingEvaluator {
                 // apply canonical acceptor & cryptic acceptor in canonical position
                 featureIdx = ld.getIntronIdx(); // with respect to intron
                 SplicingTernate acceptorT = SplicingTernate.of(variant, transcript.getIntrons().get(featureIdx), sequence);
-                double acceptorScore = factory.scorerForStrategy(ScoringStrategy.CANONICAL_ACCEPTOR).apply(acceptorT);
-                double cryptAccScore = factory.scorerForStrategy(ScoringStrategy.CRYPTIC_ACCEPTOR_IN_CANONICAL_POSITION).apply(acceptorT);
-                resultBuilder.putScore(ScoringStrategy.CANONICAL_ACCEPTOR, acceptorScore)
-                        .putScore(ScoringStrategy.CRYPTIC_ACCEPTOR_IN_CANONICAL_POSITION, cryptAccScore);
+                if (strategies.contains(ScoringStrategy.CANONICAL_ACCEPTOR)) {
+                    double acceptorScore = factory.scorerForStrategy(ScoringStrategy.CANONICAL_ACCEPTOR).apply(acceptorT);
+                    resultBuilder.putScore(ScoringStrategy.CANONICAL_ACCEPTOR, acceptorScore);
+                }
+                if (strategies.contains(ScoringStrategy.CRYPTIC_ACCEPTOR_IN_CANONICAL_POSITION)) {
+                    double cryptAccScore = factory.scorerForStrategy(ScoringStrategy.CRYPTIC_ACCEPTOR_IN_CANONICAL_POSITION).apply(acceptorT);
+                    resultBuilder.putScore(ScoringStrategy.CRYPTIC_ACCEPTOR_IN_CANONICAL_POSITION, cryptAccScore);
+                }
 
             } else if (position.equals(SplicingLocationData.SplicingPosition.EXON)) {
                 /*
                           EVALUATE EXONIC VARIANT
                  */
                 featureIdx = ld.getExonIdx();
-                if (featureIdx != 0) {
+                if (featureIdx != 0 && strategies.contains(ScoringStrategy.CRYPTIC_ACCEPTOR)) {
                     // variant is not in the first exon, the exon has the acceptor site
                     // we're in the n-nth exon, so use the n-1-th intron to calculate the acceptor score
                     SplicingTernate crypticAccT = SplicingTernate.of(variant, transcript.getIntrons().get(featureIdx - 1), sequence);
                     double exonCryptAccSc = factory.scorerForStrategy(ScoringStrategy.CRYPTIC_ACCEPTOR).apply(crypticAccT);
                     resultBuilder.putScore(ScoringStrategy.CRYPTIC_ACCEPTOR, exonCryptAccSc);
                 }
-                if (featureIdx < (transcript.getExons().size() - 1)) {
+                if (featureIdx < (transcript.getExons().size() - 1) && strategies.contains(ScoringStrategy.CRYPTIC_DONOR)) {
                     // variant is not in the last exon, the exon has the donor site
                     SplicingTernate crypticDonT = SplicingTernate.of(variant, transcript.getIntrons().get(featureIdx), sequence);
                     double exonCryptDonSc = factory.scorerForStrategy(ScoringStrategy.CRYPTIC_DONOR).apply(crypticDonT);
                     resultBuilder.putScore(ScoringStrategy.CRYPTIC_DONOR, exonCryptDonSc);
                 }
-                // calculate septamer scores
-                SplicingTernate exonTernate = SplicingTernate.of(variant, transcript.getExons().get(featureIdx), sequence);
-                double smsScore = factory.scorerForStrategy(ScoringStrategy.SMS).apply(exonTernate);
-                resultBuilder.putScore(ScoringStrategy.SMS, smsScore);
+
+                if (strategies.contains(ScoringStrategy.SMS)) {
+                    // calculate septamer scores
+                    SplicingTernate exonTernate = SplicingTernate.of(variant, transcript.getExons().get(featureIdx), sequence);
+                    double smsScore = factory.scorerForStrategy(ScoringStrategy.SMS).apply(exonTernate);
+                    resultBuilder.putScore(ScoringStrategy.SMS, smsScore);
+                }
             } else if (position.equals(SplicingLocationData.SplicingPosition.INTRON)) {
+                /*
+                          EVALUATE INTRONIC VARIANT
+                 */
                 featureIdx = ld.getIntronIdx();
                 SplicingTernate intronCryptT = SplicingTernate.of(variant, transcript.getIntrons().get(featureIdx), sequence);
-                double intronCryptDonSc = factory.scorerForStrategy(ScoringStrategy.CRYPTIC_DONOR).apply(intronCryptT);
-                double intronCryptAccSc = factory.scorerForStrategy(ScoringStrategy.CRYPTIC_ACCEPTOR).apply(intronCryptT);
-
-                resultBuilder.putScore(ScoringStrategy.CRYPTIC_DONOR, intronCryptDonSc)
-                        .putScore(ScoringStrategy.CRYPTIC_ACCEPTOR, intronCryptAccSc);
+                if (strategies.contains(ScoringStrategy.CRYPTIC_DONOR)) {
+                    double intronCryptDonSc = factory.scorerForStrategy(ScoringStrategy.CRYPTIC_DONOR).apply(intronCryptT);
+                    resultBuilder.putScore(ScoringStrategy.CRYPTIC_DONOR, intronCryptDonSc);
+                }
+                if (strategies.contains(ScoringStrategy.CRYPTIC_ACCEPTOR)) {
+                    double intronCryptAccSc = factory.scorerForStrategy(ScoringStrategy.CRYPTIC_ACCEPTOR).apply(intronCryptT);
+                    resultBuilder.putScore(ScoringStrategy.CRYPTIC_ACCEPTOR, intronCryptAccSc);
+                }
             }
 
 
