@@ -1,9 +1,6 @@
 package org.monarchinitiative.threes.core;
 
-import org.monarchinitiative.threes.core.model.GenomeCoordinates;
-import org.monarchinitiative.threes.core.model.SplicingExon;
-import org.monarchinitiative.threes.core.model.SplicingIntron;
-import org.monarchinitiative.threes.core.model.SplicingTranscript;
+import org.monarchinitiative.threes.core.model.*;
 import org.monarchinitiative.threes.core.reference.fasta.InvalidCoordinatesException;
 
 /**
@@ -11,6 +8,38 @@ import org.monarchinitiative.threes.core.reference.fasta.InvalidCoordinatesExcep
  */
 public class PojosForTesting {
 
+    public static SequenceInterval getSequenceIntervalForTranscriptWithThreeExons() {
+        return SequenceInterval.of(GenomeCoordinates.newBuilder()
+                        .setContig("chr1")
+                        .setBegin(900)
+                        .setEnd(2100)
+                        .setStrand(true)
+                        .build(),
+                "AAACAGGTTAATCGCCACGACATAGTAGTATTTAGAGTTACTAGTAAGCCTGATGCCACT" + // 960
+                        "ACACAATTCTAGCTTTTCTCTTTAGGATGATTGTTTCATT" + // 1000
+                        "CAGTCTTATCTCTTTTAGAA" + // 1020
+                        "AACATAGGaaaaaattatttaataataaaatttaattGGCAAAATGAAGGTATGGCTTAT" + // 1080
+                        "AAGAGTGTTTTCCTATTGTTTTCAGTGTAGGACTCACTGTTCTAAATAACTGGGACACCC" + // 1140
+                        //                                      v  <- 1200  (end of the 0th exon)
+                        "AAGGATTCTGTAAAATGCCATCCAGTTATCATTTATATTC" +
+                        "CCTAACTCAAAATTCATTCA" +
+                        "CATGTATTCATTTTTTTCTAAACAAATTAGCATGTAGAATTCTGGTTAAAATTTGGCATA" +
+                        "GAACACCCGGGTATTTTTTCATAATGCACCCAATAACTGTCATTCACTAATTGAGAATGG" +
+                        //                                                          v  <- 1400 (end of the 0th intron)
+                        "TGATTTAACAAAGGATAATAAAGTTATGAAACCAATGCCACAAAACATCTGTCTCTAACT" +
+                        "GgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtAAGAGGGAGAGAGAGAAAATTTCACTC" +
+                        "CCTCCATAAATCTCACAGTATTCTTTTCTTtttcctttcctttccttgctcttctttctc" +
+                        "tcctattgctttcctttcatttccttCTCATAAAAGAAAAATAACAATATAGAAAATAAC" +
+                        "AAAATATAGATGGTCAACCTTTTTAATATTAAGGTTACCTAAAATGCCATTATCCAAAGT" +
+                        "GGTTCTCTAGAGATGCTGATGTATATACTTACATATTTTACAGTGTATTCAAATAAAGAG" +
+                        "TATATTACATAAGACATATCCTTTTGTAACCAACTTTTGTCATTAACAATTTACTGGACT" +
+                        "TGTCAACAAACCTAAATCTGTATCGTCTATAATGGCTACGTTCATTTTGGTATGAATCTT" +
+                        "AATTACCCCTTTCTGCATTATTTAATGATTTTCTCATATGTCACTCTTAAATGTACTTCT" +
+                        "AATTTTTCACTTTACATCACATAATGAATGGATCCAAATATGTTATGGATAGATATCTTC" +
+                        "AAACTTTCTACTTACAAGTAGTGATAATAACAGATGTTCTCTCTAAAGTGTAGTTGGTAT" +
+                        "CAATTTTACTGACCTTTAAAAATATCTTAATGGGACAAAGTTCAAATATTTGATGACCAG" +
+                        "CTATCGTGACCTTTATCTCTGTGGCTCTGTGGGCCTGTAGTTTTTACGTGCTTTTAGTGT");
+    }
 
     public static SplicingTranscript getTranscriptWithThreeExons() throws InvalidCoordinatesException {
         return SplicingTranscript.newBuilder()

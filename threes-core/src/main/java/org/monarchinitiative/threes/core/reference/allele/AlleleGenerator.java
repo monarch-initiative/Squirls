@@ -1,7 +1,6 @@
 package org.monarchinitiative.threes.core.reference.allele;
 
 import org.monarchinitiative.threes.core.model.*;
-import org.monarchinitiative.threes.core.pwm.SplicingParameters;
 
 /**
  *

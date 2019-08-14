@@ -1,7 +1,8 @@
 package org.monarchinitiative.threes.core.scoring.scorers;
 
+import org.monarchinitiative.threes.core.Utils;
+import org.monarchinitiative.threes.core.calculators.ic.SplicingInformationContentCalculator;
 import org.monarchinitiative.threes.core.model.*;
-import org.monarchinitiative.threes.core.pwm.SplicingInformationContentAnnotator;
 import org.monarchinitiative.threes.core.reference.allele.AlleleGenerator;
 
 import java.util.function.Function;
@@ -13,16 +14,23 @@ public class CrypticAcceptorScorer implements SplicingScorer {
 
     private static final int MAX_IN_INTRON = 50;
 
-    private final SplicingInformationContentAnnotator icAnnotator;
+    private final int maxInIntron;
+
+    private final SplicingInformationContentCalculator icAnnotator;
 
     private final AlleleGenerator generator;
 
     private final int acceptorLength;
 
-    public CrypticAcceptorScorer(SplicingInformationContentAnnotator icAnnotator, AlleleGenerator generator) {
+    public CrypticAcceptorScorer(SplicingInformationContentCalculator icAnnotator, AlleleGenerator generator) {
+        this(icAnnotator, generator, MAX_IN_INTRON);
+    }
+
+    public CrypticAcceptorScorer(SplicingInformationContentCalculator icAnnotator, AlleleGenerator generator, int maxInIntron) {
         this.icAnnotator = icAnnotator;
         this.generator = generator;
         this.acceptorLength = icAnnotator.getSplicingParameters().getAcceptorLength();
+        this.maxInIntron = maxInIntron;
     }
 
     @Override
@@ -44,7 +52,7 @@ public class CrypticAcceptorScorer implements SplicingScorer {
                 return Double.NaN;
             }
             final int diff = acceptor.differenceTo(varCoor.getBegin(), varCoor.getEnd());
-            if (diff > MAX_IN_INTRON) {
+            if (diff > maxInIntron) {
                 // we do not score intronic variant that are too deep in intron
                 return Double.NaN;
             }
@@ -55,7 +63,7 @@ public class CrypticAcceptorScorer implements SplicingScorer {
 
             double wtCanonicalAcceptorScore = intron.getAcceptorScore();
 
-            double altCrypticAcceptorScore = SplicingScorer.slidingWindow(altSnippet, acceptorLength)
+            double altCrypticAcceptorScore = Utils.slidingWindow(altSnippet, acceptorLength)
                     .map(icAnnotator::getSpliceAcceptorScore)
                     .max(Double::compareTo)
                     .orElse(Double.NaN);

@@ -1,25 +1,27 @@
 package org.monarchinitiative.threes.autoconfigure;
 
 
+import com.google.common.collect.ImmutableMap;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
+import org.monarchinitiative.threes.core.Utils;
+import org.monarchinitiative.threes.core.calculators.ic.DbSplicingPositionalWeightMatrixParser;
+import org.monarchinitiative.threes.core.calculators.ic.SplicingInformationContentCalculator;
+import org.monarchinitiative.threes.core.calculators.ic.SplicingPositionalWeightMatrixParser;
+import org.monarchinitiative.threes.core.calculators.sms.DbSmsDao;
+import org.monarchinitiative.threes.core.calculators.sms.SMSCalculator;
+import org.monarchinitiative.threes.core.calculators.sms.SMSParser;
 import org.monarchinitiative.threes.core.data.ContigLengthDao;
 import org.monarchinitiative.threes.core.data.DbSplicingTranscriptSource;
 import org.monarchinitiative.threes.core.data.SplicingTranscriptSource;
-import org.monarchinitiative.threes.core.pwm.DbSplicingPositionalWeightMatrixParser;
-import org.monarchinitiative.threes.core.pwm.SplicingInformationContentAnnotator;
-import org.monarchinitiative.threes.core.pwm.SplicingParameters;
-import org.monarchinitiative.threes.core.pwm.SplicingPositionalWeightMatrixParser;
+import org.monarchinitiative.threes.core.model.SplicingParameters;
 import org.monarchinitiative.threes.core.reference.GenomeCoordinatesFlipper;
 import org.monarchinitiative.threes.core.reference.fasta.GenomeSequenceAccessor;
 import org.monarchinitiative.threes.core.reference.fasta.InvalidFastaFileException;
 import org.monarchinitiative.threes.core.reference.fasta.PrefixHandlingGenomeSequenceAccessor;
 import org.monarchinitiative.threes.core.reference.transcript.NaiveSplicingTranscriptLocator;
 import org.monarchinitiative.threes.core.reference.transcript.SplicingTranscriptLocator;
-import org.monarchinitiative.threes.core.scoring.SimpleSplicingEvaluator;
-import org.monarchinitiative.threes.core.scoring.SplicingEvaluator;
-import org.monarchinitiative.threes.core.scoring.scorers.ScalingScorerFactory;
-import org.monarchinitiative.threes.core.scoring.scorers.ScorerFactory;
+import org.monarchinitiative.threes.core.scoring.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -31,6 +33,7 @@ import javax.sql.DataSource;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.function.UnaryOperator;
 
 
 /**
@@ -57,8 +60,8 @@ public class ThreesAutoConfiguration {
 
 
     @Bean
-    @ConditionalOnMissingBean(name = "genomeAssembly")
-    public String genomeAssembly(Environment environment) throws UndefinedThreesResourceException {
+    @ConditionalOnMissingBean(name = "threesGenomeAssembly")
+    public String threesGenomeAssembly(Environment environment) throws UndefinedThreesResourceException {
         String assembly = environment.getProperty("threes.genome-assembly");
         if (assembly == null) {
             throw new UndefinedThreesResourceException("Genome assembly (`--threes.genome-assembly`) is not specified");
@@ -68,8 +71,8 @@ public class ThreesAutoConfiguration {
 
 
     @Bean
-    @ConditionalOnMissingBean(name = "dataVersion")
-    public String dataVersion(Environment environment) throws UndefinedThreesResourceException {
+    @ConditionalOnMissingBean(name = "threesDataVersion")
+    public String threesDataVersion(Environment environment) throws UndefinedThreesResourceException {
         String dataVersion = environment.getProperty("threes.data-version");
         if (dataVersion == null) {
             throw new UndefinedThreesResourceException("Data version (`--threes.data-version`) is not specified");
@@ -88,28 +91,75 @@ public class ThreesAutoConfiguration {
         return transcriptSource;
     }
 
-
     @Bean
-    public ThreesDataResolver threesDataResolver(Path threesDataDirectory, String genomeAssembly, String dataVersion, String transcriptSource) {
-        return new ThreesDataResolver(threesDataDirectory, dataVersion, genomeAssembly, transcriptSource);
+    @ConditionalOnMissingBean(name = "scorerFactoryType")
+    public String scorerFactoryType(Environment environment) {
+        return environment.getProperty("threes.scorer-factory-type", "scaling");
+    }
+
+
+    @Bean(name = "maxDistanceExonUpstream")
+    public int maxDistanceExonUpstream(Environment environment) {
+        String distance = environment.getProperty("threes.max-distance-exon-upstream", "50");
+        LOGGER.info("Analyzing variants up to {}bp upstream from exon", distance);
+        return Integer.parseInt(distance);
+    }
+
+
+    @Bean(name = "maxDistanceExonDownstream")
+    public int maxDistanceExonDownstream(Environment environment) {
+        String distance = environment.getProperty("threes.max-distance-exon-downstream", "50");
+        LOGGER.info("Analyzing variants up to {}bp downstream from exon", distance);
+        return Integer.parseInt(distance);
     }
 
 
     @Bean
-    public SplicingTranscriptSource splicingTranscriptSource(DataSource threesDatasource, ContigLengthDao contigLengthDao) {
-        return new DbSplicingTranscriptSource(threesDatasource, contigLengthDao.getContigLengths());
+    public ThreesDataResolver threesDataResolver(Path threesDataDirectory, String threesGenomeAssembly, String threesDataVersion, String transcriptSource) {
+        return new ThreesDataResolver(threesDataDirectory, threesDataVersion, threesGenomeAssembly, transcriptSource);
     }
 
 
     @Bean
-    public SplicingEvaluator splicingEvaluator(SplicingTranscriptLocator splicingTranscriptLocator, ScorerFactory scorerFactory) {
-        return new SimpleSplicingEvaluator(splicingTranscriptLocator, scorerFactory);
+    public SplicingTranscriptSource splicingTranscriptSource(DataSource threesDatasource) {
+        return new DbSplicingTranscriptSource(threesDatasource);
     }
 
 
     @Bean
-    public ScorerFactory scorerFactory(SplicingInformationContentAnnotator splicingInformationContentAnnotator) {
-        return new ScalingScorerFactory(splicingInformationContentAnnotator);
+    public SplicingEvaluator splicingEvaluator(SplicingTranscriptLocator splicingTranscriptLocator, ScorerFactory scorerFactory, GenomeCoordinatesFlipper genomeCoordinatesFlipper) {
+        return new SimpleSplicingEvaluator(scorerFactory, splicingTranscriptLocator, genomeCoordinatesFlipper);
+    }
+
+
+    @Bean
+    public ScorerFactory scorerFactory(SplicingInformationContentCalculator splicingInformationContentAnnotator,
+                                       SMSCalculator smsCalculator,
+                                       String scorerFactoryType,
+                                       int maxDistanceExonDownstream, int maxDistanceExonUpstream) {
+        RawScorerFactory rawScorerFactory = new RawScorerFactory(splicingInformationContentAnnotator, smsCalculator, maxDistanceExonDownstream, maxDistanceExonUpstream);
+
+        switch (scorerFactoryType) {
+            case "raw":
+                LOGGER.info("Using raw scorer factory");
+                return rawScorerFactory;
+            default:
+                LOGGER.warn("Unknown scorer factory type '{}', using scaling scorer factory", scorerFactoryType);
+            case "scaling":
+                LOGGER.info("Using scaling scorer factory");
+                // TODO - MANY HARDCODED VALUES ARE PRESENT HERE
+                ImmutableMap<ScoringStrategy, UnaryOperator<Double>> scalerMap = ImmutableMap.<ScoringStrategy, UnaryOperator<Double>>builder()
+                        .put(ScoringStrategy.CANONICAL_DONOR, Utils.sigmoidScaler(0.29, -1))
+                        .put(ScoringStrategy.CRYPTIC_DONOR, Utils.sigmoidScaler(-5.52, -1))
+                        .put(ScoringStrategy.CRYPTIC_DONOR_IN_CANONICAL_POSITION, Utils.sigmoidScaler(-4.56, -1))
+                        .put(ScoringStrategy.CANONICAL_ACCEPTOR, Utils.sigmoidScaler(-1.50, -1))
+                        .put(ScoringStrategy.CRYPTIC_ACCEPTOR, Utils.sigmoidScaler(-8.24, -1))
+                        .put(ScoringStrategy.CRYPTIC_ACCEPTOR_IN_CANONICAL_POSITION, Utils.sigmoidScaler(-4.59, -1))
+                        .put(ScoringStrategy.SMS, UnaryOperator.identity()) // TODO - decide how to scale the scores
+                        .build();
+                return new ScalingScorerFactory(rawScorerFactory, scalerMap);
+        }
+
     }
 
 
@@ -132,8 +182,8 @@ public class ThreesAutoConfiguration {
 
 
     @Bean
-    public SplicingTranscriptLocator splicingTranscriptLocator(SplicingParameters splicingParameters, GenomeCoordinatesFlipper genomeCoordinatesFlipper) {
-        return new NaiveSplicingTranscriptLocator(splicingParameters, genomeCoordinatesFlipper);
+    public SplicingTranscriptLocator splicingTranscriptLocator(SplicingParameters splicingParameters) {
+        return new NaiveSplicingTranscriptLocator(splicingParameters);
     }
 
 
@@ -150,14 +200,14 @@ public class ThreesAutoConfiguration {
 
 
     @Bean
-    public SplicingParameters splicingParameters(SplicingInformationContentAnnotator splicingInformationContentAnnotator) {
+    public SplicingParameters splicingParameters(SplicingInformationContentCalculator splicingInformationContentAnnotator) {
         return splicingInformationContentAnnotator.getSplicingParameters();
     }
 
 
     @Bean
-    public SplicingInformationContentAnnotator splicingInformationContentAnnotator(SplicingPositionalWeightMatrixParser splicingPositionalWeightMatrixParser) {
-        return new SplicingInformationContentAnnotator(splicingPositionalWeightMatrixParser.getDonorMatrix(), splicingPositionalWeightMatrixParser.getAcceptorMatrix(), splicingPositionalWeightMatrixParser.getSplicingParameters());
+    public SplicingInformationContentCalculator splicingInformationContentAnnotator(SplicingPositionalWeightMatrixParser splicingPositionalWeightMatrixParser) {
+        return new SplicingInformationContentCalculator(splicingPositionalWeightMatrixParser.getDonorMatrix(), splicingPositionalWeightMatrixParser.getAcceptorMatrix(), splicingPositionalWeightMatrixParser.getSplicingParameters());
     }
 
 
@@ -166,6 +216,17 @@ public class ThreesAutoConfiguration {
         return new DbSplicingPositionalWeightMatrixParser(threesDatasource);
     }
 
+
+    @Bean
+    public SMSCalculator smsCalculator(SMSParser smsParser) {
+        return new SMSCalculator(smsParser.getSeptamerMap());
+    }
+
+
+    @Bean
+    public SMSParser smsParser(DataSource threesDatasource) {
+        return new DbSmsDao(threesDatasource);
+    }
 
     @Bean
     public DataSource threesDatasource(ThreesDataResolver threesDataResolver) {

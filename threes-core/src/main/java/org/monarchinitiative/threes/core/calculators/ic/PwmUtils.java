@@ -1,4 +1,4 @@
-package org.monarchinitiative.threes.core.pwm;
+package org.monarchinitiative.threes.core.calculators.ic;
 
 import org.jblas.DoubleMatrix;
 
@@ -20,7 +20,7 @@ class PwmUtils {
      * @param vals    This list should contain another four lists. Each inner list represents one of the nucleotides
      *                A, C, G, T in this order
      * @param epsilon Tolerance when checking that probabilities sum up to 1
-     * @return {@link DoubleMatrix} with data from <code>pwm</code>
+     * @return {@link DoubleMatrix} with data from <code>io</code>
      */
     static DoubleMatrix mapToDoubleMatrix(List<List<Double>> vals, double epsilon) {
 

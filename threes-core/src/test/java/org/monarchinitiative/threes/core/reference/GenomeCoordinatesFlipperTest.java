@@ -4,6 +4,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.monarchinitiative.threes.core.model.GenomeCoordinates;
+import org.monarchinitiative.threes.core.model.SequenceInterval;
 import org.monarchinitiative.threes.core.model.SplicingVariant;
 
 import java.util.HashMap;
@@ -117,5 +118,28 @@ class GenomeCoordinatesFlipperTest {
 
         assertThat(sv.getRef(), is("G"));
         assertThat(sv.getAlt(), is("A"));
+    }
+
+    @Test
+    void flipSequenceInterval() {
+        SequenceInterval interval = SequenceInterval.of(GenomeCoordinates.newBuilder()
+                .setContig("chr2")
+                .setBegin(90)
+                .setEnd(100)
+                .setStrand(true)
+                .build(),
+                "ACGTACGTAC");
+
+        final Optional<SequenceInterval> flipO = flipper.flip(interval);
+        assertThat(flipO.isPresent(), is(true));
+
+        final SequenceInterval sequence = flipO.get();
+        assertThat(sequence.getCoordinates(), is(GenomeCoordinates.newBuilder()
+                .setContig("chr2")
+                .setBegin(100)
+                .setEnd(110)
+                .setStrand(false)
+                .build()));
+        assertThat(sequence.getSequence(), is("GTACGTACGT"));
     }
 }

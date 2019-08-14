@@ -27,6 +27,9 @@ public class SplicingVariant {
         return coordinates.getContig();
     }
 
+    /**
+     * @return 1-based inclusive begin position of the variant
+     */
     public int getPos() {
         return coordinates.getBegin() + 1;
     }

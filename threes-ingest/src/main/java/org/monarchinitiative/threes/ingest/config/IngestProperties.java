@@ -88,6 +88,11 @@ public class IngestProperties {
         return getPathOrThrow(propertyKey, String.format("'%s' has not been specified", propertyKey));
     }
 
+    public Path getSeptamersTsvPath() {
+        String propertyKey = "sms-tsv-path";
+        return getPathOrThrow(propertyKey, String.format("'%s' has not been specified", propertyKey));
+    }
+
     public Path resolveBuildDirForGenome(String version, GenomeAssembly genomeAssembly) throws IOException {
         final Path targetDir = buildDir.resolve(genomeAssembly.getValue());
         return Files.createDirectories(targetDir);

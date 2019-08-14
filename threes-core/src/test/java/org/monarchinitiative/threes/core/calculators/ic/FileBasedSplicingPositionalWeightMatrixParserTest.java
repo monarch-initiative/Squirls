@@ -1,8 +1,9 @@
-package org.monarchinitiative.threes.core.pwm;
+package org.monarchinitiative.threes.core.calculators.ic;
 
 import org.jblas.DoubleMatrix;
 import org.junit.jupiter.api.Test;
 import org.monarchinitiative.threes.core.MakeSplicePositionWeightMatrices;
+import org.monarchinitiative.threes.core.model.SplicingParameters;
 
 import java.io.InputStream;
 

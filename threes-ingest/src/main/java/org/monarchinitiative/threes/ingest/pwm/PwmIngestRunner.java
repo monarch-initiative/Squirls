@@ -1,6 +1,6 @@
 package org.monarchinitiative.threes.ingest.pwm;
 
-import org.monarchinitiative.threes.core.pwm.PositionWeightMatrix;
+import org.monarchinitiative.threes.core.calculators.ic.PositionWeightMatrix;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yaml.snakeyaml.Yaml;

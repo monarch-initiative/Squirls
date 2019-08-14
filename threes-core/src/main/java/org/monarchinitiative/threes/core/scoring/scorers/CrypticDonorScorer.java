@@ -1,7 +1,8 @@
 package org.monarchinitiative.threes.core.scoring.scorers;
 
+import org.monarchinitiative.threes.core.Utils;
+import org.monarchinitiative.threes.core.calculators.ic.SplicingInformationContentCalculator;
 import org.monarchinitiative.threes.core.model.*;
-import org.monarchinitiative.threes.core.pwm.SplicingInformationContentAnnotator;
 import org.monarchinitiative.threes.core.reference.allele.AlleleGenerator;
 
 import java.util.function.Function;
@@ -13,16 +14,23 @@ public class CrypticDonorScorer implements SplicingScorer {
 
     private static final int MAX_IN_INTRON = -50;
 
-    private final SplicingInformationContentAnnotator icAnnotator;
+    private final int maxInIntron;
+
+    private final SplicingInformationContentCalculator icAnnotator;
 
     private final AlleleGenerator generator;
 
     private final int donorLength;
 
-    public CrypticDonorScorer(SplicingInformationContentAnnotator icAnnotator, AlleleGenerator generator) {
+    public CrypticDonorScorer(SplicingInformationContentCalculator icAnnotator, AlleleGenerator generator) {
+        this(icAnnotator, generator, MAX_IN_INTRON);
+    }
+
+    public CrypticDonorScorer(SplicingInformationContentCalculator icAnnotator, AlleleGenerator generator, int maxInIntron) {
         this.icAnnotator = icAnnotator;
         this.generator = generator;
         this.donorLength = icAnnotator.getSplicingParameters().getDonorLength();
+        this.maxInIntron = maxInIntron;
     }
 
     @Override
@@ -45,7 +53,7 @@ public class CrypticDonorScorer implements SplicingScorer {
             }
 
             final int diff = donor.differenceTo(varCoor.getBegin(), varCoor.getEnd());
-            if (diff < MAX_IN_INTRON) {
+            if (diff < maxInIntron) {
                 // we do not score intronic variant that are too deep in intron
                 return Double.NaN;
             }
@@ -56,7 +64,7 @@ public class CrypticDonorScorer implements SplicingScorer {
 
             double wtCanonicalDonorScore = intron.getDonorScore();
 
-            double altCrypticDonorScore = SplicingScorer.slidingWindow(altSnippet, donorLength)
+            double altCrypticDonorScore = Utils.slidingWindow(altSnippet, donorLength)
                     .map(icAnnotator::getSpliceDonorScore)
                     .max(Double::compareTo)
                     .orElse(Double.NaN);

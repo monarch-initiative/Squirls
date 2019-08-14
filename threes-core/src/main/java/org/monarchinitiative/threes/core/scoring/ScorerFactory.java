@@ -1,7 +1,6 @@
-package org.monarchinitiative.threes.core.scoring.scorers;
+package org.monarchinitiative.threes.core.scoring;
 
 import org.monarchinitiative.threes.core.model.SplicingTernate;
-import org.monarchinitiative.threes.core.scoring.ScoringStrategy;
 
 import java.util.function.Function;
 

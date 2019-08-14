@@ -8,9 +8,9 @@ import org.flywaydb.core.Flyway;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-import org.monarchinitiative.threes.core.pwm.FileBasedSplicingPositionalWeightMatrixParser;
-import org.monarchinitiative.threes.core.pwm.SplicingInformationContentAnnotator;
-import org.monarchinitiative.threes.core.pwm.SplicingPositionalWeightMatrixParser;
+import org.monarchinitiative.threes.core.calculators.ic.FileBasedSplicingPositionalWeightMatrixParser;
+import org.monarchinitiative.threes.core.calculators.ic.SplicingInformationContentCalculator;
+import org.monarchinitiative.threes.core.calculators.ic.SplicingPositionalWeightMatrixParser;
 import org.monarchinitiative.threes.core.reference.GenomeCoordinatesFlipper;
 import org.monarchinitiative.threes.core.reference.fasta.GenomeSequenceAccessor;
 import org.monarchinitiative.threes.core.reference.fasta.PrefixHandlingGenomeSequenceAccessor;
@@ -47,19 +47,19 @@ public class FakeUpDatabase {
     // Databases will be created only if the paths below point to meaningful files
     //
 
-    private static final Path HG19_FASTA_PATH = Paths.get("/home/ielis/genomes/hg19/hg19.fa");
+    private static final Path HG19_FASTA_PATH = Paths.get("/home/ielis/dub/genomes/hg19/hg19.fa");
 
-    private static final Path HG19_FASTA_IDX_PATH = Paths.get("/home/ielis/genomes/hg19/hg19.fa.fai");
+    private static final Path HG19_FASTA_IDX_PATH = Paths.get("/home/ielis/dub/genomes/hg19/hg19.fa.fai");
 
-    private static final Path HG38_FASTA_PATH = Paths.get("/home/ielis/tempelhof/genomes/hg38/hg38.fa");
+    private static final Path HG38_FASTA_PATH = Paths.get("/home/ielis/dub/genomes/hg38/hg38.fa");
 
-    private static final Path HG38_FASTA_IDX_PATH = Paths.get("/home/ielis/tempelhof/genomes/hg38/hg38.fa.fai");
+    private static final Path HG38_FASTA_IDX_PATH = Paths.get("/home/ielis/dub/genomes/hg38/hg38.fa.fai");
 
     private static final Path HG19_JANNOVAR_DB = Paths.get("/home/ielis/jannovar/v0.28/hg19_ucsc.ser");
 
     private static final Path HG38_JANNOVAR_DB = Paths.get("/home/ielis/jannovar/v0.28/hg38_ucsc.ser");
 
-    private static final Path SPLICING_IC_MATRIX_PATH = Paths.get("/home/ielis/data/sss/pwm/splicing-information-content-matrix.yaml");
+    private static final Path SPLICING_IC_MATRIX_PATH = Paths.get("/home/ielis/data/sss/io/splicing-information-content-matrix.yaml");
 
     //
     // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -69,7 +69,7 @@ public class FakeUpDatabase {
      */
     private static final int N_TRANSCRIPTS = 200;
 
-    private static SplicingInformationContentAnnotator splicingInformationContentAnnotator;
+    private static SplicingInformationContentCalculator splicingInformationContentAnnotator;
 
     private static DataSource makeDataSource(Path dbPath) {
         String jdbcUrl = String.format("jdbc:h2:file:%s;INIT=CREATE SCHEMA IF NOT EXISTS SPLICING", dbPath);
@@ -98,7 +98,7 @@ public class FakeUpDatabase {
         try (InputStream is = Files.newInputStream(SPLICING_IC_MATRIX_PATH)) {
             parser = new FileBasedSplicingPositionalWeightMatrixParser(is);
         }
-        splicingInformationContentAnnotator = new SplicingInformationContentAnnotator(parser.getDonorMatrix(), parser.getAcceptorMatrix(), parser.getSplicingParameters());
+        splicingInformationContentAnnotator = new SplicingInformationContentCalculator(parser.getDonorMatrix(), parser.getAcceptorMatrix(), parser.getSplicingParameters());
     }
 
 

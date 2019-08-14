@@ -28,11 +28,8 @@ public class DbSplicingTranscriptSource implements SplicingTranscriptSource {
 
     private final DataSource dataSource;
 
-    private final Map<String, Integer> contigLengthMap;
-
-    public DbSplicingTranscriptSource(DataSource dataSource, Map<String, Integer> contigLengthMap) {
+    public DbSplicingTranscriptSource(DataSource dataSource) {
         this.dataSource = dataSource;
-        this.contigLengthMap = contigLengthMap;
     }
 
 

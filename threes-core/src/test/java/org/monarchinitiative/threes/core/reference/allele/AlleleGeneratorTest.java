@@ -6,8 +6,8 @@ import org.junit.jupiter.api.Test;
 import org.monarchinitiative.threes.core.TestDataSourceConfig;
 import org.monarchinitiative.threes.core.model.GenomeCoordinates;
 import org.monarchinitiative.threes.core.model.SequenceInterval;
+import org.monarchinitiative.threes.core.model.SplicingParameters;
 import org.monarchinitiative.threes.core.model.SplicingVariant;
-import org.monarchinitiative.threes.core.pwm.SplicingParameters;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
@@ -18,35 +18,31 @@ import static org.hamcrest.MatcherAssert.assertThat;
 @SpringBootTest(classes = {TestDataSourceConfig.class})
 class AlleleGeneratorTest {
 
-    @Autowired
-    private SplicingParameters splicingParameters;
-
     private static SequenceInterval donorSi;
 
     private static SequenceInterval acceptorSi;
+
+    @Autowired
+    private SplicingParameters splicingParameters;
 
     private AlleleGenerator generator;
 
     @BeforeAll
     static void setUpBefore() {
-        donorSi = SequenceInterval.newBuilder()
-                .setCoordinates(GenomeCoordinates.newBuilder()
+        donorSi = SequenceInterval.of(GenomeCoordinates.newBuilder()
                         .setContig("chr1")
                         .setBegin(95)
                         .setEnd(110)
                         .setStrand(true)
-                        .build())
-                .setSequence("TGATGgtaggtgaaa")
-                .build();
-        acceptorSi = SequenceInterval.newBuilder()
-                .setCoordinates(GenomeCoordinates.newBuilder()
+                        .build(),
+                "TGATGgtaggtgaaa");
+        acceptorSi = SequenceInterval.of(GenomeCoordinates.newBuilder()
                         .setContig("chr1")
                         .setBegin(70)
                         .setEnd(110)
                         .setStrand(true)
-                        .build())
-                .setSequence("atggcaaacactgttccttctctctttcagGTGGCCCTGC")
-                .build();
+                        .build(),
+                "atggcaaacactgttccttctctctttcagGTGGCCCTGC");
     }
 
     @BeforeEach

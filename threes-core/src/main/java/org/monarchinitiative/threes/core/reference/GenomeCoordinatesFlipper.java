@@ -33,19 +33,25 @@ public class GenomeCoordinatesFlipper {
                 .setContig(coordinates.getContig())
                 .setBegin(length - coordinates.getEnd())
                 .setEnd(length - coordinates.getBegin())
-                .setStrand(!coordinates.isStrand())
+                .setStrand(!coordinates.getStrand())
                 .build();
 
         return Optional.of(flippedCoordinates);
     }
 
     public Optional<SplicingVariant> flip(SplicingVariant variant) {
-        Optional<GenomeCoordinates> coordiantesOp = flip(variant.getCoordinates());
+        Optional<GenomeCoordinates> coordinatesOp = flip(variant.getCoordinates());
 
-        return coordiantesOp.map(coors -> SplicingVariant.newBuilder()
+        return coordinatesOp.map(coors -> SplicingVariant.newBuilder()
                 .setCoordinates(coors)
                 .setRef(SequenceInterval.reverseComplement(variant.getRef()))
                 .setAlt(SequenceInterval.reverseComplement(variant.getAlt()))
                 .build());
+    }
+
+    public Optional<SequenceInterval> flip(SequenceInterval sequenceInterval) {
+        Optional<GenomeCoordinates> coordinatesOp = flip(sequenceInterval.getCoordinates());
+
+        return coordinatesOp.map(coors -> SequenceInterval.of(coors, SequenceInterval.reverseComplement(sequenceInterval.getSequence())));
     }
 }

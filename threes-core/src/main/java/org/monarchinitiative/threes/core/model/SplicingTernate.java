@@ -1,7 +1,10 @@
 package org.monarchinitiative.threes.core.model;
 
+import org.monarchinitiative.threes.core.reference.fasta.InvalidCoordinatesException;
+
 /**
- *
+ * POJO for {@link SplicingVariant}, {@link SplicingRegion} (either exon or intron), and {@link SequenceInterval}, all
+ * adjusted to strand of the transcript.
  */
 public class SplicingTernate {
 
@@ -12,11 +15,24 @@ public class SplicingTernate {
     private final SequenceInterval sequenceInterval;
 
     private SplicingTernate(SplicingVariant variant, SplicingRegion region, SequenceInterval sequenceInterval) {
+        if (variant.getCoordinates().getStrand() != sequenceInterval.getCoordinates().getStrand()) {
+            throw new InvalidCoordinatesException(String.format("Sequence %s and variant %s are not on the same strand", sequenceInterval, variant));
+        }
+
         this.variant = variant;
         this.region = region;
         this.sequenceInterval = sequenceInterval;
+
     }
 
+    /**
+     * Make the ternate from variant, region, and sequence interval - all of them must be on the same chromosome strand.
+     *
+     * @param variant          {@link SplicingVariant} variant
+     * @param region           {@link SplicingRegion} region
+     * @param sequenceInterval {@link SequenceInterval} sequence interval
+     * @return ternate
+     */
     public static SplicingTernate of(SplicingVariant variant, SplicingRegion region, SequenceInterval sequenceInterval) {
         return new SplicingTernate(variant, region, sequenceInterval);
     }

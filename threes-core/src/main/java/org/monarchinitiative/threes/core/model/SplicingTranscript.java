@@ -53,7 +53,7 @@ public class SplicingTranscript {
     }
 
     public boolean getStrand() {
-        return txRegionCoordinates.isStrand();
+        return txRegionCoordinates.getStrand();
     }
 
     public String getContig() {

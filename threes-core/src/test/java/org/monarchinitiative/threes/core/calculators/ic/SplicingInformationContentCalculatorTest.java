@@ -1,25 +1,40 @@
-package org.monarchinitiative.threes.core;
+package org.monarchinitiative.threes.core.calculators.ic;
 
+import org.jblas.DoubleMatrix;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.monarchinitiative.threes.core.pwm.SplicingInformationContentAnnotator;
+import org.monarchinitiative.threes.core.MakeSplicePositionWeightMatrices;
+import org.monarchinitiative.threes.core.model.SplicingParameters;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.closeTo;
 import static org.hamcrest.Matchers.is;
 
-class SplicingInformationContentAnnotatorTest {
+class SplicingInformationContentCalculatorTest {
 
     private static final double EPSILON = 0.0001;
 
-    private SplicingInformationContentAnnotator instance;
+    private static DoubleMatrix DONOR_MATRIX, ACCEPTOR_MATRIX;
 
+    private static SplicingParameters SPLICING_PARAMETERS;
+
+    private SplicingInformationContentCalculator instance;
+
+    @BeforeAll
+    static void setUpBeforeAll() {
+        DONOR_MATRIX = MakeSplicePositionWeightMatrices.makeDonorMatrix();
+        ACCEPTOR_MATRIX = MakeSplicePositionWeightMatrices.makeAcceptorMatrix();
+        SPLICING_PARAMETERS = MakeSplicePositionWeightMatrices.makeSplicingParameters();
+    }
+
+    @BeforeEach
+    void setUp() {
+        instance = new SplicingInformationContentCalculator(DONOR_MATRIX, ACCEPTOR_MATRIX, SPLICING_PARAMETERS);
+    }
 
     @Test
     void getSpliceDonorScoreTest() {
-        instance = new SplicingInformationContentAnnotator(MakeSplicePositionWeightMatrices.makeDonorMatrix(),
-                MakeSplicePositionWeightMatrices.makeAcceptorMatrix(),
-                MakeSplicePositionWeightMatrices.makeSplicingParameters());
-
         assertThat(instance.getSpliceDonorScore("CAGgtaggc"), closeTo(8.66411, EPSILON));
         assertThat(instance.getSpliceDonorScore("TCCgtgagt"), closeTo(3.01706, EPSILON));
         assertThat(instance.getSpliceDonorScore("AAAaaaaaa"), closeTo(-13.77075, EPSILON));
@@ -30,10 +45,6 @@ class SplicingInformationContentAnnotatorTest {
 
     @Test
     void getSpliceAcceptorScoreTest() {
-        instance = new SplicingInformationContentAnnotator(MakeSplicePositionWeightMatrices.makeDonorMatrix(),
-                MakeSplicePositionWeightMatrices.makeAcceptorMatrix(),
-                MakeSplicePositionWeightMatrices.makeSplicingParameters());
-
         assertThat(instance.getSpliceAcceptorScore("aggtttttttgaaagtctctcgtagAA"), closeTo(5.44088, EPSILON));
         assertThat(instance.getSpliceAcceptorScore("gctcctttcttaacaggctggaaagTT"), closeTo(-3.37936, EPSILON));
         assertThat(instance.getSpliceAcceptorScore("aaaaaaaaaaaaaaaaaaaaaaaaaAA"), closeTo(-25.48958, EPSILON));

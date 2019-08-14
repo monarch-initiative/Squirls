@@ -1,12 +1,8 @@
 package org.monarchinitiative.threes.core.reference.transcript;
 
 import org.monarchinitiative.threes.core.model.*;
-import org.monarchinitiative.threes.core.pwm.SplicingParameters;
-import org.monarchinitiative.threes.core.reference.GenomeCoordinatesFlipper;
 import org.monarchinitiative.threes.core.reference.SplicingLocationData;
 import org.monarchinitiative.threes.core.reference.fasta.InvalidCoordinatesException;
-
-import java.util.Optional;
 
 /**
  *
@@ -15,11 +11,9 @@ public class NaiveSplicingTranscriptLocator implements SplicingTranscriptLocator
 
     private final SplicingParameters parameters;
 
-    private final GenomeCoordinatesFlipper flipper;
 
-    public NaiveSplicingTranscriptLocator(SplicingParameters parameters, GenomeCoordinatesFlipper flipper) {
+    public NaiveSplicingTranscriptLocator(SplicingParameters parameters) {
         this.parameters = parameters;
-        this.flipper = flipper;
     }
 
     @Override
@@ -28,30 +22,17 @@ public class NaiveSplicingTranscriptLocator implements SplicingTranscriptLocator
             // variant and transcript must be present on the same contig
             GenomeCoordinates txCoordinates = transcript.getTxRegionCoordinates();
             if (!variant.getContig().equals(txCoordinates.getContig())) {
-                return SplicingLocationData.outside(variant, transcript);
+                return SplicingLocationData.outside();
             }
 
-            // Variant coordinates are flipped to transcript's strand.
-            SplicingVariant variantOnStrand;
-            if (txCoordinates.isStrand() != variant.getCoordinates().isStrand()) {
-                final Optional<SplicingVariant> op = flipper.flip(variant);
-                if (!op.isPresent()) {
-                    return SplicingLocationData.outside(variant, transcript);
-                }
-                variantOnStrand = op.get();
-            } else {
-                variantOnStrand = variant;
-            }
 
             // return outside if variant does not intersect with transcript
-            GenomeCoordinates varCoordinates = variantOnStrand.getCoordinates();
+            GenomeCoordinates varCoordinates = variant.getCoordinates();
             if (!txCoordinates.overlapsWith(varCoordinates)) {
-                return SplicingLocationData.outside(variant, transcript);
+                return SplicingLocationData.outside();
             }
 
-            final SplicingLocationData.Builder dataBuilder = SplicingLocationData.newBuilder()
-                    .setVariant(variantOnStrand)
-                    .setTranscript(transcript);
+            final SplicingLocationData.Builder dataBuilder = SplicingLocationData.newBuilder();
 
             // is this a single exon gene?
             if (transcript.getExons().size() == 1) {
@@ -129,7 +110,7 @@ public class NaiveSplicingTranscriptLocator implements SplicingTranscriptLocator
                     .build();
 
         } catch (InvalidCoordinatesException e) {
-            return SplicingLocationData.outside(variant, transcript);
+            return SplicingLocationData.outside();
         }
     }
 }

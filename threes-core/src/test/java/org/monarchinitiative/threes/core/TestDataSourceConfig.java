@@ -5,12 +5,18 @@ import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import de.charite.compbio.jannovar.data.ReferenceDictionary;
 import de.charite.compbio.jannovar.data.ReferenceDictionaryBuilder;
-import org.monarchinitiative.threes.core.pwm.SplicingParameters;
+import org.monarchinitiative.threes.core.calculators.sms.FileSMSParser;
+import org.monarchinitiative.threes.core.calculators.sms.SMSCalculator;
+import org.monarchinitiative.threes.core.calculators.sms.SMSParser;
+import org.monarchinitiative.threes.core.model.SplicingParameters;
 import org.monarchinitiative.threes.core.reference.GenomeCoordinatesFlipper;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import javax.sql.DataSource;
+import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Map;
 
 /**
@@ -68,5 +74,16 @@ public class TestDataSourceConfig {
     @Bean
     public GenomeCoordinatesFlipper genomeCoordinatesFlipper(Map<String, Integer> contigLengthMap) {
         return new GenomeCoordinatesFlipper(contigLengthMap);
+    }
+
+    @Bean
+    public SMSCalculator smsCalculator(SMSParser smsParser) {
+        return new SMSCalculator(smsParser.getSeptamerMap());
+    }
+
+    @Bean
+    public SMSParser smsParser() throws IOException {
+        Path path = Paths.get(TestDataSourceConfig.class.getResource("calculators/sms/septamer-scores.tsv").getPath());
+        return new FileSMSParser(path);
     }
 }
