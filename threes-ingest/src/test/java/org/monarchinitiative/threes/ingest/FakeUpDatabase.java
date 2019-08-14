@@ -59,7 +59,7 @@ public class FakeUpDatabase {
 
     private static final Path HG38_JANNOVAR_DB = Paths.get("/home/ielis/jannovar/v0.28/hg38_ucsc.ser");
 
-    private static final Path SPLICING_IC_MATRIX_PATH = Paths.get("/home/ielis/data/sss/io/splicing-information-content-matrix.yaml");
+    private static final Path SPLICING_IC_MATRIX_PATH = Paths.get("/home/ielis/data/threes/pwm/splicing-information-content-matrix.yaml");
 
     //
     // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
