@@ -14,6 +14,8 @@ public class CrypticAcceptorScorer implements SplicingScorer {
 
     private static final int MAX_IN_INTRON = 50;
 
+    private final int maxInIntron;
+
     private final SplicingInformationContentCalculator icAnnotator;
 
     private final AlleleGenerator generator;
@@ -21,9 +23,14 @@ public class CrypticAcceptorScorer implements SplicingScorer {
     private final int acceptorLength;
 
     public CrypticAcceptorScorer(SplicingInformationContentCalculator icAnnotator, AlleleGenerator generator) {
+        this(icAnnotator, generator, MAX_IN_INTRON);
+    }
+
+    public CrypticAcceptorScorer(SplicingInformationContentCalculator icAnnotator, AlleleGenerator generator, int maxInIntron) {
         this.icAnnotator = icAnnotator;
         this.generator = generator;
         this.acceptorLength = icAnnotator.getSplicingParameters().getAcceptorLength();
+        this.maxInIntron = maxInIntron;
     }
 
     @Override
@@ -45,7 +52,7 @@ public class CrypticAcceptorScorer implements SplicingScorer {
                 return Double.NaN;
             }
             final int diff = acceptor.differenceTo(varCoor.getBegin(), varCoor.getEnd());
-            if (diff > MAX_IN_INTRON) {
+            if (diff > maxInIntron) {
                 // we do not score intronic variant that are too deep in intron
                 return Double.NaN;
             }

@@ -27,7 +27,7 @@
         </dependency>
         <dependency>
             <groupId>org.monarchinitiative.threes</groupId>
-            <artifactId>threes-core</artifactId>
+            <artifactId>threes-spring-boot-starter</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
     </dependencies>

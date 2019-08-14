@@ -1,8 +1,10 @@
 package org.monarchinitiative.threes.autoconfigure;
 
 
+import com.google.common.collect.ImmutableMap;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
+import org.monarchinitiative.threes.core.Utils;
 import org.monarchinitiative.threes.core.calculators.ic.DbSplicingPositionalWeightMatrixParser;
 import org.monarchinitiative.threes.core.calculators.ic.SplicingInformationContentCalculator;
 import org.monarchinitiative.threes.core.calculators.ic.SplicingPositionalWeightMatrixParser;
@@ -31,6 +33,7 @@ import javax.sql.DataSource;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.function.UnaryOperator;
 
 
 /**
@@ -57,8 +60,8 @@ public class ThreesAutoConfiguration {
 
 
     @Bean
-    @ConditionalOnMissingBean(name = "genomeAssembly")
-    public String genomeAssembly(Environment environment) throws UndefinedThreesResourceException {
+    @ConditionalOnMissingBean(name = "threesGenomeAssembly")
+    public String threesGenomeAssembly(Environment environment) throws UndefinedThreesResourceException {
         String assembly = environment.getProperty("threes.genome-assembly");
         if (assembly == null) {
             throw new UndefinedThreesResourceException("Genome assembly (`--threes.genome-assembly`) is not specified");
@@ -68,8 +71,8 @@ public class ThreesAutoConfiguration {
 
 
     @Bean
-    @ConditionalOnMissingBean(name = "dataVersion")
-    public String dataVersion(Environment environment) throws UndefinedThreesResourceException {
+    @ConditionalOnMissingBean(name = "threesDataVersion")
+    public String threesDataVersion(Environment environment) throws UndefinedThreesResourceException {
         String dataVersion = environment.getProperty("threes.data-version");
         if (dataVersion == null) {
             throw new UndefinedThreesResourceException("Data version (`--threes.data-version`) is not specified");
@@ -95,9 +98,25 @@ public class ThreesAutoConfiguration {
     }
 
 
+    @Bean(name = "maxDistanceExonUpstream")
+    public int maxDistanceExonUpstream(Environment environment) {
+        String distance = environment.getProperty("threes.max-distance-exon-upstream", "50");
+        LOGGER.info("Analyzing variants up to {}bp upstream from exon", distance);
+        return Integer.parseInt(distance);
+    }
+
+
+    @Bean(name = "maxDistanceExonDownstream")
+    public int maxDistanceExonDownstream(Environment environment) {
+        String distance = environment.getProperty("threes.max-distance-exon-downstream", "50");
+        LOGGER.info("Analyzing variants up to {}bp downstream from exon", distance);
+        return Integer.parseInt(distance);
+    }
+
+
     @Bean
-    public ThreesDataResolver threesDataResolver(Path threesDataDirectory, String genomeAssembly, String dataVersion, String transcriptSource) {
-        return new ThreesDataResolver(threesDataDirectory, dataVersion, genomeAssembly, transcriptSource);
+    public ThreesDataResolver threesDataResolver(Path threesDataDirectory, String threesGenomeAssembly, String threesDataVersion, String transcriptSource) {
+        return new ThreesDataResolver(threesDataDirectory, threesDataVersion, threesGenomeAssembly, transcriptSource);
     }
 
 
@@ -116,16 +135,29 @@ public class ThreesAutoConfiguration {
     @Bean
     public ScorerFactory scorerFactory(SplicingInformationContentCalculator splicingInformationContentAnnotator,
                                        SMSCalculator smsCalculator,
-                                       String scorerFactoryType) {
+                                       String scorerFactoryType,
+                                       int maxDistanceExonDownstream, int maxDistanceExonUpstream) {
+        RawScorerFactory rawScorerFactory = new RawScorerFactory(splicingInformationContentAnnotator, smsCalculator, maxDistanceExonDownstream, maxDistanceExonUpstream);
+
         switch (scorerFactoryType) {
             case "raw":
                 LOGGER.info("Using raw scorer factory");
-                return new RawScorerFactory(splicingInformationContentAnnotator, smsCalculator);
+                return rawScorerFactory;
             default:
                 LOGGER.warn("Unknown scorer factory type '{}', using scaling scorer factory", scorerFactoryType);
             case "scaling":
                 LOGGER.info("Using scaling scorer factory");
-                return new ScalingScorerFactory(splicingInformationContentAnnotator, smsCalculator);
+                // TODO - MANY HARDCODED VALUES ARE PRESENT HERE
+                ImmutableMap<ScoringStrategy, UnaryOperator<Double>> scalerMap = ImmutableMap.<ScoringStrategy, UnaryOperator<Double>>builder()
+                        .put(ScoringStrategy.CANONICAL_DONOR, Utils.sigmoidScaler(0.29, -1))
+                        .put(ScoringStrategy.CRYPTIC_DONOR, Utils.sigmoidScaler(-5.52, -1))
+                        .put(ScoringStrategy.CRYPTIC_DONOR_IN_CANONICAL_POSITION, Utils.sigmoidScaler(-4.56, -1))
+                        .put(ScoringStrategy.CANONICAL_ACCEPTOR, Utils.sigmoidScaler(-1.50, -1))
+                        .put(ScoringStrategy.CRYPTIC_ACCEPTOR, Utils.sigmoidScaler(-8.24, -1))
+                        .put(ScoringStrategy.CRYPTIC_ACCEPTOR_IN_CANONICAL_POSITION, Utils.sigmoidScaler(-4.59, -1))
+                        .put(ScoringStrategy.SMS, UnaryOperator.identity()) // TODO - decide how to scale the scores
+                        .build();
+                return new ScalingScorerFactory(rawScorerFactory, scalerMap);
         }
 
     }

@@ -6,8 +6,8 @@ import org.springframework.beans.factory.BeanCreationException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class ThreesAutoConfigurationTest extends AbstractAutoConfigurationTest {
@@ -18,8 +18,37 @@ class ThreesAutoConfigurationTest extends AbstractAutoConfigurationTest {
                 "threes.genome-assembly=hg19",
                 "threes.data-version=1710",
                 "threes.transcript-source=refseq");
-        Path threesDataDirectory = this.context.getBean("threesDataDirectory", Path.class);
+        Path threesDataDirectory = context.getBean("threesDataDirectory", Path.class);
         assertThat(threesDataDirectory.getFileName(), equalTo(Paths.get("data")));
+
+        String threesGenomeAssembly = context.getBean("threesGenomeAssembly", String.class);
+        assertThat(threesGenomeAssembly, is("hg19"));
+
+        String threesDataVersion = context.getBean("threesDataVersion", String.class);
+        assertThat(threesDataVersion, is("1710"));
+
+        String transcriptSource = context.getBean("transcriptSource", String.class);
+        assertThat(transcriptSource, is("refseq"));
+
+        // default values
+        Integer maxDistanceExonUpstream = context.getBean("maxDistanceExonUpstream", Integer.class);
+        assertThat(maxDistanceExonUpstream, is(50));
+        Integer maxDistanceExonDownstream = context.getBean("maxDistanceExonDownstream", Integer.class);
+        assertThat(maxDistanceExonDownstream, is(50));
+    }
+
+    @Test
+    void testOptionalPropertiesUpstreamAndDownstreamFromExon() {
+        load(ThreesAutoConfiguration.class, "threes.data-directory=" + TEST_DATA,
+                "threes.genome-assembly=hg19",
+                "threes.data-version=1710",
+                "threes.transcript-source=refseq",
+                "threes.max-distance-exon-upstream=100",
+                "threes.max-distance-exon-downstream=200");
+        Integer maxDistanceExonUpstream = context.getBean("maxDistanceExonUpstream", Integer.class);
+        assertThat(maxDistanceExonUpstream, is(100));
+        Integer maxDistanceExonDownstream = context.getBean("maxDistanceExonDownstream", Integer.class);
+        assertThat(maxDistanceExonDownstream, is(200));
     }
 
     @Test

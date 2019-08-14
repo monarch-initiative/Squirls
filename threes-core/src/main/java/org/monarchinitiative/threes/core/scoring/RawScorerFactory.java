@@ -21,14 +21,15 @@ public class RawScorerFactory implements ScorerFactory {
 
     private final ImmutableMap<ScoringStrategy, SplicingScorer> scorerMap;
 
-    public RawScorerFactory(SplicingInformationContentCalculator annotator, SMSCalculator calculator) {
+    public RawScorerFactory(SplicingInformationContentCalculator annotator, SMSCalculator calculator,
+                            int maxDistanceExonDownstream, int maxDistanceExonUpstream) {
         AlleleGenerator generator = new AlleleGenerator(annotator.getSplicingParameters());
         this.scorerMap = ImmutableMap.<ScoringStrategy, SplicingScorer>builder()
                 .put(ScoringStrategy.CANONICAL_DONOR, new CanonicalDonorScorer(annotator, generator))
-                .put(ScoringStrategy.CRYPTIC_DONOR, new CrypticDonorScorer(annotator, generator))
+                .put(ScoringStrategy.CRYPTIC_DONOR, new CrypticDonorScorer(annotator, generator, maxDistanceExonDownstream))
                 .put(ScoringStrategy.CRYPTIC_DONOR_IN_CANONICAL_POSITION, new CrypticDonorForVariantsInDonorSite(annotator, generator))
                 .put(ScoringStrategy.CANONICAL_ACCEPTOR, new CanonicalAcceptorScorer(annotator, generator))
-                .put(ScoringStrategy.CRYPTIC_ACCEPTOR, new CrypticAcceptorScorer(annotator, generator))
+                .put(ScoringStrategy.CRYPTIC_ACCEPTOR, new CrypticAcceptorScorer(annotator, generator, maxDistanceExonUpstream))
                 .put(ScoringStrategy.CRYPTIC_ACCEPTOR_IN_CANONICAL_POSITION, new CrypticAcceptorForVariantsInAcceptorSite(annotator, generator))
                 .put(ScoringStrategy.SMS, new SMSScorer(calculator))
                 .build();
