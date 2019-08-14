@@ -39,7 +39,7 @@ After downloading & unpacking the above files, we can start building the databas
 The command below will create a new directory `/path/to/build/directory/1902_hg19` and store all the files inside. At first it will download & process the UCSC reference genome, then the splicing database with *RefSeq* data will be built. Edit the `--jannovar-transcript-source` argument if you want to build splicing database for other transcript source.
 
 ```bash
-java -jar threes-ingest-1.0.0.jar
+java -jar threes-ingest-1.0.4.jar
 --build-dir=/home/user/data --version=1902 --genome-assembly=hg19 --jannovar-transcript-source=refseq
 ```
 > *Note:*
@@ -60,7 +60,7 @@ Use following dependency after installing the project into your local Maven repo
 <dependency>
     <groupId>org.monarchinitiative.threes</groupId>
     <artifactId>threes-core</artifactId>
-    <version>1.0.0</version>
+    <version>1.0.4</version>
 </dependency>
 ```
 
@@ -72,7 +72,7 @@ Use following starter within your Spring Boot project in order to use the 3S cod
 <dependency>
     <groupId>org.monarchinitiative.threes</groupId>
     <artifactId>threes-spring-boot-starter</artifactId>
-    <version>1.0.0</version>
+    <version>1.0.4</version>
 </dependency>
 ```
 
