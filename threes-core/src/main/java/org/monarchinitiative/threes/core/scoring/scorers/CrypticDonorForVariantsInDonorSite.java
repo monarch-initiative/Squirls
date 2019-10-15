@@ -59,8 +59,6 @@ public class CrypticDonorForVariantsInDonorSite implements SplicingScorer {
                 return Double.NaN;
             }
 
-            double refConsensusDonorScore = intron.getDonorScore();
-
             String wtConsensusDonorSnippet = sequenceInterval.getSubsequence(varCoor.getBegin() - donorLength + 1, varCoor.getBegin())
                     + variant.getRef()
                     + sequenceInterval.getSubsequence(varCoor.getEnd(), varCoor.getEnd() + donorLength - 1);
@@ -96,20 +94,21 @@ public class CrypticDonorForVariantsInDonorSite implements SplicingScorer {
 
             // -------------------------------------------------------------
             // the position of consensus splice site within sliding window
+            double refConsensusDonorScore = intron.getDonorScore();
             int indexOfRefConsensus = refScores.indexOf(refConsensusDonorScore);
             if (indexOfRefConsensus != refIndices.get(0)) {
                 // donor site does not have the largest IC score. Bizarre situation, but might happen
                 LOGGER.debug("****\n\nDonor site does not have the largest IC score\n\n{}\n\n****", variant);
             }
 
-        /*
-        Get the second largest score in ref snippet. If there is a second site with high score, then the exon
-        might be well defined by other means than just by canonical splice sites. In that case, we do not want
-        to assign a high pathogenicity score for such an exon.
+            /*
+            Get the second largest score in ref snippet. If there is a second site with high score, then the exon
+            might be well defined by other means than just by canonical splice sites. In that case, we do not want
+            to assign a high pathogenicity score for such an exon.
 
-        However, if the second largest ref IC=-2 and variant presence creates a new site with IC=5, we might want
-        to score the site higher. Even more, if the canonical donor site is a weaker one.
-         */
+            However, if the second largest ref $R_i = -2$ and variant presence creates a new site with $R_i = 5$, then
+            we want to score the site higher. Even more, if the canonical donor site is a weaker one.
+            */
 
             int crypticSiteIdx;
             if (indexOfRefConsensus == altIndices.get(0)) {
@@ -123,7 +122,7 @@ public class CrypticDonorForVariantsInDonorSite implements SplicingScorer {
             }
 
             // get score of the position that results from alt allele presence
-            final String donorSiteWithAltAllele = generator.getDonorSiteWithAltAllele(intron.getBegin(), variant, sequenceInterval);
+            String donorSiteWithAltAllele = generator.getDonorSiteWithAltAllele(intron.getBegin(), variant, sequenceInterval);
             if (donorSiteWithAltAllele == null) {
                 // e.g. when the whole site is deleted. Other parts of analysis pipeline should interpret such events
                 return Double.NaN;

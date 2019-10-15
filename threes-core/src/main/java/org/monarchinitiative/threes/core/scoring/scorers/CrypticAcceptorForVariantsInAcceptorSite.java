@@ -58,8 +58,6 @@ public class CrypticAcceptorForVariantsInAcceptorSite implements SplicingScorer 
                 return Double.NaN;
             }
 
-            double refConsensusAcceptorScore = intron.getAcceptorScore();
-
             final String upstream = sequenceInterval.getSubsequence(varCoor.getBegin() - acceptorLength + 1, varCoor.getBegin());
             final String downstream = sequenceInterval.getSubsequence(varCoor.getEnd(), varCoor.getEnd() + acceptorLength - 1);
 
@@ -93,20 +91,21 @@ public class CrypticAcceptorForVariantsInAcceptorSite implements SplicingScorer 
 
             // -------------------------------------------------------------
             // the position of consensus splice site within sliding window
+            double refConsensusAcceptorScore = intron.getAcceptorScore();
             int indexOfRefConsensus = refScores.indexOf(refConsensusAcceptorScore);
             if (indexOfRefConsensus != refIndices.get(0)) {
                 // acceptor site does not have the largest IC score. Bizarre situation, but might happen
                 LOGGER.debug("****\nAcceptor site does not have the largest IC score\n\n{}\n", variant);
             }
 
-         /*
-        Get the second largest score in ref snippet. If there is a second site with high score, then the exon
-        might be well defined by other means than just by canonical splice sites. In that case, we do not want
-        to assign a high pathogenicity score for such an exon.
+            /*
+            Get the second largest score in ref snippet. If there is a second site with high score, then the exon
+            might be well defined by other means than just by canonical splice sites. In that case, we do not want
+            to assign a high pathogenicity score for such an exon.
 
-        However, if the second largest ref IC=-2 and variant presence creates a new site with IC=5, we might want
-        to score the site higher. Even more, if the canonical acceptor site is a weaker one.
-         */
+            However, if the second largest ref $R_i = -2$ and variant presence creates a new site with $R_i = 5$, then
+            we want to score the site higher. Even more, if the canonical acceptor site is a weaker one.
+            */
 
 
             int crypticSiteIdx;

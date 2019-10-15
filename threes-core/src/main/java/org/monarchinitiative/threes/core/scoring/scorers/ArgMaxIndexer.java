@@ -8,7 +8,7 @@ import java.util.stream.IntStream;
 /**
  * Let there be a <code>list</code> of comparable {@link T} elements.
  * <p>
- * Use this class to create a list of indices for <code>list</code> which will contain indices for getting elements from
+ * Use this class to create a list of indices for <code>list</code> which contains indices for getting elements from
  * <code>list</code> in order depending on a used <code>comparator</code> (e.g. from the min value to max value if
  * {@link Comparator#naturalOrder()} is used).
  *
