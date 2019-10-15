@@ -5,7 +5,18 @@ import org.monarchinitiative.threes.core.reference.SplicingLocationData;
 import org.monarchinitiative.threes.core.reference.fasta.InvalidCoordinatesException;
 
 /**
- *
+ * This class figures out where exactly the variant is located with respect to given <code>transcript</code>.
+ * <p>
+ * The variant is considered as:
+ * <ul>
+ * <li>{@link SplicingLocationData.SplicingPosition#DONOR} if the variant overlaps with any <em>donor</em> site of
+ * the <code>transcript</code></li>
+ * <li>{@link SplicingLocationData.SplicingPosition#ACCEPTOR} if the variant overlaps with any <em>acceptor</em> site
+ * of the <code>transcript</code></li>
+ * <li>{@link SplicingLocationData.SplicingPosition#EXON} if the variant is located within an <em>exon</em></li>
+ * <li>{@link SplicingLocationData.SplicingPosition#INTRON} if ... you get it</li>
+ * </ul>
+ * </p>
  */
 public class NaiveSplicingTranscriptLocator implements SplicingTranscriptLocator {
 
