@@ -3,8 +3,8 @@ package org.monarchinitiative.threes.ingest;
 import de.charite.compbio.jannovar.data.JannovarData;
 import org.flywaydb.core.Flyway;
 import org.monarchinitiative.threes.core.calculators.ic.SplicingInformationContentCalculator;
-import org.monarchinitiative.threes.core.calculators.sms.FileSMSParser;
-import org.monarchinitiative.threes.core.calculators.sms.SMSParser;
+import org.monarchinitiative.threes.core.data.sms.FileSMSParser;
+import org.monarchinitiative.threes.core.data.sms.SMSParser;
 import org.monarchinitiative.threes.core.reference.GenomeCoordinatesFlipper;
 import org.monarchinitiative.threes.core.reference.fasta.GenomeSequenceAccessor;
 import org.monarchinitiative.threes.core.reference.fasta.PrefixHandlingGenomeSequenceAccessor;
@@ -74,18 +74,18 @@ public class Main implements ApplicationRunner {
     public void run(ApplicationArguments args) throws Exception {
         LOGGER.info("Running ingest");
         try {
-            GenomeAssembly assembly;
+            String assembly;
             URL genomeUrl;
 
             if (args.containsOption("genome-assembly")) {
                 String assemblyString = args.getOptionValues("genome-assembly").get(0);
                 switch (assemblyString.toUpperCase()) {
                     case "HG19":
-                        assembly = GenomeAssembly.HG19;
+                        assembly = "hg19";
                         genomeUrl = new URL(ingestProperties.getHg19FastaUrl());
                         break;
                     case "HG38":
-                        assembly = GenomeAssembly.HG38;
+                        assembly = "hg38";
                         genomeUrl = new URL(ingestProperties.getHg38FastaUrl());
                         break;
                     default:
@@ -102,7 +102,7 @@ public class Main implements ApplicationRunner {
                 return;
             }
             String version = args.getOptionValues("version").get(0);
-            String versionedAssembly = version + "_" + assembly.getValue();
+            String versionedAssembly = version + "_" + assembly;
             Path genomeBuildDir = Files.createDirectories(ingestProperties.getBuildDir().resolve(versionedAssembly));
 
             // download files for FASTA file
@@ -114,8 +114,8 @@ public class Main implements ApplicationRunner {
 
             // where to create database file
             // TODO - for each transcript source
-            JannovarTranscriptSource jannovarTranscriptSource = ingestProperties.getJannovarTranscriptSource();
-            Path databasePath = genomeBuildDir.resolve(String.format("%s_splicing_%s", versionedAssembly, jannovarTranscriptSource.getValue()));
+            String jannovarTranscriptSource = ingestProperties.getJannovarTranscriptSource();
+            Path databasePath = genomeBuildDir.resolve(String.format("%s_splicing_%s", versionedAssembly, jannovarTranscriptSource));
             DataSource dataSource = ingestProperties.makeDatasourceForGenome(databasePath);
 
             // download files for Jannovar DB build
@@ -143,7 +143,7 @@ public class Main implements ApplicationRunner {
                 GenomeCoordinatesFlipper genomeCoordinatesFlipper = new GenomeCoordinatesFlipper(contigLengths);
                 TranscriptIngestDao transcriptIngestDao = new TranscriptIngestDao(dataSource, genomeCoordinatesFlipper);
                 SplicingCalculator splicingCalculator = new SplicingCalculatorImpl(accessor, splicingInformationContentAnnotator);
-                TranscriptsIngestRunner transcriptsIngestRunner = new TranscriptsIngestRunner(splicingCalculator, transcriptIngestDao, jannovarData);
+                TranscriptsIngestRunner transcriptsIngestRunner = new TranscriptsIngestRunner(splicingCalculator, transcriptIngestDao, jannovarData.getTmByAccession().values());
                 transcriptsIngestRunner.run();
             }
 

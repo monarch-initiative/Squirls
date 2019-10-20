@@ -1,4 +1,4 @@
-package org.monarchinitiative.threes.core.calculators.sms;
+package org.monarchinitiative.threes.core.data.sms;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

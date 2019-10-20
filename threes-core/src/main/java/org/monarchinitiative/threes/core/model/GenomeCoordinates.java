@@ -9,8 +9,14 @@ public class GenomeCoordinates {
 
     private final String contig;
 
+    /**
+     * 0-based (excluded) begin coordinate
+     */
     private final int begin;
 
+    /**
+     * 0-based (included) end coordinate
+     */
     private final int end;
 
     private final boolean strand;

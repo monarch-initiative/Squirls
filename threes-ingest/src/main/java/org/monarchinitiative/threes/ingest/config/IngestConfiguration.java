@@ -3,9 +3,9 @@ package org.monarchinitiative.threes.ingest.config;
 import de.charite.compbio.jannovar.data.JannovarData;
 import de.charite.compbio.jannovar.data.JannovarDataSerializer;
 import de.charite.compbio.jannovar.data.SerializationException;
-import org.monarchinitiative.threes.core.calculators.ic.FileBasedSplicingPositionalWeightMatrixParser;
 import org.monarchinitiative.threes.core.calculators.ic.SplicingInformationContentCalculator;
-import org.monarchinitiative.threes.core.calculators.ic.SplicingPositionalWeightMatrixParser;
+import org.monarchinitiative.threes.core.data.ic.InputStreamBasedPositionalWeightMatrixParser;
+import org.monarchinitiative.threes.core.data.ic.SplicingPositionalWeightMatrixParser;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -42,7 +42,7 @@ public class IngestConfiguration {
     @Bean
     public SplicingPositionalWeightMatrixParser positionalWeightMatrixParser() throws IOException {
         try (InputStream is = Files.newInputStream(ingestProperties.getSplicingInformationContentMatrixPath())) {
-            return new FileBasedSplicingPositionalWeightMatrixParser(is);
+            return new InputStreamBasedPositionalWeightMatrixParser(is);
         }
     }
 }

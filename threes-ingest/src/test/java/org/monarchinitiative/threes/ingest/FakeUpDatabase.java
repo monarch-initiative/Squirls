@@ -8,9 +8,9 @@ import org.flywaydb.core.Flyway;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-import org.monarchinitiative.threes.core.calculators.ic.FileBasedSplicingPositionalWeightMatrixParser;
 import org.monarchinitiative.threes.core.calculators.ic.SplicingInformationContentCalculator;
-import org.monarchinitiative.threes.core.calculators.ic.SplicingPositionalWeightMatrixParser;
+import org.monarchinitiative.threes.core.data.ic.InputStreamBasedPositionalWeightMatrixParser;
+import org.monarchinitiative.threes.core.data.ic.SplicingPositionalWeightMatrixParser;
 import org.monarchinitiative.threes.core.reference.GenomeCoordinatesFlipper;
 import org.monarchinitiative.threes.core.reference.fasta.GenomeSequenceAccessor;
 import org.monarchinitiative.threes.core.reference.fasta.PrefixHandlingGenomeSequenceAccessor;
@@ -96,7 +96,7 @@ public class FakeUpDatabase {
     static void setUpBefore() throws Exception {
         SplicingPositionalWeightMatrixParser parser;
         try (InputStream is = Files.newInputStream(SPLICING_IC_MATRIX_PATH)) {
-            parser = new FileBasedSplicingPositionalWeightMatrixParser(is);
+            parser = new InputStreamBasedPositionalWeightMatrixParser(is);
         }
         splicingInformationContentAnnotator = new SplicingInformationContentCalculator(parser.getDonorMatrix(), parser.getAcceptorMatrix(), parser.getSplicingParameters());
     }

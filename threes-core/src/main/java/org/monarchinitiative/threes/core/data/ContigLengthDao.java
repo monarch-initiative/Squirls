@@ -14,7 +14,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- *
+ * This class serves for getting map with contig lengths from database represented by provided <code>dataSource</code>.
  */
 public class ContigLengthDao {
 

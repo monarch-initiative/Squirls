@@ -1,4 +1,4 @@
-package org.monarchinitiative.threes.core.calculators.ic;
+package org.monarchinitiative.threes.core.data.ic;
 
 import org.jblas.DoubleMatrix;
 import org.monarchinitiative.threes.core.model.SplicingParameters;

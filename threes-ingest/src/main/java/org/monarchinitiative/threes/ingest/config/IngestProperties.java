@@ -2,8 +2,6 @@ package org.monarchinitiative.threes.ingest.config;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
-import org.monarchinitiative.threes.ingest.GenomeAssembly;
-import org.monarchinitiative.threes.ingest.JannovarTranscriptSource;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
@@ -64,20 +62,18 @@ public class IngestProperties {
         return getPathOrThrow(propertyKey, String.format("'%s' has not been specified", propertyKey));
     }
 
-    public JannovarTranscriptSource getJannovarTranscriptSource() {
+    public String getJannovarTranscriptSource() {
         String ts = env.getProperty("jannovar-transcript-source");
         if (ts == null || ts.isEmpty()) {
             throw new IllegalArgumentException("jannovar-transcript-source has not been specified");
         }
         switch (ts.toUpperCase()) {
             case "REFSEQ":
-                return JannovarTranscriptSource.REFSEQ;
-            case "REFSEQ_CURATED":
-                return JannovarTranscriptSource.REFSEQ_CURATED;
+                return "refseq";
             case "UCSC":
-                return JannovarTranscriptSource.UCSC;
+                return "ucsc";
             case "ENSEMBL":
-                return JannovarTranscriptSource.ENSEMBL;
+                return "ensembl";
             default:
                 throw new IllegalArgumentException("Unknown jannovar transcript source " + ts);
         }
@@ -93,8 +89,8 @@ public class IngestProperties {
         return getPathOrThrow(propertyKey, String.format("'%s' has not been specified", propertyKey));
     }
 
-    public Path resolveBuildDirForGenome(String version, GenomeAssembly genomeAssembly) throws IOException {
-        final Path targetDir = buildDir.resolve(genomeAssembly.getValue());
+    public Path resolveBuildDirForGenome(String version, String assembly) throws IOException {
+        final Path targetDir = buildDir.resolve(String.format("%s_%s", version, assembly));
         return Files.createDirectories(targetDir);
     }
 

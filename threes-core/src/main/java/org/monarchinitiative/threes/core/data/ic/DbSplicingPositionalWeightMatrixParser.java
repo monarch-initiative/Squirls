@@ -1,4 +1,4 @@
-package org.monarchinitiative.threes.core.calculators.ic;
+package org.monarchinitiative.threes.core.data.ic;
 
 import org.jblas.DoubleMatrix;
 import org.monarchinitiative.threes.core.model.SplicingParameters;
@@ -40,6 +40,9 @@ public class DbSplicingPositionalWeightMatrixParser implements SplicingPositiona
             data.add(new ArrayList<>());
         }
 
+        DoubleMatrix matrix = new DoubleMatrix();
+        // TODO - continue
+        // matrix
         String sql = String.format("SELECT ROW_IDX, COL_IDX, CELL_VALUE FROM SPLICING.PWM_DATA WHERE PWM_NAME = '%s' " +
                 "ORDER BY ROW_IDX ASC, COL_IDX ASC", pwmName);
         try (Connection connection = dataSource.getConnection();
@@ -57,7 +60,7 @@ public class DbSplicingPositionalWeightMatrixParser implements SplicingPositiona
             throw new CorruptedPwmException(e);
         }
 
-        return PwmUtils.mapToDoubleMatrix(data, EPSILON);
+        return InputStreamBasedPositionalWeightMatrixParser.mapToDoubleMatrix(data, EPSILON);
     }
 
     private static SplicingParameters parseSplicingParameters(DataSource dataSource) throws CorruptedPwmException {

@@ -1,6 +1,6 @@
 package org.monarchinitiative.threes.ingest.pwm;
 
-import org.monarchinitiative.threes.core.calculators.ic.PositionWeightMatrix;
+import org.monarchinitiative.threes.core.data.ic.InputStreamBasedPositionalWeightMatrixParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yaml.snakeyaml.Yaml;
@@ -30,20 +30,20 @@ public class PwmIngestRunner implements Runnable {
     }
 
     /**
-     * Decode records from provided Yaml file into corresponding {@link PositionWeightMatrix} objects, store them in a {@link Map}
+     * Decode records from provided Yaml file into corresponding {@link InputStreamBasedPositionalWeightMatrixParser.PositionWeightMatrix} objects, store them in a {@link Map}
      * by their names.
      *
-     * @param is {@link InputStream} with PWM definitions in Yaml format as described in {@link PositionWeightMatrix} class
+     * @param is {@link InputStream} with PWM definitions in Yaml format as described in {@link InputStreamBasedPositionalWeightMatrixParser.PositionWeightMatrix} class
      *           description
-     * @return {@link Map} key - PWM name, Value - {@link PositionWeightMatrix} object.
+     * @return {@link Map} key - PWM name, Value - {@link InputStreamBasedPositionalWeightMatrixParser.PositionWeightMatrix} object.
      * @throws IOException if there is problem reading file.
      */
-    private static Map<String, PositionWeightMatrix> parseAll(InputStream is) throws IOException {
-        Map<String, PositionWeightMatrix> matrixMap = new HashMap<>();
+    private static Map<String, InputStreamBasedPositionalWeightMatrixParser.PositionWeightMatrix> parseAll(InputStream is) throws IOException {
+        Map<String, InputStreamBasedPositionalWeightMatrixParser.PositionWeightMatrix> matrixMap = new HashMap<>();
 
-        Yaml yaml = new Yaml(new Constructor(PositionWeightMatrix.class));
+        Yaml yaml = new Yaml(new Constructor(InputStreamBasedPositionalWeightMatrixParser.PositionWeightMatrix.class));
         for (Object object : yaml.loadAll(is)) {
-            PositionWeightMatrix matrix = (PositionWeightMatrix) object;
+            InputStreamBasedPositionalWeightMatrixParser.PositionWeightMatrix matrix = (InputStreamBasedPositionalWeightMatrixParser.PositionWeightMatrix) object;
 
             String name = matrix.getName();
             matrixMap.put(name, matrix);
@@ -54,8 +54,8 @@ public class PwmIngestRunner implements Runnable {
     @Override
     public void run() {
         try (InputStream is = Files.newInputStream(filePath)) {
-            Map<String, PositionWeightMatrix> stringPositionWeightMatrixMap = parseAll(is);
-            for (Map.Entry<String, PositionWeightMatrix> entry : stringPositionWeightMatrixMap.entrySet()) {
+            Map<String, InputStreamBasedPositionalWeightMatrixParser.PositionWeightMatrix> stringPositionWeightMatrixMap = parseAll(is);
+            for (Map.Entry<String, InputStreamBasedPositionalWeightMatrixParser.PositionWeightMatrix> entry : stringPositionWeightMatrixMap.entrySet()) {
                 LOGGER.info("Inserting {} PWM", entry.getKey());
                 dao.insertPositionWeightMatrix(entry.getValue());
             }

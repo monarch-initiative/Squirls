@@ -1,6 +1,7 @@
 package org.monarchinitiative.threes.core.calculators.sms;
 
 import org.junit.jupiter.api.Test;
+import org.monarchinitiative.threes.core.data.sms.FileSMSParser;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;

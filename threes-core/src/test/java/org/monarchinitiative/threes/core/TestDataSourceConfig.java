@@ -1,13 +1,12 @@
 package org.monarchinitiative.threes.core;
 
-import com.google.common.collect.ImmutableMap;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import de.charite.compbio.jannovar.data.ReferenceDictionary;
 import de.charite.compbio.jannovar.data.ReferenceDictionaryBuilder;
-import org.monarchinitiative.threes.core.calculators.sms.FileSMSParser;
 import org.monarchinitiative.threes.core.calculators.sms.SMSCalculator;
-import org.monarchinitiative.threes.core.calculators.sms.SMSParser;
+import org.monarchinitiative.threes.core.data.sms.FileSMSParser;
+import org.monarchinitiative.threes.core.data.sms.SMSParser;
 import org.monarchinitiative.threes.core.model.SplicingParameters;
 import org.monarchinitiative.threes.core.reference.GenomeCoordinatesFlipper;
 import org.springframework.context.annotation.Bean;
@@ -30,13 +29,23 @@ public class TestDataSourceConfig {
      */
     @Bean
     public DataSource dataSource() {
-        String jdbcUrl = "jdbc:h2:mem:pbga;INIT=CREATE SCHEMA IF NOT EXISTS SPLICING";
+        String jdbcUrl = "jdbc:h2:mem:threes";
         final HikariConfig config = new HikariConfig();
         config.setUsername("sa");
         config.setDriverClassName("org.h2.Driver");
         config.setJdbcUrl(jdbcUrl);
 
         return new HikariDataSource(config);
+    }
+
+    @Bean
+    public SplicingParameters splicingParameters() {
+        return SplicingParameters.builder()
+                .setDonorExonic(3)
+                .setDonorIntronic(6)
+                .setAcceptorExonic(2)
+                .setAcceptorIntronic(25)
+                .build();
     }
 
     @Bean
@@ -53,23 +62,6 @@ public class TestDataSourceConfig {
         return builder.build();
     }
 
-    @Bean
-    public SplicingParameters splicingParameters() {
-        return SplicingParameters.builder()
-                .setDonorExonic(3)
-                .setDonorIntronic(6)
-                .setAcceptorExonic(2)
-                .setAcceptorIntronic(25)
-                .build();
-    }
-
-    @Bean
-    public Map<String, Integer> contigLengthMap() {
-        return ImmutableMap.<String, Integer>builder()
-                .put("chr1", 10000)
-                .put("chr2", 20000)
-                .build();
-    }
 
     @Bean
     public GenomeCoordinatesFlipper genomeCoordinatesFlipper(Map<String, Integer> contigLengthMap) {

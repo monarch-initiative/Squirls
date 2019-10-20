@@ -1,6 +1,6 @@
 package org.monarchinitiative.threes.ingest.septamers;
 
-import org.monarchinitiative.threes.core.calculators.sms.SMSParser;
+import org.monarchinitiative.threes.core.data.sms.SMSParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
