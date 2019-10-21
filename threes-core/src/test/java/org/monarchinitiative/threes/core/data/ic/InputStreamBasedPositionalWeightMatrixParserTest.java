@@ -1,9 +1,7 @@
 package org.monarchinitiative.threes.core.data.ic;
 
-import org.jblas.DoubleMatrix;
 import org.junit.jupiter.api.Test;
-import org.monarchinitiative.threes.core.MakeSplicePositionWeightMatrices;
-import org.monarchinitiative.threes.core.model.SplicingParameters;
+import org.monarchinitiative.threes.core.PojosForTesting;
 
 import java.io.InputStream;
 
@@ -15,19 +13,18 @@ class InputStreamBasedPositionalWeightMatrixParserTest {
 
     @Test
     void parseAllTest() throws Exception {
-        DoubleMatrix donor, acceptor;
-        SplicingParameters parameters;
+        SplicingPwmData splicingPwmData;
+
         // test deserialization of the PWMs from YAML file
         try (InputStream is = InputStreamBasedPositionalWeightMatrixParserTest.class.getResourceAsStream("spliceSites.yaml")) {
             SplicingPositionalWeightMatrixParser instance = new InputStreamBasedPositionalWeightMatrixParser(is);
-            donor = instance.getDonorMatrix();
-            acceptor = instance.getAcceptorMatrix();
-            parameters = instance.getSplicingParameters();
+            splicingPwmData = instance.getSplicingPwmData();
         }
 
-        assertThat(donor, is(MakeSplicePositionWeightMatrices.makeDonorMatrix()));
-        assertThat(acceptor, is(MakeSplicePositionWeightMatrices.makeAcceptorMatrix()));
-        assertThat(parameters, is(MakeSplicePositionWeightMatrices.makeSplicingParameters()));
+
+        assertThat(splicingPwmData.getDonor(), is(PojosForTesting.makeDonorMatrix()));
+        assertThat(splicingPwmData.getAcceptor(), is(PojosForTesting.makeAcceptorMatrix()));
+        assertThat(splicingPwmData.getParameters(), is(PojosForTesting.makeSplicingParameters()));
     }
 
 

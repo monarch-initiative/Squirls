@@ -31,7 +31,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Map;
 import java.util.Optional;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -98,7 +97,7 @@ public class FakeUpDatabase {
         try (InputStream is = Files.newInputStream(SPLICING_IC_MATRIX_PATH)) {
             parser = new InputStreamBasedPositionalWeightMatrixParser(is);
         }
-        splicingInformationContentAnnotator = new SplicingInformationContentCalculator(parser.getDonorMatrix(), parser.getAcceptorMatrix(), parser.getSplicingParameters());
+        splicingInformationContentAnnotator = new SplicingInformationContentCalculator(parser.getSplicingPwmData());
     }
 
 
@@ -112,8 +111,13 @@ public class FakeUpDatabase {
         int migrations = applyMigrations(dataSource, locations);
         LOGGER.info("Applied {} migrations", migrations);
 
+        Map<String, Integer> contigLengths = jannovarData.getRefDict().getContigIDToName().keySet().stream()
+                .collect(Collectors.toMap(
+                        id -> jannovarData.getRefDict().getContigIDToName().get(id), // key - chromosome number
+                        id -> jannovarData.getRefDict().getContigIDToLength().get(id)));// value - chromosome length
+
         ContigIngestDao dao = new ContigIngestDao(dataSource);
-        ContigIngestRunner contigIngestRunner = new ContigIngestRunner(dao, jannovarData);
+        ContigIngestRunner contigIngestRunner = new ContigIngestRunner(dao, contigLengths);
         contigIngestRunner.run();
 
         // process PWMs
@@ -123,9 +127,6 @@ public class FakeUpDatabase {
 
         // process transcripts
         try (GenomeSequenceAccessor genomeSequenceAccessor = new PrefixHandlingGenomeSequenceAccessor(HG19_FASTA_PATH, HG19_FASTA_IDX_PATH)) {
-            final Map<String, Integer> contigLengths = jannovarData.getRefDict().getContigNameToID().keySet().stream()
-                    .collect(Collectors.toMap(Function.identity(),
-                            idx -> jannovarData.getRefDict().getContigIDToLength().get(jannovarData.getRefDict().getContigNameToID().get(idx))));
             final GenomeCoordinatesFlipper genomeCoordinatesFlipper = new GenomeCoordinatesFlipper(contigLengths);
             final TranscriptIngestDao transcriptIngestDao = new TranscriptIngestDao(dataSource, genomeCoordinatesFlipper);
             SplicingCalculator splicingCalculator = new SplicingCalculatorImpl(genomeSequenceAccessor, splicingInformationContentAnnotator);
@@ -152,8 +153,13 @@ public class FakeUpDatabase {
         int migrations = applyMigrations(dataSource, locations);
         LOGGER.info("Applied {} migrations", migrations);
 
+        Map<String, Integer> contigLengths = jannovarData.getRefDict().getContigIDToName().keySet().stream()
+                .collect(Collectors.toMap(
+                        id -> jannovarData.getRefDict().getContigIDToName().get(id), // key - chromosome number
+                        id -> jannovarData.getRefDict().getContigIDToLength().get(id)));// value - chromosome length
+
         ContigIngestDao dao = new ContigIngestDao(dataSource);
-        ContigIngestRunner contigIngestRunner = new ContigIngestRunner(dao, jannovarData);
+        ContigIngestRunner contigIngestRunner = new ContigIngestRunner(dao, contigLengths);
         contigIngestRunner.run();
 
         // process PWMs
@@ -163,9 +169,6 @@ public class FakeUpDatabase {
 
         // process transcripts
         try (GenomeSequenceAccessor genomeSequenceAccessor = new PrefixHandlingGenomeSequenceAccessor(HG38_FASTA_PATH, HG38_FASTA_IDX_PATH)) {
-            final Map<String, Integer> contigLengths = jannovarData.getRefDict().getContigNameToID().keySet().stream()
-                    .collect(Collectors.toMap(Function.identity(),
-                            idx -> jannovarData.getRefDict().getContigIDToLength().get(jannovarData.getRefDict().getContigNameToID().get(idx))));
             final GenomeCoordinatesFlipper genomeCoordinatesFlipper = new GenomeCoordinatesFlipper(contigLengths);
             final TranscriptIngestDao transcriptIngestDao = new TranscriptIngestDao(dataSource, genomeCoordinatesFlipper);
             SplicingCalculator splicingCalculator = new SplicingCalculatorImpl(genomeSequenceAccessor, splicingInformationContentAnnotator);

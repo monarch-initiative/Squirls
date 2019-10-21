@@ -27,8 +27,9 @@ class DbSplicingPositionalWeightMatrixParserTest {
     void donorAcceptorAndSplicingParametersAreParsed() {
         parser = new DbSplicingPositionalWeightMatrixParser(dataSource);
 
+        SplicingPwmData data = parser.getSplicingPwmData();
         // ----------        SPLICING PARAMETERS --------
-        SplicingParameters sp = parser.getSplicingParameters();
+        SplicingParameters sp = data.getParameters();
         assertThat(sp, is(SplicingParameters.builder()
                 .setDonorExonic(3)
                 .setDonorIntronic(2)
@@ -37,7 +38,7 @@ class DbSplicingPositionalWeightMatrixParserTest {
                 .build()));
 
         // ----------        DONOR         --------
-        DoubleMatrix donorMatrix = parser.getDonorMatrix();
+        DoubleMatrix donorMatrix = data.getDonor();
         assertThat(donorMatrix.columns, is(5));
         assertThat(donorMatrix.rows, is(4));
         DoubleMatrix donor = new DoubleMatrix(4, 5);
@@ -69,7 +70,7 @@ class DbSplicingPositionalWeightMatrixParserTest {
         assertThat(donorMatrix, is(donor));
 
         // ----------        ACCEPTOR      --------
-        DoubleMatrix acceptorMatrix = parser.getAcceptorMatrix();
+        DoubleMatrix acceptorMatrix = data.getAcceptor();
         assertThat(acceptorMatrix.columns, is(3));
         assertThat(acceptorMatrix.rows, is(4));
 

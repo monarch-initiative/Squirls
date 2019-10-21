@@ -207,7 +207,7 @@ public class ThreesAutoConfiguration {
 
     @Bean
     public SplicingInformationContentCalculator splicingInformationContentAnnotator(SplicingPositionalWeightMatrixParser splicingPositionalWeightMatrixParser) {
-        return new SplicingInformationContentCalculator(splicingPositionalWeightMatrixParser.getDonorMatrix(), splicingPositionalWeightMatrixParser.getAcceptorMatrix(), splicingPositionalWeightMatrixParser.getSplicingParameters());
+        return new SplicingInformationContentCalculator(splicingPositionalWeightMatrixParser.getSplicingPwmData());
     }
 
 

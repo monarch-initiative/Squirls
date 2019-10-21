@@ -4,7 +4,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.monarchinitiative.threes.core.model.SplicingTranscript;
 import org.monarchinitiative.threes.core.reference.GenomeCoordinatesFlipper;
-import org.monarchinitiative.threes.ingest.TestDataInstances;
+import org.monarchinitiative.threes.ingest.PojosForTesting;
 import org.monarchinitiative.threes.ingest.TestDataSourceConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -85,9 +85,9 @@ class TranscriptIngestDaoTest {
         List<String> records = template.query("SELECT * FROM SPLICING.TRANSCRIPTS", rowMapper());
         assertThat(records, hasSize(0));
 
-        SplicingTranscript alpha = TestDataInstances.makeAlphaTranscript();
+        SplicingTranscript alpha = PojosForTesting.makeAlphaTranscript();
         int inserted = instance.insertTranscript(alpha);
-        SplicingTranscript beta = TestDataInstances.makeBetaTranscript();
+        SplicingTranscript beta = PojosForTesting.makeBetaTranscript();
         inserted += instance.insertTranscript(beta);
 
         records = template.query("SELECT * FROM SPLICING.TRANSCRIPTS", rowMapper());

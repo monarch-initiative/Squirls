@@ -11,7 +11,7 @@ import org.monarchinitiative.threes.core.model.SequenceInterval;
 import org.monarchinitiative.threes.core.model.SplicingTranscript;
 import org.monarchinitiative.threes.core.reference.fasta.GenomeSequenceAccessor;
 import org.monarchinitiative.threes.ingest.MakeSplicePositionWeightMatrices;
-import org.monarchinitiative.threes.ingest.TestDataInstances;
+import org.monarchinitiative.threes.ingest.PojosForTesting;
 import org.monarchinitiative.threes.ingest.TestDataSourceConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -58,7 +58,7 @@ class SplicingCalculatorImplTest {
 
     @Test
     void singleExonTranscript() throws Exception {
-        TranscriptModel tm = TestDataInstances.makeSingleExonTranscriptModel(referenceDictionary);
+        TranscriptModel tm = PojosForTesting.makeSingleExonTranscriptModel(referenceDictionary);
         Optional<SplicingTranscript> stOptional = instance.calculate(tm);
 
         assertThat(stOptional.isPresent(), is(true));
@@ -76,7 +76,7 @@ class SplicingCalculatorImplTest {
     void threeExonTranscript() {
         when(annotator.getSplicingParameters())
                 .thenReturn(MakeSplicePositionWeightMatrices.makeSplicingParameters());
-        TranscriptModel tm = TestDataInstances.makeThreeExonTranscriptModel(referenceDictionary);
+        TranscriptModel tm = PojosForTesting.makeThreeExonTranscriptModel(referenceDictionary);
 
         Optional<SplicingTranscript> stOptional = instance.calculate(tm);
 
@@ -106,7 +106,7 @@ class SplicingCalculatorImplTest {
                                 .setStrand(true)
                                 .build(),
                         mockSeq));
-        TranscriptModel tm = TestDataInstances.makeSmallTranscriptModel(referenceDictionary);
+        TranscriptModel tm = PojosForTesting.makeSmallTranscriptModel(referenceDictionary);
 
         Optional<SplicingTranscript> stOptional = instance.calculate(tm);
 

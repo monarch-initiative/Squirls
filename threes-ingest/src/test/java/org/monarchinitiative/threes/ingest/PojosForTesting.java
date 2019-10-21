@@ -1,16 +1,135 @@
-package org.monarchinitiative.threes.core;
+package org.monarchinitiative.threes.ingest;
 
+import de.charite.compbio.jannovar.data.ReferenceDictionary;
+import de.charite.compbio.jannovar.reference.GenomeInterval;
+import de.charite.compbio.jannovar.reference.Strand;
+import de.charite.compbio.jannovar.reference.TranscriptModel;
+import de.charite.compbio.jannovar.reference.TranscriptModelBuilder;
 import org.jblas.DoubleMatrix;
 import org.monarchinitiative.threes.core.model.*;
 import org.monarchinitiative.threes.core.reference.fasta.InvalidCoordinatesException;
 
 /**
- * Class with static method for construction of medium-complicated objects.
+ *
  */
 public class PojosForTesting {
 
     private PojosForTesting() {
         // static utility class
+    }
+
+    public static SplicingTranscript makeAlphaTranscript() throws InvalidCoordinatesException {
+        return SplicingTranscript.newBuilder()
+                .setAccessionId("ACC_ALPHA")
+                .setCoordinates(GenomeCoordinates.newBuilder()
+                        .setContig("chr2")
+                        .setBegin(100)
+                        .setEnd(900)
+                        .setStrand(true)
+                        .build())
+                .addExon(SplicingExon.newBuilder()
+                        .setBegin(100)
+                        .setEnd(300)
+                        .build())
+                .addIntron(SplicingIntron.newBuilder()
+                        .setBegin(300)
+                        .setEnd(700)
+                        .setDonorScore(2.345)
+                        .setAcceptorScore(3.210)
+                        .build())
+                .addExon(SplicingExon.newBuilder()
+                        .setBegin(700)
+                        .setEnd(900)
+                        .build())
+                .build();
+    }
+
+    public static SplicingTranscript makeBetaTranscript() throws InvalidCoordinatesException {
+        return SplicingTranscript.newBuilder()
+                .setAccessionId("ACC_BETA")
+                .setCoordinates(GenomeCoordinates.newBuilder()
+                        .setContig("chr3")
+                        .setBegin(1000)
+                        .setEnd(9000)
+                        .setStrand(true)
+                        .build())
+                .addExon(SplicingExon.newBuilder()
+                        .setBegin(1000)
+                        .setEnd(3000)
+                        .build())
+                .addIntron(SplicingIntron.newBuilder()
+                        .setBegin(3000)
+                        .setEnd(7000)
+                        .setDonorScore(2.345)
+                        .setAcceptorScore(3.210)
+                        .build())
+                .addExon(SplicingExon.newBuilder()
+                        .setBegin(7000)
+                        .setEnd(9000)
+                        .build())
+                .build();
+    }
+
+
+    public static TranscriptModel makeThreeExonTranscriptModel(ReferenceDictionary referenceDictionary) {
+        TranscriptModelBuilder builder = new TranscriptModelBuilder();
+        builder.setAccession("ACCID");
+        builder.setGeneSymbol("GENE");
+        builder.setSequence("");
+
+        GenomeInterval txRegion = new GenomeInterval(referenceDictionary, Strand.FWD, 2, 10_000, 20_000);
+        builder.setTXRegion(txRegion);
+
+        GenomeInterval cdsRegion = new GenomeInterval(referenceDictionary, Strand.FWD, 2, 11_000, 19_000);
+        builder.setCDSRegion(cdsRegion);
+
+        GenomeInterval first = new GenomeInterval(referenceDictionary, Strand.FWD, 2, 10_000, 12_000);
+        builder.addExonRegion(first);
+
+        GenomeInterval second = new GenomeInterval(referenceDictionary, Strand.FWD, 2, 14_000, 16_000);
+        builder.addExonRegion(second);
+
+        GenomeInterval third = new GenomeInterval(referenceDictionary, Strand.FWD, 2, 18_000, 20_000);
+        builder.addExonRegion(third);
+
+        return builder.build();
+    }
+
+    public static TranscriptModel makeSingleExonTranscriptModel(ReferenceDictionary referenceDictionary) {
+        TranscriptModelBuilder builder = new TranscriptModelBuilder();
+        builder.setAccession("ACCID");
+        builder.setGeneSymbol("GENE");
+        builder.setSequence("");
+
+        GenomeInterval txRegion = new GenomeInterval(referenceDictionary, Strand.FWD, 2, 10_000, 20_000);
+        builder.setTXRegion(txRegion);
+
+        GenomeInterval cdsRegion = new GenomeInterval(referenceDictionary, Strand.FWD, 2, 11_000, 19_000);
+        builder.setCDSRegion(cdsRegion);
+
+        GenomeInterval exon = new GenomeInterval(referenceDictionary, Strand.FWD, 2, 10_000, 20_000);
+        builder.addExonRegion(exon);
+        return builder.build();
+    }
+
+    public static TranscriptModel makeSmallTranscriptModel(ReferenceDictionary referenceDictionary) {
+        TranscriptModelBuilder builder = new TranscriptModelBuilder();
+        builder.setAccession("ACCID");
+        builder.setGeneSymbol("GENE");
+        builder.setSequence("");
+
+        GenomeInterval txRegion = new GenomeInterval(referenceDictionary, Strand.FWD, 2, 100, 200);
+        builder.setTXRegion(txRegion);
+
+        GenomeInterval cdsRegion = new GenomeInterval(referenceDictionary, Strand.FWD, 2, 120, 180);
+        builder.setCDSRegion(cdsRegion);
+
+        // the first and the last exons are really small
+        builder.addExonRegion(new GenomeInterval(referenceDictionary, Strand.FWD, 2, 100, 101));
+        builder.addExonRegion(new GenomeInterval(referenceDictionary, Strand.FWD, 2, 110, 160));
+        builder.addExonRegion(new GenomeInterval(referenceDictionary, Strand.FWD, 2, 170, 190));
+        builder.addExonRegion(new GenomeInterval(referenceDictionary, Strand.FWD, 2, 199, 200));
+        return builder.build();
     }
 
     public static SequenceInterval getSequenceIntervalForTranscriptWithThreeExons() {
@@ -176,7 +295,9 @@ public class PojosForTesting {
         });
     }
 
-    // This matrix is expected to be read from the test YAML file at "/genome/dao/splicing/spliceSites.yaml"
+    /**
+     * This matrix is the same matrix as the one in "spliceSites.yaml" YAML file.
+     */
     public static DoubleMatrix makeDonorMatrix() {
         return new DoubleMatrix(new double[][]{
                 // -3                  +1 (G) +2 (U)                +5     +6
@@ -187,7 +308,9 @@ public class PojosForTesting {
         });
     }
 
-
+    /**
+     * This matrix is the same matrix as the one in "spliceSites.yaml" YAML file.
+     */
     public static DoubleMatrix makeAcceptorMatrix() {
         return new DoubleMatrix(new double[][]{
                 {0.248, 0.242, 0.238, 0.228, 0.215, 0.201, 0.181, 0.164, 0.147, 0.136, 0.125, 0.116, 0.106, 0.097, 0.090, 0.091, 0.102, 0.111, 0.117, 0.092, 0.096, 0.240, 0.063, 0.997, 0.001, 0.261, 0.251}, // A
@@ -205,4 +328,5 @@ public class PojosForTesting {
                 .setAcceptorIntronic(25)
                 .build();
     }
+
 }

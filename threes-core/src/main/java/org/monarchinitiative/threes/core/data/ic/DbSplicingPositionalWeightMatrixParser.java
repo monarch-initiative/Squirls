@@ -109,17 +109,11 @@ public class DbSplicingPositionalWeightMatrixParser implements SplicingPositiona
     }
 
     @Override
-    public SplicingParameters getSplicingParameters() {
-        return splicingParameters;
-    }
-
-    @Override
-    public DoubleMatrix getDonorMatrix() {
-        return donorMatrix;
-    }
-
-    @Override
-    public DoubleMatrix getAcceptorMatrix() {
-        return acceptorMatrix;
+    public SplicingPwmData getSplicingPwmData() {
+        return SplicingPwmData.builder()
+                .setDonor(donorMatrix)
+                .setAcceptor(acceptorMatrix)
+                .setParameters(splicingParameters)
+                .build();
     }
 }

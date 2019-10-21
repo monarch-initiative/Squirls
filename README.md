@@ -25,7 +25,7 @@ After unzipping, place the files into your Exomiser data directory.
 ### Download required data
 
 The build process requires presence of following files in the `build-dir`:
-- pre-built Jannovar caches with `v0.28` 
+- pre-built Jannovar caches with `v0.29` 
 - YAML file with positional-weight matrices for canonical splice donor & acceptor sites
 
 Let's say the `build-dir` points to `/home/user/data` (`--build-dir=/home/user/data`). You need to download & unpack content of the [threes-data.zip](https://exomiser-threes.s3.amazonaws.com/threes-data.zip) into the `/home/user/data`. In result, there will be 2 directories in the  `build-dir`:
@@ -34,7 +34,10 @@ Let's say the `build-dir` points to `/home/user/data` (`--build-dir=/home/user/d
 
 
 ### Build the database(s)
-After downloading & unpacking the above files, we can start building the databases. We need to build databases for each transcript source (*refseq*, *ucsc*, ...).
+After downloading & unpacking the above files, we can start building the databases. We need to build databases for each transcript source:
+- *refseq*,
+- *ucsc*, and
+- *ensembl*
 
 The command below will create a new directory `/path/to/build/directory/1902_hg19` and store all the files inside. At first it will download & process the UCSC reference genome, then the splicing database with *RefSeq* data will be built. Edit the `--jannovar-transcript-source` argument if you want to build splicing database for other transcript source.
 
@@ -46,7 +49,8 @@ java -jar threes-ingest-1.0.4.jar
 > `--version` - use any string you want, this is present in order to follow Exomiser build process as closely as possible
 > `--genome-assembly` - choose from `hg19`, and `hg38`
 > `--jannovar-transcript-source` - choose from `refseq`, `ucsc`, and `ensembl`
-  
+
+More info regarding building of the database can be found in the *README.md* file of the `threes-ingest` module
 
 ### Join database & FASTA file with Exomiser data
 The previous command created directory with FASTA file and splicing databases (e.g. `1902_hg19`). Copy all the files from this directory into your Exomiser data directory.

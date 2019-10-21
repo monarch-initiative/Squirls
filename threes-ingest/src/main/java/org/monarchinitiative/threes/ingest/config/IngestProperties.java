@@ -11,7 +11,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Objects;
 
 /**
  *
@@ -22,8 +21,6 @@ public class IngestProperties {
 
     private final Environment env;
 
-    private final String propertyKey = "build-dir";
-
     private final Path buildDir;
 
     private String hg19FastaUrl;
@@ -32,8 +29,8 @@ public class IngestProperties {
 
     public IngestProperties(Environment env) {
         this.env = env;
-        String buildDirPath = Objects.requireNonNull(env.getProperty(propertyKey), String.format("'%s' has not been specified", propertyKey));
-        this.buildDir = Paths.get(buildDirPath);
+        String propertyKey = "build-dir";
+        this.buildDir = getPathOrThrow(propertyKey, String.format("'%s' has not been specified", propertyKey));
     }
 
     public Path getBuildDir() {
@@ -67,15 +64,15 @@ public class IngestProperties {
         if (ts == null || ts.isEmpty()) {
             throw new IllegalArgumentException("jannovar-transcript-source has not been specified");
         }
-        switch (ts.toUpperCase()) {
-            case "REFSEQ":
+        switch (ts.toLowerCase()) {
+            case "refseq":
                 return "refseq";
-            case "UCSC":
+            case "ucsc":
                 return "ucsc";
-            case "ENSEMBL":
+            case "ensembl":
                 return "ensembl";
             default:
-                throw new IllegalArgumentException("Unknown jannovar transcript source " + ts);
+                throw new IllegalArgumentException("Unknown Jannovar transcript source " + ts);
         }
     }
 

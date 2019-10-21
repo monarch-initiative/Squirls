@@ -6,8 +6,9 @@ import org.jblas.DoubleMatrix;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.monarchinitiative.threes.core.ThreeSException;
 import org.monarchinitiative.threes.core.calculators.ic.SplicingInformationContentCalculator;
-import org.monarchinitiative.threes.core.model.SplicingParameters;
+import org.monarchinitiative.threes.core.data.ic.SplicingPwmData;
 import org.monarchinitiative.threes.core.reference.fasta.GenomeSequenceAccessor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -65,36 +66,8 @@ class ThreesDataBuilderTest {
     @Autowired
     private JannovarData jannovarData;
 
-    private static SplicingParameters makeFakeSplicingParameters() {
-        return SplicingParameters.builder()
-                .setDonorExonic(2).setDonorIntronic(3)
-                .setAcceptorExonic(4).setAcceptorIntronic(5)
-                .build();
-    }
-
-    /**
-     * @return fake donor site represented by 4x5 matrix
-     */
-    private static DoubleMatrix makeFakeDonorMatrix() {
-        return new DoubleMatrix(new double[][]{
-                {.2, .3, .4, .3, .2}, // A
-                {.1, .2, .3, .1, .6}, // C
-                {.3, .3, .1, .3, .1}, // G
-                {.4, .2, .2, .3, .1}  // T
-        });
-    }
-
-    /**
-     * @return fake acceptor site represented by 4x9 matrix
-     */
-    private static DoubleMatrix makeFakeAcceptorMatrix() {
-        return new DoubleMatrix(new double[][]{
-                {.2, .2, .4, .6, .1, .3, .4, .3, .2}, // A
-                {.1, .2, .3, .2, .5, .2, .1, .6, .9}, // C
-                {.3, .3, .1, .3, .1, .1, .2, .8, .2}, // G
-                {.4, .2, .2, .3, .1, .8, .2, .1, .8}  // T
-        });
-    }
+    @Autowired
+    private SplicingPwmData splicingPwmData;
 
 
     private static List<String> parseResultSet(ResultSet rs, Function<ResultSet, String> mapper) throws SQLException {
@@ -127,10 +100,12 @@ class ThreesDataBuilderTest {
         // arrange - nothing to be done here
 
         // act - insert small PWMs into db
-        final DoubleMatrix expectedDonor = makeFakeDonorMatrix();
-        final DoubleMatrix expectedAcceptor = makeFakeAcceptorMatrix();
-        final SplicingParameters parameters = makeFakeSplicingParameters();
-        ThreesDataBuilder.processPwms(dataSource, expectedDonor, expectedAcceptor, parameters);
+        SplicingPwmData data = SplicingPwmData.builder()
+                .setDonor(PojosForTesting.makeFakeDonorMatrix())
+                .setAcceptor(PojosForTesting.makeFakeAcceptorMatrix())
+                .setParameters(PojosForTesting.makeFakeSplicingParameters())
+                .build();
+        ThreesDataBuilder.processPwms(dataSource, data);
 
         // assert - get the data from expected location
         DoubleMatrix actualDonor = new DoubleMatrix(4, 5);
@@ -158,8 +133,8 @@ class ThreesDataBuilderTest {
                 }
             }
         }
-        assertThat(expectedDonor, is(equalTo(actualDonor)));
-        assertThat(expectedAcceptor, is(equalTo(actualAcceptor)));
+        assertThat(PojosForTesting.makeFakeDonorMatrix(), is(equalTo(actualDonor)));
+        assertThat(PojosForTesting.makeFakeAcceptorMatrix(), is(equalTo(actualAcceptor)));
 
         String pwmMetadataSql = "select PWM_NAME, PWM_KEY, PWM_VALUE from SPLICING.PWM_METADATA";
         List<String> lines = new ArrayList<>();
@@ -270,18 +245,41 @@ class ThreesDataBuilderTest {
     }
 
     @Test
-    void buildData() throws Exception {
+    void downloadReferenceGenome() throws ThreeSException {
+        // arrange - nothing to be done
+
+        // act - download a small reference genome
+        ThreesDataBuilder.downloadReferenceGenome(FASTA_URL, buildDir, ASSEMBLY, VERSION, true);
+
+        // assert - there should be a FASTA file with index present in the `buildDir`
+        String versionedAssembly = VERSION + "_" + ASSEMBLY;
+
+        assertThat("FASTA file was not generated", buildDir.resolve(String.format("%s.fa", versionedAssembly)).toFile().isFile(), is(true));
+        assertThat("FASTA index was not generated", buildDir.resolve(String.format("%s.fa.fai", versionedAssembly)).toFile().isFile(), is(true));
+    }
+
+    @Test
+    void processContigs() throws Exception {
         // arrange - nothing to be done
 
         // act
-        ThreesDataBuilder.build(jannovarData, TRANSCRIPT_SOURCE, buildDir, FASTA_URL, ASSEMBLY, VERSION);
+        ThreesDataBuilder.processContigs(dataSource, contigLengthMap);
 
         // assert
-        // there should be a FASTA file with index present in the `buildDir`
-        String versionedAssembly = VERSION + "_" + ASSEMBLY;
-        assertThat("FASTA file was not generated", buildDir.resolve(String.format("%s.fa", versionedAssembly)).toFile().isFile(), is(true));
-        assertThat("FASTA index was not generated", buildDir.resolve(String.format("%s.fa.fai", versionedAssembly)).toFile().isFile(), is(true));
+        try (Connection connection = dataSource.getConnection()) {
+//            TODO - continue
+        }
+    }
 
+    @Test
+    void buildThreesDatabase() throws Exception {
+        // arrange - nothing to be done
+
+        // act
+        ThreesDataBuilder.buildThreesDatabase(jannovarData, TRANSCRIPT_SOURCE, accessor, splicingPwmData, buildDir, ASSEMBLY, VERSION);
+
+        // assert
+        String versionedAssembly = VERSION + "_" + ASSEMBLY;
         // there should be database file present in the `buildDir`
         assertThat("Database file was not generated", buildDir.resolve(String.format("%s_splicing_%s.mv.db", versionedAssembly, TRANSCRIPT_SOURCE)).toFile().isFile(), is(true));
     }

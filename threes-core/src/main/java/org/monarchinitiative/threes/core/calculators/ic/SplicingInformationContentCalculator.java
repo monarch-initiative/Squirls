@@ -1,6 +1,7 @@
 package org.monarchinitiative.threes.core.calculators.ic;
 
 import org.jblas.DoubleMatrix;
+import org.monarchinitiative.threes.core.data.ic.SplicingPwmData;
 import org.monarchinitiative.threes.core.model.SplicingParameters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,6 +44,10 @@ public class SplicingInformationContentCalculator {
         this.donorMatrix = createICMatrix(donorMatrix);
         this.acceptorMatrix = createICMatrix(acceptorMatrix);
         this.splicingParameters = splicingParameters;
+    }
+
+    public SplicingInformationContentCalculator(SplicingPwmData splicingPwmData) {
+        this(splicingPwmData.getDonor(), splicingPwmData.getAcceptor(), splicingPwmData.getParameters());
     }
 
     /**

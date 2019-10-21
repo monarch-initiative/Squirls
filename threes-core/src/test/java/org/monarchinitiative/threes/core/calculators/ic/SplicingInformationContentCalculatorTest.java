@@ -4,7 +4,7 @@ import org.jblas.DoubleMatrix;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.monarchinitiative.threes.core.MakeSplicePositionWeightMatrices;
+import org.monarchinitiative.threes.core.PojosForTesting;
 import org.monarchinitiative.threes.core.model.SplicingParameters;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -23,9 +23,9 @@ class SplicingInformationContentCalculatorTest {
 
     @BeforeAll
     static void setUpBeforeAll() {
-        DONOR_MATRIX = MakeSplicePositionWeightMatrices.makeDonorMatrix();
-        ACCEPTOR_MATRIX = MakeSplicePositionWeightMatrices.makeAcceptorMatrix();
-        SPLICING_PARAMETERS = MakeSplicePositionWeightMatrices.makeSplicingParameters();
+        DONOR_MATRIX = PojosForTesting.makeDonorMatrix();
+        ACCEPTOR_MATRIX = PojosForTesting.makeAcceptorMatrix();
+        SPLICING_PARAMETERS = PojosForTesting.makeSplicingParameters();
     }
 
     @BeforeEach

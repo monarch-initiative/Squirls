@@ -13,6 +13,7 @@ import de.charite.compbio.jannovar.reference.TranscriptModelBuilder;
 import org.monarchinitiative.threes.core.calculators.ic.SplicingInformationContentCalculator;
 import org.monarchinitiative.threes.core.data.ic.InputStreamBasedPositionalWeightMatrixParser;
 import org.monarchinitiative.threes.core.data.ic.SplicingPositionalWeightMatrixParser;
+import org.monarchinitiative.threes.core.data.ic.SplicingPwmData;
 import org.monarchinitiative.threes.core.reference.GenomeCoordinatesFlipper;
 import org.monarchinitiative.threes.core.reference.fasta.GenomeSequenceAccessor;
 import org.monarchinitiative.threes.core.reference.fasta.InvalidFastaFileException;
@@ -37,6 +38,15 @@ import java.util.stream.Collectors;
 @Configuration
 public class TestDataSourceConfig {
 
+
+    @Bean
+    public SplicingPwmData splicingPwmData() {
+        return SplicingPwmData.builder()
+                .setDonor(PojosForTesting.makeDonorMatrix())
+                .setAcceptor(PojosForTesting.makeAcceptorMatrix())
+                .setParameters(PojosForTesting.makeSplicingParameters())
+                .build();
+    }
 
     @Bean
     public JdbcTemplate jdbcTemplate(DataSource dataSource) {
@@ -99,7 +109,6 @@ public class TestDataSourceConfig {
                         id -> referenceDictionary.getContigIDToLength().get(id))); // value - chromosome length
     }
 
-
     @Bean
     public GenomeCoordinatesFlipper genomeCoordinatesFlipper(Map<String, Integer> contigLengthMap) {
         return new GenomeCoordinatesFlipper(contigLengthMap);
@@ -107,9 +116,7 @@ public class TestDataSourceConfig {
 
     @Bean
     public SplicingInformationContentCalculator splicingInformationContentCalculator(SplicingPositionalWeightMatrixParser splicingPositionalWeightMatrixParser) {
-        return new SplicingInformationContentCalculator(splicingPositionalWeightMatrixParser.getDonorMatrix(),
-                splicingPositionalWeightMatrixParser.getAcceptorMatrix(),
-                splicingPositionalWeightMatrixParser.getSplicingParameters());
+        return new SplicingInformationContentCalculator(splicingPositionalWeightMatrixParser.getSplicingPwmData());
     }
 
     @Bean

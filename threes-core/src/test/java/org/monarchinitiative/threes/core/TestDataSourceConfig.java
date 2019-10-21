@@ -40,12 +40,7 @@ public class TestDataSourceConfig {
 
     @Bean
     public SplicingParameters splicingParameters() {
-        return SplicingParameters.builder()
-                .setDonorExonic(3)
-                .setDonorIntronic(6)
-                .setAcceptorExonic(2)
-                .setAcceptorIntronic(25)
-                .build();
+        return PojosForTesting.makeSplicingParameters();
     }
 
     @Bean

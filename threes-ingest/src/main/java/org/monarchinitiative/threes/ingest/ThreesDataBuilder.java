@@ -5,14 +5,12 @@ import com.zaxxer.hikari.HikariDataSource;
 import de.charite.compbio.jannovar.data.JannovarData;
 import de.charite.compbio.jannovar.reference.TranscriptModel;
 import org.flywaydb.core.Flyway;
-import org.jblas.DoubleMatrix;
 import org.monarchinitiative.threes.core.ThreeSException;
 import org.monarchinitiative.threes.core.calculators.ic.SplicingInformationContentCalculator;
-import org.monarchinitiative.threes.core.data.ic.InputStreamBasedPositionalWeightMatrixParser;
+import org.monarchinitiative.threes.core.data.ic.SplicingPwmData;
 import org.monarchinitiative.threes.core.model.SplicingParameters;
 import org.monarchinitiative.threes.core.reference.GenomeCoordinatesFlipper;
 import org.monarchinitiative.threes.core.reference.fasta.GenomeSequenceAccessor;
-import org.monarchinitiative.threes.core.reference.fasta.PrefixHandlingGenomeSequenceAccessor;
 import org.monarchinitiative.threes.ingest.pwm.PwmIngestDao;
 import org.monarchinitiative.threes.ingest.reference.ContigIngestDao;
 import org.monarchinitiative.threes.ingest.reference.ContigIngestRunner;
@@ -25,20 +23,17 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.sql.DataSource;
-import java.io.IOException;
-import java.io.InputStream;
 import java.net.URL;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
- * A class for building splicing database for given <code>transcriptSource</code> and <code>assembly</code>, using
- * provided {@link JannovarData}.
+ * A static class with methods for building splicing database.
+ *
+ * @see Main for an example usage
  */
 public class ThreesDataBuilder {
 
@@ -50,6 +45,9 @@ public class ThreesDataBuilder {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ThreesDataBuilder.class);
 
+    private ThreesDataBuilder() {
+        // private no-op
+    }
 
     private static String normalizeAssemblyString(String assembly) throws ThreeSException {
         switch (assembly.toLowerCase()) {
@@ -84,14 +82,20 @@ public class ThreesDataBuilder {
         return flyway.migrate();
     }
 
+    public static void processContigs(DataSource dataSource, Map<String, Integer> contigLengths) {
+        ContigIngestDao contigIngestDao = new ContigIngestDao(dataSource);
+        ContigIngestRunner contigIngestRunner = new ContigIngestRunner(contigIngestDao, contigLengths);
+        contigIngestRunner.run();
+    }
+
     /**
      * Process given <code>transcripts</code>.
      */
-    static void processTranscripts(DataSource dataSource,
-                                   GenomeSequenceAccessor accessor,
-                                   Map<String, Integer> contigLengths,
-                                   Collection<TranscriptModel> transcripts,
-                                   SplicingInformationContentCalculator calculator) {
+    public static void processTranscripts(DataSource dataSource,
+                                          GenomeSequenceAccessor accessor,
+                                          Map<String, Integer> contigLengths,
+                                          Collection<TranscriptModel> transcripts,
+                                          SplicingInformationContentCalculator calculator) {
         GenomeCoordinatesFlipper genomeCoordinatesFlipper = new GenomeCoordinatesFlipper(contigLengths);
         TranscriptIngestDao transcriptIngestDao = new TranscriptIngestDao(dataSource, genomeCoordinatesFlipper);
         SplicingCalculator splicingCalculator = new SplicingCalculatorImpl(accessor, calculator);
@@ -102,42 +106,59 @@ public class ThreesDataBuilder {
     /**
      * Store given <code>donor</code>, <code>acceptor</code>, and <code>parameters</code> into <code>dataSource</code>>.
      *
-     * @param dataSource {@link DataSource} where to matrices will be stored
-     * @param donor      {@link DoubleMatrix} representing splice donor site
-     * @param acceptor   {@link DoubleMatrix} representing splice acceptor site
-     * @param parameters parameters of splicing sites
+     * @param dataSource      {@link DataSource} where to matrices will be stored
+     * @param splicingPwmData {@link SplicingPwmData} with data representing splice sites
      */
-    static void processPwms(DataSource dataSource, DoubleMatrix donor, DoubleMatrix acceptor, SplicingParameters parameters) {
+    public static void processPwms(DataSource dataSource, SplicingPwmData splicingPwmData) {
         final PwmIngestDao pwmIngestDao = new PwmIngestDao(dataSource);
-        pwmIngestDao.insertDoubleMatrix(donor, DONOR_NAME, parameters.getDonorExonic(), parameters.getDonorIntronic());
-        pwmIngestDao.insertDoubleMatrix(acceptor, ACCEPTOR_NAME, parameters.getAcceptorExonic(), parameters.getAcceptorIntronic());
+        SplicingParameters parameters = splicingPwmData.getParameters();
+        pwmIngestDao.insertDoubleMatrix(splicingPwmData.getDonor(), DONOR_NAME, parameters.getDonorExonic(), parameters.getDonorIntronic());
+        pwmIngestDao.insertDoubleMatrix(splicingPwmData.getAcceptor(), ACCEPTOR_NAME, parameters.getAcceptorExonic(), parameters.getAcceptorIntronic());
+    }
+
+    private static String getVersionedAssembly(String assembly, String version) throws ThreeSException {
+        assembly = normalizeAssemblyString(assembly);
+        // a string like `1902_hg19`
+        return version + "_" + assembly;
     }
 
     /**
+     * Download, uncompress, and concatenate contigs into a single FASTA file. Then, index the FASTA file.
+     *
+     * @param genomeUrl url pointing to reference genome FASTA file to be downloaded
+     * @param buildDir  path to directory where 3S data files will be created
+     * @param assembly  a string like `hg19`, `hg38`, `GRCh37`, `GRCh38`, `grch37`, etc.
+     * @param version   version of the database, e.g. `1902`
+     * @param overwrite overwrite existing FASTA file if true
+     * @throws ThreeSException if something goes wrong
+     */
+    public static void downloadReferenceGenome(URL genomeUrl, Path buildDir, String assembly, String version, boolean overwrite) throws ThreeSException {
+        String versionedAssembly = getVersionedAssembly(assembly, version);
+        Path genomeFastaPath = buildDir.resolve(String.format("%s.fa", versionedAssembly));
+        GenomeAssemblyDownloader downloader = new GenomeAssemblyDownloader(genomeUrl, genomeFastaPath, overwrite);
+        downloader.run(); // run on the same thread
+    }
+
+    /**
+     * Build splicing database using provided data.
+     *
      * @param jannovarData     {@link JannovarData} with transcripts to use for database
      * @param transcriptSource string telling which transcript source is being used within <code>jannovarData</code>
-     * @param buildDir         path to directory where 3S data files will be created
-     * @param genomeUrl        url pointing to reference genome FASTA file to be downloaded
+     * @param accessor         {@link GenomeSequenceAccessor} for fetching nucleotide sequences from reference genome
+     * @param splicingPwmData  {@link SplicingPwmData} with representations of splice sites
+     * @param buildDir         path to directory where the final database will be stored
      * @param assembly         a string like `hg19`, `hg38`, `GRCh37`, `GRCh38`, `grch37`, etc.
      * @param version          version of the database, e.g. `1902`
      * @throws ThreeSException when input sanity checks fail
      */
-    public static void build(JannovarData jannovarData,
-                             String transcriptSource,
-                             Path buildDir,
-                             URL genomeUrl,
-                             String assembly,
-                             String version) throws ThreeSException {
-        assembly = normalizeAssemblyString(assembly);
-        // a string like `1902_hg19`
-        String versionedAssembly = version + "_" + assembly;
-
-        // 1 - download & process FASTA file
-        Path genomeFastaPath = buildDir.resolve(String.format("%s.fa", versionedAssembly));
-        Path genomeFastaFaiPath = buildDir.resolve(String.format("%s.fa.fai", versionedAssembly));
-
-        GenomeAssemblyDownloader downloader = new GenomeAssemblyDownloader(genomeUrl, genomeFastaPath, false);
-        downloader.run();
+    public static void buildThreesDatabase(JannovarData jannovarData,
+                                           String transcriptSource,
+                                           GenomeSequenceAccessor accessor,
+                                           SplicingPwmData splicingPwmData,
+                                           Path buildDir,
+                                           String assembly,
+                                           String version) throws ThreeSException {
+        String versionedAssembly = getVersionedAssembly(assembly, version);
 
         // 2 - create database
         // 2a - initialize database
@@ -148,35 +169,18 @@ public class ThreesDataBuilder {
         int migrations = applyMigrations(dataSource);
         LOGGER.info("Applied {} migrations", migrations);
 
-        // 3 - store info regarding chromosomes into the database
-        ContigIngestDao contigIngestDao = new ContigIngestDao(dataSource);
-        ContigIngestRunner contigIngestRunner = new ContigIngestRunner(contigIngestDao, jannovarData);
-        contigIngestRunner.run();
+        Map<String, Integer> contigLengths = jannovarData.getRefDict().getContigNameToID().keySet().stream()
+                .collect(Collectors.toMap(Function.identity(),
+                        idx -> jannovarData.getRefDict().getContigIDToLength().get(jannovarData.getRefDict().getContigNameToID().get(idx))));
 
-        // 4 - parse splicing PWMs
-        // TODO - externalize?
-        Path splicingIcMatrixPath = Paths.get(ThreesDataBuilder.class.getResource("/splicing-information-content-matrix.yaml").getPath());
-        final DoubleMatrix donor, acceptor;
-        final SplicingParameters parameters;
-        try (InputStream pwmIs = Files.newInputStream(splicingIcMatrixPath)) {
-            InputStreamBasedPositionalWeightMatrixParser pwmParser = new InputStreamBasedPositionalWeightMatrixParser(pwmIs);
-            donor = pwmParser.getDonorMatrix();
-            acceptor = pwmParser.getAcceptorMatrix();
-            parameters = pwmParser.getSplicingParameters();
-            processPwms(dataSource, donor, acceptor, parameters);
-        } catch (IOException e) {
-            throw new ThreeSException(e);
-        }
+        // 3 - store info regarding chromosomes into the database
+        processContigs(dataSource, contigLengths);
+
+        // 4 - parse splicing PWM data
+        processPwms(dataSource, splicingPwmData);
 
         // 5 - process transcripts
-        SplicingInformationContentCalculator calculator = new SplicingInformationContentCalculator(donor, acceptor, parameters);
-        try (GenomeSequenceAccessor accessor = new PrefixHandlingGenomeSequenceAccessor(genomeFastaPath, genomeFastaFaiPath)) {
-            Map<String, Integer> contigLengths = jannovarData.getRefDict().getContigNameToID().keySet().stream()
-                    .collect(Collectors.toMap(Function.identity(),
-                            idx -> jannovarData.getRefDict().getContigIDToLength().get(jannovarData.getRefDict().getContigNameToID().get(idx))));
-            processTranscripts(dataSource, accessor, contigLengths, jannovarData.getTmByAccession().values(), calculator);
-        } catch (Exception e) {
-            throw new ThreeSException(e);
-        }
+        SplicingInformationContentCalculator calculator = new SplicingInformationContentCalculator(splicingPwmData);
+        processTranscripts(dataSource, accessor, contigLengths, jannovarData.getTmByAccession().values(), calculator);
     }
 }

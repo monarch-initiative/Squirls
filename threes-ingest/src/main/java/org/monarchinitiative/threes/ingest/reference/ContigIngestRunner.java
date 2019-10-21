@@ -1,12 +1,9 @@
 package org.monarchinitiative.threes.ingest.reference;
 
-import de.charite.compbio.jannovar.data.JannovarData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Map;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 /**
  *
@@ -17,17 +14,15 @@ public class ContigIngestRunner {
 
     private final ContigIngestDao dao;
 
-    private final JannovarData jannovarData;
+    private final Map<String, Integer> contigLengths;
 
-    public ContigIngestRunner(ContigIngestDao dao, JannovarData jannovarData) {
+
+    public ContigIngestRunner(ContigIngestDao dao, Map<String, Integer> contigLengths) {
         this.dao = dao;
-        this.jannovarData = jannovarData;
+        this.contigLengths = contigLengths;
     }
 
     public void run() {
-        final Map<String, Integer> contigLengths = jannovarData.getRefDict().getContigNameToID().keySet().stream()
-                .collect(Collectors.toMap(Function.identity(),
-                        idx -> jannovarData.getRefDict().getContigIDToLength().get(jannovarData.getRefDict().getContigNameToID().get(idx))));
         Integer inserted = contigLengths.entrySet().stream()
                 .map(e -> dao.insertContig(e.getKey(), e.getValue()))
                 .reduce(Integer::sum)
