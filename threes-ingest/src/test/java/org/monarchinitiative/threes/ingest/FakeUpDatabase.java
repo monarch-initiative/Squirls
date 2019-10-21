@@ -11,13 +11,10 @@ import org.junit.jupiter.api.Test;
 import org.monarchinitiative.threes.core.calculators.ic.SplicingInformationContentCalculator;
 import org.monarchinitiative.threes.core.data.ic.InputStreamBasedPositionalWeightMatrixParser;
 import org.monarchinitiative.threes.core.data.ic.SplicingPositionalWeightMatrixParser;
+import org.monarchinitiative.threes.core.data.ic.SplicingPwmData;
 import org.monarchinitiative.threes.core.reference.GenomeCoordinatesFlipper;
 import org.monarchinitiative.threes.core.reference.fasta.GenomeSequenceAccessor;
 import org.monarchinitiative.threes.core.reference.fasta.PrefixHandlingGenomeSequenceAccessor;
-import org.monarchinitiative.threes.ingest.pwm.PwmIngestDao;
-import org.monarchinitiative.threes.ingest.pwm.PwmIngestRunner;
-import org.monarchinitiative.threes.ingest.reference.ContigIngestDao;
-import org.monarchinitiative.threes.ingest.reference.ContigIngestRunner;
 import org.monarchinitiative.threes.ingest.transcripts.SplicingCalculator;
 import org.monarchinitiative.threes.ingest.transcripts.SplicingCalculatorImpl;
 import org.monarchinitiative.threes.ingest.transcripts.TranscriptIngestDao;
@@ -37,7 +34,7 @@ import java.util.stream.Collectors;
  * These tests are not really meant to be run on other computer than mine. Sorry about that.
  */
 @Disabled("This test is run only to generate small database for testing of other programs")
-public class FakeUpDatabase {
+class FakeUpDatabase {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FakeUpDatabase.class);
 
@@ -54,9 +51,9 @@ public class FakeUpDatabase {
 
     private static final Path HG38_FASTA_IDX_PATH = Paths.get("/home/ielis/dub/genomes/hg38/hg38.fa.fai");
 
-    private static final Path HG19_JANNOVAR_DB = Paths.get("/home/ielis/jannovar/v0.28/hg19_ucsc.ser");
+    private static final Path HG19_JANNOVAR_DB = Paths.get("/home/ielis/jannovar/v0.29/hg19_ucsc.ser");
 
-    private static final Path HG38_JANNOVAR_DB = Paths.get("/home/ielis/jannovar/v0.28/hg38_ucsc.ser");
+    private static final Path HG38_JANNOVAR_DB = Paths.get("/home/ielis/jannovar/v0.29/hg38_ucsc.ser");
 
     private static final Path SPLICING_IC_MATRIX_PATH = Paths.get("/home/ielis/data/threes/pwm/splicing-information-content-matrix.yaml");
 
@@ -111,19 +108,19 @@ public class FakeUpDatabase {
         int migrations = applyMigrations(dataSource, locations);
         LOGGER.info("Applied {} migrations", migrations);
 
+        // store contig lengths
         Map<String, Integer> contigLengths = jannovarData.getRefDict().getContigIDToName().keySet().stream()
                 .collect(Collectors.toMap(
                         id -> jannovarData.getRefDict().getContigIDToName().get(id), // key - chromosome number
                         id -> jannovarData.getRefDict().getContigIDToLength().get(id)));// value - chromosome length
-
-        ContigIngestDao dao = new ContigIngestDao(dataSource);
-        ContigIngestRunner contigIngestRunner = new ContigIngestRunner(dao, contigLengths);
-        contigIngestRunner.run();
+        ThreesDataBuilder.processContigs(dataSource, contigLengths);
 
         // process PWMs
-        PwmIngestDao pwm = new PwmIngestDao(dataSource);
-        PwmIngestRunner pwmIngestRunner = new PwmIngestRunner(pwm, SPLICING_IC_MATRIX_PATH);
-        pwmIngestRunner.run();
+        try (InputStream is = Files.newInputStream(SPLICING_IC_MATRIX_PATH)) {
+            InputStreamBasedPositionalWeightMatrixParser parser = new InputStreamBasedPositionalWeightMatrixParser(is);
+            SplicingPwmData data = parser.getSplicingPwmData();
+            ThreesDataBuilder.processPwms(dataSource, data);
+        }
 
         // process transcripts
         try (GenomeSequenceAccessor genomeSequenceAccessor = new PrefixHandlingGenomeSequenceAccessor(HG19_FASTA_PATH, HG19_FASTA_IDX_PATH)) {
@@ -153,19 +150,20 @@ public class FakeUpDatabase {
         int migrations = applyMigrations(dataSource, locations);
         LOGGER.info("Applied {} migrations", migrations);
 
+
+        // store contig lengths
         Map<String, Integer> contigLengths = jannovarData.getRefDict().getContigIDToName().keySet().stream()
                 .collect(Collectors.toMap(
                         id -> jannovarData.getRefDict().getContigIDToName().get(id), // key - chromosome number
                         id -> jannovarData.getRefDict().getContigIDToLength().get(id)));// value - chromosome length
-
-        ContigIngestDao dao = new ContigIngestDao(dataSource);
-        ContigIngestRunner contigIngestRunner = new ContigIngestRunner(dao, contigLengths);
-        contigIngestRunner.run();
+        ThreesDataBuilder.processContigs(dataSource, contigLengths);
 
         // process PWMs
-        PwmIngestDao pwm = new PwmIngestDao(dataSource);
-        PwmIngestRunner pwmIngestRunner = new PwmIngestRunner(pwm, SPLICING_IC_MATRIX_PATH);
-        pwmIngestRunner.run();
+        try (InputStream is = Files.newInputStream(SPLICING_IC_MATRIX_PATH)) {
+            InputStreamBasedPositionalWeightMatrixParser parser = new InputStreamBasedPositionalWeightMatrixParser(is);
+            SplicingPwmData data = parser.getSplicingPwmData();
+            ThreesDataBuilder.processPwms(dataSource, data);
+        }
 
         // process transcripts
         try (GenomeSequenceAccessor genomeSequenceAccessor = new PrefixHandlingGenomeSequenceAccessor(HG38_FASTA_PATH, HG38_FASTA_IDX_PATH)) {

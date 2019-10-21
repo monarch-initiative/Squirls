@@ -35,6 +35,7 @@ import static org.hamcrest.Matchers.hasSize;
 @SpringBootTest(classes = {TestDataSourceConfig.class})
 @Sql(scripts = {"file:src/test/resources/sql/create_schema.sql",
         "file:src/test/resources/sql/create_pwm_tables.sql",
+        "file:src/test/resources/sql/create_contig_tables.sql",
         "file:src/test/resources/sql/create_transcript_intron_exon_tables.sql"})
 class ThreesDataBuilderTest {
 
@@ -266,9 +267,26 @@ class ThreesDataBuilderTest {
         ThreesDataBuilder.processContigs(dataSource, contigLengthMap);
 
         // assert
-        try (Connection connection = dataSource.getConnection()) {
-//            TODO - continue
+        List<String> results = new ArrayList<>();
+        String contigSql = "select CONTIG, CONTIG_LENGTH from SPLICING.CONTIGS";
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement contigPs = connection.prepareStatement(contigSql)) {
+            results.addAll(parseResultSet(contigPs.executeQuery(), rs -> {
+                try {
+                    return String.join("\t",
+                            rs.getString("CONTIG"),
+                            rs.getString("CONTIG_LENGTH"));
+                } catch (SQLException e) {
+                    throw new RuntimeException(e);
+                }
+            }));
         }
+
+        assertThat(results, hasSize(2));
+        assertThat(results, hasItems(
+                String.join("\t", "chr2", "100000"),
+                String.join("\t", "chr3", "200000")
+        ));
     }
 
     @Test

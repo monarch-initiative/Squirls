@@ -35,6 +35,7 @@ import java.util.stream.Collectors;
  *
  * @see Main for an example usage
  */
+@SuppressWarnings("WeakerAccess")
 public class ThreesDataBuilder {
 
     public static final String DONOR_NAME = "SPLICE_DONOR_SITE";
@@ -110,7 +111,7 @@ public class ThreesDataBuilder {
      * @param splicingPwmData {@link SplicingPwmData} with data representing splice sites
      */
     public static void processPwms(DataSource dataSource, SplicingPwmData splicingPwmData) {
-        final PwmIngestDao pwmIngestDao = new PwmIngestDao(dataSource);
+        PwmIngestDao pwmIngestDao = new PwmIngestDao(dataSource);
         SplicingParameters parameters = splicingPwmData.getParameters();
         pwmIngestDao.insertDoubleMatrix(splicingPwmData.getDonor(), DONOR_NAME, parameters.getDonorExonic(), parameters.getDonorIntronic());
         pwmIngestDao.insertDoubleMatrix(splicingPwmData.getAcceptor(), ACCEPTOR_NAME, parameters.getAcceptorExonic(), parameters.getAcceptorIntronic());
