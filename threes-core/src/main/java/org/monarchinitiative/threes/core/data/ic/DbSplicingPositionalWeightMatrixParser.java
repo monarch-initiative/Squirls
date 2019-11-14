@@ -40,27 +40,25 @@ public class DbSplicingPositionalWeightMatrixParser implements SplicingPositiona
             data.add(new ArrayList<>());
         }
 
-        DoubleMatrix matrix = new DoubleMatrix();
-        // TODO - continue
         // matrix
-        String sql = String.format("SELECT ROW_IDX, COL_IDX, CELL_VALUE FROM SPLICING.PWM_DATA WHERE PWM_NAME = '%s' " +
-                "ORDER BY ROW_IDX ASC, COL_IDX ASC", pwmName);
+        String sql = "SELECT ROW_IDX, COL_IDX, CELL_VALUE FROM SPLICING.PWM_DATA WHERE PWM_NAME = ? ORDER BY ROW_IDX, COL_IDX ";
         try (Connection connection = dataSource.getConnection();
              PreparedStatement statement = connection.prepareStatement(sql)) {
-
-            ResultSet rs = statement.executeQuery();
-            while (rs.next()) {
-
-                int row = rs.getInt("ROW_IDX");
-                double value = rs.getDouble("CELL_VALUE");
-                data.get(row).add(value);
+            statement.setString(1, pwmName);
+            try (ResultSet rs = statement.executeQuery()) {
+                while (rs.next()) {
+                    int row = rs.getInt("ROW_IDX");
+                    double value = rs.getDouble("CELL_VALUE");
+                    data.get(row).add(value);
+                }
             }
+
 
         } catch (SQLException e) {
             throw new CorruptedPwmException(e);
         }
 
-        return InputStreamBasedPositionalWeightMatrixParser.mapToDoubleMatrix(data, EPSILON);
+        return Utils.mapToDoubleMatrix(data, EPSILON);
     }
 
     private static SplicingParameters parseSplicingParameters(DataSource dataSource) throws CorruptedPwmException {
