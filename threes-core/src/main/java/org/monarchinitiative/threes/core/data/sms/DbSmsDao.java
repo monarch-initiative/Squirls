@@ -31,12 +31,14 @@ public class DbSmsDao implements SMSParser {
         String sql = "select SEQUENCE, SCORE from SPLICING.SEPTAMERS";
         try (Connection connection = dataSource.getConnection();
              PreparedStatement ps = connection.prepareStatement(sql)) {
-            ResultSet rs = ps.executeQuery();
-            while (rs.next()) {
-                String sequence = rs.getString(1);
-                double score = rs.getDouble(2);
-                septamerMap.put(sequence, score);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    String sequence = rs.getString(1);
+                    double score = rs.getDouble(2);
+                    septamerMap.put(sequence, score);
+                }
             }
+
         } catch (SQLException e) {
             LOGGER.warn("Error occured during loading septamer map from database", e);
         }

@@ -55,50 +55,52 @@ public class DbSplicingTranscriptSource implements SplicingTranscriptSource {
             exonsSt.setInt(2, end);
             exonsSt.setInt(3, begin);
 
-            final ResultSet exonsRs = exonsSt.executeQuery();
             Map<String, SplicingTranscript.Builder> transcriptMap = new HashMap<>();
+            try (final ResultSet exonsRs = exonsSt.executeQuery()) {
 
-            while (exonsRs.next()) {
-                final String accession = exonsRs.getString("tx_accession");
+                while (exonsRs.next()) {
+                    final String accession = exonsRs.getString("tx_accession");
 
-                if (!transcriptMap.containsKey(accession)) {
-                    final String tContig = exonsRs.getString("contig");
-                    final int tBegin = exonsRs.getInt("begin_pos");
-                    final int tEnd = exonsRs.getInt("end_pos");
-                    final boolean tStrand = exonsRs.getBoolean("strand");
-                    transcriptMap.put(accession, SplicingTranscript.newBuilder()
-                            .setAccessionId(accession)
-                            .setCoordinates(GenomeCoordinates.newBuilder()
-                                    .setContig(tContig)
-                                    .setBegin(tBegin)
-                                    .setEnd(tEnd)
-                                    .setStrand(tStrand)
-                                    .build())
-                    );
+                    if (!transcriptMap.containsKey(accession)) {
+                        final String tContig = exonsRs.getString("contig");
+                        final int tBegin = exonsRs.getInt("begin_pos");
+                        final int tEnd = exonsRs.getInt("end_pos");
+                        final boolean tStrand = exonsRs.getBoolean("strand");
+                        transcriptMap.put(accession, SplicingTranscript.newBuilder()
+                                .setAccessionId(accession)
+                                .setCoordinates(GenomeCoordinates.newBuilder()
+                                        .setContig(tContig)
+                                        .setBegin(tBegin)
+                                        .setEnd(tEnd)
+                                        .setStrand(tStrand)
+                                        .build())
+                        );
+                    }
+
+                    int eBegin = exonsRs.getInt("eb");
+                    int eEnd = exonsRs.getInt("ee");
+                    transcriptMap.get(accession).addExon(SplicingExon.newBuilder()
+                            .setBegin(eBegin)
+                            .setEnd(eEnd)
+                            .build());
                 }
-
-                int eBegin = exonsRs.getInt("eb");
-                int eEnd = exonsRs.getInt("ee");
-                transcriptMap.get(accession).addExon(SplicingExon.newBuilder()
-                        .setBegin(eBegin)
-                        .setEnd(eEnd)
-                        .build());
             }
 
             // -------------    FETCH INTRONS    -------------
             intronsSt.setString(1, contig);
             intronsSt.setInt(2, end);
             intronsSt.setInt(3, begin);
-            final ResultSet intronsRs = intronsSt.executeQuery();
-            while (intronsRs.next()) {
-                final String accession = intronsRs.getString("tx_accession");
-                transcriptMap.get(accession)
-                        .addIntron(SplicingIntron.newBuilder()
-                                .setBegin(intronsRs.getInt("begin_pos"))
-                                .setEnd(intronsRs.getInt("end_pos"))
-                                .setDonorScore(intronsRs.getDouble("donor_score"))
-                                .setAcceptorScore(intronsRs.getDouble("acceptor_score"))
-                                .build());
+            try (final ResultSet intronsRs = intronsSt.executeQuery()) {
+                while (intronsRs.next()) {
+                    final String accession = intronsRs.getString("tx_accession");
+                    transcriptMap.get(accession)
+                            .addIntron(SplicingIntron.newBuilder()
+                                    .setBegin(intronsRs.getInt("begin_pos"))
+                                    .setEnd(intronsRs.getInt("end_pos"))
+                                    .setDonorScore(intronsRs.getDouble("donor_score"))
+                                    .setAcceptorScore(intronsRs.getDouble("acceptor_score"))
+                                    .build());
+                }
             }
 
             return transcriptMap.values().stream()
