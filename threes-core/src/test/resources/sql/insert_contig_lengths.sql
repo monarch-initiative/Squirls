@@ -1,4 +1,4 @@
-delete from SPLICING.CONTIGS;
+truncate table SPLICING.CONTIGS;
 
 insert into SPLICING.CONTIGS(CONTIG, CONTIG_LENGTH) values
 ('chr1', 10000),

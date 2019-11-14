@@ -1,11 +1,11 @@
-delete from splicing.transcripts;
+truncate table splicing.transcripts;
 insert into splicing.transcripts (contig, begin_pos, end_pos, begin_on_fwd, end_on_fwd, strand, tx_accession) values
 
 ('chr1', 1000, 2000, 1000, 2000, TRUE, 'FIRST'),
 ('chr1', 5000, 6000, 5000, 6000, TRUE, 'SECOND'),
 ('chr1', 8000, 10000, 8000, 10000, TRUE, 'THIRD');
 
-delete from splicing.exons;
+truncate table splicing.exons;
 insert into splicing.exons (tx_accession, begin_pos, end_pos) values
 ('FIRST', 1000, 1200),
 ('FIRST', 1400, 1600),
@@ -20,7 +20,7 @@ insert into splicing.exons (tx_accession, begin_pos, end_pos) values
 ('THIRD', 9800, 10000);
 
 -- INTRONS
-delete from splicing.introns;
+truncate table splicing.introns;
 insert into splicing.introns (tx_accession, begin_pos, end_pos, donor_score, acceptor_score) values
 ('FIRST', 1200, 1400, 9.433, 7.392),
 ('FIRST', 1600, 1800, 4.931, 7.832),
