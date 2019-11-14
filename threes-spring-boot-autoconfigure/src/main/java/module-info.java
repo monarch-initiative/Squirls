@@ -1,4 +1,6 @@
 module org.monarchinitiative.threes.autoconfigure {
+    exports org.monarchinitiative.threes.autoconfigure;
+
     requires org.monarchinitiative.threes.core;
 
     requires com.google.common;
