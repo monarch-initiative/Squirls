@@ -6,6 +6,7 @@ import org.monarchinitiative.threes.core.ThreeSException;
 /**
  *
  */
+@Deprecated
 public class InvalidFastaFileException extends ThreeSException {
 
     public InvalidFastaFileException() {

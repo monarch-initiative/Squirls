@@ -21,6 +21,7 @@ import java.io.IOException;
  *
  * @author <a href="mailto:daniel.danis@jax.org">Daniel Danis</a>
  */
+@Deprecated
 public class SimpleGenomeSequenceAccessor implements GenomeSequenceAccessor {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SimpleGenomeSequenceAccessor.class);

@@ -6,6 +6,7 @@ import org.monarchinitiative.threes.core.ThreeSRuntimeException;
 /**
  *
  */
+@Deprecated
 public class InvalidCoordinatesException extends ThreeSRuntimeException {
 
     public InvalidCoordinatesException() {

@@ -20,6 +20,7 @@ import java.util.stream.StreamSupport;
  * Contigs in UCSC reference FASTA file are prefixed <code>'chr'</code>, while contigs in ENSEMBL are not.
  * This {@link GenomeSequenceAccessor} is able to fetch sequence from FASTA files from both reference sources.
  */
+@Deprecated
 public class PrefixHandlingGenomeSequenceAccessor implements GenomeSequenceAccessor {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SimpleGenomeSequenceAccessor.class);
