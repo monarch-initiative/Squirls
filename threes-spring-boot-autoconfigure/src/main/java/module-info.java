@@ -2,6 +2,7 @@ module org.monarchinitiative.threes.autoconfigure {
     exports org.monarchinitiative.threes.autoconfigure;
 
     requires org.monarchinitiative.threes.core;
+    requires xyz.ielis.hyperutil.reference;
 
     requires com.google.common;
 
@@ -13,7 +14,7 @@ module org.monarchinitiative.threes.autoconfigure {
     requires java.sql;
     requires com.zaxxer.hikari;
 
-    requires slf4j.api;
+    requires org.slf4j;
 
     opens org.monarchinitiative.threes.autoconfigure;
 }

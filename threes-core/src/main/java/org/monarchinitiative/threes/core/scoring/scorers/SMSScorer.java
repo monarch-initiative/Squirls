@@ -1,10 +1,12 @@
 package org.monarchinitiative.threes.core.scoring.scorers;
 
+import de.charite.compbio.jannovar.reference.GenomeInterval;
+import de.charite.compbio.jannovar.reference.GenomeVariant;
 import org.monarchinitiative.threes.core.calculators.sms.SMSCalculator;
-import org.monarchinitiative.threes.core.model.SequenceInterval;
 import org.monarchinitiative.threes.core.model.SplicingTernate;
-import org.monarchinitiative.threes.core.model.SplicingVariant;
+import xyz.ielis.hyperutil.reference.fasta.SequenceInterval;
 
+import java.util.Optional;
 import java.util.function.Function;
 
 /**
@@ -26,13 +28,13 @@ public class SMSScorer implements SplicingScorer {
     @Override
     public Function<SplicingTernate, Double> scoringFunction() {
         return ter -> {
-            SplicingVariant variant = ter.getVariant();
+            GenomeVariant variant = ter.getVariant().withStrand(ter.getRegion().getInterval().getStrand());
             SequenceInterval si = ter.getSequenceInterval();
-            int varBegin = variant.getCoordinates().getBegin();
-            int varEnd = variant.getCoordinates().getEnd();
 
-            String upstreamSequence = si.getSubsequence(varBegin - PADDING, varBegin);
-            String downstreamSequence = si.getSubsequence(varEnd, varEnd + PADDING);
+            GenomeInterval upstream = new GenomeInterval(variant.getGenomeInterval().getGenomeBeginPos().shifted(-PADDING), PADDING);
+            GenomeInterval downstream = new GenomeInterval(variant.getGenomeInterval().getGenomeEndPos(), PADDING);
+            Optional<String> upstreamSequence = si.getSubsequence(upstream);
+            Optional<String> downstreamSequence = si.getSubsequence(downstream);
             String paddedRefAllele = upstreamSequence + variant.getRef() + downstreamSequence;
             String paddedAltAllele = upstreamSequence + variant.getAlt() + downstreamSequence;
 

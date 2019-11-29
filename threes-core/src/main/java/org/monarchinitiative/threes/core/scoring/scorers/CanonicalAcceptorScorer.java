@@ -31,7 +31,7 @@ public class CanonicalAcceptorScorer implements SplicingScorer {
             final SplicingIntron intron = (SplicingIntron) t.getRegion();
 
             double wtCanonicalAcceptorScore = intron.getAcceptorScore();
-            String altCanonicalAcceptorSnippet = generator.getAcceptorSiteWithAltAllele(intron.getEnd(), t.getVariant(), t.getSequenceInterval());
+            String altCanonicalAcceptorSnippet = generator.getAcceptorSiteWithAltAllele(intron.getInterval().getGenomeEndPos(), t.getVariant(), t.getSequenceInterval());
             if (altCanonicalAcceptorSnippet == null) {
                 // e.g. when the whole site is deleted. Other parts of analysis pipeline should interpret such events
                 return Double.NaN;

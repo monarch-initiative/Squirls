@@ -5,5 +5,5 @@ module org.monarchinitiative.threes.cli {
     requires spring.boot.autoconfigure;
     requires spring.context;
 
-    requires slf4j.api;
+    requires org.slf4j;
 }

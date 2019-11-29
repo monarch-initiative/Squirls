@@ -2,6 +2,9 @@ package org.monarchinitiative.threes.autoconfigure;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.BeanCreationException;
+import xyz.ielis.hyperutil.reference.fasta.GenomeSequenceAccessor;
+import xyz.ielis.hyperutil.reference.fasta.SingleChromosomeGenomeSequenceAccessor;
+import xyz.ielis.hyperutil.reference.fasta.SingleFastaGenomeSequenceAccessor;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -16,8 +19,7 @@ class ThreesAutoConfigurationTest extends AbstractAutoConfigurationTest {
     void testAllPropertiesSupplied() {
         load(ThreesAutoConfiguration.class, "threes.data-directory=" + TEST_DATA,
                 "threes.genome-assembly=hg19",
-                "threes.data-version=1710",
-                "threes.transcript-source=refseq");
+                "threes.data-version=1710");
         Path threesDataDirectory = context.getBean("threesDataDirectory", Path.class);
         assertThat(threesDataDirectory.getFileName(), equalTo(Paths.get("data")));
 
@@ -27,36 +29,36 @@ class ThreesAutoConfigurationTest extends AbstractAutoConfigurationTest {
         String threesDataVersion = context.getBean("threesDataVersion", String.class);
         assertThat(threesDataVersion, is("1710"));
 
-        String transcriptSource = context.getBean("transcriptSource", String.class);
-        assertThat(transcriptSource, is("refseq"));
-
         // default values
         Integer maxDistanceExonUpstream = context.getBean("maxDistanceExonUpstream", Integer.class);
         assertThat(maxDistanceExonUpstream, is(50));
         Integer maxDistanceExonDownstream = context.getBean("maxDistanceExonDownstream", Integer.class);
         assertThat(maxDistanceExonDownstream, is(50));
+        GenomeSequenceAccessor accessor = context.getBean("genomeSequenceAccessor", GenomeSequenceAccessor.class);
+        assertThat(accessor, is(instanceOf(SingleFastaGenomeSequenceAccessor.class)));
     }
 
     @Test
-    void testOptionalPropertiesUpstreamAndDownstreamFromExon() {
+    void testOptionalProperties() {
         load(ThreesAutoConfiguration.class, "threes.data-directory=" + TEST_DATA,
                 "threes.genome-assembly=hg19",
                 "threes.data-version=1710",
-                "threes.transcript-source=refseq",
                 "threes.max-distance-exon-upstream=100",
-                "threes.max-distance-exon-downstream=200");
+                "threes.max-distance-exon-downstream=200",
+                "threes.genome-sequence-accessor-type=chromosome");
         Integer maxDistanceExonUpstream = context.getBean("maxDistanceExonUpstream", Integer.class);
         assertThat(maxDistanceExonUpstream, is(100));
         Integer maxDistanceExonDownstream = context.getBean("maxDistanceExonDownstream", Integer.class);
         assertThat(maxDistanceExonDownstream, is(200));
+        GenomeSequenceAccessor accessor = context.getBean("genomeSequenceAccessor", GenomeSequenceAccessor.class);
+        assertThat(accessor, is(instanceOf(SingleChromosomeGenomeSequenceAccessor.class)));
     }
 
     @Test
     void testMissingDataDirectory() {
         Throwable thrown = assertThrows(BeanCreationException.class, () -> load(ThreesAutoConfiguration.class,
                 "threes.genome-assembly=hg19",
-                "threes.data-version=1710",
-                "threes.transcript-source=refseq"));
+                "threes.data-version=1710"));
         assertThat(thrown.getMessage(), containsString("Path to 3S data directory (`--threes.data-directory`) is not specified"));
     }
 
@@ -65,8 +67,7 @@ class ThreesAutoConfigurationTest extends AbstractAutoConfigurationTest {
         Throwable thrown = assertThrows(BeanCreationException.class, () -> load(ThreesAutoConfiguration.class,
                 "threes.data-directory=" + TEST_DATA + "/rocket",
                 "threes.genome-assembly=hg19",
-                "threes.data-version=1710",
-                "threes.transcript-source=refseq"));
+                "threes.data-version=1710"));
         assertThat(thrown.getMessage(), containsString("Path to 3S data directory 'src/test/resources/data/rocket' does not point to real directory"));
 
     }
@@ -76,8 +77,7 @@ class ThreesAutoConfigurationTest extends AbstractAutoConfigurationTest {
         Throwable thrown = assertThrows(BeanCreationException.class, () -> load(ThreesAutoConfiguration.class,
                 "threes.data-directory=" + TEST_DATA,
 //                "threes.genome-assembly=hg19",
-                "threes.data-version=1710",
-                "threes.transcript-source=refseq"));
+                "threes.data-version=1710"));
         assertThat(thrown.getMessage(), containsString("Genome assembly (`--threes.genome-assembly`) is not specified"));
     }
 
@@ -85,19 +85,11 @@ class ThreesAutoConfigurationTest extends AbstractAutoConfigurationTest {
     void testMissingDataVersion() {
         Throwable thrown = assertThrows(BeanCreationException.class, () -> load(ThreesAutoConfiguration.class,
                 "threes.data-directory=" + TEST_DATA,
-                "threes.genome-assembly=hg19",
+                "threes.genome-assembly=hg19"
 //                "threes.data-version=1710",
-                "threes.transcript-source=refseq"));
+        ));
         assertThat(thrown.getMessage(), containsString("Data version (`--threes.data-version`) is not specified"));
     }
 
-    @Test
-    void testMissingTranscriptSource() {
-        Throwable thrown = assertThrows(BeanCreationException.class, () -> load(ThreesAutoConfiguration.class,
-                "threes.data-directory=" + TEST_DATA,
-                "threes.genome-assembly=hg19",
-                "threes.data-version=1710"));
-//                "threes.transcript-source=refseq"));
-        assertThat(thrown.getMessage(), containsString("Transcript source (`--threes.transcript-source`) is not specified"));
-    }
+
 }

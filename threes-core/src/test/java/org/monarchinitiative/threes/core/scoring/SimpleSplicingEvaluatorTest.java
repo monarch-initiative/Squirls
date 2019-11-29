@@ -1,21 +1,22 @@
 package org.monarchinitiative.threes.core.scoring;
 
 import com.google.common.collect.ImmutableMap;
+import de.charite.compbio.jannovar.data.ReferenceDictionary;
+import de.charite.compbio.jannovar.reference.GenomePosition;
+import de.charite.compbio.jannovar.reference.GenomeVariant;
+import de.charite.compbio.jannovar.reference.Strand;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.monarchinitiative.threes.core.PojosForTesting;
 import org.monarchinitiative.threes.core.TestDataSourceConfig;
-import org.monarchinitiative.threes.core.model.GenomeCoordinates;
-import org.monarchinitiative.threes.core.model.SequenceInterval;
 import org.monarchinitiative.threes.core.model.SplicingTranscript;
-import org.monarchinitiative.threes.core.model.SplicingVariant;
-import org.monarchinitiative.threes.core.reference.GenomeCoordinatesFlipper;
 import org.monarchinitiative.threes.core.reference.SplicingLocationData;
 import org.monarchinitiative.threes.core.reference.transcript.SplicingTranscriptLocator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import xyz.ielis.hyperutil.reference.fasta.SequenceInterval;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -25,9 +26,10 @@ import static org.mockito.Mockito.when;
 @SpringBootTest(classes = TestDataSourceConfig.class)
 class SimpleSplicingEvaluatorTest {
 
-    private static final SequenceInterval sequence = PojosForTesting.getSequenceIntervalForTranscriptWithThreeExons();
 
-    private static final SplicingTranscript transcript = PojosForTesting.getTranscriptWithThreeExons();
+    private SequenceInterval sequence;
+    private SplicingTranscript transcript;
+
 
     @Mock
     private ScorerFactory factory;
@@ -35,14 +37,16 @@ class SimpleSplicingEvaluatorTest {
     @Mock
     private SplicingTranscriptLocator locator;
 
-    @Autowired
-    private GenomeCoordinatesFlipper flipper;
-
     private SimpleSplicingEvaluator evaluator;
+
+    @Autowired
+    private ReferenceDictionary referenceDictionary;
 
     @BeforeEach
     void setUp() {
-        evaluator = new SimpleSplicingEvaluator(factory, locator, flipper);
+        evaluator = new SimpleSplicingEvaluator(factory, locator);
+        sequence = PojosForTesting.getSequenceIntervalForTranscriptWithThreeExons(referenceDictionary);
+        transcript = PojosForTesting.getTranscriptWithThreeExons(referenceDictionary);
     }
 
     @Test
@@ -54,21 +58,13 @@ class SimpleSplicingEvaluatorTest {
                 .setIntronIndex(0)
                 .build();
 
-        when(locator.locate(Mockito.any(SplicingVariant.class), Mockito.any(SplicingTranscript.class))).thenReturn(ld);
+        when(locator.locate(Mockito.any(GenomeVariant.class), Mockito.any(SplicingTranscript.class))).thenReturn(ld);
         when(factory.scorerForStrategy(ScoringStrategy.CANONICAL_DONOR)).thenReturn(t -> 0.5); // canonical donor outputs 0.5
         when(factory.scorerForStrategy(ScoringStrategy.CRYPTIC_DONOR_IN_CANONICAL_POSITION)).thenReturn(t -> 0.8); // this guy returns 0.8
 
         // variant at -1 position
-        SplicingVariant firstExonDonor = SplicingVariant.newBuilder()
-                .setCoordinates(GenomeCoordinates.newBuilder()
-                        .setContig("chr1")
-                        .setBegin(1199)
-                        .setEnd(1200)
-                        .setStrand(true)
-                        .build())
-                .setRef("C")
-                .setAlt("T")
-                .build();
+
+        GenomeVariant firstExonDonor = new GenomeVariant(new GenomePosition(referenceDictionary, Strand.FWD, 1, 1199), "C", "T");
 
         final SplicingPathogenicityData data = evaluator.evaluate(firstExonDonor, transcript, sequence);
 
@@ -88,21 +84,12 @@ class SimpleSplicingEvaluatorTest {
                 .setIntronIndex(0)
                 .build();
 
-        when(locator.locate(Mockito.any(SplicingVariant.class), Mockito.any(SplicingTranscript.class))).thenReturn(ld);
+        when(locator.locate(Mockito.any(GenomeVariant.class), Mockito.any(SplicingTranscript.class))).thenReturn(ld);
         when(factory.scorerForStrategy(ScoringStrategy.CANONICAL_ACCEPTOR)).thenReturn(t -> 0.9); // canonical acceptor outputs 0.9
         when(factory.scorerForStrategy(ScoringStrategy.CRYPTIC_ACCEPTOR_IN_CANONICAL_POSITION)).thenReturn(t -> 0.6); // this guy returns 0.6
 
         // variant at +1 position
-        SplicingVariant firstExonDonor = SplicingVariant.newBuilder()
-                .setCoordinates(GenomeCoordinates.newBuilder()
-                        .setContig("chr1")
-                        .setBegin(1399)
-                        .setEnd(1400)
-                        .setStrand(true)
-                        .build())
-                .setRef("T")
-                .setAlt("G")
-                .build();
+        final GenomeVariant firstExonDonor = new GenomeVariant(new GenomePosition(referenceDictionary, Strand.FWD, 1, 1399), "T", "G");
 
         final SplicingPathogenicityData data = evaluator.evaluate(firstExonDonor, transcript, sequence);
 
@@ -121,21 +108,12 @@ class SimpleSplicingEvaluatorTest {
                 .setIntronIndex(0)
                 .build();
 
-        when(locator.locate(Mockito.any(SplicingVariant.class), Mockito.any(SplicingTranscript.class))).thenReturn(ld);
+        when(locator.locate(Mockito.any(GenomeVariant.class), Mockito.any(SplicingTranscript.class))).thenReturn(ld);
         when(factory.scorerForStrategy(ScoringStrategy.CRYPTIC_DONOR)).thenReturn(t -> 0.7); // cryptic donor outputs 0.7
         when(factory.scorerForStrategy(ScoringStrategy.CRYPTIC_ACCEPTOR)).thenReturn(t -> 0.5); // cryptic acceptor returns 0.5
 
         // variant 3bp downstream from the end of the 1st donor site (in intron)
-        SplicingVariant firstExonDonor = SplicingVariant.newBuilder()
-                .setCoordinates(GenomeCoordinates.newBuilder()
-                        .setContig("chr1")
-                        .setBegin(1208)
-                        .setEnd(1209)
-                        .setStrand(true)
-                        .build())
-                .setRef("A")
-                .setAlt("G")
-                .build();
+        GenomeVariant firstExonDonor = new GenomeVariant(new GenomePosition(referenceDictionary, Strand.FWD, 1, 1208), "A", "G");
 
         final SplicingPathogenicityData data = evaluator.evaluate(firstExonDonor, transcript, sequence);
 

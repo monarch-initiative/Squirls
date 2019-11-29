@@ -47,6 +47,9 @@ class GenomeAssemblyDownloaderTest {
         Path expectedFastaIdxPath = buildDir.resolve("the-genome.fa.fai");
         assertThat(expectedFastaIdxPath.toFile().isFile(), is(true));
 
+        Path expectedFastaDictPath = buildDir.resolve("the-genome.fa.dict");
+        assertThat(expectedFastaDictPath.toFile().isFile(), is(true));
+
         FastaSequenceIndex index = new FastaSequenceIndex(expectedFastaIdxPath);
 
         assertThat(index.size(), is(93));

@@ -1,19 +1,10 @@
 package org.monarchinitiative.threes.core.scoring.scorers;
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.monarchinitiative.threes.core.calculators.sms.SMSCalculator;
-import org.monarchinitiative.threes.core.model.GenomeCoordinates;
-import org.monarchinitiative.threes.core.model.SplicingTernate;
-import org.monarchinitiative.threes.core.model.SplicingVariant;
-import org.springframework.beans.factory.annotation.Autowired;
-
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.closeTo;
-
 class SMSScorerTest extends ScorerTestBase {
 
+    /*
+
+    SCORE IS NOT BEING USED AT THE MOMENT
     private static final double EPSILON = 0.0005;
 
     private SMSScorer scorer;
@@ -97,4 +88,5 @@ class SMSScorerTest extends ScorerTestBase {
         // assert
         assertThat(score, is(closeTo(-0.0587D, EPSILON)));
     }
+     */
 }

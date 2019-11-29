@@ -1,10 +1,16 @@
 package org.monarchinitiative.threes.core.scoring.scorers;
 
+import de.charite.compbio.jannovar.reference.GenomeInterval;
+import de.charite.compbio.jannovar.reference.GenomeVariant;
 import org.monarchinitiative.threes.core.Utils;
 import org.monarchinitiative.threes.core.calculators.ic.SplicingInformationContentCalculator;
-import org.monarchinitiative.threes.core.model.*;
+import org.monarchinitiative.threes.core.model.SplicingIntron;
+import org.monarchinitiative.threes.core.model.SplicingRegion;
+import org.monarchinitiative.threes.core.model.SplicingTernate;
 import org.monarchinitiative.threes.core.reference.allele.AlleleGenerator;
+import xyz.ielis.hyperutil.reference.fasta.SequenceInterval;
 
+import java.util.Optional;
 import java.util.function.Function;
 
 /**
@@ -38,7 +44,7 @@ public class CrypticAcceptorScorer implements SplicingScorer {
         return t -> {
             final SplicingRegion region = t.getRegion();
             final SequenceInterval sequenceInterval = t.getSequenceInterval();
-            final SplicingVariant variant = t.getVariant();
+            final GenomeVariant variant = t.getVariant();
 
             if (!(region instanceof SplicingIntron)) {
                 return Double.NaN;
@@ -46,20 +52,23 @@ public class CrypticAcceptorScorer implements SplicingScorer {
             final SplicingIntron intron = (SplicingIntron) region;
             // this scorer is applied when variant does not overlap with canonical acceptor site. Here we ensure that it really
             // does not overlap the acceptor site
-            final AlleleGenerator.Region acceptor = generator.makeAcceptorRegion(intron);
-            final GenomeCoordinates varCoor = variant.getCoordinates();
-            if (acceptor.overlapsWith(varCoor.getBegin(), varCoor.getEnd())) {
+            final GenomeInterval acceptor = generator.makeAcceptorRegion(intron);
+            final GenomeInterval variantInterval = variant.getGenomeInterval();
+            if (acceptor.overlapsWith(variantInterval)) {
                 return Double.NaN;
             }
-            final int diff = acceptor.differenceTo(varCoor.getBegin(), varCoor.getEnd());
+            final int diff = intron.getInterval().getGenomeEndPos().differenceTo(variantInterval);
             if (diff > maxInIntron) {
                 // we do not score intronic variant that are too deep in intron
                 return Double.NaN;
             }
 
-            String altSnippet = sequenceInterval.getSubsequence(varCoor.getBegin() - acceptorLength + 1, varCoor.getBegin())
-                    + variant.getAlt()
-                    + sequenceInterval.getSubsequence(varCoor.getEnd(), varCoor.getEnd() + acceptorLength - 1);
+            final GenomeInterval upstream = new GenomeInterval(variantInterval.getGenomeBeginPos().shifted(-acceptorLength + 1), acceptorLength - 1);
+            final GenomeInterval downstream = new GenomeInterval(variantInterval.getGenomeEndPos(), acceptorLength - 1);
+
+            final Optional<String> upsSeq = sequenceInterval.getSubsequence(upstream);
+            final Optional<String> downSeq = sequenceInterval.getSubsequence(downstream);
+            String altSnippet = upsSeq.get() + variant.getAlt() + downSeq.get();
 
             double wtCanonicalAcceptorScore = intron.getAcceptorScore();
 

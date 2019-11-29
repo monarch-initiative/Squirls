@@ -1,7 +1,7 @@
 package org.monarchinitiative.threes.core.reference.transcript;
 
+import de.charite.compbio.jannovar.reference.GenomeVariant;
 import org.monarchinitiative.threes.core.model.SplicingTranscript;
-import org.monarchinitiative.threes.core.model.SplicingVariant;
 import org.monarchinitiative.threes.core.reference.SplicingLocationData;
 
 public interface SplicingTranscriptLocator {
@@ -16,7 +16,7 @@ public interface SplicingTranscriptLocator {
      * @param transcript transcript
      * @return location data
      */
-    SplicingLocationData locate(SplicingVariant variant, SplicingTranscript transcript);
+    SplicingLocationData locate(GenomeVariant variant, SplicingTranscript transcript);
 
 
 }

@@ -1,5 +1,9 @@
 package org.monarchinitiative.threes.ingest.reference;
 
+import htsjdk.samtools.SAMSequenceDictionary;
+import htsjdk.samtools.SAMSequenceDictionaryCodec;
+import htsjdk.samtools.SAMSequenceRecord;
+import htsjdk.samtools.reference.FastaSequenceIndex;
 import htsjdk.samtools.reference.FastaSequenceIndexCreator;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
@@ -13,10 +17,13 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 /**
  * This class downloads tar archive from given url, extracts chromosomes stored as tar entries into a single FASTA file,
- * and creates an index in the end.
+ * creates FASTA index, and finally also FASTA sequence dictionary.
  *
  * @author <a href="mailto:daniel.danis@jax.org">Daniel Danis</a>
  */
@@ -61,7 +68,8 @@ public final class GenomeAssemblyDownloader implements Runnable {
 
 
     /**
-     * Download the genome tar.gz file, concatenate all chromosomes into a single gzipped file, index the file.
+     * Download the genome tar.gz file, concatenate all chromosomes into a single gzipped file, index the file, and
+     * create sequence dictionary.
      */
     @Override
     public void run() {
@@ -70,12 +78,12 @@ public final class GenomeAssemblyDownloader implements Runnable {
             return;
         }
         try {
-            // download genome tar.gz archive into a temporary location
+            // 1 - download genome tar.gz archive into a temporary location
             File genomeTarGz = File.createTempFile("threes-genome-downloader", ".tar.gz");
             genomeTarGz.deleteOnExit();
             download(genomeTarGz);
 
-            // concatenate all the files in the tar.gz archive into a single FASTA file
+            // 2 - concatenate all the files in the tar.gz archive into a single FASTA file
             try (TarArchiveInputStream tarInput = new TarArchiveInputStream(new GzipCompressorInputStream(new FileInputStream(genomeTarGz)));
                  OutputStream os = Files.newOutputStream(whereToSave)) {
 
@@ -90,9 +98,27 @@ public final class GenomeAssemblyDownloader implements Runnable {
                 }
             }
 
-            // create fasta index for the FASTA file
-            LOGGER.info("Indexing FASTA file {}", whereToSave);
-            FastaSequenceIndexCreator.create(whereToSave, true);
+            // 3 - create fasta index for the FASTA file
+            LOGGER.info("Indexing FASTA file `{}`", whereToSave);
+            final Path fastaFai = whereToSave.resolveSibling(whereToSave.toFile().getName() + ".fai");
+            final FastaSequenceIndex fastaSequenceIndex = FastaSequenceIndexCreator.buildFromFasta(whereToSave);
+            LOGGER.info("Writing FASTA index to `{}`", fastaFai);
+            fastaSequenceIndex.write(fastaFai);
+
+            // 4 - create sequence dictionary for the FASTA file
+            final List<SAMSequenceRecord> records = StreamSupport.stream(fastaSequenceIndex.spliterator(), false)
+                    .map(entry -> new SAMSequenceRecord(entry.getContig(), Math.toIntExact(entry.getSize())))
+                    .collect(Collectors.toList());
+
+            final SAMSequenceDictionary sequenceDictionary = new SAMSequenceDictionary(records);
+            final Path fastaDict = whereToSave.resolveSibling(whereToSave.toFile().getName() + ".dict");
+            LOGGER.info("Writing FASTA sequence dictionary to `{}`", fastaDict);
+            try (final BufferedWriter writer = Files.newBufferedWriter(fastaDict)) {
+                final SAMSequenceDictionaryCodec codec = new SAMSequenceDictionaryCodec(writer);
+                codec.encode(sequenceDictionary);
+            }
+
+
         } catch (IOException e) {
             LOGGER.error("Error: ", e);
             throw new RuntimeException(e);

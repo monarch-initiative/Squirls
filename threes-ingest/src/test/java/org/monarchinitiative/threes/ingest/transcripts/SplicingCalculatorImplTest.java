@@ -1,20 +1,21 @@
 package org.monarchinitiative.threes.ingest.transcripts;
 
 import de.charite.compbio.jannovar.data.ReferenceDictionary;
+import de.charite.compbio.jannovar.reference.GenomeInterval;
+import de.charite.compbio.jannovar.reference.Strand;
 import de.charite.compbio.jannovar.reference.TranscriptModel;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.monarchinitiative.threes.core.calculators.ic.SplicingInformationContentCalculator;
-import org.monarchinitiative.threes.core.model.GenomeCoordinates;
-import org.monarchinitiative.threes.core.model.SequenceInterval;
 import org.monarchinitiative.threes.core.model.SplicingTranscript;
-import org.monarchinitiative.threes.core.reference.fasta.GenomeSequenceAccessor;
 import org.monarchinitiative.threes.ingest.MakeSplicePositionWeightMatrices;
 import org.monarchinitiative.threes.ingest.PojosForTesting;
 import org.monarchinitiative.threes.ingest.TestDataSourceConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import xyz.ielis.hyperutil.reference.fasta.GenomeSequenceAccessor;
+import xyz.ielis.hyperutil.reference.fasta.SequenceInterval;
 
 import java.util.Arrays;
 import java.util.Optional;
@@ -45,15 +46,12 @@ class SplicingCalculatorImplTest {
         char[] chars = new char[10_200];
         Arrays.fill(chars, 'A');
         String mockSeq = new String(chars);
-
-        when(accessor.fetchSequence("chr2", 9_900, 20_100, true))
-                .thenReturn(SequenceInterval.of(GenomeCoordinates.newBuilder()
-                                .setContig("chr2")
-                                .setBegin(9_900)
-                                .setEnd(20_100)
-                                .setStrand(true)
-                                .build(),
-                        mockSeq));
+        final GenomeInterval gi = new GenomeInterval(referenceDictionary, Strand.FWD, 2, 9_900, 20_100);
+        when(accessor.fetchSequence(gi))
+                .thenReturn(Optional.of(SequenceInterval.builder()
+                        .interval(gi)
+                        .sequence(mockSeq)
+                        .build()));
     }
 
     @Test
@@ -66,7 +64,7 @@ class SplicingCalculatorImplTest {
         SplicingTranscript st = stOptional.get();
         assertThat(st.getAccessionId(), is("ACCID"));
 
-        assertThat(st.getStrand(), is(true));
+        assertThat(st.getStrand(), is(Strand.FWD));
         assertThat(st.getTxBegin(), is(10_000));
         assertThat(st.getTxEnd(), is(20_000));
     }
@@ -85,7 +83,7 @@ class SplicingCalculatorImplTest {
         SplicingTranscript st = stOptional.get();
         assertThat(st.getAccessionId(), is("ACCID"));
 
-        assertThat(st.getStrand(), is(true));
+        assertThat(st.getStrand(), is(Strand.FWD));
         assertThat(st.getTxBegin(), is(10_000));
         assertThat(st.getTxEnd(), is(20_000));
     }
@@ -98,14 +96,12 @@ class SplicingCalculatorImplTest {
         char[] chars = new char[300];
         Arrays.fill(chars, 'A');
         String mockSeq = new String(chars);
-        when(accessor.fetchSequence("chr2", 0, 300, true))
-                .thenReturn(SequenceInterval.of(GenomeCoordinates.newBuilder()
-                                .setContig("chr2")
-                                .setBegin(0)
-                                .setEnd(300)
-                                .setStrand(true)
-                                .build(),
-                        mockSeq));
+        final GenomeInterval gi = new GenomeInterval(referenceDictionary, Strand.FWD, 2, 0, 300);
+        when(accessor.fetchSequence(gi))
+                .thenReturn(Optional.of(SequenceInterval.builder()
+                        .interval(gi)
+                        .sequence(mockSeq)
+                        .build()));
         TranscriptModel tm = PojosForTesting.makeSmallTranscriptModel(referenceDictionary);
 
         Optional<SplicingTranscript> stOptional = instance.calculate(tm);
@@ -113,7 +109,7 @@ class SplicingCalculatorImplTest {
         assertThat(stOptional.isPresent(), is(true));
 
         SplicingTranscript st = stOptional.get();
-        assertThat(st.getStrand(), is(true));
+        assertThat(st.getStrand(), is(Strand.FWD));
         assertThat(st.getTxBegin(), is(100));
         assertThat(st.getTxEnd(), is(200));
     }

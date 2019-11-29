@@ -1,15 +1,21 @@
 package org.monarchinitiative.threes.core.scoring.scorers;
 
+import de.charite.compbio.jannovar.reference.GenomeInterval;
+import de.charite.compbio.jannovar.reference.GenomeVariant;
 import org.monarchinitiative.threes.core.Utils;
 import org.monarchinitiative.threes.core.calculators.ic.SplicingInformationContentCalculator;
-import org.monarchinitiative.threes.core.model.*;
+import org.monarchinitiative.threes.core.model.SplicingIntron;
+import org.monarchinitiative.threes.core.model.SplicingRegion;
+import org.monarchinitiative.threes.core.model.SplicingTernate;
 import org.monarchinitiative.threes.core.reference.allele.AlleleGenerator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import xyz.ielis.hyperutil.reference.fasta.SequenceInterval;
 
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -38,7 +44,7 @@ public class CrypticAcceptorForVariantsInAcceptorSite implements SplicingScorer 
         return t -> {
             final SplicingRegion region = t.getRegion();
             final SequenceInterval sequenceInterval = t.getSequenceInterval();
-            final SplicingVariant variant = t.getVariant();
+            final GenomeVariant variant = t.getVariant();
 
             if (!(region instanceof SplicingIntron)) {
                 return Double.NaN;
@@ -51,17 +57,24 @@ public class CrypticAcceptorForVariantsInAcceptorSite implements SplicingScorer 
                 return Double.NaN;
             }
 
-            final GenomeCoordinates varCoor = variant.getCoordinates();
-            final AlleleGenerator.Region acceptor = generator.makeAcceptorRegion(intron);
-            if (!acceptor.overlapsWith(varCoor.getBegin(), varCoor.getEnd())) {
+            final GenomeInterval variantInterval = variant.getGenomeInterval();
+            final GenomeInterval acceptor = generator.makeAcceptorRegion(intron);
+            if (!acceptor.overlapsWith(variantInterval)) {
                 // we only score SNPs that are located in the splice acceptor site
                 return Double.NaN;
             }
 
-            final String upstream = sequenceInterval.getSubsequence(varCoor.getBegin() - acceptorLength + 1, varCoor.getBegin());
-            final String downstream = sequenceInterval.getSubsequence(varCoor.getEnd(), varCoor.getEnd() + acceptorLength - 1);
+            final GenomeInterval upstream = new GenomeInterval(variantInterval.getGenomeBeginPos().shifted(-acceptorLength + 1), acceptorLength - 1);
+            final GenomeInterval downstream = new GenomeInterval(variantInterval.getGenomeEndPos(), acceptorLength - 1);
+            final Optional<String> upsSeq = sequenceInterval.getSubsequence(upstream);
+            final Optional<String> downSeq = sequenceInterval.getSubsequence(downstream);
+            if (upsSeq.isEmpty() || downSeq.isEmpty()) {
+                LOGGER.info("Not enough of fasta sequence provided for variant `{}` - sequence: `{}`, required: `{}`/`{}`",
+                        variant, sequenceInterval.getInterval(), upstream, downstream);
+                return Double.NaN;
+            }
 
-            String wtConsensusAcceptorSnippet = upstream + variant.getRef() + downstream;
+            String wtConsensusAcceptorSnippet = upsSeq.get() + variant.getRef() + downSeq.get();
             List<String> refWindows = Utils.slidingWindow(wtConsensusAcceptorSnippet, acceptorLength).collect(Collectors.toList());
             List<Double> refScores = new ArrayList<>(refWindows.size());
 
@@ -75,9 +88,9 @@ public class CrypticAcceptorForVariantsInAcceptorSite implements SplicingScorer 
 
             // -------------------------------------------------------------
 
-            String altCrypticAcceptorSnippet = upstream
+            String altCrypticAcceptorSnippet = upsSeq.get()
                     + variant.getAlt()
-                    + downstream;
+                    + downSeq.get();
             List<String> altWindows = Utils.slidingWindow(altCrypticAcceptorSnippet, acceptorLength).collect(Collectors.toList());
             List<Double> altScores = new ArrayList<>(altWindows.size());
 
@@ -120,7 +133,7 @@ public class CrypticAcceptorForVariantsInAcceptorSite implements SplicingScorer 
             }
 
             // get score of the position that results from alt allele presence
-            String acceptorSiteWithAltAllele = generator.getAcceptorSiteWithAltAllele(intron.getEnd(), variant, sequenceInterval);
+            String acceptorSiteWithAltAllele = generator.getAcceptorSiteWithAltAllele(intron.getInterval().getGenomeEndPos(), variant, sequenceInterval);
             if (acceptorSiteWithAltAllele == null) {
                 // e.g. when the whole site is deleted. Other parts of analysis pipeline should interpret such events
                 return Double.NaN;

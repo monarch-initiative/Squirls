@@ -1,10 +1,12 @@
 module org.monarchinitiative.threes.core {
-    requires slf4j.api;
+    requires org.slf4j;
     requires jblas;
     requires com.google.common;
     requires java.sql;
     requires snakeyaml;
     requires htsjdk;
+    requires jannovar.core;
+    requires xyz.ielis.hyperutil.reference;
 
     exports org.monarchinitiative.threes.core;
     exports org.monarchinitiative.threes.core.calculators.ic;
@@ -17,7 +19,6 @@ module org.monarchinitiative.threes.core {
     exports org.monarchinitiative.threes.core.model;
 
     exports org.monarchinitiative.threes.core.reference;
-    exports org.monarchinitiative.threes.core.reference.fasta;
     exports org.monarchinitiative.threes.core.reference.transcript;
 
     exports org.monarchinitiative.threes.core.scoring;
@@ -35,7 +36,6 @@ module org.monarchinitiative.threes.core {
 
     opens org.monarchinitiative.threes.core.reference;
     opens org.monarchinitiative.threes.core.reference.allele;
-    opens org.monarchinitiative.threes.core.reference.fasta;
     opens org.monarchinitiative.threes.core.reference.transcript;
 
     opens org.monarchinitiative.threes.core.scoring;

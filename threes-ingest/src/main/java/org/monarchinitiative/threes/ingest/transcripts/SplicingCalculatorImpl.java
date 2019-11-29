@@ -1,15 +1,18 @@
 package org.monarchinitiative.threes.ingest.transcripts;
 
 import com.google.common.collect.ImmutableList;
-import de.charite.compbio.jannovar.data.ReferenceDictionary;
 import de.charite.compbio.jannovar.reference.GenomeInterval;
+import de.charite.compbio.jannovar.reference.GenomePosition;
 import de.charite.compbio.jannovar.reference.TranscriptModel;
 import org.monarchinitiative.threes.core.calculators.ic.SplicingInformationContentCalculator;
-import org.monarchinitiative.threes.core.model.*;
-import org.monarchinitiative.threes.core.reference.fasta.GenomeSequenceAccessor;
-import org.monarchinitiative.threes.core.reference.fasta.InvalidCoordinatesException;
+import org.monarchinitiative.threes.core.model.SplicingExon;
+import org.monarchinitiative.threes.core.model.SplicingIntron;
+import org.monarchinitiative.threes.core.model.SplicingParameters;
+import org.monarchinitiative.threes.core.model.SplicingTranscript;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import xyz.ielis.hyperutil.reference.fasta.GenomeSequenceAccessor;
+import xyz.ielis.hyperutil.reference.fasta.SequenceInterval;
 
 import java.util.Optional;
 
@@ -37,32 +40,19 @@ public class SplicingCalculatorImpl implements SplicingCalculator {
 
     @Override
     public Optional<SplicingTranscript> calculate(TranscriptModel model) {
-        ReferenceDictionary refDict = model.getTXRegion().getRefDict();
         GenomeInterval txRegion = model.getTXRegion();
 
-        String contigName = refDict.getContigIDToName().get(txRegion.getChr());
-        int siBegin = txRegion.getBeginPos() - SEQ_INT_PADDING;
-        int siEnd = txRegion.getEndPos() + SEQ_INT_PADDING;
-        SequenceInterval si;
-        final GenomeCoordinates coordinates;
-        try {
-            si = accessor.fetchSequence(contigName, siBegin, siEnd, txRegion.getStrand().isForward());
-            coordinates = GenomeCoordinates.newBuilder()
-                    .setContig(contigName)
-                    .setBegin(txRegion.getBeginPos())
-                    .setEnd(txRegion.getEndPos())
-                    .setStrand(txRegion.getStrand().isForward())
-                    .build();
-        } catch (InvalidCoordinatesException e) {
-            LOGGER.warn("Transcript {} has invalid coordinates: {}", model.getAccession(), txRegion, e);
+        final GenomeInterval query = txRegion.withMorePadding(SEQ_INT_PADDING, SEQ_INT_PADDING);
+        Optional<SequenceInterval> siOpt = accessor.fetchSequence(query);
+        if (siOpt.isEmpty()) {
+            LOGGER.warn("Could not get fasta sequence for transcript `{}`, query region: (+-padding `{}`)", model.getAccession(), query);
             return Optional.empty();
         }
+        final SequenceInterval si = siOpt.get();
 
-
-        SplicingTranscript.Builder builder = SplicingTranscript.newBuilder()
-                .setCoordinates(coordinates)
+        SplicingTranscript.Builder builder = SplicingTranscript.builder()
+                .setCoordinates(txRegion)
                 .setAccessionId(model.getAccession());
-
 
         ImmutableList<GenomeInterval> exonRegions = model.getExonRegions();
         if (exonRegions.isEmpty()) {
@@ -70,43 +60,42 @@ public class SplicingCalculatorImpl implements SplicingCalculator {
             return Optional.empty();
         }
 
-
         // add first exon which may also be last if transcript consists of only single exon
         GenomeInterval firstExon = exonRegions.get(0);
         builder.addExon(
-                SplicingExon.newBuilder()
-                        .setBegin(firstExon.getBeginPos())
-                        .setEnd(firstExon.getEndPos())
+                SplicingExon.builder()
+                        .setInterval(firstExon)
                         .build());
 
         SplicingParameters parameters = annotator.getSplicingParameters();
         for (int i = 1; i < exonRegions.size(); i++) {
             // we have more than one exon, therefore we also have at least single intron
             // we start at i = 1, since we already processed the first exon above
-            int intronBegin = exonRegions.get(i - 1).getEndPos();
-            String donorSequence = si.getSubsequence(intronBegin - parameters.getDonorExonic(), intronBegin + parameters.getDonorIntronic());
-            double donorScore = annotator.getSpliceDonorScore(donorSequence);
+            final GenomeInterval exonInterval = exonRegions.get(i);
 
-            int intronEnd = exonRegions.get(i).getBeginPos();
-            String acceptorSequence = si.getSubsequence(intronEnd - parameters.getAcceptorIntronic(), intronEnd + parameters.getAcceptorExonic());
-            double acceptorScore = annotator.getSpliceAcceptorScore(acceptorSequence);
+            GenomePosition intronBegin = exonRegions.get(i - 1).getGenomeEndPos();
+            GenomePosition intronEnd = exonInterval.getGenomeBeginPos();
+            GenomeInterval intronInterval = new GenomeInterval(intronBegin, intronEnd.differenceTo(intronBegin));
 
-            int exonEnd = exonRegions.get(i).getEndPos();
+            final GenomeInterval donorRegion = new GenomeInterval(intronBegin.shifted(-parameters.getDonorExonic()), parameters.getDonorLength());
+            Optional<String> donorSequenceOpt = si.getSubsequence(donorRegion);
+            final double donorScore = donorSequenceOpt.map(annotator::getSpliceDonorScore).orElse(Double.NaN);
 
-            builder.addIntron(SplicingIntron.newBuilder()
-                    .setBegin(intronBegin)
-                    .setEnd(intronEnd)
+            final GenomeInterval acceptorRegion = new GenomeInterval(intronEnd.shifted(-parameters.getAcceptorIntronic()), parameters.getAcceptorLength());
+            Optional<String> acceptorSequenceOpt = si.getSubsequence(acceptorRegion);
+            double acceptorScore = acceptorSequenceOpt.map(annotator::getSpliceAcceptorScore).orElse(Double.NaN);
+
+            builder.addIntron(SplicingIntron.builder()
+                    .setInterval(intronInterval)
                     .setDonorScore(donorScore)
                     .setAcceptorScore(acceptorScore)
                     .build())
-                    .addExon(SplicingExon.newBuilder()
-                            .setBegin(intronEnd)
-                            .setEnd(exonEnd)
+                    .addExon(SplicingExon.builder()
+                            .setInterval(exonInterval)
                             .build());
         }
 
         return Optional.of(builder.build());
     }
-
 
 }

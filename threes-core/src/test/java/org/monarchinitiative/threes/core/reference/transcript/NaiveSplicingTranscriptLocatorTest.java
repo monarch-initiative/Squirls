@@ -1,15 +1,16 @@
 package org.monarchinitiative.threes.core.reference.transcript;
 
+import de.charite.compbio.jannovar.data.ReferenceDictionary;
+import de.charite.compbio.jannovar.reference.GenomePosition;
+import de.charite.compbio.jannovar.reference.GenomeVariant;
+import de.charite.compbio.jannovar.reference.Strand;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.monarchinitiative.threes.core.PojosForTesting;
 import org.monarchinitiative.threes.core.TestDataSourceConfig;
-import org.monarchinitiative.threes.core.model.GenomeCoordinates;
 import org.monarchinitiative.threes.core.model.SplicingParameters;
 import org.monarchinitiative.threes.core.model.SplicingTranscript;
-import org.monarchinitiative.threes.core.model.SplicingVariant;
 import org.monarchinitiative.threes.core.reference.SplicingLocationData;
-import org.monarchinitiative.threes.core.reference.fasta.InvalidCoordinatesException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
@@ -19,10 +20,14 @@ import static org.hamcrest.Matchers.is;
 @SpringBootTest(classes = {TestDataSourceConfig.class})
 class NaiveSplicingTranscriptLocatorTest {
 
-    NaiveSplicingTranscriptLocator locator;
+    private NaiveSplicingTranscriptLocator locator;
 
     @Autowired
     private SplicingParameters splicingParameters;
+
+    @Autowired
+    private ReferenceDictionary referenceDictionary;
+
 
     private SplicingTranscript fwdTranscript;
 
@@ -30,24 +35,15 @@ class NaiveSplicingTranscriptLocatorTest {
 
     @BeforeEach
     void setUp() throws Exception {
-        fwdTranscript = PojosForTesting.getTranscriptWithThreeExons();
-        revTranscript = PojosForTesting.getTranscriptWithThreeExonsOnRevStrand();
+        fwdTranscript = PojosForTesting.getTranscriptWithThreeExons(referenceDictionary);
+        revTranscript = PojosForTesting.getTranscriptWithThreeExonsOnRevStrand(referenceDictionary);
         locator = new NaiveSplicingTranscriptLocator(splicingParameters);
     }
 
 
     @Test
-    void onDifferentContig() throws InvalidCoordinatesException {
-        SplicingVariant variant = SplicingVariant.newBuilder()
-                .setCoordinates(GenomeCoordinates.newBuilder()
-                        .setContig("chrX")
-                        .setBegin(999)
-                        .setEnd(1000)
-                        .setStrand(true)
-                        .build())
-                .setRef("C")
-                .setAlt("G")
-                .build();
+    void onDifferentContig() throws Exception {
+        GenomeVariant variant = new GenomeVariant(new GenomePosition(referenceDictionary, Strand.FWD, 5, 999), "C", "G");
         final SplicingLocationData data = locator.locate(variant, fwdTranscript);
         assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.OUTSIDE));
     }
@@ -55,16 +51,7 @@ class NaiveSplicingTranscriptLocatorTest {
 
     @Test
     void oneBaseBeforeCds() throws Exception {
-        SplicingVariant variant = SplicingVariant.newBuilder()
-                .setCoordinates(GenomeCoordinates.newBuilder()
-                        .setContig("chr1")
-                        .setBegin(999)
-                        .setEnd(1000)
-                        .setStrand(true)
-                        .build())
-                .setRef("C")
-                .setAlt("G")
-                .build();
+        GenomeVariant variant = new GenomeVariant(new GenomePosition(referenceDictionary, Strand.FWD, 1, 999), "C", "G");
         final SplicingLocationData data = locator.locate(variant, fwdTranscript);
         assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.OUTSIDE));
     }
@@ -72,16 +59,7 @@ class NaiveSplicingTranscriptLocatorTest {
 
     @Test
     void firstBaseOfCds() throws Exception {
-        SplicingVariant variant = SplicingVariant.newBuilder()
-                .setCoordinates(GenomeCoordinates.newBuilder()
-                        .setContig("chr1")
-                        .setBegin(1000)
-                        .setEnd(1001)
-                        .setStrand(true)
-                        .build())
-                .setRef("C")
-                .setAlt("G")
-                .build();
+        GenomeVariant variant = new GenomeVariant(new GenomePosition(referenceDictionary, Strand.FWD, 1, 1000), "C", "G");
         final SplicingLocationData data = locator.locate(variant, fwdTranscript);
         assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.EXON));
         assertThat(data.getExonIdx(), is(0));
@@ -91,16 +69,7 @@ class NaiveSplicingTranscriptLocatorTest {
 
     @Test
     void oneBaseBeforeFirstDonor() throws Exception {
-        SplicingVariant variant = SplicingVariant.newBuilder()
-                .setCoordinates(GenomeCoordinates.newBuilder()
-                        .setContig("chr1")
-                        .setBegin(1196)
-                        .setEnd(1197)
-                        .setStrand(true)
-                        .build())
-                .setRef("C")
-                .setAlt("G")
-                .build();
+        GenomeVariant variant = new GenomeVariant(new GenomePosition(referenceDictionary, Strand.FWD, 1, 1196), "C", "G");
         final SplicingLocationData data = locator.locate(variant, fwdTranscript);
         assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.EXON));
         assertThat(data.getExonIdx(), is(0));
@@ -109,16 +78,7 @@ class NaiveSplicingTranscriptLocatorTest {
 
     @Test
     void firstBaseOfFirstDonor() throws Exception {
-        SplicingVariant variant = SplicingVariant.newBuilder()
-                .setCoordinates(GenomeCoordinates.newBuilder()
-                        .setContig("chr1")
-                        .setBegin(1197)
-                        .setEnd(1198)
-                        .setStrand(true)
-                        .build())
-                .setRef("C")
-                .setAlt("G")
-                .build();
+        GenomeVariant variant = new GenomeVariant(new GenomePosition(referenceDictionary, Strand.FWD, 1, 1197), "C", "G");
         final SplicingLocationData data = locator.locate(variant, fwdTranscript);
         assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.DONOR));
         assertThat(data.getIntronIdx(), is(0));
@@ -127,16 +87,7 @@ class NaiveSplicingTranscriptLocatorTest {
 
     @Test
     void lastBaseOfFirstDonor() throws Exception {
-        SplicingVariant variant = SplicingVariant.newBuilder()
-                .setCoordinates(GenomeCoordinates.newBuilder()
-                        .setContig("chr1")
-                        .setBegin(1205)
-                        .setEnd(1206)
-                        .setStrand(true)
-                        .build())
-                .setRef("C")
-                .setAlt("G")
-                .build();
+        GenomeVariant variant = new GenomeVariant(new GenomePosition(referenceDictionary, Strand.FWD, 1, 1205), "C", "G");
         final SplicingLocationData data = locator.locate(variant, fwdTranscript);
         assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.DONOR));
         assertThat(data.getIntronIdx(), is(0));
@@ -146,16 +97,7 @@ class NaiveSplicingTranscriptLocatorTest {
 
     @Test
     void firstBaseAfterFirstDonor() throws Exception {
-        SplicingVariant variant = SplicingVariant.newBuilder()
-                .setCoordinates(GenomeCoordinates.newBuilder()
-                        .setContig("chr1")
-                        .setBegin(1206)
-                        .setEnd(1207)
-                        .setStrand(true)
-                        .build())
-                .setRef("C")
-                .setAlt("G")
-                .build();
+        GenomeVariant variant = new GenomeVariant(new GenomePosition(referenceDictionary, Strand.FWD, 1, 1206), "C", "G");
         final SplicingLocationData data = locator.locate(variant, fwdTranscript);
         assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.INTRON));
         assertThat(data.getIntronIdx(), is(0));
@@ -164,16 +106,7 @@ class NaiveSplicingTranscriptLocatorTest {
 
     @Test
     void oneBaseBeforeFirstAcceptor() throws Exception {
-        SplicingVariant variant = SplicingVariant.newBuilder()
-                .setCoordinates(GenomeCoordinates.newBuilder()
-                        .setContig("chr1")
-                        .setBegin(1374)
-                        .setEnd(1375)
-                        .setStrand(true)
-                        .build())
-                .setRef("C")
-                .setAlt("G")
-                .build();
+        GenomeVariant variant = new GenomeVariant(new GenomePosition(referenceDictionary, Strand.FWD, 1, 1374), "C", "G");
         final SplicingLocationData data = locator.locate(variant, fwdTranscript);
         assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.INTRON));
         assertThat(data.getIntronIdx(), is(0));
@@ -182,16 +115,7 @@ class NaiveSplicingTranscriptLocatorTest {
 
     @Test
     void firstBaseOfFirstAcceptor() throws Exception {
-        SplicingVariant variant = SplicingVariant.newBuilder()
-                .setCoordinates(GenomeCoordinates.newBuilder()
-                        .setContig("chr1")
-                        .setBegin(1375)
-                        .setEnd(1376)
-                        .setStrand(true)
-                        .build())
-                .setRef("C")
-                .setAlt("G")
-                .build();
+        GenomeVariant variant = new GenomeVariant(new GenomePosition(referenceDictionary, Strand.FWD, 1, 1375), "C", "G");
         final SplicingLocationData data = locator.locate(variant, fwdTranscript);
         assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.ACCEPTOR));
         assertThat(data.getIntronIdx(), is(0));
@@ -201,16 +125,7 @@ class NaiveSplicingTranscriptLocatorTest {
 
     @Test
     void lastBaseOfFirstAcceptor() throws Exception {
-        SplicingVariant variant = SplicingVariant.newBuilder()
-                .setCoordinates(GenomeCoordinates.newBuilder()
-                        .setContig("chr1")
-                        .setBegin(1401)
-                        .setEnd(1402)
-                        .setStrand(true)
-                        .build())
-                .setRef("C")
-                .setAlt("G")
-                .build();
+        GenomeVariant variant = new GenomeVariant(new GenomePosition(referenceDictionary, Strand.FWD, 1, 1401), "C", "G");
         final SplicingLocationData data = locator.locate(variant, fwdTranscript);
         assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.ACCEPTOR));
         assertThat(data.getIntronIdx(), is(0));
@@ -219,16 +134,7 @@ class NaiveSplicingTranscriptLocatorTest {
 
     @Test
     void oneBaseAfterFirstAcceptor() throws Exception {
-        SplicingVariant variant = SplicingVariant.newBuilder()
-                .setCoordinates(GenomeCoordinates.newBuilder()
-                        .setContig("chr1")
-                        .setBegin(1402)
-                        .setEnd(1403)
-                        .setStrand(true)
-                        .build())
-                .setRef("C")
-                .setAlt("G")
-                .build();
+        GenomeVariant variant = new GenomeVariant(new GenomePosition(referenceDictionary, Strand.FWD, 1, 1402), "C", "G");
         final SplicingLocationData data = locator.locate(variant, fwdTranscript);
         assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.EXON));
         assertThat(data.getExonIdx(), is(1));
@@ -237,16 +143,7 @@ class NaiveSplicingTranscriptLocatorTest {
 
     @Test
     void oneBaseBeforeSecondDonor() throws Exception {
-        SplicingVariant variant = SplicingVariant.newBuilder()
-                .setCoordinates(GenomeCoordinates.newBuilder()
-                        .setContig("chr1")
-                        .setBegin(1596)
-                        .setEnd(1597)
-                        .setStrand(true)
-                        .build())
-                .setRef("C")
-                .setAlt("G")
-                .build();
+        GenomeVariant variant = new GenomeVariant(new GenomePosition(referenceDictionary, Strand.FWD, 1, 1596), "C", "G");
         final SplicingLocationData data = locator.locate(variant, fwdTranscript);
         assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.EXON));
         assertThat(data.getExonIdx(), is(1));
@@ -255,16 +152,7 @@ class NaiveSplicingTranscriptLocatorTest {
 
     @Test
     void firstBaseOfSecondDonor() throws Exception {
-        SplicingVariant variant = SplicingVariant.newBuilder()
-                .setCoordinates(GenomeCoordinates.newBuilder()
-                        .setContig("chr1")
-                        .setBegin(1597)
-                        .setEnd(1598)
-                        .setStrand(true)
-                        .build())
-                .setRef("C")
-                .setAlt("G")
-                .build();
+        GenomeVariant variant = new GenomeVariant(new GenomePosition(referenceDictionary, Strand.FWD, 1, 1597), "C", "G");
         final SplicingLocationData data = locator.locate(variant, fwdTranscript);
         assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.DONOR));
         assertThat(data.getIntronIdx(), is(1));
@@ -273,16 +161,7 @@ class NaiveSplicingTranscriptLocatorTest {
 
     @Test
     void lastBaseOfSecondDonor() throws Exception {
-        SplicingVariant variant = SplicingVariant.newBuilder()
-                .setCoordinates(GenomeCoordinates.newBuilder()
-                        .setContig("chr1")
-                        .setBegin(1605)
-                        .setEnd(1606)
-                        .setStrand(true)
-                        .build())
-                .setRef("C")
-                .setAlt("G")
-                .build();
+        GenomeVariant variant = new GenomeVariant(new GenomePosition(referenceDictionary, Strand.FWD, 1, 1605), "C", "G");
         final SplicingLocationData data = locator.locate(variant, fwdTranscript);
         assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.DONOR));
         assertThat(data.getExonIdx(), is(1));
@@ -291,16 +170,7 @@ class NaiveSplicingTranscriptLocatorTest {
 
     @Test
     void oneBaseAfterSecondDonor() throws Exception {
-        SplicingVariant variant = SplicingVariant.newBuilder()
-                .setCoordinates(GenomeCoordinates.newBuilder()
-                        .setContig("chr1")
-                        .setBegin(1606)
-                        .setEnd(1607)
-                        .setStrand(true)
-                        .build())
-                .setRef("C")
-                .setAlt("G")
-                .build();
+        GenomeVariant variant = new GenomeVariant(new GenomePosition(referenceDictionary, Strand.FWD, 1, 1606), "C", "G");
         final SplicingLocationData data = locator.locate(variant, fwdTranscript);
         assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.INTRON));
         assertThat(data.getIntronIdx(), is(1));
@@ -310,16 +180,7 @@ class NaiveSplicingTranscriptLocatorTest {
 
     @Test
     void oneBaseBeforeSecondAcceptor() throws Exception {
-        SplicingVariant variant = SplicingVariant.newBuilder()
-                .setCoordinates(GenomeCoordinates.newBuilder()
-                        .setContig("chr1")
-                        .setBegin(1774)
-                        .setEnd(1775)
-                        .setStrand(true)
-                        .build())
-                .setRef("C")
-                .setAlt("G")
-                .build();
+        GenomeVariant variant = new GenomeVariant(new GenomePosition(referenceDictionary, Strand.FWD, 1, 1774), "C", "G");
         final SplicingLocationData data = locator.locate(variant, fwdTranscript);
         assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.INTRON));
         assertThat(data.getIntronIdx(), is(1));
@@ -329,16 +190,7 @@ class NaiveSplicingTranscriptLocatorTest {
 
     @Test
     void firstBaseOfSecondAcceptor() throws Exception {
-        SplicingVariant variant = SplicingVariant.newBuilder()
-                .setCoordinates(GenomeCoordinates.newBuilder()
-                        .setContig("chr1")
-                        .setBegin(1775)
-                        .setEnd(1776)
-                        .setStrand(true)
-                        .build())
-                .setRef("C")
-                .setAlt("G")
-                .build();
+        GenomeVariant variant = new GenomeVariant(new GenomePosition(referenceDictionary, Strand.FWD, 1, 1775), "C", "G");
         final SplicingLocationData data = locator.locate(variant, fwdTranscript);
         assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.ACCEPTOR));
         assertThat(data.getIntronIdx(), is(1));
@@ -347,16 +199,7 @@ class NaiveSplicingTranscriptLocatorTest {
 
     @Test
     void lastBaseOfSecondAcceptor() throws Exception {
-        SplicingVariant variant = SplicingVariant.newBuilder()
-                .setCoordinates(GenomeCoordinates.newBuilder()
-                        .setContig("chr1")
-                        .setBegin(1801)
-                        .setEnd(1802)
-                        .setStrand(true)
-                        .build())
-                .setRef("C")
-                .setAlt("G")
-                .build();
+        GenomeVariant variant = new GenomeVariant(new GenomePosition(referenceDictionary, Strand.FWD, 1, 1801), "C", "G");
         final SplicingLocationData data = locator.locate(variant, fwdTranscript);
         assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.ACCEPTOR));
         assertThat(data.getIntronIdx(), is(1));
@@ -366,16 +209,7 @@ class NaiveSplicingTranscriptLocatorTest {
 
     @Test
     void oneBaseAfterSecondAcceptor() throws Exception {
-        SplicingVariant variant = SplicingVariant.newBuilder()
-                .setCoordinates(GenomeCoordinates.newBuilder()
-                        .setContig("chr1")
-                        .setBegin(1802)
-                        .setEnd(1803)
-                        .setStrand(true)
-                        .build())
-                .setRef("C")
-                .setAlt("G")
-                .build();
+        GenomeVariant variant = new GenomeVariant(new GenomePosition(referenceDictionary, Strand.FWD, 1, 1802), "C", "G");
         final SplicingLocationData data = locator.locate(variant, fwdTranscript);
         assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.EXON));
         assertThat(data.getIntronIdx(), is(-1));
@@ -385,16 +219,7 @@ class NaiveSplicingTranscriptLocatorTest {
 
     @Test
     void lastBaseOfCds() throws Exception {
-        SplicingVariant variant = SplicingVariant.newBuilder()
-                .setCoordinates(GenomeCoordinates.newBuilder()
-                        .setContig("chr1")
-                        .setBegin(1999)
-                        .setEnd(2000)
-                        .setStrand(true)
-                        .build())
-                .setRef("C")
-                .setAlt("G")
-                .build();
+        GenomeVariant variant = new GenomeVariant(new GenomePosition(referenceDictionary, Strand.FWD, 1, 1999), "C", "G");
         final SplicingLocationData data = locator.locate(variant, fwdTranscript);
         assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.EXON));
         assertThat(data.getIntronIdx(), is(-1));
@@ -403,33 +228,15 @@ class NaiveSplicingTranscriptLocatorTest {
 
     @Test
     void oneBaseAfterCds() throws Exception {
-        SplicingVariant variant = SplicingVariant.newBuilder()
-                .setCoordinates(GenomeCoordinates.newBuilder()
-                        .setContig("chr1")
-                        .setBegin(2000)
-                        .setEnd(2001)
-                        .setStrand(true)
-                        .build())
-                .setRef("C")
-                .setAlt("G")
-                .build();
+        GenomeVariant variant = new GenomeVariant(new GenomePosition(referenceDictionary, Strand.FWD, 1, 2000), "C", "G");
         final SplicingLocationData data = locator.locate(variant, fwdTranscript);
         assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.OUTSIDE));
     }
 
     @Test
     void firstBaseOfSingleExonTranscript() throws Exception {
-        final SplicingTranscript se = PojosForTesting.getTranscriptWithSingleExons();
-        SplicingVariant variant = SplicingVariant.newBuilder()
-                .setCoordinates(GenomeCoordinates.newBuilder()
-                        .setContig("chr1")
-                        .setBegin(1000)
-                        .setEnd(1001)
-                        .setStrand(true)
-                        .build())
-                .setRef("C")
-                .setAlt("G")
-                .build();
+        final SplicingTranscript se = PojosForTesting.getTranscriptWithSingleExon(referenceDictionary);
+        GenomeVariant variant = new GenomeVariant(new GenomePosition(referenceDictionary, Strand.FWD, 1, 1000), "C", "G");
         final SplicingLocationData data = locator.locate(variant, se);
         assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.EXON));
         assertThat(data.getExonIdx(), is(0));
@@ -439,17 +246,9 @@ class NaiveSplicingTranscriptLocatorTest {
 
     @Test
     void lastBaseOfSingleExonTranscript() throws Exception {
-        final SplicingTranscript se = PojosForTesting.getTranscriptWithSingleExons();
-        SplicingVariant variant = SplicingVariant.newBuilder()
-                .setCoordinates(GenomeCoordinates.newBuilder()
-                        .setContig("chr1")
-                        .setBegin(1999)
-                        .setEnd(2000)
-                        .setStrand(true)
-                        .build())
-                .setRef("C")
-                .setAlt("G")
-                .build();
+        final SplicingTranscript se = PojosForTesting.getTranscriptWithSingleExon(referenceDictionary);
+        GenomeVariant variant = new GenomeVariant(new GenomePosition(referenceDictionary, Strand.FWD, 1, 1999), "C", "G");
+
         final SplicingLocationData data = locator.locate(variant, se);
         assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.EXON));
         assertThat(data.getExonIdx(), is(0));

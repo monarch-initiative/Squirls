@@ -8,7 +8,6 @@ import org.monarchinitiative.threes.core.calculators.sms.SMSCalculator;
 import org.monarchinitiative.threes.core.data.sms.FileSMSParser;
 import org.monarchinitiative.threes.core.data.sms.SMSParser;
 import org.monarchinitiative.threes.core.model.SplicingParameters;
-import org.monarchinitiative.threes.core.reference.GenomeCoordinatesFlipper;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -16,7 +15,6 @@ import javax.sql.DataSource;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Map;
 
 /**
  *
@@ -47,6 +45,10 @@ public class TestDataSourceConfig {
     public ReferenceDictionary referenceDictionary() {
         ReferenceDictionaryBuilder builder = new ReferenceDictionaryBuilder();
 
+        builder.putContigID("chr1", 1);
+        builder.putContigName(1, "chr1");
+        builder.putContigLength(1, 10_000);
+
         builder.putContigID("chr2", 2);
         builder.putContigName(2, "chr2");
         builder.putContigLength(2, 100_000);
@@ -57,12 +59,6 @@ public class TestDataSourceConfig {
         return builder.build();
     }
 
-
-    @Bean
-    public GenomeCoordinatesFlipper genomeCoordinatesFlipper(Map<String, Integer> contigLengthMap) {
-        return new GenomeCoordinatesFlipper(contigLengthMap);
-    }
-
     @Bean
     public SMSCalculator smsCalculator(SMSParser smsParser) {
         return new SMSCalculator(smsParser.getSeptamerMap());
@@ -70,7 +66,7 @@ public class TestDataSourceConfig {
 
     @Bean
     public SMSParser smsParser() throws IOException {
-        Path path = Paths.get(TestDataSourceConfig.class.getResource("calculators/sms/septamer-scores.tsv").getPath());
+        Path path = Paths.get(TestDataSourceConfig.class.getResource("data/sms/septamer-scores.tsv").getPath());
         return new FileSMSParser(path);
     }
 }

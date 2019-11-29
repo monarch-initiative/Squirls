@@ -7,7 +7,6 @@ import com.zaxxer.hikari.HikariDataSource;
 import org.monarchinitiative.threes.core.Utils;
 import org.monarchinitiative.threes.core.calculators.ic.SplicingInformationContentCalculator;
 import org.monarchinitiative.threes.core.calculators.sms.SMSCalculator;
-import org.monarchinitiative.threes.core.data.ContigLengthDao;
 import org.monarchinitiative.threes.core.data.DbSplicingTranscriptSource;
 import org.monarchinitiative.threes.core.data.SplicingTranscriptSource;
 import org.monarchinitiative.threes.core.data.ic.DbSplicingPositionalWeightMatrixParser;
@@ -15,10 +14,6 @@ import org.monarchinitiative.threes.core.data.ic.SplicingPositionalWeightMatrixP
 import org.monarchinitiative.threes.core.data.sms.DbSmsDao;
 import org.monarchinitiative.threes.core.data.sms.SMSParser;
 import org.monarchinitiative.threes.core.model.SplicingParameters;
-import org.monarchinitiative.threes.core.reference.GenomeCoordinatesFlipper;
-import org.monarchinitiative.threes.core.reference.fasta.GenomeSequenceAccessor;
-import org.monarchinitiative.threes.core.reference.fasta.InvalidFastaFileException;
-import org.monarchinitiative.threes.core.reference.fasta.PrefixHandlingGenomeSequenceAccessor;
 import org.monarchinitiative.threes.core.reference.transcript.NaiveSplicingTranscriptLocator;
 import org.monarchinitiative.threes.core.reference.transcript.SplicingTranscriptLocator;
 import org.monarchinitiative.threes.core.scoring.*;
@@ -28,6 +23,9 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
+import xyz.ielis.hyperutil.reference.fasta.GenomeSequenceAccessor;
+import xyz.ielis.hyperutil.reference.fasta.GenomeSequenceAccessorBuilder;
+import xyz.ielis.hyperutil.reference.fasta.InvalidFastaFileException;
 
 import javax.sql.DataSource;
 import java.nio.file.Files;
@@ -80,21 +78,16 @@ public class ThreesAutoConfiguration {
         return dataVersion;
     }
 
-
-    @Bean
-    @ConditionalOnMissingBean(name = "transcriptSource")
-    public String transcriptSource(Environment environment) throws UndefinedThreesResourceException {
-        String transcriptSource = environment.getProperty("threes.transcript-source");
-        if (transcriptSource == null) {
-            throw new UndefinedThreesResourceException("Transcript source (`--threes.transcript-source`) is not specified");
-        }
-        return transcriptSource;
-    }
-
     @Bean
     @ConditionalOnMissingBean(name = "scorerFactoryType")
     public String scorerFactoryType(Environment environment) {
         return environment.getProperty("threes.scorer-factory-type", "scaling");
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(name = "genomeSequenceAccessorType")
+    public String genomeSequenceAccessorType(Environment environment) {
+        return environment.getProperty("threes.genome-sequence-accessor-type", "simple");
     }
 
 
@@ -115,8 +108,8 @@ public class ThreesAutoConfiguration {
 
 
     @Bean
-    public ThreesDataResolver threesDataResolver(Path threesDataDirectory, String threesGenomeAssembly, String threesDataVersion, String transcriptSource) {
-        return new ThreesDataResolver(threesDataDirectory, threesDataVersion, threesGenomeAssembly, transcriptSource);
+    public ThreesDataResolver threesDataResolver(Path threesDataDirectory, String threesGenomeAssembly, String threesDataVersion) {
+        return new ThreesDataResolver(threesDataDirectory, threesDataVersion, threesGenomeAssembly);
     }
 
 
@@ -127,8 +120,8 @@ public class ThreesAutoConfiguration {
 
 
     @Bean
-    public SplicingEvaluator splicingEvaluator(SplicingTranscriptLocator splicingTranscriptLocator, ScorerFactory scorerFactory, GenomeCoordinatesFlipper genomeCoordinatesFlipper) {
-        return new SimpleSplicingEvaluator(scorerFactory, splicingTranscriptLocator, genomeCoordinatesFlipper);
+    public SplicingEvaluator splicingEvaluator(SplicingTranscriptLocator splicingTranscriptLocator, ScorerFactory scorerFactory) {
+        return new SimpleSplicingEvaluator(scorerFactory, splicingTranscriptLocator);
     }
 
 
@@ -162,10 +155,24 @@ public class ThreesAutoConfiguration {
 
     }
 
-
     @Bean
-    public GenomeSequenceAccessor genomeSequenceAccessor(Path genomeFasta, Path genomeFastaFai) throws InvalidFastaFileException {
-        return new PrefixHandlingGenomeSequenceAccessor(genomeFasta, genomeFastaFai);
+    public GenomeSequenceAccessor genomeSequenceAccessor(ThreesDataResolver threesDataResolver, String genomeSequenceAccessorType) throws InvalidFastaFileException {
+        final GenomeSequenceAccessorBuilder builder = GenomeSequenceAccessorBuilder.builder()
+                .setFastaPath(threesDataResolver.genomeFastaPath())
+                .setFastaFaiPath(threesDataResolver.genomeFastaFaiPath())
+                .setFastaDictPath(threesDataResolver.genomeFastaDictPath());
+        switch (genomeSequenceAccessorType) {
+            case "chromosome":
+                LOGGER.info("Using single chromosome genome sequence accessor");
+                builder.setType(GenomeSequenceAccessor.Type.SINGLE_CHROMOSOME);
+                break;
+            case "simple":
+            default:
+                LOGGER.info("Using simple genome sequence accessor");
+                break;
+        }
+        return builder
+                .build();
     }
 
 
@@ -184,18 +191,6 @@ public class ThreesAutoConfiguration {
     @Bean
     public SplicingTranscriptLocator splicingTranscriptLocator(SplicingParameters splicingParameters) {
         return new NaiveSplicingTranscriptLocator(splicingParameters);
-    }
-
-
-    @Bean
-    public GenomeCoordinatesFlipper genomeCoordinatesFlipper(ContigLengthDao contigLengthDao) {
-        return new GenomeCoordinatesFlipper(contigLengthDao.getContigLengths());
-    }
-
-
-    @Bean
-    public ContigLengthDao contigLengthDao(DataSource threesDatasource) {
-        return new ContigLengthDao(threesDatasource);
     }
 
 
@@ -232,10 +227,10 @@ public class ThreesAutoConfiguration {
     public DataSource threesDatasource(ThreesDataResolver threesDataResolver) {
         Path datasourcePath = threesDataResolver.getDatasourcePath();
 
-        String jdbcUrl = String.format("jdbc:h2:file:%s", datasourcePath);
+        String jdbcUrl = String.format("jdbc:h2:file:%s;ACCESS_MODE_DATA=r", datasourcePath);
         final HikariConfig config = new HikariConfig();
         config.setUsername("sa");
-        config.setPassword("");
+        config.setPassword("sa");
         config.setDriverClassName("org.h2.Driver");
         config.setJdbcUrl(jdbcUrl);
 

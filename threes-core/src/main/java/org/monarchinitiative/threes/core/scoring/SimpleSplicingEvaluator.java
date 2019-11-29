@@ -1,16 +1,14 @@
 package org.monarchinitiative.threes.core.scoring;
 
-import org.monarchinitiative.threes.core.model.SequenceInterval;
+import de.charite.compbio.jannovar.reference.GenomeVariant;
 import org.monarchinitiative.threes.core.model.SplicingTernate;
 import org.monarchinitiative.threes.core.model.SplicingTranscript;
-import org.monarchinitiative.threes.core.model.SplicingVariant;
-import org.monarchinitiative.threes.core.reference.GenomeCoordinatesFlipper;
 import org.monarchinitiative.threes.core.reference.SplicingLocationData;
 import org.monarchinitiative.threes.core.reference.transcript.SplicingTranscriptLocator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import xyz.ielis.hyperutil.reference.fasta.SequenceInterval;
 
-import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -28,45 +26,24 @@ public class SimpleSplicingEvaluator implements SplicingEvaluator {
 
     private final SplicingTranscriptLocator transcriptLocator;
 
-    private final GenomeCoordinatesFlipper flipper;
 
-    public SimpleSplicingEvaluator(ScorerFactory factory, SplicingTranscriptLocator transcriptLocator, GenomeCoordinatesFlipper flipper) {
+    public SimpleSplicingEvaluator(ScorerFactory factory, SplicingTranscriptLocator transcriptLocator) {
         this.transcriptLocator = transcriptLocator;
         this.factory = factory;
-        this.flipper = flipper;
     }
 
 
     @Override
-    public SplicingPathogenicityData evaluate(SplicingVariant variant, SplicingTranscript transcript, SequenceInterval sequence, Set<ScoringStrategy> strategies) {
+    public SplicingPathogenicityData evaluate(GenomeVariant variant, SplicingTranscript transcript, SequenceInterval sequence, Set<ScoringStrategy> strategies) {
 
         try {
             final SplicingPathogenicityData.Builder resultBuilder = SplicingPathogenicityData.newBuilder();
 
             // Adjust sequence interval and variant to the transcript's strand
-            if (variant.getCoordinates().getStrand() != transcript.getStrand()) {
-                Optional<SplicingVariant> varOp = flipper.flip(variant);
-
-                if (varOp.isPresent()) {
-                    variant = varOp.get();
-                } else {
-                    // can't do anything more
-                    return resultBuilder.build();
-                }
-            }
-            if (sequence.getCoordinates().getStrand() != transcript.getStrand()) {
-                Optional<SequenceInterval> seqOp = flipper.flip(sequence);
-                if (seqOp.isPresent()) {
-                    sequence = seqOp.get();
-                } else {
-                    // can't do anything more
-                    return resultBuilder.build();
-                }
-            }
-
+            GenomeVariant variantOnStrand = variant.withStrand(transcript.getStrand());
 
             // find where is the variant located with respect to given transcript
-            final SplicingLocationData ld = transcriptLocator.locate(variant, transcript);
+            final SplicingLocationData ld = transcriptLocator.locate(variantOnStrand, transcript);
 
 
             // apply appropriate scorers
@@ -79,7 +56,7 @@ public class SimpleSplicingEvaluator implements SplicingEvaluator {
                  */
                 // apply canonical donor & cryptic donor in canonical position
                 featureIdx = ld.getIntronIdx(); // with respect to intron
-                SplicingTernate donorTernate = SplicingTernate.of(variant, transcript.getIntrons().get(featureIdx), sequence);
+                SplicingTernate donorTernate = SplicingTernate.of(variantOnStrand, transcript.getIntrons().get(featureIdx), sequence);
                 if (strategies.contains(ScoringStrategy.CANONICAL_DONOR)) {
                     double donorScore = factory.scorerForStrategy(ScoringStrategy.CANONICAL_DONOR).apply(donorTernate);
                     resultBuilder.putScore(ScoringStrategy.CANONICAL_DONOR, donorScore);
@@ -95,7 +72,7 @@ public class SimpleSplicingEvaluator implements SplicingEvaluator {
                  */
                 // apply canonical acceptor & cryptic acceptor in canonical position
                 featureIdx = ld.getIntronIdx(); // with respect to intron
-                SplicingTernate acceptorT = SplicingTernate.of(variant, transcript.getIntrons().get(featureIdx), sequence);
+                SplicingTernate acceptorT = SplicingTernate.of(variantOnStrand, transcript.getIntrons().get(featureIdx), sequence);
                 if (strategies.contains(ScoringStrategy.CANONICAL_ACCEPTOR)) {
                     double acceptorScore = factory.scorerForStrategy(ScoringStrategy.CANONICAL_ACCEPTOR).apply(acceptorT);
                     resultBuilder.putScore(ScoringStrategy.CANONICAL_ACCEPTOR, acceptorScore);
@@ -113,20 +90,20 @@ public class SimpleSplicingEvaluator implements SplicingEvaluator {
                 if (featureIdx != 0 && strategies.contains(ScoringStrategy.CRYPTIC_ACCEPTOR)) {
                     // variant is not in the first exon, the exon has the acceptor site
                     // we're in the n-nth exon, so use the n-1-th intron to calculate the acceptor score
-                    SplicingTernate crypticAccT = SplicingTernate.of(variant, transcript.getIntrons().get(featureIdx - 1), sequence);
+                    SplicingTernate crypticAccT = SplicingTernate.of(variantOnStrand, transcript.getIntrons().get(featureIdx - 1), sequence);
                     double exonCryptAccSc = factory.scorerForStrategy(ScoringStrategy.CRYPTIC_ACCEPTOR).apply(crypticAccT);
                     resultBuilder.putScore(ScoringStrategy.CRYPTIC_ACCEPTOR, exonCryptAccSc);
                 }
                 if (featureIdx < (transcript.getExons().size() - 1) && strategies.contains(ScoringStrategy.CRYPTIC_DONOR)) {
                     // variant is not in the last exon, the exon has the donor site
-                    SplicingTernate crypticDonT = SplicingTernate.of(variant, transcript.getIntrons().get(featureIdx), sequence);
+                    SplicingTernate crypticDonT = SplicingTernate.of(variantOnStrand, transcript.getIntrons().get(featureIdx), sequence);
                     double exonCryptDonSc = factory.scorerForStrategy(ScoringStrategy.CRYPTIC_DONOR).apply(crypticDonT);
                     resultBuilder.putScore(ScoringStrategy.CRYPTIC_DONOR, exonCryptDonSc);
                 }
 
                 if (strategies.contains(ScoringStrategy.SMS)) {
                     // calculate septamer scores
-                    SplicingTernate exonTernate = SplicingTernate.of(variant, transcript.getExons().get(featureIdx), sequence);
+                    SplicingTernate exonTernate = SplicingTernate.of(variantOnStrand, transcript.getExons().get(featureIdx), sequence);
                     double smsScore = factory.scorerForStrategy(ScoringStrategy.SMS).apply(exonTernate);
                     resultBuilder.putScore(ScoringStrategy.SMS, smsScore);
                 }
@@ -135,7 +112,7 @@ public class SimpleSplicingEvaluator implements SplicingEvaluator {
                           EVALUATE INTRONIC VARIANT
                  */
                 featureIdx = ld.getIntronIdx();
-                SplicingTernate intronCryptT = SplicingTernate.of(variant, transcript.getIntrons().get(featureIdx), sequence);
+                SplicingTernate intronCryptT = SplicingTernate.of(variantOnStrand, transcript.getIntrons().get(featureIdx), sequence);
                 if (strategies.contains(ScoringStrategy.CRYPTIC_DONOR)) {
                     double intronCryptDonSc = factory.scorerForStrategy(ScoringStrategy.CRYPTIC_DONOR).apply(intronCryptT);
                     resultBuilder.putScore(ScoringStrategy.CRYPTIC_DONOR, intronCryptDonSc);

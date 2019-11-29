@@ -21,7 +21,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
 
 @SpringBootTest(classes = {TestDataSourceConfig.class})
-@Sql(scripts = {"file:src/test/resources/sql/create_schema.sql", "file:src/test/resources/sql/create_pwm_tables.sql"})
+@Sql(scripts = {"create_pwm_tables.sql"})
 class PwmIngestDaoTest {
 
     @Autowired

@@ -1,10 +1,11 @@
 package org.monarchinitiative.threes.core.data;
 
-import org.monarchinitiative.threes.core.model.GenomeCoordinates;
+import de.charite.compbio.jannovar.data.ReferenceDictionary;
+import de.charite.compbio.jannovar.reference.GenomeInterval;
+import de.charite.compbio.jannovar.reference.Strand;
 import org.monarchinitiative.threes.core.model.SplicingExon;
 import org.monarchinitiative.threes.core.model.SplicingIntron;
 import org.monarchinitiative.threes.core.model.SplicingTranscript;
-import org.monarchinitiative.threes.core.reference.fasta.InvalidCoordinatesException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -13,106 +14,126 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
  *
  */
-public class DbSplicingTranscriptSource implements SplicingTranscriptSource {
+public class DbSplicingTranscriptSource extends BaseDao {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DbSplicingTranscriptSource.class);
 
-    private final DataSource dataSource;
 
     public DbSplicingTranscriptSource(DataSource dataSource) {
-        this.dataSource = dataSource;
+        super(dataSource);
     }
 
-
     @Override
-    public List<SplicingTranscript> fetchTranscripts(String contig, int begin, int end) {
-        String exonsSql = "SELECT st.contig, st.begin_pos, st.end_pos, st.strand, st.tx_accession, " +
-                "se.begin_pos as eb, se.end_pos as ee " +
-                "FROM splicing.transcripts st " +
-                "INNER JOIN splicing.exons se ON st.tx_accession = se.tx_accession " +
-                "WHERE st.contig = ? and st.begin_on_fwd < ? and ? < st.end_on_fwd";
+    public List<SplicingTranscript> fetchTranscripts(String contig, int begin, int end, ReferenceDictionary referenceDictionary) {
+        if (!internalReferenceDictionary.getContigNameToID().containsKey(contig)) {
+            LOGGER.warn("Contig `{}` is not represented in database", contig);
+            return Collections.emptyList();
+        }
+        final int dbChr = internalReferenceDictionary.getContigNameToID().get(contig);
 
-        String intronsSql = "SELECT st.tx_accession, si.begin_pos, si.end_pos, si.donor_score, si.acceptor_score " +
-                "FROM splicing.transcripts st " +
-                "INNER JOIN splicing.introns si ON st.tx_accession = si.tx_accession " +
-                "WHERE st.contig = ? and st.begin_on_fwd < ? and ? < st.end_on_fwd";
+        if (!referenceDictionary.getContigNameToID().containsKey(contig)) {
+            LOGGER.warn("Query asks for contig `{}` which is not represented in provided reference dictionary", contig);
+            return Collections.emptyList();
+        }
+        final int queryChr = referenceDictionary.getContigNameToID().get(contig);
+
+        String sql = "select tx.CONTIG, tx.BEGIN_POS as tx_begin, tx.END_POS as tx_end, tx.STRAND, tx.TX_ACCESSION, " +
+                " fr.BEGIN_POS as fr_begin, fr.END_POS as fr_end, fr.REGION_TYPE, fr.REGION_NUMBER, fr.PROPERTIES " +
+                " from SPLICING.TRANSCRIPTS tx " +
+                "   left join SPLICING.FEATURE_REGIONS fr on tx.TX_ACCESSION = fr.TX_ACCESSION " +
+                " where tx.CONTIG = ? " +
+                "   and ? < tx.END_ON_FWD " +
+                "   and tx.BEGIN_ON_FWD < ?";
 
         try (final Connection connection = dataSource.getConnection();
-             final PreparedStatement exonsSt = connection.prepareStatement(exonsSql);
-             final PreparedStatement intronsSt = connection.prepareStatement(intronsSql)) {
+             final PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setInt(1, dbChr);
+            statement.setInt(2, begin);
+            statement.setInt(3, end);
 
-            // -------------    FETCH EXONS     -------------
-            exonsSt.setString(1, contig);
-            exonsSt.setInt(2, end);
-            exonsSt.setInt(3, begin);
-
-            Map<String, SplicingTranscript.Builder> transcriptMap = new HashMap<>();
-            try (final ResultSet exonsRs = exonsSt.executeQuery()) {
-
-                while (exonsRs.next()) {
-                    final String accession = exonsRs.getString("tx_accession");
-
-                    if (!transcriptMap.containsKey(accession)) {
-                        final String tContig = exonsRs.getString("contig");
-                        final int tBegin = exonsRs.getInt("begin_pos");
-                        final int tEnd = exonsRs.getInt("end_pos");
-                        final boolean tStrand = exonsRs.getBoolean("strand");
-                        transcriptMap.put(accession, SplicingTranscript.newBuilder()
-                                .setAccessionId(accession)
-                                .setCoordinates(GenomeCoordinates.newBuilder()
-                                        .setContig(tContig)
-                                        .setBegin(tBegin)
-                                        .setEnd(tEnd)
-                                        .setStrand(tStrand)
-                                        .build())
-                        );
+            try (ResultSet rs = statement.executeQuery()) {
+                Map<String, SplicingTranscript.Builder> txBuilderMap = new HashMap<>();
+                Map<String, Map<Integer, SplicingExon>> exons = new HashMap<>();
+                Map<String, Map<Integer, SplicingIntron>> introns = new HashMap<>();
+                while (rs.next()) {
+                    final String txAccession = rs.getString("TX_ACCESSION").strip();
+                    final int txBegin = rs.getInt("tx_begin");
+                    final int txEnd = rs.getInt("tx_end");
+                    final Strand strand = rs.getBoolean("STRAND") ? Strand.FWD : Strand.REV;
+                    if (!txBuilderMap.containsKey(txAccession)) {
+                        /*
+                        this is the first time we see data regarding the transcript with `txAccession`,
+                        we need to add transcript-related data, such as accession and interval
+                         */
+                        final GenomeInterval txInterval = new GenomeInterval(referenceDictionary, strand, queryChr, txBegin, txEnd);
+                        txBuilderMap.put(txAccession, SplicingTranscript.builder()
+                                .setAccessionId(txAccession)
+                                .setCoordinates(txInterval));
+                        exons.put(txAccession, new HashMap<>());
+                        introns.put(txAccession, new HashMap<>());
                     }
+                    final GenomeInterval featureInterval = new GenomeInterval(referenceDictionary, strand, queryChr, rs.getInt("fr_begin"), rs.getInt("fr_end"));
 
-                    int eBegin = exonsRs.getInt("eb");
-                    int eEnd = exonsRs.getInt("ee");
-                    transcriptMap.get(accession).addExon(SplicingExon.newBuilder()
-                            .setBegin(eBegin)
-                            .setEnd(eEnd)
-                            .build());
+                    final String regType = rs.getString("REGION_TYPE");
+                    final int regionNumber = rs.getInt("REGION_NUMBER");
+
+                    if (regType.equals(SplicingTranscript.EXON_REGION_CODE)) {
+                        // this SQL record represents exon
+                        exons.get(txAccession).put(regionNumber,
+                                SplicingExon.builder()
+                                        .setInterval(featureInterval)
+                                        .build());
+                    } else if (regType.equals(SplicingTranscript.INTRON_REGION_CODE)) {
+                        // this SQL record represents intron
+                        try {
+                            final String properties = rs.getString("PROPERTIES");
+                            final IntronProperties intronProperties = IntronProperties.parseString(properties);
+
+                            introns.get(txAccession).put(regionNumber,
+                                    SplicingIntron.builder()
+                                            .setInterval(featureInterval)
+                                            .setDonorScore(intronProperties.getDonorScore())
+                                            .setAcceptorScore(intronProperties.getAcceptorScore())
+                                            .build());
+                        } catch (NumberFormatException e) {
+                            LOGGER.warn("Invalid donor/acceptor score value in intron `{}:{}", txAccession, featureInterval);
+                        }
+                    }
                 }
-            }
 
-            // -------------    FETCH INTRONS    -------------
-            intronsSt.setString(1, contig);
-            intronsSt.setInt(2, end);
-            intronsSt.setInt(3, begin);
-            try (final ResultSet intronsRs = intronsSt.executeQuery()) {
-                while (intronsRs.next()) {
-                    final String accession = intronsRs.getString("tx_accession");
-                    transcriptMap.get(accession)
-                            .addIntron(SplicingIntron.newBuilder()
-                                    .setBegin(intronsRs.getInt("begin_pos"))
-                                    .setEnd(intronsRs.getInt("end_pos"))
-                                    .setDonorScore(intronsRs.getDouble("donor_score"))
-                                    .setAcceptorScore(intronsRs.getDouble("acceptor_score"))
-                                    .build());
+                // assemble transcripts
+                for (Map.Entry<String, SplicingTranscript.Builder> entry : txBuilderMap.entrySet()) {
+                    // sort and insert exons
+                    final Map<Integer, SplicingExon> exonMap = exons.get(entry.getKey());
+                    List<SplicingExon> splicingExons = new ArrayList<>(exonMap.size());
+                    for (Map.Entry<Integer, SplicingExon> spExEntry : exonMap.entrySet()) {
+                        splicingExons.add(spExEntry.getKey(), spExEntry.getValue());
+                    }
+                    entry.getValue().addAllExons(splicingExons);
+
+                    // sort and insert introns
+                    final Map<Integer, SplicingIntron> intronMap = introns.get(entry.getKey());
+                    List<SplicingIntron> splicingIntrons = new ArrayList<>(intronMap.size());
+                    for (Map.Entry<Integer, SplicingIntron> spInEntry : intronMap.entrySet()) {
+                        splicingIntrons.add(spInEntry.getKey(), spInEntry.getValue());
+                    }
+                    entry.getValue().addAllIntrons(splicingIntrons);
                 }
-            }
 
-            return transcriptMap.values().stream()
-                    .map(SplicingTranscript.Builder::build)
-                    .collect(Collectors.toList());
+                return txBuilderMap.values().stream()
+                        .map(SplicingTranscript.Builder::build)
+                        .collect(Collectors.toList());
+            }
         } catch (SQLException e) {
             LOGGER.warn("Error fetching data for {}:{}-{}", contig, begin, end, e);
-        } catch (InvalidCoordinatesException e) {
-            // this should not happen
-            LOGGER.error("There was transcript with invalid coordinates in query {}:{}-{}", contig, begin, end, e);
+            return Collections.emptyList();
         }
-        return Collections.emptyList();
     }
 
 }

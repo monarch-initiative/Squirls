@@ -6,7 +6,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  *
@@ -34,14 +37,20 @@ public class TranscriptsIngestRunner implements Runnable {
         LOGGER.info("Processing {} transcripts", transcripts.size());
 
         ProgressLogger progress = new ProgressLogger();
-        int inserted = transcripts.parallelStream()
-                .peek(progress.logTotal("Processed {} transcripts"))
-                .map(calculator::calculate)
-                .filter(Optional::isPresent)
-                .map(Optional::get)
-                .map(dao::insertTranscript)
-                .reduce(Integer::sum)
-                .orElse(0);
+        int inserted = 0;
+        final Map<Integer, List<TranscriptModel>> txByChromosome = transcripts.stream()
+                .collect(Collectors.groupingBy(TranscriptModel::getChr));
+        for (Integer chrom : txByChromosome.keySet()) {
+            LOGGER.info("Processing chromosome `{}`", chrom);
+            inserted += txByChromosome.get(chrom).parallelStream()
+                    .peek(progress.logTotal("Processed {} transcripts"))
+                    .map(calculator::calculate)
+                    .filter(Optional::isPresent)
+                    .map(Optional::get)
+                    .map(dao::insertTranscript)
+                    .reduce(Integer::sum)
+                    .orElse(0);
+        }
         LOGGER.info("Inserted {} transcripts", inserted);
     }
 }

@@ -1,19 +1,24 @@
 package org.monarchinitiative.threes.core.model;
 
 import com.google.common.collect.ImmutableList;
+import de.charite.compbio.jannovar.reference.GenomeInterval;
+import de.charite.compbio.jannovar.reference.Strand;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
 /**
- *
+ * POJO for transcript data used within 3S codebase.
  */
 public class SplicingTranscript {
 
-    private static final SplicingTranscript DEFAULT = SplicingTranscript.newBuilder().build();
+    public static final String EXON_REGION_CODE = "ex";
+    public static final String INTRON_REGION_CODE = "ir";
 
-    private final GenomeCoordinates txRegionCoordinates;
+    private static final SplicingTranscript DEFAULT = SplicingTranscript.builder().build();
+
+    private final GenomeInterval txRegionCoordinates;
 
     private final String accessionId;
 
@@ -32,11 +37,11 @@ public class SplicingTranscript {
         return DEFAULT;
     }
 
-    public static Builder newBuilder() {
+    public static Builder builder() {
         return new Builder();
     }
 
-    public GenomeCoordinates getTxRegionCoordinates() {
+    public GenomeInterval getTxRegionCoordinates() {
         return txRegionCoordinates;
     }
 
@@ -52,25 +57,29 @@ public class SplicingTranscript {
         return accessionId;
     }
 
-    public boolean getStrand() {
+    public Strand getStrand() {
         return txRegionCoordinates.getStrand();
     }
 
-    public String getContig() {
-        return txRegionCoordinates.getContig();
+    public int getChr() {
+        return txRegionCoordinates.getChr();
+    }
+
+    public String getChrName() {
+        return txRegionCoordinates.getRefDict().getContigIDToName().get(txRegionCoordinates.getChr());
     }
 
     public int getTxBegin() {
-        return txRegionCoordinates.getBegin();
+        return txRegionCoordinates.getBeginPos();
     }
 
 
     public int getTxEnd() {
-        return txRegionCoordinates.getEnd();
+        return txRegionCoordinates.getEndPos();
     }
 
     public int getTxLength() {
-        return txRegionCoordinates.getLength();
+        return txRegionCoordinates.length();
     }
 
     @Override
@@ -85,7 +94,7 @@ public class SplicingTranscript {
 
     public static final class Builder {
 
-        private GenomeCoordinates coordinates;
+        private GenomeInterval coordinates;
 
         private List<SplicingExon> exons = new ArrayList<>();
 
@@ -102,7 +111,7 @@ public class SplicingTranscript {
             return this;
         }
 
-        public Builder setCoordinates(GenomeCoordinates coordinates) {
+        public Builder setCoordinates(GenomeInterval coordinates) {
             this.coordinates = coordinates;
             return this;
         }

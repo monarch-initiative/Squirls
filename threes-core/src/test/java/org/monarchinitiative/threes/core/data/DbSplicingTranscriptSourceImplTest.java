@@ -1,5 +1,8 @@
 package org.monarchinitiative.threes.core.data;
 
+import de.charite.compbio.jannovar.data.ReferenceDictionary;
+import de.charite.compbio.jannovar.reference.GenomeInterval;
+import de.charite.compbio.jannovar.reference.Strand;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.monarchinitiative.threes.core.TestDataSourceConfig;
@@ -14,19 +17,21 @@ import javax.sql.DataSource;
 import java.util.Comparator;
 import java.util.List;
 
-import static org.hamcrest.CoreMatchers.hasItems;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
 
 @SpringBootTest(classes = {TestDataSourceConfig.class})
-@Sql(scripts = {"file:src/test/resources/sql/create_transcripts_tables.sql",
-        "file:src/test/resources/sql/insert_transcripts_data.sql"})
+@Sql(scripts = {"create_refdict_tables.sql", "insert_refdict_data.sql",
+        "create_transcripts_tables.sql", "insert_transcripts_data.sql"})
 class DbSplicingTranscriptSourceImplTest {
 
 
     @Autowired
     private DataSource dataSource;
+
+    @Autowired
+    private ReferenceDictionary referenceDictionary;
 
     private DbSplicingTranscriptSource source;
 
@@ -37,7 +42,8 @@ class DbSplicingTranscriptSourceImplTest {
 
     @Test
     void transcriptsExonsAndIntronsAreDecoded() {
-        List<SplicingTranscript> transcripts = source.fetchTranscripts("chr1", 500, 7000);
+        // we expect to get transcripts `FIRST` and `THIRD` by using these coordinates
+        List<SplicingTranscript> transcripts = source.fetchTranscripts("chr1", 1000, 5000, referenceDictionary);
         assertThat(transcripts, hasSize(2));
 
         // 2 transcripts
@@ -46,45 +52,38 @@ class DbSplicingTranscriptSourceImplTest {
         // ---     FIRST      ---
         SplicingTranscript first = transcripts.get(0);
         assertThat(first.getAccessionId(), is("FIRST"));
-        assertThat(first.getContig(), is("chr1"));
+        assertThat(first.getChrName(), is("chr1"));
         assertThat(first.getTxBegin(), is(1000));
         assertThat(first.getTxEnd(), is(2000));
-        assertThat(first.getStrand(), is(true));
+        assertThat(first.getStrand(), is(Strand.FWD));
 
-        final List<SplicingExon> firstExons = first.getExons();
-        assertThat(firstExons, hasSize(3));
-        assertThat(firstExons, hasItems(
-                SplicingExon.newBuilder().setBegin(1000).setEnd(1200).build(),
-                SplicingExon.newBuilder().setBegin(1400).setEnd(1600).build(),
-                SplicingExon.newBuilder().setBegin(1800).setEnd(2000).build()));
+        assertThat(first.getExons(), is(List.of(
+                SplicingExon.builder().setInterval(new GenomeInterval(referenceDictionary, Strand.FWD, 1, 1000, 1200)).build(),
+                SplicingExon.builder().setInterval(new GenomeInterval(referenceDictionary, Strand.FWD, 1, 1400, 1600)).build(),
+                SplicingExon.builder().setInterval(new GenomeInterval(referenceDictionary, Strand.FWD, 1, 1800, 2000)).build()
+        )));
 
-        final List<SplicingIntron> firstIntrons = first.getIntrons();
-        assertThat(firstIntrons, hasSize(2));
-        assertThat(firstIntrons, hasItems(
-                SplicingIntron.newBuilder().setBegin(1200).setEnd(1400).setDonorScore(9.433).setAcceptorScore(7.392).build(),
-                SplicingIntron.newBuilder().setBegin(1600).setEnd(1800).setDonorScore(4.931).setAcceptorScore(7.832).build()));
+        assertThat(first.getIntrons(), is(List.of(
+                SplicingIntron.builder().setInterval(new GenomeInterval(referenceDictionary, Strand.FWD, 1, 1200, 1400)).setDonorScore(9.433).setAcceptorScore(7.392).build(),
+                SplicingIntron.builder().setInterval(new GenomeInterval(referenceDictionary, Strand.FWD, 1, 1600, 1800)).setDonorScore(4.931).setAcceptorScore(7.832).build())
+        ));
 
-        // ---     SECOND     ---
-        SplicingTranscript second = transcripts.get(1);
-        assertThat(second.getAccessionId(), is("SECOND"));
-        assertThat(second.getContig(), is("chr1"));
-        assertThat(second.getTxBegin(), is(5000));
-        assertThat(second.getTxEnd(), is(6000));
-        assertThat(second.getStrand(), is(true));
+        // ---     THIRD     ---
+        SplicingTranscript third = transcripts.get(1);
+        assertThat(third.getAccessionId(), is("THIRD"));
+        assertThat(third.getChrName(), is("chr1"));
+        assertThat(third.getTxBegin(), is(8_000));
+        assertThat(third.getTxEnd(), is(10_000));
+        assertThat(third.getStrand(), is(Strand.REV));
 
-        final List<SplicingExon> secondExons = second.getExons();
-        assertThat(secondExons, hasSize(4));
-        assertThat(secondExons, hasItems(
-                SplicingExon.newBuilder().setBegin(5000).setEnd(5100).build(),
-                SplicingExon.newBuilder().setBegin(5300).setEnd(5500).build(),
-                SplicingExon.newBuilder().setBegin(5800).setEnd(5900).build(),
-                SplicingExon.newBuilder().setBegin(5950).setEnd(6000).build()));
+        assertThat(third.getExons(), is(List.of(SplicingExon.builder().setInterval(new GenomeInterval(referenceDictionary, Strand.REV, 1, 8000, 8200)).build(),
+                SplicingExon.builder().setInterval(new GenomeInterval(referenceDictionary, Strand.REV, 1, 8300, 8500)).build(),
+                SplicingExon.builder().setInterval(new GenomeInterval(referenceDictionary, Strand.REV, 1, 8900, 9600)).build(),
+                SplicingExon.builder().setInterval(new GenomeInterval(referenceDictionary, Strand.REV, 1, 9800, 10000)).build())));
 
-        final List<SplicingIntron> secondIntrons = second.getIntrons();
-        assertThat(secondIntrons, hasSize(3));
-        assertThat(secondIntrons, hasItems(
-                SplicingIntron.newBuilder().setBegin(5100).setEnd(5300).setDonorScore(5.329).setAcceptorScore(3.848).build(),
-                SplicingIntron.newBuilder().setBegin(5500).setEnd(5800).setDonorScore(9.740).setAcceptorScore(6.348).build(),
-                SplicingIntron.newBuilder().setBegin(5900).setEnd(5950).setDonorScore(5.294).setAcceptorScore(8.239).build()));
+        assertThat(third.getIntrons(), is(List.of(
+                SplicingIntron.builder().setInterval(new GenomeInterval(referenceDictionary, Strand.REV, 1, 8200, 8300)).setDonorScore(8.429).setAcceptorScore(4.541).build(),
+                SplicingIntron.builder().setInterval(new GenomeInterval(referenceDictionary, Strand.REV, 1, 8500, 8900)).setDonorScore(5.249).setAcceptorScore(2.946).build(),
+                SplicingIntron.builder().setInterval(new GenomeInterval(referenceDictionary, Strand.REV, 1, 9600, 9800)).setDonorScore(4.234).setAcceptorScore(1.493).build())));
     }
 }

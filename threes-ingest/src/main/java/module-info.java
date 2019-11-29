@@ -7,6 +7,7 @@ module org.monarchinitiative.threes.ingest {
     requires commons.io;
     requires org.apache.commons.compress;
     requires htsjdk;
+    requires xyz.ielis.hyperutil.reference;
 
     requires spring.core;
     requires spring.context;
@@ -17,7 +18,7 @@ module org.monarchinitiative.threes.ingest {
     requires com.zaxxer.hikari;
     requires org.flywaydb.core;
 
-    requires slf4j.api;
+    requires org.slf4j;
 
     opens org.monarchinitiative.threes.ingest;
     opens org.monarchinitiative.threes.ingest.pwm;

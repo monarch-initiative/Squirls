@@ -14,23 +14,18 @@ import org.monarchinitiative.threes.core.calculators.ic.SplicingInformationConte
 import org.monarchinitiative.threes.core.data.ic.InputStreamBasedPositionalWeightMatrixParser;
 import org.monarchinitiative.threes.core.data.ic.SplicingPositionalWeightMatrixParser;
 import org.monarchinitiative.threes.core.data.ic.SplicingPwmData;
-import org.monarchinitiative.threes.core.reference.GenomeCoordinatesFlipper;
-import org.monarchinitiative.threes.core.reference.fasta.GenomeSequenceAccessor;
-import org.monarchinitiative.threes.core.reference.fasta.InvalidFastaFileException;
-import org.monarchinitiative.threes.core.reference.fasta.PrefixHandlingGenomeSequenceAccessor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.core.JdbcTemplate;
+import xyz.ielis.hyperutil.reference.fasta.GenomeSequenceAccessor;
+import xyz.ielis.hyperutil.reference.fasta.GenomeSequenceAccessorBuilder;
 
 import javax.sql.DataSource;
 import java.io.InputStream;
-import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  *
@@ -58,10 +53,11 @@ public class TestDataSourceConfig {
      */
     @Bean
     public DataSource dataSource() {
-        String jdbcUrl = "jdbc:h2:mem:splicing;INIT=CREATE SCHEMA IF NOT EXISTS SPLICING";
+//        String jdbcUrl = "jdbc:h2:mem:splicing;INIT=CREATE SCHEMA IF NOT EXISTS SPLICING";
+        String jdbcUrl = "jdbc:h2:mem:splicing";
         final HikariConfig config = new HikariConfig();
         config.setUsername("sa");
-//        config.setPassword("");
+        config.setPassword("sa");
         config.setDriverClassName("org.h2.Driver");
         config.setJdbcUrl(jdbcUrl);
 
@@ -102,19 +98,6 @@ public class TestDataSourceConfig {
     }
 
     @Bean
-    public Map<String, Integer> contigLengthMap(ReferenceDictionary referenceDictionary) {
-        return referenceDictionary.getContigIDToName().keySet().stream()
-                .collect(Collectors.toMap(
-                        id -> referenceDictionary.getContigIDToName().get(id), // key - chromosome number
-                        id -> referenceDictionary.getContigIDToLength().get(id))); // value - chromosome length
-    }
-
-    @Bean
-    public GenomeCoordinatesFlipper genomeCoordinatesFlipper(Map<String, Integer> contigLengthMap) {
-        return new GenomeCoordinatesFlipper(contigLengthMap);
-    }
-
-    @Bean
     public SplicingInformationContentCalculator splicingInformationContentCalculator(SplicingPositionalWeightMatrixParser splicingPositionalWeightMatrixParser) {
         return new SplicingInformationContentCalculator(splicingPositionalWeightMatrixParser.getSplicingPwmData());
     }
@@ -139,10 +122,9 @@ public class TestDataSourceConfig {
      * The names of contigs are `chr2`, and `chr3`, though
      */
     @Bean
-    public GenomeSequenceAccessor genomeSequenceAccessor() throws URISyntaxException, InvalidFastaFileException {
-        Path fasta = Paths.get(TestDataSourceConfig.class.getResource("chr2chr3_small.fa").toURI());
-        Path fastaIdx = Paths.get(TestDataSourceConfig.class.getResource("chr2chr3_small.fa.fai").toURI());
-        return new PrefixHandlingGenomeSequenceAccessor(fasta, fastaIdx);
+    public GenomeSequenceAccessor genomeSequenceAccessor() {
+        Path fasta = Paths.get(TestDataSourceConfig.class.getResource("chr2chr3_small.fa").getPath());
+        return GenomeSequenceAccessorBuilder.builder().setFastaPath(fasta).build();
     }
 
 }

@@ -1,8 +1,14 @@
 package org.monarchinitiative.threes.core;
 
+import de.charite.compbio.jannovar.data.ReferenceDictionary;
+import de.charite.compbio.jannovar.reference.GenomeInterval;
+import de.charite.compbio.jannovar.reference.Strand;
 import org.jblas.DoubleMatrix;
-import org.monarchinitiative.threes.core.model.*;
-import org.monarchinitiative.threes.core.reference.fasta.InvalidCoordinatesException;
+import org.monarchinitiative.threes.core.model.SplicingExon;
+import org.monarchinitiative.threes.core.model.SplicingIntron;
+import org.monarchinitiative.threes.core.model.SplicingParameters;
+import org.monarchinitiative.threes.core.model.SplicingTranscript;
+import xyz.ielis.hyperutil.reference.fasta.SequenceInterval;
 
 /**
  * Class with static method for construction of medium-complicated objects.
@@ -13,14 +19,10 @@ public class PojosForTesting {
         // static utility class
     }
 
-    public static SequenceInterval getSequenceIntervalForTranscriptWithThreeExons() {
-        return SequenceInterval.of(GenomeCoordinates.newBuilder()
-                        .setContig("chr1")
-                        .setBegin(900)
-                        .setEnd(2100)
-                        .setStrand(true)
-                        .build(),
-                "AAACAGGTTAATCGCCACGACATAGTAGTATTTAGAGTTACTAGTAAGCCTGATGCCACT" + // 960
+    public static SequenceInterval getSequenceIntervalForTranscriptWithThreeExons(ReferenceDictionary referenceDictionary) {
+        return SequenceInterval.builder()
+                .interval(new GenomeInterval(referenceDictionary, Strand.FWD, 1, 900, 2100))
+                .sequence("AAACAGGTTAATCGCCACGACATAGTAGTATTTAGAGTTACTAGTAAGCCTGATGCCACT" + // 960
                         "ACACAATTCTAGCTTTTCTCTTTAGGATGATTGTTTCATT" + // 1000
                         "CAGTCTTATCTCTTTTAGAA" + // 1020
                         "AACATAGGaaaaaattatttaataataaaatttaattGGCAAAATGAAGGTATGGCTTAT" + // 1080
@@ -43,104 +45,80 @@ public class PojosForTesting {
                         "AATTTTTCACTTTACATCACATAATGAATGGATCCAAATATGTTATGGATAGATATCTTC" +
                         "AAACTTTCTACTTACAAGTAGTGATAATAACAGATGTTCTCTCTAAAGTGTAGTTGGTAT" +
                         "CAATTTTACTGACCTTTAAAAATATCTTAATGGGACAAAGTTCAAATATTTGATGACCAG" +
-                        "CTATCGTGACCTTTATCTCTGTGGCTCTGTGGGCCTGTAGTTTTTACGTGCTTTTAGTGT");
+                        "CTATCGTGACCTTTATCTCTGTGGCTCTGTGGGCCTGTAGTTTTTACGTGCTTTTAGTGT")
+                .build();
     }
 
-    public static SplicingTranscript getTranscriptWithThreeExons() throws InvalidCoordinatesException {
-        return SplicingTranscript.newBuilder()
+    public static SplicingTranscript getTranscriptWithThreeExons(ReferenceDictionary referenceDictionary) {
+        return SplicingTranscript.builder()
                 .setAccessionId("FIRST")
-                .setCoordinates(GenomeCoordinates.newBuilder()
-                        .setContig("chr1")
-                        .setBegin(1000)
-                        .setEnd(2000)
-                        .setStrand(true)
-                        .build())
+                .setCoordinates(new GenomeInterval(referenceDictionary, Strand.FWD, 1, 1000, 2000))
                 // 1st exon
-                .addExon(SplicingExon.newBuilder()
-                        .setBegin(1000)
-                        .setEnd(1200)
+                .addExon(SplicingExon.builder()
+                        .setInterval(new GenomeInterval(referenceDictionary, Strand.FWD, 1, 1000, 1200))
                         .build())
                 // 1st intron
-                .addIntron(SplicingIntron.newBuilder()
-                        .setBegin(1200)
-                        .setEnd(1400)
+                .addIntron(SplicingIntron.builder()
+                        .setInterval(new GenomeInterval(referenceDictionary, Strand.FWD, 1, 1200, 1400))
                         .setDonorScore(5.555)
                         .setAcceptorScore(6.666)
                         .build())
                 // 2nd exon
-                .addExon(SplicingExon.newBuilder()
-                        .setBegin(1400)
-                        .setEnd(1600)
+                .addExon(SplicingExon.builder()
+                        .setInterval(new GenomeInterval(referenceDictionary, Strand.FWD, 1, 1400, 1600))
                         .build())
                 // 2nd intron
-                .addIntron(SplicingIntron.newBuilder()
-                        .setBegin(1600)
-                        .setEnd(1800)
+                .addIntron(SplicingIntron.builder()
+                        .setInterval(new GenomeInterval(referenceDictionary, Strand.FWD, 1, 1600, 1800))
                         .setDonorScore(4.444)
                         .setAcceptorScore(3.333)
                         .build())
                 // 3rd exon
-                .addExon(SplicingExon.newBuilder()
-                        .setBegin(1800)
-                        .setEnd(2000)
+                .addExon(SplicingExon.builder()
+                        .setInterval(new GenomeInterval(referenceDictionary, Strand.FWD, 1, 1800, 200))
                         .build())
                 .build();
     }
 
-    public static SplicingTranscript getTranscriptWithSingleExons() throws InvalidCoordinatesException {
-        return SplicingTranscript.newBuilder()
+    public static SplicingTranscript getTranscriptWithSingleExon(ReferenceDictionary referenceDictionary) {
+        return SplicingTranscript.builder()
                 .setAccessionId("FIRST")
-                .setCoordinates(GenomeCoordinates.newBuilder()
-                        .setContig("chr1")
-                        .setBegin(1000)
-                        .setEnd(2000)
-                        .setStrand(true)
-                        .build())
+                .setCoordinates(new GenomeInterval(referenceDictionary, Strand.FWD, 1, 1000, 2000))
                 // single exon
-                .addExon(SplicingExon.newBuilder()
-                        .setBegin(1000)
-                        .setEnd(2000)
+                .addExon(SplicingExon.builder()
+                        .setInterval(new GenomeInterval(referenceDictionary, Strand.FWD, 1, 1000, 2000))
                         .build())
                 .build();
     }
 
-    public static SplicingTranscript getTranscriptWithThreeExonsOnRevStrand() throws InvalidCoordinatesException {
-        return SplicingTranscript.newBuilder()
+    public static SplicingTranscript getTranscriptWithThreeExonsOnRevStrand(ReferenceDictionary referenceDictionary) {
+        return SplicingTranscript.builder()
                 .setAccessionId("FIRST")
-                .setCoordinates(GenomeCoordinates.newBuilder()
-                        .setContig("chr1")
-                        .setBegin(1000)
-                        .setEnd(2000)
-                        .setStrand(false)
-                        .build())
+                .setCoordinates(new GenomeInterval(referenceDictionary, Strand.FWD, 1, 1000, 2000).withStrand(Strand.REV))
+
                 // 1st exon
-                .addExon(SplicingExon.newBuilder()
-                        .setBegin(1000)
-                        .setEnd(1200)
+                .addExon(SplicingExon.builder()
+                        .setInterval(new GenomeInterval(referenceDictionary, Strand.FWD, 1, 1800, 2000).withStrand(Strand.REV))
                         .build())
                 // 1st intron
-                .addIntron(SplicingIntron.newBuilder()
-                        .setBegin(1200)
-                        .setEnd(1400)
-                        .setDonorScore(5.555)
-                        .setAcceptorScore(6.666)
-                        .build())
-                // 2nd exon
-                .addExon(SplicingExon.newBuilder()
-                        .setBegin(1400)
-                        .setEnd(1600)
-                        .build())
-                // 2nd intron
-                .addIntron(SplicingIntron.newBuilder()
-                        .setBegin(1600)
-                        .setEnd(1800)
+                .addIntron(SplicingIntron.builder()
+                        .setInterval(new GenomeInterval(referenceDictionary, Strand.FWD, 1, 1600, 1800).withStrand(Strand.REV))
                         .setDonorScore(4.444)
                         .setAcceptorScore(3.333)
                         .build())
+                // 2nd exon
+                .addExon(SplicingExon.builder()
+                        .setInterval(new GenomeInterval(referenceDictionary, Strand.FWD, 1, 1400, 1600).withStrand(Strand.REV))
+                        .build())
+                // 2nd intron
+                .addIntron(SplicingIntron.builder()
+                        .setInterval(new GenomeInterval(referenceDictionary, Strand.FWD, 1, 1200, 1400).withStrand(Strand.REV))
+                        .setDonorScore(5.555)
+                        .setAcceptorScore(6.666)
+                        .build())
                 // 3rd exon
-                .addExon(SplicingExon.newBuilder()
-                        .setBegin(1800)
-                        .setEnd(2000)
+                .addExon(SplicingExon.builder()
+                        .setInterval(new GenomeInterval(referenceDictionary, Strand.FWD, 1, 1000, 1200).withStrand(Strand.REV))
                         .build())
                 .build();
     }

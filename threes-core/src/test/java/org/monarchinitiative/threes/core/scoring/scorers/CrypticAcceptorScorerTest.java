@@ -1,12 +1,13 @@
 package org.monarchinitiative.threes.core.scoring.scorers;
 
+import de.charite.compbio.jannovar.reference.GenomePosition;
+import de.charite.compbio.jannovar.reference.GenomeVariant;
+import de.charite.compbio.jannovar.reference.Strand;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.monarchinitiative.threes.core.calculators.ic.SplicingInformationContentCalculator;
-import org.monarchinitiative.threes.core.model.GenomeCoordinates;
 import org.monarchinitiative.threes.core.model.SplicingTernate;
-import org.monarchinitiative.threes.core.model.SplicingVariant;
 import org.monarchinitiative.threes.core.reference.allele.AlleleGenerator;
 
 import static org.hamcrest.CoreMatchers.is;
@@ -26,6 +27,7 @@ class CrypticAcceptorScorerTest extends ScorerTestBase {
 
     @BeforeEach
     void setUp() {
+        super.setUp();
         when(annotator.getSplicingParameters()).thenReturn(splicingParameters);
         AlleleGenerator generator = new AlleleGenerator(splicingParameters);
         scorer = new CrypticAcceptorScorer(annotator, generator);
@@ -34,18 +36,9 @@ class CrypticAcceptorScorerTest extends ScorerTestBase {
     @Test
     void snpInAcceptorSite() {
         when(annotator.getSpliceAcceptorScore(anyString())).thenReturn(5.0);
-
-        SplicingVariant variant = SplicingVariant.newBuilder()
-                .setCoordinates(GenomeCoordinates.newBuilder()
-                        .setContig("chr1")
-                        .setBegin(1399)
-                        .setEnd(1400)
-                        .setStrand(true)
-                        .build())
-                .setRef("C")
-                .setAlt("A")
-                .build();
+        GenomeVariant variant = new GenomeVariant(new GenomePosition(referenceDictionary, Strand.FWD, 1, 1399), "C", "A");
         final SplicingTernate t = SplicingTernate.of(variant, st.getIntrons().get(0), sequenceInterval);
+
         double result = scorer.scoringFunction().apply(t);
         assertThat(result, is(Double.NaN));
     }
@@ -53,18 +46,9 @@ class CrypticAcceptorScorerTest extends ScorerTestBase {
     @Test
     void simpleSnpInExon() {
         when(annotator.getSpliceAcceptorScore(anyString())).thenReturn(6.0);
-
-        SplicingVariant variant = SplicingVariant.newBuilder()
-                .setCoordinates(GenomeCoordinates.newBuilder()
-                        .setContig("chr1")
-                        .setBegin(1410)
-                        .setEnd(1411)
-                        .setStrand(true)
-                        .build())
-                .setRef("C")
-                .setAlt("A")
-                .build();
+        GenomeVariant variant = new GenomeVariant(new GenomePosition(referenceDictionary, Strand.FWD, 1, 1410), "C", "A");
         final SplicingTernate t = SplicingTernate.of(variant, st.getIntrons().get(0), sequenceInterval);
+
         double result = scorer.scoringFunction().apply(t);
         assertThat(result, is(closeTo(-0.666, EPSILON)));
     }
@@ -72,19 +56,9 @@ class CrypticAcceptorScorerTest extends ScorerTestBase {
     @Test
     void simpleSnpInIntron() {
         when(annotator.getSpliceAcceptorScore(anyString())).thenReturn(6.0);
-
-
-        SplicingVariant variant = SplicingVariant.newBuilder()
-                .setCoordinates(GenomeCoordinates.newBuilder()
-                        .setContig("chr1")
-                        .setBegin(1360)
-                        .setEnd(1361)
-                        .setStrand(true)
-                        .build())
-                .setRef("C")
-                .setAlt("A")
-                .build();
+        GenomeVariant variant = new GenomeVariant(new GenomePosition(referenceDictionary, Strand.FWD, 1, 1360), "C", "A");
         final SplicingTernate t = SplicingTernate.of(variant, st.getIntrons().get(0), sequenceInterval);
+
         double result = scorer.scoringFunction().apply(t);
         assertThat(result, is(closeTo(-0.666, EPSILON)));
     }
@@ -92,18 +66,9 @@ class CrypticAcceptorScorerTest extends ScorerTestBase {
     @Test
     void simpleSnpOneBpTooDeepInIntron() {
         when(annotator.getSpliceAcceptorScore(anyString())).thenReturn(6.0);
-
-        SplicingVariant variant = SplicingVariant.newBuilder()
-                .setCoordinates(GenomeCoordinates.newBuilder()
-                        .setContig("chr1")
-                        .setBegin(1324)
-                        .setEnd(1325)
-                        .setStrand(true)
-                        .build())
-                .setRef("C")
-                .setAlt("A")
-                .build();
+        GenomeVariant variant = new GenomeVariant(new GenomePosition(referenceDictionary, Strand.FWD, 1, 1349), "C", "A");
         final SplicingTernate t = SplicingTernate.of(variant, st.getIntrons().get(0), sequenceInterval);
+
         double result = scorer.scoringFunction().apply(t);
         assertThat(result, is(Double.NaN));
     }

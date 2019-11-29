@@ -1,10 +1,6 @@
 package org.monarchinitiative.threes.ingest;
 
-import de.charite.compbio.jannovar.data.JannovarData;
-import org.monarchinitiative.threes.core.data.ic.InputStreamBasedPositionalWeightMatrixParser;
-import org.monarchinitiative.threes.core.data.ic.SplicingPwmData;
-import org.monarchinitiative.threes.core.reference.fasta.GenomeSequenceAccessor;
-import org.monarchinitiative.threes.core.reference.fasta.PrefixHandlingGenomeSequenceAccessor;
+import org.monarchinitiative.threes.core.ThreeSException;
 import org.monarchinitiative.threes.ingest.config.IngestProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,13 +9,21 @@ import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-import java.io.InputStream;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 
 /**
- *
+ * Build reference genome fasta file and splicing database for given genome assembly and jannovar caches.
+ * <p>
+ * Command-line arguments are required:
+ *     <ul>
+ *         <li>`genome-assembly` - e.g. `hg19`</li>
+ *         <li>`version` - e.g. `1910`</li>
+ *         <li>`jannovar-transcript-db-dir` - path to directory with Jannovar caches for given genome assembly</li>
+ *     </ul>
+ * </p>
  */
 @SpringBootApplication
 public class Main implements ApplicationRunner {
@@ -28,15 +32,31 @@ public class Main implements ApplicationRunner {
 
     private final IngestProperties ingestProperties;
 
-    private final JannovarData jannovarData;
-
-    public Main(IngestProperties ingestProperties, JannovarData jannovarData) {
+    public Main(IngestProperties ingestProperties) {
         this.ingestProperties = ingestProperties;
-        this.jannovarData = jannovarData;
     }
 
     public static void main(String[] args) {
         SpringApplication.run(Main.class, args);
+    }
+
+    private static String normalizeAssemblyString(String assembly) throws ThreeSException {
+        switch (assembly.toLowerCase()) {
+            case "hg19":
+            case "grch37":
+                return "hg19";
+            case "hg38":
+            case "grch38":
+                return "hg38";
+            default:
+                throw new ThreeSException(String.format("Unknown assembly string '%s'", assembly));
+        }
+    }
+
+    private static String getVersionedAssembly(String assembly, String version) throws ThreeSException {
+        assembly = normalizeAssemblyString(assembly);
+        // a string like `1902_hg19`
+        return version + "_" + assembly;
     }
 
     @Override
@@ -73,31 +93,23 @@ public class Main implements ApplicationRunner {
                 LOGGER.error("Missing `--version` argument");
                 return;
             }
+
             String version = args.getOptionValues("version").get(0);
-            String versionedAssembly = version + "_" + assembly;
+            String versionedAssembly = getVersionedAssembly(assembly, version);
             Path genomeBuildDir = Files.createDirectories(ingestProperties.getBuildDir().resolve(versionedAssembly));
 
-            // 1 - parse YAML with splicing matrices
-            Path yamlPath = ingestProperties.getSplicingInformationContentMatrixPath();
-            SplicingPwmData data;
-            try (InputStream is = Files.newInputStream(yamlPath)) {
-                InputStreamBasedPositionalWeightMatrixParser parser = new InputStreamBasedPositionalWeightMatrixParser(is);
-                data = parser.getSplicingPwmData();
+            Path jannovarDbDir;
+            if (args.containsOption("jannovar-transcript-db-dir")) {
+                jannovarDbDir = Paths.get(args.getOptionValues("jannovar-transcript-db-dir").get(0));
+            } else {
+                LOGGER.error("Please specify `--jannovar-transcript-db-dir` argument");
+                return;
             }
 
-            // 2 - download reference genome FASTA file
-            ThreesDataBuilder.downloadReferenceGenome(genomeUrl, genomeBuildDir, assembly, version, false);
+            ThreesDataBuilder.buildDatabase(genomeBuildDir, genomeUrl, jannovarDbDir,
+                    ingestProperties.getSplicingInformationContentMatrixPath(), versionedAssembly);
 
-            // this is where the reference genome will be downloaded by the command above
-            Path genomeFastaPath = genomeBuildDir.resolve(String.format("%s.fa", versionedAssembly));
-            Path genomeFastaFaiPath = genomeBuildDir.resolve(String.format("%s.fa.fai", versionedAssembly));
-
-            // 3 - build the database
-            try (GenomeSequenceAccessor accessor = new PrefixHandlingGenomeSequenceAccessor(genomeFastaPath, genomeFastaFaiPath)) {
-                String jannovarTranscriptSource = ingestProperties.getJannovarTranscriptSource();
-                ThreesDataBuilder.buildThreesDatabase(jannovarData, jannovarTranscriptSource, accessor, data, genomeBuildDir, assembly, version);
-            }
-        } catch (Exception e) {
+        } catch (ThreeSException e) {
             LOGGER.error("Error: ", e);
             throw e;
         }

@@ -1,8 +1,8 @@
 package org.monarchinitiative.threes.core.scoring;
 
-import org.monarchinitiative.threes.core.model.SequenceInterval;
+import de.charite.compbio.jannovar.reference.GenomeVariant;
 import org.monarchinitiative.threes.core.model.SplicingTranscript;
-import org.monarchinitiative.threes.core.model.SplicingVariant;
+import xyz.ielis.hyperutil.reference.fasta.SequenceInterval;
 
 import java.util.Set;
 
@@ -28,7 +28,7 @@ public interface SplicingEvaluator {
      * @param sequenceInterval reference sequence
      * @return splicing pathogenicity data
      */
-    default SplicingPathogenicityData evaluate(SplicingVariant variant, SplicingTranscript transcript, SequenceInterval sequenceInterval) {
+    default SplicingPathogenicityData evaluate(GenomeVariant variant, SplicingTranscript transcript, SequenceInterval sequenceInterval) {
         return evaluate(variant, transcript, sequenceInterval, ScoringStrategy.crypticAndCanonicalDonorAndAcceptor());
     }
 
@@ -41,5 +41,5 @@ public interface SplicingEvaluator {
      * @param strategies       {@link ScoringStrategy}(ies) to apply
      * @return splicing pathogenicity data
      */
-    SplicingPathogenicityData evaluate(SplicingVariant variant, SplicingTranscript transcript, SequenceInterval sequenceInterval, Set<ScoringStrategy> strategies);
+    SplicingPathogenicityData evaluate(GenomeVariant variant, SplicingTranscript transcript, SequenceInterval sequenceInterval, Set<ScoringStrategy> strategies);
 }
