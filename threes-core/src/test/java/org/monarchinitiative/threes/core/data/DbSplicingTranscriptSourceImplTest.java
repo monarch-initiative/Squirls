@@ -16,6 +16,7 @@ import org.springframework.test.context.jdbc.Sql;
 import javax.sql.DataSource;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -85,5 +86,42 @@ class DbSplicingTranscriptSourceImplTest {
                 SplicingIntron.builder().setInterval(new GenomeInterval(referenceDictionary, Strand.REV, 1, 8200, 8300)).setDonorScore(8.429).setAcceptorScore(4.541).build(),
                 SplicingIntron.builder().setInterval(new GenomeInterval(referenceDictionary, Strand.REV, 1, 8500, 8900)).setDonorScore(5.249).setAcceptorScore(2.946).build(),
                 SplicingIntron.builder().setInterval(new GenomeInterval(referenceDictionary, Strand.REV, 1, 9600, 9800)).setDonorScore(4.234).setAcceptorScore(1.493).build())));
+    }
+
+    @Test
+    void fetchTranscriptByAccession() {
+        final Optional<SplicingTranscript> txOpt = source.fetchTranscriptByAccession("SECOND", referenceDictionary);
+        assertThat(txOpt.isPresent(), is(true));
+
+        final SplicingTranscript tx = txOpt.get();
+        assertThat(tx, is(SplicingTranscript.builder()
+                .setAccessionId("SECOND")
+                .setCoordinates(new GenomeInterval(referenceDictionary, Strand.FWD, 1, 5000, 6000))
+                .addExon(SplicingExon.builder().setInterval(new GenomeInterval(referenceDictionary, Strand.FWD, 1, 5000, 5100)).build())
+                .addIntron(SplicingIntron.builder()
+                        .setInterval(new GenomeInterval(referenceDictionary, Strand.FWD, 1, 5100, 5300))
+                        .setDonorScore(5.329)
+                        .setAcceptorScore(3.848)
+                        .build())
+                .addExon(SplicingExon.builder().setInterval(new GenomeInterval(referenceDictionary, Strand.FWD, 1, 5300, 5500)).build())
+                .addIntron(SplicingIntron.builder()
+                        .setInterval(new GenomeInterval(referenceDictionary, Strand.FWD, 1, 5500, 5800))
+                        .setDonorScore(9.740)
+                        .setAcceptorScore(6.348)
+                        .build())
+                .addExon(SplicingExon.builder().setInterval(new GenomeInterval(referenceDictionary, Strand.FWD, 1, 5800, 5900)).build())
+                .addIntron(SplicingIntron.builder()
+                        .setInterval(new GenomeInterval(referenceDictionary, Strand.FWD, 1, 5900, 5950))
+                        .setDonorScore(5.294)
+                        .setAcceptorScore(8.239)
+                        .build())
+                .addExon(SplicingExon.builder().setInterval(new GenomeInterval(referenceDictionary, Strand.FWD, 1, 5950, 6000)).build())
+                .build()));
+    }
+
+    @Test
+    void fetchNonExistingTranscript() {
+        final Optional<SplicingTranscript> txOpt = source.fetchTranscriptByAccession("BLABLA", referenceDictionary);
+        assertThat(txOpt.isEmpty(), is(true));
     }
 }

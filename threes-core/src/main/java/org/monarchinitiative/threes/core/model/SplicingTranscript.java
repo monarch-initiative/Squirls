@@ -7,6 +7,7 @@ import de.charite.compbio.jannovar.reference.Strand;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * POJO for transcript data used within 3S codebase.
@@ -90,6 +91,22 @@ public class SplicingTranscript {
                 ", exons=" + exons +
                 ", introns=" + introns +
                 '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        SplicingTranscript that = (SplicingTranscript) o;
+        return Objects.equals(txRegionCoordinates, that.txRegionCoordinates) &&
+                Objects.equals(accessionId, that.accessionId) &&
+                Objects.equals(exons, that.exons) &&
+                Objects.equals(introns, that.introns);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(txRegionCoordinates, accessionId, exons, introns);
     }
 
     public static final class Builder {
