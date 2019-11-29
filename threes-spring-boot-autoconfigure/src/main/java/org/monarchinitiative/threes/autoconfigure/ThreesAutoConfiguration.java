@@ -233,6 +233,7 @@ public class ThreesAutoConfiguration {
         config.setPassword("sa");
         config.setDriverClassName("org.h2.Driver");
         config.setJdbcUrl(jdbcUrl);
+        config.setPoolName("threes-pool");
 
         return new HikariDataSource(config);
     }
