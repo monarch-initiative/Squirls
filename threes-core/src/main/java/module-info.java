@@ -22,6 +22,8 @@ module org.monarchinitiative.threes.core {
     exports org.monarchinitiative.threes.core.reference.transcript;
 
     exports org.monarchinitiative.threes.core.scoring;
+    exports org.monarchinitiative.threes.core.scoring.sparse;
+    exports org.monarchinitiative.threes.core.scoring.dense;
 
     opens org.monarchinitiative.threes.core;
 
@@ -39,6 +41,7 @@ module org.monarchinitiative.threes.core {
     opens org.monarchinitiative.threes.core.reference.transcript;
 
     opens org.monarchinitiative.threes.core.scoring;
-    opens org.monarchinitiative.threes.core.scoring.scorers;
+    opens org.monarchinitiative.threes.core.scoring.sparse;
+    opens org.monarchinitiative.threes.core.scoring.dense;
 
 }

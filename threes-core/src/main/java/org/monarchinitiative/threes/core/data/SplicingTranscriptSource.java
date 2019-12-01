@@ -12,6 +12,7 @@ import java.util.Optional;
  */
 public interface SplicingTranscriptSource {
 
+    List<String> getTranscriptAccessionIds();
 
     /**
      * Fetch transcripts that overlap with query interval specified by <code>contig</code>, <code>begin</code>, and

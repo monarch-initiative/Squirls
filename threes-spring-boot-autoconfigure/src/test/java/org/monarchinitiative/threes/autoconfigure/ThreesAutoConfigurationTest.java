@@ -1,6 +1,9 @@
 package org.monarchinitiative.threes.autoconfigure;
 
 import org.junit.jupiter.api.Test;
+import org.monarchinitiative.threes.core.scoring.SplicingEvaluator;
+import org.monarchinitiative.threes.core.scoring.dense.DenseSplicingEvaluator;
+import org.monarchinitiative.threes.core.scoring.sparse.SparseSplicingEvaluator;
 import org.springframework.beans.factory.BeanCreationException;
 import xyz.ielis.hyperutil.reference.fasta.GenomeSequenceAccessor;
 import xyz.ielis.hyperutil.reference.fasta.SingleChromosomeGenomeSequenceAccessor;
@@ -32,10 +35,15 @@ class ThreesAutoConfigurationTest extends AbstractAutoConfigurationTest {
         // default values
         Integer maxDistanceExonUpstream = context.getBean("maxDistanceExonUpstream", Integer.class);
         assertThat(maxDistanceExonUpstream, is(50));
+
         Integer maxDistanceExonDownstream = context.getBean("maxDistanceExonDownstream", Integer.class);
         assertThat(maxDistanceExonDownstream, is(50));
+
         GenomeSequenceAccessor accessor = context.getBean("genomeSequenceAccessor", GenomeSequenceAccessor.class);
         assertThat(accessor, is(instanceOf(SingleFastaGenomeSequenceAccessor.class)));
+
+        SplicingEvaluator splicingEvaluator = context.getBean("splicingEvaluator", SplicingEvaluator.class);
+        assertThat(splicingEvaluator, is(instanceOf(SparseSplicingEvaluator.class)));
     }
 
     @Test
@@ -45,13 +53,20 @@ class ThreesAutoConfigurationTest extends AbstractAutoConfigurationTest {
                 "threes.data-version=1710",
                 "threes.max-distance-exon-upstream=100",
                 "threes.max-distance-exon-downstream=200",
-                "threes.genome-sequence-accessor-type=chromosome");
+                "threes.genome-sequence-accessor-type=chromosome",
+                "threes.splicing-evaluator-type=dense");
+
         Integer maxDistanceExonUpstream = context.getBean("maxDistanceExonUpstream", Integer.class);
         assertThat(maxDistanceExonUpstream, is(100));
+
         Integer maxDistanceExonDownstream = context.getBean("maxDistanceExonDownstream", Integer.class);
         assertThat(maxDistanceExonDownstream, is(200));
+
         GenomeSequenceAccessor accessor = context.getBean("genomeSequenceAccessor", GenomeSequenceAccessor.class);
         assertThat(accessor, is(instanceOf(SingleChromosomeGenomeSequenceAccessor.class)));
+
+        SplicingEvaluator splicingEvaluator = context.getBean("splicingEvaluator", SplicingEvaluator.class);
+        assertThat(splicingEvaluator, is(instanceOf(DenseSplicingEvaluator.class)));
     }
 
     @Test

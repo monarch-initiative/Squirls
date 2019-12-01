@@ -10,11 +10,11 @@ class SplicingPathogenicityDataTest {
 
     @Test
     void getMaxValue() {
-        final SplicingPathogenicityData instance = SplicingPathogenicityData.newBuilder()
-                .putScore(ScoringStrategy.CRYPTIC_ACCEPTOR, 10.0)
-                .putScore(ScoringStrategy.CRYPTIC_DONOR, Double.NaN)
-                .putScore(ScoringStrategy.CANONICAL_ACCEPTOR, 20.0)
-                .putScore(ScoringStrategy.CANONICAL_DONOR, -20.0)
+        final SplicingPathogenicityData instance = SplicingPathogenicityData.builder()
+                .putScore("CRYPTIC_ACCEPTOR", 10.0)
+                .putScore("CRYPTIC_DONOR", Double.NaN)
+                .putScore("CANONICAL_ACCEPTOR", 20.0)
+                .putScore("CANONICAL_DONOR", -20.0)
                 .build();
 
         final double maxScore = instance.getMaxScore();
@@ -30,13 +30,13 @@ class SplicingPathogenicityDataTest {
 
     @Test
     void getOrDefault() {
-        final SplicingPathogenicityData instance = SplicingPathogenicityData.newBuilder()
-                .putScore(ScoringStrategy.CANONICAL_DONOR, 20.0)
+        final SplicingPathogenicityData instance = SplicingPathogenicityData.builder()
+                .putScore("CANONICAL_DONOR", 20.0)
                 .build();
-        final double donor = instance.getOrDefault(ScoringStrategy.CANONICAL_DONOR, 10.0);
+        final double donor = instance.getOrDefault("CANONICAL_DONOR", 10.0);
         assertThat(donor, is(closeTo(20.0, 0.05)));
 
-        final double acc = instance.getOrDefault(ScoringStrategy.CANONICAL_ACCEPTOR, 15.0);
+        final double acc = instance.getOrDefault("CANONICAL_ACCEPTOR", 15.0);
         assertThat(acc, is(closeTo(15.0, 0.05)));
     }
 }

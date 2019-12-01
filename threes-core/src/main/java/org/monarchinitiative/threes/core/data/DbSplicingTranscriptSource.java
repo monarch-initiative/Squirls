@@ -30,6 +30,23 @@ public class DbSplicingTranscriptSource extends BaseDao {
     }
 
     @Override
+    public List<String> getTranscriptAccessionIds() {
+        List<String> accessions = new ArrayList<>();
+        String sql = "select TX_ACCESSION from SPLICING.TRANSCRIPTS";
+        try (final Connection connection = dataSource.getConnection();
+             final PreparedStatement ps = connection.prepareStatement(sql);
+             final ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                accessions.add(rs.getString("TX_ACCESSION"));
+            }
+        } catch (SQLException e) {
+            LOGGER.warn("Error during getting transcript accessions: ", e);
+            return Collections.emptyList();
+        }
+        return accessions;
+    }
+
+    @Override
     public List<SplicingTranscript> fetchTranscripts(String contig, int begin, int end, ReferenceDictionary referenceDictionary) {
         if (!internalReferenceDictionary.getContigNameToID().containsKey(contig)) {
             LOGGER.warn("Contig `{}` is not represented in database", contig);

@@ -22,30 +22,44 @@ public class PojosForTesting {
     public static SequenceInterval getSequenceIntervalForTranscriptWithThreeExons(ReferenceDictionary referenceDictionary) {
         return SequenceInterval.builder()
                 .interval(new GenomeInterval(referenceDictionary, Strand.FWD, 1, 900, 2100))
-                .sequence("AAACAGGTTAATCGCCACGACATAGTAGTATTTAGAGTTACTAGTAAGCCTGATGCCACT" + // 960
-                        "ACACAATTCTAGCTTTTCTCTTTAGGATGATTGTTTCATT" + // 1000
-                        "CAGTCTTATCTCTTTTAGAA" + // 1020
-                        "AACATAGGaaaaaattatttaataataaaatttaattGGCAAAATGAAGGTATGGCTTAT" + // 1080
-                        "AAGAGTGTTTTCCTATTGTTTTCAGTGTAGGACTCACTGTTCTAAATAACTGGGACACCC" + // 1140
-                        //                                      v  <- 1200  (end of the 0th exon)
-                        "AAGGATTCTGTAAAATGCCATCCAGTTATCATTTATATTC" +
-                        "CCTAACTCAAAATTCATTCA" +
-                        "CATGTATTCATTTTTTTCTAAACAAATTAGCATGTAGAATTCTGGTTAAAATTTGGCATA" +
-                        "GAACACCCGGGTATTTTTTCATAATGCACCCAATAACTGTCATTCACTAATTGAGAATGG" +
-                        //                                                          v  <- 1400 (end of the 0th intron)
-                        "TGATTTAACAAAGGATAATAAAGTTATGAAACCAATGCCACAAAACATCTGTCTCTAACT" +
-                        "GgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtAAGAGGGAGAGAGAGAAAATTTCACTC" +
-                        "CCTCCATAAATCTCACAGTATTCTTTTCTTtttcctttcctttccttgctcttctttctc" +
-                        "tcctattgctttcctttcatttccttCTCATAAAAGAAAAATAACAATATAGAAAATAAC" +
-                        "AAAATATAGATGGTCAACCTTTTTAATATTAAGGTTACCTAAAATGCCATTATCCAAAGT" +
-                        "GGTTCTCTAGAGATGCTGATGTATATACTTACATATTTTACAGTGTATTCAAATAAAGAG" +
-                        "TATATTACATAAGACATATCCTTTTGTAACCAACTTTTGTCATTAACAATTTACTGGACT" +
-                        "TGTCAACAAACCTAAATCTGTATCGTCTATAATGGCTACGTTCATTTTGGTATGAATCTT" +
-                        "AATTACCCCTTTCTGCATTATTTAATGATTTTCTCATATGTCACTCTTAAATGTACTTCT" +
-                        "AATTTTTCACTTTACATCACATAATGAATGGATCCAAATATGTTATGGATAGATATCTTC" +
-                        "AAACTTTCTACTTACAAGTAGTGATAATAACAGATGTTCTCTCTAAAGTGTAGTTGGTAT" +
-                        "CAATTTTACTGACCTTTAAAAATATCTTAATGGGACAAAGTTCAAATATTTGATGACCAG" +
-                        "CTATCGTGACCTTTATCTCTGTGGCTCTGTGGGCCTGTAGTTTTTACGTGCTTTTAGTGT")
+                .sequence(
+                        // upstream 100bp
+                        "AAACAGGTTAATCGCCACGACATAGTAGTATTTAGAGTTACTAGTAAGCCTGATGCCACT" + // 960
+                                "ACACAATTCTAGCTTTTCTCAGAGCCCCGCCCCCGGCTCC" + // 1000
+                                //
+                                // 1st exon
+                                "AGGTTCTGCGAGCGGCTTCCAACATAGGaaaaaattatttaataataaaatttaattGGC" +
+                                "AAAATGAAGGTATGGCTTATAAGAGTGTTTTCCTATTGTTTTCAGTGTAGGACTCACTGT" +
+                                "TCTAAATAACTGGGACACCCAAGGATTCTGAGCCTGCGGCTCCAGACGGACGCCCGCAAG" +
+                                "TCCAGACGGACGCCCGCAAG" + // 1200 (end of the 1st exon)
+                                //
+                                // 1st intron
+                                "gttcgcagcgcgggaggggaacggagtggcggaGTAGAATTCTGGTTAAAATTTGGCATA" +
+                                "GAACACCCGGGTATTTTTTCATAATGCACCCAATAACTGTCATTCACTAATTGAGAATGG" +
+                                "TGATTTAACAAAGGATAATAAAGTTATGAActgacgtcctcctggccctcctgacgtcct" +
+                                "gcccgcccacgcgtccgcag" +
+                                //                  ^  <- 1400 (end of the 1st intron)
+                                // 2nd exon
+                                "GTGAGGTGCATCCTGACAGGTCACGAGCTGCCCTtcactcCCTCCATAAATCTCACAGTA" +
+                                "TTCTTTTCTTtttcctttcctttccttgctcttctttctctcctattgctttcctttcat" +
+                                "ttccttCTCATAAAAGAAAAATAACAATATAGAAAATAACAAAATATAGATGGTCAACCT" +
+                                "GTGCCCAGCACCAAGAACCC" +
+                                //                  ^  <- 1600 (end of the 2nd exon)
+                                // 2nd intron
+                                "gtaggtggtccgcggcggcgcggggaggcccaggGCTGATGTATATACTTACATATTTTA" +
+                                "CAGTGTATTCAAATAAAGAGTATATTACATAAGACATATCCTTTTGTAACCAACTTTTGT" +
+                                "CATTAACAATTTACTGGACTTGTCAACAAACCTAAATCTGtgtgaactgtccctacaaat" +
+                                "ttggtctctctgctctgtag" +
+                                //                  ^  <- 1800 (end of the 2nd intron)
+                                // 3rd exon
+                                "GCACCAGTTGTTCTGCAAACTCACCCTGCGGCACATCAACAAGTGCCCAGAACACTGTCT" +
+                                "aatttttcacTTTACATCACATAATGAATGGATCCAAATATGTTATGGATAGATATCTTC" +
+                                "AAACTTTCTACTTACAAGTAGTGATAATAACAGATGTTCTCTCTAAAGTGTAGTTGGTAT" +
+                                "CCAGCGAGCTCTGTGTAAAT" +
+                                //                  ^  <- 2000 (end of the 3rd exon)
+                                // downstream 100bp
+                                "AATATCTTAATGGGACAAAGTTCAAATATTTGATGACCAGCTATCGTGACCTTTATCTCT" +
+                                "GTGGCTCTGTGGGCCTGTAGTTTTTACGTGCTTTTAGTGT")
                 .build();
     }
 

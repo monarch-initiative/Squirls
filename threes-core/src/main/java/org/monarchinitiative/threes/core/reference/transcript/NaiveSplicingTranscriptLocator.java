@@ -1,7 +1,6 @@
 package org.monarchinitiative.threes.core.reference.transcript;
 
 import de.charite.compbio.jannovar.reference.GenomeInterval;
-import de.charite.compbio.jannovar.reference.GenomePosition;
 import de.charite.compbio.jannovar.reference.GenomeVariant;
 import org.monarchinitiative.threes.core.model.SplicingExon;
 import org.monarchinitiative.threes.core.model.SplicingIntron;
@@ -47,7 +46,7 @@ public class NaiveSplicingTranscriptLocator implements SplicingTranscriptLocator
             return SplicingLocationData.outside();
         }
 
-        final SplicingLocationData.Builder dataBuilder = SplicingLocationData.newBuilder();
+        final SplicingLocationData.Builder dataBuilder = SplicingLocationData.builder();
 
         // is this a single exon gene?
         if (transcript.getExons().size() == 1) {
@@ -65,12 +64,15 @@ public class NaiveSplicingTranscriptLocator implements SplicingTranscriptLocator
 
             // 1 - is the variant in the donor site?
             // donor
-            final GenomePosition donorBegin = intron.getInterval().getGenomeBeginPos().shifted(-parameters.getDonorExonic());
-            final GenomeInterval donor = new GenomeInterval(donorBegin, parameters.getDonorLength());
+            final GenomeInterval donor = parameters.makeDonorRegion(intron.getInterval().getGenomeBeginPos());
 
             if (donor.overlapsWith(variantInterval)) {
-                return dataBuilder
-                        .setSplicingPosition(SplicingLocationData.SplicingPosition.DONOR)
+                if (i != 0) {
+                    // first exon does not have acceptor site
+                    dataBuilder.setAcceptorBoundary(exon.getInterval().getGenomeBeginPos());
+                }
+                return dataBuilder.setSplicingPosition(SplicingLocationData.SplicingPosition.DONOR)
+                        .setDonorBoundary(intron.getInterval().getGenomeBeginPos())
                         .setIntronIndex(i)
                         .setExonIndex(i)
                         .build();
@@ -78,22 +80,24 @@ public class NaiveSplicingTranscriptLocator implements SplicingTranscriptLocator
 
             // 2 - is the variant in the acceptor site?
             // acceptor
-            final GenomePosition acceptorBegin = intron.getInterval().getGenomeEndPos().shifted(-parameters.getAcceptorIntronic());
-            final GenomeInterval acceptor = new GenomeInterval(acceptorBegin, parameters.getAcceptorLength());
+            final GenomeInterval acceptor = parameters.makeAcceptorRegion(intron.getInterval().getGenomeEndPos());
 
             if (acceptor.overlapsWith(variantInterval)) {
                 return dataBuilder
                         .setSplicingPosition(SplicingLocationData.SplicingPosition.ACCEPTOR)
+                        .setDonorBoundary(transcript.getExons().get(i + 1).getInterval().getGenomeEndPos())
+                        .setAcceptorBoundary(intron.getInterval().getGenomeEndPos())
                         .setIntronIndex(i)
                         .setExonIndex(i + 1)
                         .build();
             }
 
             // 3 - does the variant overlap with the current intron?
-
             if (intron.getInterval().overlapsWith(variantInterval)) {
                 return dataBuilder
                         .setSplicingPosition(SplicingLocationData.SplicingPosition.INTRON)
+                        .setDonorBoundary(intron.getInterval().getGenomeBeginPos())
+                        .setAcceptorBoundary(intron.getInterval().getGenomeEndPos())
                         .setIntronIndex(i)
                         .build();
             }
@@ -102,6 +106,8 @@ public class NaiveSplicingTranscriptLocator implements SplicingTranscriptLocator
             if (exon.getInterval().overlapsWith(variantInterval)) {
                 return dataBuilder
                         .setSplicingPosition(SplicingLocationData.SplicingPosition.EXON)
+                        .setDonorBoundary(exon.getInterval().getGenomeEndPos())
+                        .setAcceptorBoundary(exon.getInterval().getGenomeBeginPos())
                         .setExonIndex(i)
                         .build();
             }
@@ -110,10 +116,13 @@ public class NaiveSplicingTranscriptLocator implements SplicingTranscriptLocator
         // For transcript with x exons we processed x-1 exons and x introns above. There is no overlap with previous
         // exons/introns/canonical splice sites if we get here. Since the variant overlaps with the transcript, it
         // has to overlap with the last exon.
+
+        // the last exon does not have the donor site, hence not setting the donor boundary
         final int lastExonIdx = transcript.getExons().size() - 1;
         return dataBuilder
                 .setSplicingPosition(SplicingLocationData.SplicingPosition.EXON)
                 .setExonIndex(lastExonIdx)
+                .setAcceptorBoundary(transcript.getExons().get(lastExonIdx).getInterval().getGenomeBeginPos())
                 .build();
     }
 }

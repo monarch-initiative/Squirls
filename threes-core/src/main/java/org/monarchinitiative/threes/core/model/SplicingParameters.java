@@ -1,5 +1,8 @@
 package org.monarchinitiative.threes.core.model;
 
+import de.charite.compbio.jannovar.reference.GenomeInterval;
+import de.charite.compbio.jannovar.reference.GenomePosition;
+
 /**
  * Container for tunable parameters for scoring of splicing variants.
  *
@@ -68,6 +71,22 @@ public class SplicingParameters {
 
     public int getAcceptorLength() {
         return acceptorExonic + acceptorIntronic;
+    }
+
+    /**
+     * @param anchor {@link GenomePosition} representing `exon|intron` boundary
+     * @return {@link GenomeInterval} representing splice donor site
+     */
+    public GenomeInterval makeDonorRegion(GenomePosition anchor) {
+        return new GenomeInterval(anchor.shifted(-donorExonic), donorExonic + donorIntronic);
+    }
+
+    /**
+     * @param anchor {@link GenomePosition} representing `intron|exon` boundary
+     * @return {@link GenomeInterval} representing splice acceptor site
+     */
+    public GenomeInterval makeAcceptorRegion(GenomePosition anchor) {
+        return new GenomeInterval(anchor.shifted(-acceptorIntronic), acceptorIntronic + acceptorExonic);
     }
 
     @Override

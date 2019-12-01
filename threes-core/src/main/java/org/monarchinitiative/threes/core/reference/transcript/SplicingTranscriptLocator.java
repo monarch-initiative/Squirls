@@ -9,9 +9,6 @@ public interface SplicingTranscriptLocator {
     /**
      * Locate {@code variant} on given {@code transcript}.
      *
-     * <p>
-     * <b>IMPORTANT</b> - {@code variant} must be on the same strand as the {@code transcript}!
-     *
      * @param variant    variant
      * @param transcript transcript
      * @return location data

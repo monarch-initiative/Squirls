@@ -24,16 +24,15 @@ class AlleleGeneratorTest {
 
     private SequenceInterval acceptorSi;
 
-    private GenomePosition exonAnchor;
+    private GenomePosition anchor;
 
     @Autowired
     private SplicingParameters splicingParameters;
 
-
-    private AlleleGenerator generator;
     @Autowired
     private ReferenceDictionary referenceDictionary;
 
+    private AlleleGenerator generator;
 
     @BeforeEach
     void setUp() {
@@ -47,7 +46,7 @@ class AlleleGeneratorTest {
                 .sequence("atggcaaacactgttccttctctctttcagGTGGCCCTGC")
                 .build();
 
-        exonAnchor = new GenomePosition(referenceDictionary, Strand.FWD, 1, 100);
+        anchor = new GenomePosition(referenceDictionary, Strand.FWD, 1, 100);
         generator = new AlleleGenerator(splicingParameters);
     }
 
@@ -59,7 +58,7 @@ class AlleleGeneratorTest {
         final GenomeVariant variant = new GenomeVariant(position, "g", "t");
 
         // reference is CGTGATGgtaggtgaaa
-        final String allele = generator.getDonorSiteWithAltAllele(exonAnchor, variant, donorSi);
+        final String allele = generator.getDonorSiteWithAltAllele(anchor, variant, donorSi);
         assertThat(allele, is("ATGttaggt"));
     }
 
@@ -68,7 +67,7 @@ class AlleleGeneratorTest {
         final GenomePosition position = new GenomePosition(referenceDictionary, Strand.FWD, 1, 100);
         final GenomeVariant variant = new GenomeVariant(position, "gta", "g");
         // reference is CGTGATGgtaggtgaaa
-        final String allele = generator.getDonorSiteWithAltAllele(exonAnchor, variant, donorSi);
+        final String allele = generator.getDonorSiteWithAltAllele(anchor, variant, donorSi);
         assertThat(allele, is("ATGgggtga"));
     }
 
@@ -78,7 +77,7 @@ class AlleleGeneratorTest {
         final GenomeVariant variant = new GenomeVariant(position, "g", "gcc");
 
         // reference is CGTGATGgtaggtgaaa
-        final String allele = generator.getDonorSiteWithAltAllele(exonAnchor, variant, donorSi);
+        final String allele = generator.getDonorSiteWithAltAllele(anchor, variant, donorSi);
         assertThat(allele, is("ATGgcctag"));
     }
 
@@ -88,7 +87,7 @@ class AlleleGeneratorTest {
         final GenomeVariant variant = new GenomeVariant(position, "g", "gcc");
 
         // reference is CGTGATGgtaggtgaaa
-        final String allele = generator.getDonorSiteWithAltAllele(exonAnchor, variant, donorSi);
+        final String allele = generator.getDonorSiteWithAltAllele(anchor, variant, donorSi);
         assertThat(allele, is("ATGgtaggc"));
     }
 
@@ -98,7 +97,7 @@ class AlleleGeneratorTest {
         final GenomeVariant variant = new GenomeVariant(position, "gtg", "g");
 
         // reference is CGTGATGgtaggtgaaa
-        final String allele = generator.getDonorSiteWithAltAllele(exonAnchor, variant, donorSi);
+        final String allele = generator.getDonorSiteWithAltAllele(anchor, variant, donorSi);
         assertThat(allele, is("ATGgtagga"));
     }
 
@@ -108,7 +107,7 @@ class AlleleGeneratorTest {
         final GenomeVariant variant = new GenomeVariant(position, "GATGgtaggt", "G");
 
         // reference is CGTGATGgtaggtgaaa
-        final String allele = generator.getDonorSiteWithAltAllele(exonAnchor, variant, donorSi);
+        final String allele = generator.getDonorSiteWithAltAllele(anchor, variant, donorSi);
         assertThat(allele, is(nullValue()));
     }
 
@@ -118,7 +117,7 @@ class AlleleGeneratorTest {
         final GenomeVariant variant = new GenomeVariant(position, "GTGAT", "G");
 
         // reference is CGTGATGgtaggtgaaa
-        final String allele = generator.getDonorSiteWithAltAllele(exonAnchor, variant, donorSi);
+        final String allele = generator.getDonorSiteWithAltAllele(anchor, variant, donorSi);
         assertThat(allele, is("CGGgtaggt"));
     }
 
@@ -128,8 +127,28 @@ class AlleleGeneratorTest {
         final GenomeVariant variant = new GenomeVariant(position, "g", "t");
 
         // reference is CGTGATGgtaggtgaaa
-        final String allele = generator.getDonorSiteWithAltAllele(exonAnchor, variant, donorSi);
+        final String allele = generator.getDonorSiteWithAltAllele(anchor, variant, donorSi);
         assertThat(allele, is(nullValue()));
+    }
+
+    @Test
+    void donorRefAllele() {
+        final String donorSeq = generator.getDonorSiteSnippet(anchor, donorSi);
+        // reference is CGTGATGgtaggtgaaa
+        assertThat(donorSeq, is("ATGgtaggt"));
+    }
+
+    @Test
+    void donorRefAlleleIsNullWhenBadInput() {
+        final String donorSeq = generator.getDonorSiteSnippet(new GenomePosition(referenceDictionary, Strand.FWD, 22, 100), donorSi);
+        // reference is CGTGATGgtaggtgaaa
+        assertThat(donorSeq, is(nullValue()));
+    }
+
+    @Test
+    void makeDonorInterval() {
+        final GenomeInterval donor = generator.makeDonorInterval(anchor);
+        assertThat(donor, is(new GenomeInterval(referenceDictionary, Strand.FWD, 1, 97, 106)));
     }
 
     // --------------------------      ACCEPTOR ALLELE      -----------------------
@@ -141,7 +160,7 @@ class AlleleGeneratorTest {
         final GenomeVariant variant = new GenomeVariant(position, "G", "C");
 
         // reference is atggcaaacactgttccttctctctttcagGTGGCCCTGC
-        final String allele = generator.getAcceptorSiteWithAltAllele(exonAnchor, variant, acceptorSi);
+        final String allele = generator.getAcceptorSiteWithAltAllele(anchor, variant, acceptorSi);
         assertThat(allele, is("aaacactgttccttctctctttcagCT"));
     }
 
@@ -152,7 +171,7 @@ class AlleleGeneratorTest {
         final GenomeVariant variant = new GenomeVariant(position, "cag", "c");
 
         // reference is atggcaaacactgttccttctctctttcagGTGGCCCTGC
-        final String allele = generator.getAcceptorSiteWithAltAllele(exonAnchor, variant, acceptorSi);
+        final String allele = generator.getAcceptorSiteWithAltAllele(anchor, variant, acceptorSi);
         assertThat(allele, is("gcaaacactgttccttctctctttcGT"));
     }
 
@@ -163,7 +182,7 @@ class AlleleGeneratorTest {
         final GenomeVariant variant = new GenomeVariant(position, "c", "ctt");
 
         // reference is atggcaaacactgttccttctctctttcagGTGGCCCTGC
-        final String allele = generator.getAcceptorSiteWithAltAllele(exonAnchor, variant, acceptorSi);
+        final String allele = generator.getAcceptorSiteWithAltAllele(anchor, variant, acceptorSi);
         assertThat(allele, is("acactgttccttctctctttcttagGT"));
     }
 
@@ -174,7 +193,7 @@ class AlleleGeneratorTest {
         final GenomeVariant variant = new GenomeVariant(position, "G", "GCC");
 
         // reference is atggcaaacactgttccttctctctttcagGTGGCCCTGC
-        final String allele = generator.getAcceptorSiteWithAltAllele(exonAnchor, variant, acceptorSi);
+        final String allele = generator.getAcceptorSiteWithAltAllele(anchor, variant, acceptorSi);
         assertThat(allele, is("acactgttccttctctctttcagGCCT"));
     }
 
@@ -185,7 +204,7 @@ class AlleleGeneratorTest {
         final GenomeVariant variant = new GenomeVariant(position, "GTGG", "G");
 
         // reference is atggcaaacactgttccttctctctttcagGTGGCCCTGC
-        final String allele = generator.getAcceptorSiteWithAltAllele(exonAnchor, variant, acceptorSi);
+        final String allele = generator.getAcceptorSiteWithAltAllele(anchor, variant, acceptorSi);
         assertThat(allele, is("aaacactgttccttctctctttcagGC"));
     }
 
@@ -196,7 +215,7 @@ class AlleleGeneratorTest {
         final GenomeVariant variant = new GenomeVariant(position, "gcaaacactgttccttctctctttcagGT", "g");
 
         // reference is atggcaaacactgttccttctctctttcagGTGGCCCTGC
-        final String allele = generator.getAcceptorSiteWithAltAllele(exonAnchor, variant, acceptorSi);
+        final String allele = generator.getAcceptorSiteWithAltAllele(anchor, variant, acceptorSi);
         assertThat(allele, is(nullValue()));
     }
 
@@ -207,7 +226,7 @@ class AlleleGeneratorTest {
         final GenomeVariant variant = new GenomeVariant(position, "gca", "g");
 
         // reference is atggcaaacactgttccttctctctttcagGTGGCCCTGC
-        final String allele = generator.getAcceptorSiteWithAltAllele(exonAnchor, variant, acceptorSi);
+        final String allele = generator.getAcceptorSiteWithAltAllele(anchor, variant, acceptorSi);
         assertThat(allele, is("gaacactgttccttctctctttcagGT"));
     }
 
@@ -217,7 +236,27 @@ class AlleleGeneratorTest {
         final GenomeVariant variant = new GenomeVariant(position, "G", "C");
 
         // reference is atggcaaacactgttccttctctctttcagGTGGCCCTGC
-        final String allele = generator.getAcceptorSiteWithAltAllele(exonAnchor, variant, acceptorSi);
+        final String allele = generator.getAcceptorSiteWithAltAllele(anchor, variant, acceptorSi);
         assertThat(allele, is(nullValue()));
+    }
+
+    @Test
+    void acceptorRefAllele() {
+        final String acceptorSeq = generator.getAcceptorSiteSnippet(anchor, acceptorSi);
+        // reference is atggcaaacactgttccttctctctttcagGTGGCCCTGC
+        assertThat(acceptorSeq, is("aaacactgttccttctctctttcagGT"));
+    }
+
+    @Test
+    void acceptorRefAlleleIsNullWhenBadInput() {
+        final String acceptorSeq = generator.getAcceptorSiteSnippet(new GenomePosition(referenceDictionary, Strand.FWD, 22, 100), acceptorSi);
+        // reference is atggcaaacactgttccttctctctttcagGTGGCCCTGC
+        assertThat(acceptorSeq, is(nullValue()));
+    }
+
+    @Test
+    void makeAcceptorInterval() {
+        final GenomeInterval acceptor = generator.makeAcceptorInterval(anchor);
+        assertThat(acceptor, is(new GenomeInterval(referenceDictionary, Strand.FWD, 1, 75, 102)));
     }
 }

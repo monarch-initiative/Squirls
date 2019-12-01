@@ -3,8 +3,6 @@ package org.monarchinitiative.threes.core.reference.allele;
 import de.charite.compbio.jannovar.reference.GenomeInterval;
 import de.charite.compbio.jannovar.reference.GenomePosition;
 import de.charite.compbio.jannovar.reference.GenomeVariant;
-import org.monarchinitiative.threes.core.model.SplicingExon;
-import org.monarchinitiative.threes.core.model.SplicingIntron;
 import org.monarchinitiative.threes.core.model.SplicingParameters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,10 +31,51 @@ public class AlleleGenerator {
     /**
      * Create nucleotide snippet for splice donor site.
      *
+     * @param anchor           position of `exon|intron` boundary
+     * @param sequenceInterval sequence to use for creating snippet
+     * @return wt nucleotide snippet for splice donor site or <code>null</code> if e.g. <code>sequenceInterval</code>
+     * on different contig is provided
+     */
+    public String getDonorSiteSnippet(GenomePosition anchor, SequenceInterval sequenceInterval) {
+        return sequenceInterval.getSubsequence(splicingParameters.makeDonorRegion(anchor)).orElse(null);
+    }
+
+    /**
+     * @param anchor position of `exon|intron` boundary
+     * @return interval of splice donor site
+     */
+    public GenomeInterval makeDonorInterval(GenomePosition anchor) {
+        return splicingParameters.makeDonorRegion(anchor);
+    }
+
+    /**
+     * Create nucleotide snippet for splice acceptor site.
+     *
+     * @param anchor           position of `intron|exon` boundary
+     * @param sequenceInterval sequence to use for creating snippet
+     * @return wt nucleotide snippet for splice acceptor site or <code>null</code> if e.g. <code>sequenceInterval</code>
+     * on different contig is provided
+     */
+    public String getAcceptorSiteSnippet(GenomePosition anchor, SequenceInterval sequenceInterval) {
+        return sequenceInterval.getSubsequence(splicingParameters.makeAcceptorRegion(anchor)).orElse(null);
+    }
+
+
+    /**
+     * @param anchor position of `intron|exon` boundary
+     * @return interval of splice acceptor site
+     */
+    public GenomeInterval makeAcceptorInterval(GenomePosition anchor) {
+        return splicingParameters.makeAcceptorRegion(anchor);
+    }
+
+    /**
+     * Create nucleotide snippet for splice donor site with presence of ALT allele.
+     *
      * @param anchor           {@link GenomePosition} denoting exon|intron boundary
      * @param variant          variant to incorporate into the snippet
      * @param sequenceInterval sequence to use for creating snippet
-     * @return nucleotide snippet for splice donor site
+     * @return nucleotide snippet for splice donor site or <code>null</code> if wrong input is provided
      */
     public String getDonorSiteWithAltAllele(GenomePosition anchor, GenomeVariant variant, SequenceInterval sequenceInterval) {
         String result; // this method creates the result String in 5' --> 3' direction
@@ -48,7 +87,7 @@ public class AlleleGenerator {
             return null;
         }
 
-        final GenomeInterval donor = makeDonorRegion(anchor);
+        final GenomeInterval donor = splicingParameters.makeDonorRegion(anchor);
 
         final GenomeInterval variantInterval = variant.getGenomeInterval();
         if (variantInterval.contains(donor)) {
@@ -109,7 +148,7 @@ public class AlleleGenerator {
      * @param anchor           {@link GenomePosition} denoting intron|exon boundary
      * @param variant          variant to incorporate into the snippet
      * @param sequenceInterval sequence to use for creating snippet
-     * @return nucleotide snippet for splice acceptor site
+     * @return nucleotide snippet for splice acceptor site or <code>null</code> if wrong input is provided
      */
     public String getAcceptorSiteWithAltAllele(GenomePosition anchor, GenomeVariant variant, SequenceInterval sequenceInterval) {
         String result; // this method creates the result String in 3' --> 5' direction
@@ -121,7 +160,7 @@ public class AlleleGenerator {
             return null;
         }
 
-        final GenomeInterval acceptor = makeAcceptorRegion(anchor);
+        final GenomeInterval acceptor = splicingParameters.makeAcceptorRegion(anchor);
 
         final GenomeInterval variantInterval = variant.getGenomeInterval();
         if (variantInterval.contains(acceptor)) {
@@ -172,38 +211,5 @@ public class AlleleGenerator {
                 /* if the variantRegion is a larger insertion, result.length() might be greater than SPLICE_ACCEPTOR_SITE_LENGTH after
                    appending 'alt' sequence. We need to make sure only last 'SPLICE_ACCEPTOR_SITE_LENGTH' nucleotides are returned */
         return result.substring(result.length() - splicingParameters.getAcceptorLength()); // last 'SPLICE_ACCEPTOR_SITE_LENGTH' nucleotides
-    }
-
-
-    public GenomeInterval makeDonorRegion(SplicingIntron intron) {
-        return makeDonorRegion(intron.getInterval().getGenomeBeginPos());
-    }
-
-    public GenomeInterval makeDonorRegion(SplicingExon exon) {
-        return makeDonorRegion(exon.getInterval().getGenomeEndPos());
-    }
-
-    /**
-     * @param anchor {@link GenomePosition} representing exon|intron boundary
-     * @return {@link GenomeInterval} representing splice donor site
-     */
-    public GenomeInterval makeDonorRegion(GenomePosition anchor) {
-        return new GenomeInterval(anchor.shifted(-splicingParameters.getDonorExonic()), splicingParameters.getDonorLength());
-    }
-
-    public GenomeInterval makeAcceptorRegion(SplicingIntron intron) {
-        return makeAcceptorRegion(intron.getInterval().getGenomeEndPos());
-    }
-
-    public GenomeInterval makeAcceptorRegion(SplicingExon exon) {
-        return makeAcceptorRegion(exon.getInterval().getGenomeBeginPos());
-    }
-
-    /**
-     * @param anchor {@link GenomePosition} representing intron|exon boundary
-     * @return {@link GenomeInterval} representing splice acceptor site
-     */
-    public GenomeInterval makeAcceptorRegion(GenomePosition anchor) {
-        return new GenomeInterval(anchor.shifted(-splicingParameters.getAcceptorIntronic()), splicingParameters.getAcceptorLength());
     }
 }

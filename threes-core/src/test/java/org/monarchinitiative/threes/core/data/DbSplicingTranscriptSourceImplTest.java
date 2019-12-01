@@ -18,6 +18,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
+import static org.hamcrest.CoreMatchers.hasItems;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
@@ -123,5 +124,12 @@ class DbSplicingTranscriptSourceImplTest {
     void fetchNonExistingTranscript() {
         final Optional<SplicingTranscript> txOpt = source.fetchTranscriptByAccession("BLABLA", referenceDictionary);
         assertThat(txOpt.isEmpty(), is(true));
+    }
+
+    @Test
+    void getTranscriptAccessionIds() {
+        final List<String> ids = source.getTranscriptAccessionIds();
+        assertThat(ids, hasSize(3));
+        assertThat(ids, hasItems("FIRST", "SECOND", "THIRD"));
     }
 }

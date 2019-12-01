@@ -4,15 +4,22 @@ import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import de.charite.compbio.jannovar.data.ReferenceDictionary;
 import de.charite.compbio.jannovar.data.ReferenceDictionaryBuilder;
+import org.monarchinitiative.threes.core.calculators.ic.SplicingInformationContentCalculator;
 import org.monarchinitiative.threes.core.calculators.sms.SMSCalculator;
+import org.monarchinitiative.threes.core.data.ic.InputStreamBasedPositionalWeightMatrixParser;
+import org.monarchinitiative.threes.core.data.ic.SplicingPositionalWeightMatrixParser;
+import org.monarchinitiative.threes.core.data.ic.SplicingPwmData;
 import org.monarchinitiative.threes.core.data.sms.FileSMSParser;
 import org.monarchinitiative.threes.core.data.sms.SMSParser;
 import org.monarchinitiative.threes.core.model.SplicingParameters;
+import org.monarchinitiative.threes.core.reference.allele.AlleleGenerator;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import javax.sql.DataSource;
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -57,6 +64,28 @@ public class TestDataSourceConfig {
         builder.putContigName(3, "chr3");
         builder.putContigLength(3, 200_000);
         return builder.build();
+    }
+
+    @Bean
+    public SplicingInformationContentCalculator splicingInformationContentCalculator(SplicingPwmData splicingPwmData) {
+        return new SplicingInformationContentCalculator(splicingPwmData);
+    }
+
+    @Bean
+    public SplicingPwmData splicingPwmData(SplicingPositionalWeightMatrixParser splicingPositionalWeightMatrixParser) {
+        return splicingPositionalWeightMatrixParser.getSplicingPwmData();
+    }
+
+    @Bean
+    public SplicingPositionalWeightMatrixParser splicingPositionalWeightMatrixParser() throws IOException {
+        try (InputStream inputStream = Files.newInputStream(Paths.get(TestDataSourceConfig.class.getResource("data/ic/spliceSites.yaml").getPath()))) {
+            return new InputStreamBasedPositionalWeightMatrixParser(inputStream);
+        }
+    }
+
+    @Bean
+    public AlleleGenerator alleleGenerator(SplicingParameters splicingParameters) {
+        return new AlleleGenerator(splicingParameters);
     }
 
     @Bean
