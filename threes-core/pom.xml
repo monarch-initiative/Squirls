@@ -5,7 +5,7 @@
     <parent>
         <artifactId>3S</artifactId>
         <groupId>org.monarchinitiative.threes</groupId>
-        <version>1.0.4</version>
+        <version>1.1.0</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -20,7 +20,6 @@
         <dependency>
             <groupId>org.yaml</groupId>
             <artifactId>snakeyaml</artifactId>
-            <version>1.23</version>
         </dependency>
 
         <!--  JANNOVAR  -->
@@ -41,6 +40,12 @@
             <groupId>com.github.samtools</groupId>
             <artifactId>htsjdk</artifactId>
             <version>${htsjdk.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>xyz.ielis.hyperutil</groupId>
+            <artifactId>hyperutil-reference</artifactId>
+            <version>${hyperutil.version}</version>
         </dependency>
 
         <dependency>

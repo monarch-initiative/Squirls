@@ -1,47 +1,41 @@
 package org.monarchinitiative.threes.core.model;
 
+import de.charite.compbio.jannovar.reference.GenomeInterval;
+
 /**
- *
+ * Wrapper for exon interval with space for possible future exon attributes.
  */
 public class SplicingExon extends SplicingRegion {
 
 
     private SplicingExon(Builder builder) {
-        super(builder.begin, builder.end);
+        super(builder.interval);
     }
 
-
-    public static Builder newBuilder() {
+    public static Builder builder() {
         return new Builder();
     }
-
 
     @Override
     public String toString() {
         return "SplicingExon{" +
-                "begin=" + begin +
-                ", end=" + end +
-                '}';
+                interval +
+                "} ";
     }
 
     public static final class Builder {
 
-        private int begin;
+        private GenomeInterval interval;
 
-        private int end;
 
         private Builder() {
         }
 
-        public Builder setBegin(int begin) {
-            this.begin = begin;
+        public Builder setInterval(GenomeInterval interval) {
+            this.interval = interval;
             return this;
         }
 
-        public Builder setEnd(int end) {
-            this.end = end;
-            return this;
-        }
 
         public SplicingExon build() {
             return new SplicingExon(this);

@@ -1,0 +1,27 @@
+@HD	VN:1.0	SO:unsorted
+@SQ	SN:chr1	LN:59940	M5:d2b3f22704d944f92a6bc45b6603ea2d	UR:file:///home/ielis/ielis/THREES/3S/threes-spring-boot-autoconfigure/src/test/resources/data/1710_hg19.fa
+@SQ	SN:chr2	LN:59940	M5:7fff9979aedbf1b9861140e123db49a2	UR:file:///home/ielis/ielis/THREES/3S/threes-spring-boot-autoconfigure/src/test/resources/data/1710_hg19.fa
+@SQ	SN:chr3	LN:59940	M5:6c2d3c723728bf59ace37bd487974ec0	UR:file:///home/ielis/ielis/THREES/3S/threes-spring-boot-autoconfigure/src/test/resources/data/1710_hg19.fa
+@SQ	SN:chr4	LN:59940	M5:42948b04220401082ddd7bd1cd28770c	UR:file:///home/ielis/ielis/THREES/3S/threes-spring-boot-autoconfigure/src/test/resources/data/1710_hg19.fa
+@SQ	SN:chr5	LN:59940	M5:f1f46cb5e54e803b97e2075ca5377345	UR:file:///home/ielis/ielis/THREES/3S/threes-spring-boot-autoconfigure/src/test/resources/data/1710_hg19.fa
+@SQ	SN:chr6	LN:59940	M5:6c2d3c723728bf59ace37bd487974ec0	UR:file:///home/ielis/ielis/THREES/3S/threes-spring-boot-autoconfigure/src/test/resources/data/1710_hg19.fa
+@SQ	SN:chr7	LN:59940	M5:5bb63149fbeba09bde95545d0e3e0ad4	UR:file:///home/ielis/ielis/THREES/3S/threes-spring-boot-autoconfigure/src/test/resources/data/1710_hg19.fa
+@SQ	SN:chr8	LN:59940	M5:53b693364e8b012fb833fe2e678c2ed8	UR:file:///home/ielis/ielis/THREES/3S/threes-spring-boot-autoconfigure/src/test/resources/data/1710_hg19.fa
+@SQ	SN:chr9	LN:59940	M5:3ff118fa75b52c3ca90c648bd6523ca3	UR:file:///home/ielis/ielis/THREES/3S/threes-spring-boot-autoconfigure/src/test/resources/data/1710_hg19.fa
+@SQ	SN:chr10	LN:59940	M5:6c2d3c723728bf59ace37bd487974ec0	UR:file:///home/ielis/ielis/THREES/3S/threes-spring-boot-autoconfigure/src/test/resources/data/1710_hg19.fa
+@SQ	SN:chr11	LN:59940	M5:6c2d3c723728bf59ace37bd487974ec0	UR:file:///home/ielis/ielis/THREES/3S/threes-spring-boot-autoconfigure/src/test/resources/data/1710_hg19.fa
+@SQ	SN:chr12	LN:59940	M5:6c2d3c723728bf59ace37bd487974ec0	UR:file:///home/ielis/ielis/THREES/3S/threes-spring-boot-autoconfigure/src/test/resources/data/1710_hg19.fa
+@SQ	SN:chr13	LN:59940	M5:6c2d3c723728bf59ace37bd487974ec0	UR:file:///home/ielis/ielis/THREES/3S/threes-spring-boot-autoconfigure/src/test/resources/data/1710_hg19.fa
+@SQ	SN:chr14	LN:59940	M5:6c2d3c723728bf59ace37bd487974ec0	UR:file:///home/ielis/ielis/THREES/3S/threes-spring-boot-autoconfigure/src/test/resources/data/1710_hg19.fa
+@SQ	SN:chr15	LN:59940	M5:6c2d3c723728bf59ace37bd487974ec0	UR:file:///home/ielis/ielis/THREES/3S/threes-spring-boot-autoconfigure/src/test/resources/data/1710_hg19.fa
+@SQ	SN:chr16	LN:59940	M5:6c2d3c723728bf59ace37bd487974ec0	UR:file:///home/ielis/ielis/THREES/3S/threes-spring-boot-autoconfigure/src/test/resources/data/1710_hg19.fa
+@SQ	SN:chr17	LN:59940	M5:2320441f3f9e3d6e2d267d12a5ec62cc	UR:file:///home/ielis/ielis/THREES/3S/threes-spring-boot-autoconfigure/src/test/resources/data/1710_hg19.fa
+@SQ	SN:chr18	LN:59940	M5:00ba6eab2d989f3a5ece8b5ac2ef8de9	UR:file:///home/ielis/ielis/THREES/3S/threes-spring-boot-autoconfigure/src/test/resources/data/1710_hg19.fa
+@SQ	SN:chr19	LN:59940	M5:6c2d3c723728bf59ace37bd487974ec0	UR:file:///home/ielis/ielis/THREES/3S/threes-spring-boot-autoconfigure/src/test/resources/data/1710_hg19.fa
+@SQ	SN:chr20	LN:59940	M5:6c2d3c723728bf59ace37bd487974ec0	UR:file:///home/ielis/ielis/THREES/3S/threes-spring-boot-autoconfigure/src/test/resources/data/1710_hg19.fa
+@SQ	SN:chr21	LN:59940	M5:6c2d3c723728bf59ace37bd487974ec0	UR:file:///home/ielis/ielis/THREES/3S/threes-spring-boot-autoconfigure/src/test/resources/data/1710_hg19.fa
+@SQ	SN:chr22	LN:59940	M5:6c2d3c723728bf59ace37bd487974ec0	UR:file:///home/ielis/ielis/THREES/3S/threes-spring-boot-autoconfigure/src/test/resources/data/1710_hg19.fa
+@SQ	SN:chrX	LN:59940	M5:6c2d3c723728bf59ace37bd487974ec0	UR:file:///home/ielis/ielis/THREES/3S/threes-spring-boot-autoconfigure/src/test/resources/data/1710_hg19.fa
+@SQ	SN:chrY	LN:59940	M5:fb3ad98a9fd3bdbe395f3df6d9da5b4f	UR:file:///home/ielis/ielis/THREES/3S/threes-spring-boot-autoconfigure/src/test/resources/data/1710_hg19.fa
+@SQ	SN:chrMT	LN:0	M5:d41d8cd98f00b204e9800998ecf8427e	UR:file:///home/ielis/ielis/THREES/3S/threes-spring-boot-autoconfigure/src/test/resources/data/1710_hg19.fa
+@SQ	SN:chrM	LN:16571	M5:d2ed829b8a1628d16cbeee88e88e39eb	UR:file:///home/ielis/ielis/THREES/3S/threes-spring-boot-autoconfigure/src/test/resources/data/1710_hg19.fa

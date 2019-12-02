@@ -1,5 +1,9 @@
 package org.monarchinitiative.threes.core.model;
 
+import de.charite.compbio.jannovar.reference.GenomeInterval;
+
+import java.util.Objects;
+
 /**
  *
  */
@@ -10,47 +14,37 @@ public class SplicingIntron extends SplicingRegion {
     private final double acceptorScore;
 
     private SplicingIntron(Builder builder) {
-        super(builder.begin, builder.end);
+        super(builder.interval);
         donorScore = builder.donorScore;
         acceptorScore = builder.acceptorScore;
     }
 
-    public static Builder newBuilder() {
+    public static Builder builder() {
         return new Builder();
     }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof SplicingIntron)) return false;
+        if (o == null || getClass() != o.getClass()) return false;
         if (!super.equals(o)) return false;
-
-        SplicingIntron that = (SplicingIntron) o;
-
-        if (Double.compare(that.donorScore, donorScore) != 0) return false;
-        return Double.compare(that.acceptorScore, acceptorScore) == 0;
-
+        SplicingIntron intron = (SplicingIntron) o;
+        return Double.compare(intron.donorScore, donorScore) == 0 &&
+                Double.compare(intron.acceptorScore, acceptorScore) == 0;
     }
 
     @Override
     public int hashCode() {
-        int result = super.hashCode();
-        long temp;
-        temp = Double.doubleToLongBits(donorScore);
-        result = 31 * result + (int) (temp ^ (temp >>> 32));
-        temp = Double.doubleToLongBits(acceptorScore);
-        result = 31 * result + (int) (temp ^ (temp >>> 32));
-        return result;
+        return Objects.hash(super.hashCode(), donorScore, acceptorScore);
     }
 
     @Override
     public String toString() {
         return "SplicingIntron{" +
-                "begin=" + begin +
-                ", end=" + end +
-                ", donorScore=" + donorScore +
-                ", acceptorScore=" + acceptorScore +
-                '}';
+                interval +
+                ", donor=" + donorScore +
+                ", acceptor=" + acceptorScore +
+                "}";
     }
 
     public double getDonorScore() {
@@ -63,9 +57,7 @@ public class SplicingIntron extends SplicingRegion {
 
     public static final class Builder {
 
-        private int begin;
-
-        private int end;
+        private GenomeInterval interval;
 
         private double donorScore;
 
@@ -74,13 +66,8 @@ public class SplicingIntron extends SplicingRegion {
         private Builder() {
         }
 
-        public Builder setBegin(int begin) {
-            this.begin = begin;
-            return this;
-        }
-
-        public Builder setEnd(int end) {
-            this.end = end;
+        public Builder setInterval(GenomeInterval interval) {
+            this.interval = interval;
             return this;
         }
 

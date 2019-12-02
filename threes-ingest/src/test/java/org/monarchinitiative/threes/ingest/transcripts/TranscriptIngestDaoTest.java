@@ -1,10 +1,10 @@
 package org.monarchinitiative.threes.ingest.transcripts;
 
+import de.charite.compbio.jannovar.data.ReferenceDictionary;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.monarchinitiative.threes.core.model.SplicingTranscript;
-import org.monarchinitiative.threes.core.reference.GenomeCoordinatesFlipper;
-import org.monarchinitiative.threes.ingest.TestDataInstances;
+import org.monarchinitiative.threes.ingest.PojosForTesting;
 import org.monarchinitiative.threes.ingest.TestDataSourceConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -23,26 +23,23 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 
 @SpringBootTest(classes = {TestDataSourceConfig.class})
-@Sql(scripts = {"file:src/test/resources/sql/create_schema.sql",
-        "file:src/test/resources/sql/create_transcript_intron_exon_tables.sql"})
+@Sql(scripts = {"create_transcript_intron_exon_tables.sql"})
 class TranscriptIngestDaoTest {
 
     @Autowired
     private DataSource dataSource;
 
     @Autowired
-    private GenomeCoordinatesFlipper genomeCoordinatesFlipper;
+    private ReferenceDictionary referenceDictionary;
 
     private TranscriptIngestDao instance;
 
     private static void printAll(DataSource dataSource) throws Exception {
         String transcriptsSql = "SELECT * FROM SPLICING.TRANSCRIPTS";
-        String exonsSql = "SELECT * FROM SPLICING.EXONS";
-        String intronsSql = "SELECT * FROM SPLICING.INTRONS";
+        String exonsSql = "SELECT * FROM SPLICING.FEATURE_REGIONS";
         try (Connection connection = dataSource.getConnection()) {
             try (PreparedStatement transcripts = connection.prepareStatement(transcriptsSql);
-                 PreparedStatement exons = connection.prepareStatement(exonsSql);
-                 PreparedStatement introns = connection.prepareStatement(intronsSql)) {
+                 PreparedStatement exons = connection.prepareStatement(exonsSql)) {
                 ResultSet trs = transcripts.executeQuery();
                 System.out.println("=================   TRANSCRIPTS   =================");
                 while (trs.next()) {
@@ -52,19 +49,11 @@ class TranscriptIngestDaoTest {
                             trs.getString(7)));
                 }
 
-                System.out.println("=================      EXONS      =================");
+                System.out.println("=================      RECORDS      =================");
                 ResultSet ers = exons.executeQuery();
                 while (ers.next()) {
                     System.out.println(String.format("%s\t%s\t%s",
                             ers.getString(1), ers.getString(2), ers.getString(3)));
-                }
-
-                System.out.println("=================      INTRONS    =================");
-                ResultSet irs = introns.executeQuery();
-                while (irs.next()) {
-                    System.out.println(String.format("%s\t%s\t%s\t%s\t%s",
-                            irs.getString(1), irs.getString(2), irs.getString(3),
-                            irs.getString(4), irs.getString(5)));
                 }
             }
         }
@@ -76,7 +65,7 @@ class TranscriptIngestDaoTest {
 
     @BeforeEach
     void setUp() {
-        instance = new TranscriptIngestDao(dataSource, genomeCoordinatesFlipper);
+        instance = new TranscriptIngestDao(dataSource, referenceDictionary);
     }
 
     @Test
@@ -85,19 +74,16 @@ class TranscriptIngestDaoTest {
         List<String> records = template.query("SELECT * FROM SPLICING.TRANSCRIPTS", rowMapper());
         assertThat(records, hasSize(0));
 
-        SplicingTranscript alpha = TestDataInstances.makeAlphaTranscript();
+        SplicingTranscript alpha = PojosForTesting.makeAlphaTranscript(referenceDictionary);
         int inserted = instance.insertTranscript(alpha);
-        SplicingTranscript beta = TestDataInstances.makeBetaTranscript();
+        SplicingTranscript beta = PojosForTesting.makeBetaTranscript(referenceDictionary);
         inserted += instance.insertTranscript(beta);
 
         records = template.query("SELECT * FROM SPLICING.TRANSCRIPTS", rowMapper());
         assertThat(records, hasSize(2));
 
-        records = template.query("SELECT * FROM SPLICING.EXONS", rowMapper());
-        assertThat(records, hasSize(4));
-
-        records = template.query("SELECT * FROM SPLICING.INTRONS", rowMapper());
-        assertThat(records, hasSize(2));
+        records = template.query("SELECT * FROM SPLICING.FEATURE_REGIONS", rowMapper());
+        assertThat(records, hasSize(6));
 
         assertThat(inserted, is(2));
     }

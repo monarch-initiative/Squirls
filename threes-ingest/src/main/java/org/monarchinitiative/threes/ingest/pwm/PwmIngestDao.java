@@ -1,6 +1,6 @@
 package org.monarchinitiative.threes.ingest.pwm;
 
-import org.monarchinitiative.threes.core.calculators.ic.PositionWeightMatrix;
+import org.jblas.DoubleMatrix;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -8,7 +8,6 @@ import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.util.List;
 
 /**
  *
@@ -24,7 +23,16 @@ public class PwmIngestDao {
         this.dataSource = dataSource;
     }
 
-    public int insertPositionWeightMatrix(PositionWeightMatrix posWeightMatrix) {
+    /**
+     * Insert PWM represented by {@link DoubleMatrix} into database.
+     *
+     * @param matrix {@link DoubleMatrix} that represents PWM
+     * @param name   name of the PWM
+     * @param exon   number of exonic positions spanned by <code>matrix</code>
+     * @param intron number of intronic positions spanned by <code>matrix</code>
+     * @return number of affected database rows
+     */
+    public int insertDoubleMatrix(DoubleMatrix matrix, String name, int exon, int intron) {
         int nRows = 0;
         String pwmDataSql = "INSERT INTO SPLICING.PWM_DATA(PWM_NAME, ROW_IDX, COL_IDX, CELL_VALUE) VALUES (?, ?, ?, ?)";
         String pwmMetadataSql = "INSERT INTO SPLICING.PWM_METADATA(PWM_NAME, PWM_KEY, PWM_VALUE) VALUES (?, ?, ?)";
@@ -35,27 +43,26 @@ public class PwmIngestDao {
                  PreparedStatement metadataStatement = connection.prepareStatement(pwmMetadataSql)) {
 
                 // store PWM data
-                List<List<Double>> matrix = posWeightMatrix.getMatrix();
-                dataStatement.setString(1, posWeightMatrix.getName());
-                for (int rowIdx = 0; rowIdx < matrix.size(); rowIdx++) { // outer list, corresponds to 4 rows (4 nucleotides)
-                    List<Double> col = matrix.get(rowIdx);
-                    for (int colIdx = 0; colIdx < col.size(); colIdx++) { // inner list, corresponds to n positions of PWM
+                dataStatement.setString(1, name);
+                for (int rowIdx = 0; rowIdx < matrix.rows; rowIdx++) { // outer list, corresponds to 4 rows (4 nucleotides)
+                    DoubleMatrix row = matrix.getRow(rowIdx);
+                    for (int colIdx = 0; colIdx < row.length; colIdx++) { // inner list, corresponds to n positions of PWM
                         dataStatement.setInt(2, rowIdx);
                         dataStatement.setInt(3, colIdx);
-                        dataStatement.setDouble(4, col.get(colIdx));
+                        dataStatement.setDouble(4, row.get(colIdx));
                         nRows += dataStatement.executeUpdate();
                     }
                 }
 
                 // store PWM metadata
-                metadataStatement.setString(1, posWeightMatrix.getName());
+                metadataStatement.setString(1, name);
                 // number of exonic nucleotides spanned by the PWM
                 metadataStatement.setString(2, "EXON");
-                metadataStatement.setInt(3, posWeightMatrix.getExon());
+                metadataStatement.setInt(3, exon);
                 nRows += metadataStatement.executeUpdate();
                 // number of intronic nucleotides spanned by the PWM
                 metadataStatement.setString(2, "INTRON");
-                metadataStatement.setInt(3, posWeightMatrix.getIntron());
+                metadataStatement.setInt(3, intron);
                 nRows += metadataStatement.executeUpdate();
 
             } catch (SQLException e) {

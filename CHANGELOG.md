@@ -1,5 +1,15 @@
 # Changelog
 
+## v1.1.0
+✈ store all transcripts in a single database table
+- allow query by coordinates and accession ID
+- use internal reference dictionary to perform mapping from contig name into contig id
+- refactor database building process (ingest)
+
+✈ add modules (Java 11) 
+
+✈ add *dense* splicing evaluator (WIP)
+
 ## v1.0.4
 ✈ externalize max allowed #bp upstream and downstream from an exon in order to allow an intronic variant to be analyzed
 

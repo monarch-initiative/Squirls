@@ -1,9 +1,12 @@
 package org.monarchinitiative.threes.core.calculators.ic;
 
 import org.jblas.DoubleMatrix;
+import org.monarchinitiative.threes.core.data.ic.SplicingPwmData;
 import org.monarchinitiative.threes.core.model.SplicingParameters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.regex.Pattern;
 
 /**
  * This annotator implements splice site scoring method described in publication <a
@@ -21,7 +24,7 @@ public class SplicingInformationContentCalculator {
     /**
      * Nucleotide sequence submitted for scoring must match this pattern.
      */
-    private static final String PATTERN = "[ACGTacgt]*";
+    private static final Pattern PATTERN = Pattern.compile("[ACGTacgt]*");
 
     /**
      * Double matrices for splice donor and acceptor sites. Columns represent positions and rows represent probabilities
@@ -41,6 +44,10 @@ public class SplicingInformationContentCalculator {
         this.donorMatrix = createICMatrix(donorMatrix);
         this.acceptorMatrix = createICMatrix(acceptorMatrix);
         this.splicingParameters = splicingParameters;
+    }
+
+    public SplicingInformationContentCalculator(SplicingPwmData splicingPwmData) {
+        this(splicingPwmData.getDonor(), splicingPwmData.getAcceptor(), splicingPwmData.getParameters());
     }
 
     /**
@@ -139,7 +146,7 @@ public class SplicingInformationContentCalculator {
             LOGGER.debug(String.format("Unable to calculate donor score for sequence '%s'. Length of sequence: %d, length " +
                     "of donor matrix: %d", sequence, sequence.length(), this.donorMatrix.columns));
             return Double.NaN;
-        } else if (!sequence.matches(PATTERN)) {
+        } else if (!PATTERN.matcher(sequence).matches()) {
             LOGGER.debug(String.format("Unable to calculate donor score for sequence '%s'. Only characters A,C,G,T and a," +
                     "c,g,t are allowed.", sequence));
             return Double.NaN;
@@ -158,7 +165,7 @@ public class SplicingInformationContentCalculator {
             LOGGER.debug(String.format("Unable to calculate acceptor score for sequence '%s'. Length of sequence: %d, " +
                     "length of acceptor matrix: %d", sequence, sequence.length(), this.acceptorMatrix.columns));
             return Double.NaN;
-        } else if (!sequence.matches(PATTERN)) {
+        } else if (!PATTERN.matcher(sequence).matches()) {
             LOGGER.debug(String.format("Unable to calculate acceptor score for sequence '%s'. Only characters A,C,G,T " +
                     "and a,c,g,t are " +
                     "allowed.", sequence));

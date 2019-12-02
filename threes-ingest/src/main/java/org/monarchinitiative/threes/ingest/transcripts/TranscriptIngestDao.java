@@ -1,10 +1,11 @@
 package org.monarchinitiative.threes.ingest.transcripts;
 
-import org.monarchinitiative.threes.core.model.GenomeCoordinates;
+import de.charite.compbio.jannovar.data.ReferenceDictionary;
+import de.charite.compbio.jannovar.reference.GenomeInterval;
+import de.charite.compbio.jannovar.reference.Strand;
 import org.monarchinitiative.threes.core.model.SplicingExon;
 import org.monarchinitiative.threes.core.model.SplicingIntron;
 import org.monarchinitiative.threes.core.model.SplicingTranscript;
-import org.monarchinitiative.threes.core.reference.GenomeCoordinatesFlipper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -12,7 +13,6 @@ import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.util.Optional;
 
 /**
  *
@@ -23,13 +23,28 @@ public class TranscriptIngestDao {
 
     private final DataSource dataSource;
 
-    private final GenomeCoordinatesFlipper genomeCoordinatesFlipper;
+    private final ReferenceDictionary referenceDictionary;
 
-    public TranscriptIngestDao(DataSource dataSource, GenomeCoordinatesFlipper genomeCoordinatesFlipper) {
+    public TranscriptIngestDao(DataSource dataSource, ReferenceDictionary referenceDictionary) {
         this.dataSource = dataSource;
-        this.genomeCoordinatesFlipper = genomeCoordinatesFlipper;
+        this.referenceDictionary = referenceDictionary;
     }
 
+    /**
+     * We do not currently store anything for exon.
+     *
+     * @param exon Splicing exon
+     * @return empty string at the moment
+     */
+    private static String getExonProperties(SplicingExon exon) {
+        return "";
+    }
+
+    private static String getIntronProperties(SplicingIntron intron) {
+        return "DONOR=" + intron.getDonorScore() + ";" +
+                "ACCEPTOR=" + intron.getAcceptorScore();
+
+    }
 
     public int insertTranscript(SplicingTranscript transcript) {
         if (transcript == null) {
@@ -40,58 +55,74 @@ public class TranscriptIngestDao {
             return 0;
         }
 
+        final String txContigName = transcript.getChrName();
+        if (!referenceDictionary.getContigNameToID().containsKey(txContigName)) {
+            LOGGER.warn("Unknown contig `{}` of transcript `{}` `{}`", txContigName, transcript.getAccessionId(), transcript.getTxRegionCoordinates());
+            return 0;
+        }
+
+        // perform mapping to internal coordinate system
+        final int internalContigId = referenceDictionary.getContigNameToID().get(txContigName);
+
         String transcriptsSql = "INSERT INTO SPLICING.TRANSCRIPTS (CONTIG, BEGIN_POS, END_POS, " +
                 "BEGIN_ON_FWD, END_ON_FWD, STRAND, TX_ACCESSION) " +
                 "VALUES (?, ?, ?, ?, ?, ?, ?)";
-        String exonsSql = "INSERT INTO SPLICING.EXONS (TX_ACCESSION, BEGIN_POS, END_POS) " +
-                "VALUES (?, ?, ?)";
-        String intronsSql = "INSERT INTO SPLICING.INTRONS (TX_ACCESSION, BEGIN_POS, END_POS, DONOR_SCORE, ACCEPTOR_SCORE) " +
-                "VALUES (?, ?, ?, ?, ?)";
+        String featureRegionsSql = "insert into SPLICING.FEATURE_REGIONS " +
+                " (CONTIG, BEGIN_POS, END_POS, " +
+                " TX_ACCESSION, REGION_TYPE, PROPERTIES, REGION_NUMBER) " +
+                " values ( ?, ?, ?, ?, ?, ?, ?)";
         int updatedTx = 0;
         int updatedExons = 0, updatedIntrons = 0;
 
 
         try (Connection connection = dataSource.getConnection()) {
             connection.setAutoCommit(false);
-            try (PreparedStatement transcripts = connection.prepareStatement(transcriptsSql);
-                 PreparedStatement exons = connection.prepareStatement(exonsSql);
-                 PreparedStatement introns = connection.prepareStatement(intronsSql)) {
+            try (final PreparedStatement transcriptPs = connection.prepareStatement(transcriptsSql);
+                 final PreparedStatement featureRegionsPs = connection.prepareStatement(featureRegionsSql)) {
 
-                GenomeCoordinates coordinates = transcript.getTxRegionCoordinates();
-                if (!coordinates.getStrand()) {
-                    // we need to flip the coordinates to FWD strand
-                    final Optional<GenomeCoordinates> flipOp = genomeCoordinatesFlipper.flip(coordinates);
-                    if (!flipOp.isPresent()) {
-                        // complaint made in coordinates flipper
-                        return 0;
-                    }
-                    coordinates = flipOp.get();
+                final GenomeInterval txOnFwd = transcript.getTxRegionCoordinates().withStrand(Strand.FWD);
+
+                // insert transcript
+                transcriptPs.setInt(1, internalContigId);
+                transcriptPs.setInt(2, transcript.getTxBegin());
+                transcriptPs.setInt(3, transcript.getTxEnd());
+                transcriptPs.setInt(4, txOnFwd.getBeginPos());
+                transcriptPs.setInt(5, txOnFwd.getEndPos());
+                transcriptPs.setBoolean(6, transcript.getStrand().isForward());
+                transcriptPs.setString(7, transcript.getAccessionId());
+                updatedTx += transcriptPs.executeUpdate();
+
+                // insert exons
+                for (int i = 0; i < transcript.getExons().size(); i++) {
+                    final SplicingExon exon = transcript.getExons().get(i);
+                    final GenomeInterval interval = exon.getInterval();
+
+                    featureRegionsPs.setInt(1, internalContigId);
+                    featureRegionsPs.setInt(2, interval.getBeginPos());
+                    featureRegionsPs.setInt(3, interval.getEndPos());
+                    featureRegionsPs.setString(4, transcript.getAccessionId());
+                    featureRegionsPs.setString(5, SplicingTranscript.EXON_REGION_CODE);
+                    featureRegionsPs.setString(6, getExonProperties(exon));
+                    featureRegionsPs.setInt(7, i);
+
+                    updatedExons += featureRegionsPs.executeUpdate();
                 }
 
-                transcripts.setString(1, transcript.getContig());
-                transcripts.setInt(2, transcript.getTxBegin());
-                transcripts.setInt(3, transcript.getTxEnd());
-                transcripts.setInt(4, coordinates.getBegin());
-                transcripts.setInt(5, coordinates.getEnd());
-                transcripts.setBoolean(6, transcript.getStrand());
-                transcripts.setString(7, transcript.getAccessionId());
-                updatedTx += transcripts.executeUpdate();
+                // insert introns
+                for (int i = 0; i < transcript.getIntrons().size(); i++) {
+                    final SplicingIntron intron = transcript.getIntrons().get(i);
+                    final GenomeInterval interval = intron.getInterval();
 
-                for (SplicingExon exon : transcript.getExons()) {
-                    exons.setString(1, transcript.getAccessionId());
-                    exons.setInt(2, exon.getBegin());
-                    exons.setInt(3, exon.getEnd());
-                    updatedExons += exons.executeUpdate();
+                    featureRegionsPs.setInt(1, internalContigId);
+                    featureRegionsPs.setInt(2, interval.getBeginPos());
+                    featureRegionsPs.setInt(3, interval.getEndPos());
+                    featureRegionsPs.setString(4, transcript.getAccessionId());
+                    featureRegionsPs.setString(5, SplicingTranscript.INTRON_REGION_CODE);
+                    featureRegionsPs.setString(6, getIntronProperties(intron));
+                    featureRegionsPs.setInt(7, i);
+                    updatedIntrons += featureRegionsPs.executeUpdate();
                 }
 
-                for (SplicingIntron intron : transcript.getIntrons()) {
-                    introns.setString(1, transcript.getAccessionId());
-                    introns.setInt(2, intron.getBegin());
-                    introns.setInt(3, intron.getEnd());
-                    introns.setDouble(4, intron.getDonorScore());
-                    introns.setDouble(5, intron.getAcceptorScore());
-                    updatedIntrons += introns.executeUpdate();
-                }
 
                 connection.commit();
             } catch (SQLException e) {

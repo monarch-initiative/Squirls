@@ -16,13 +16,10 @@ public class ThreesDataResolver {
 
     private final String genomeAssembly;
 
-    private final String transcriptSource;
-
-    public ThreesDataResolver(Path threesDataDirectory, String dataVersion, String genomeAssembly, String transcriptSource) {
+    public ThreesDataResolver(Path threesDataDirectory, String dataVersion, String genomeAssembly) {
         this.threesDataDirectory = threesDataDirectory;
         this.dataVersion = dataVersion;
         this.genomeAssembly = genomeAssembly;
-        this.transcriptSource = transcriptSource;
     }
 
     public Path genomeFastaPath() {
@@ -33,9 +30,13 @@ public class ThreesDataResolver {
         return threesDataDirectory.resolve(String.format("%s_%s.fa.fai", dataVersion, genomeAssembly));
     }
 
+    public Path genomeFastaDictPath() {
+        return threesDataDirectory.resolve(String.format("%s_%s.fa.dict", dataVersion, genomeAssembly));
+    }
+
     public Path getDatasourcePath() {
         // the actual suffix *.mv.db is not being added
-        return threesDataDirectory.resolve(String.format("%s_%s_splicing_%s", dataVersion, genomeAssembly, transcriptSource))
+        return threesDataDirectory.resolve(String.format("%s_%s_splicing", dataVersion, genomeAssembly))
                 .toAbsolutePath();
     }
 
