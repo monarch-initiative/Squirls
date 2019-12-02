@@ -21,9 +21,9 @@ import org.monarchinitiative.threes.core.scoring.sparse.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.env.Environment;
 import xyz.ielis.hyperutil.reference.fasta.GenomeSequenceAccessor;
 import xyz.ielis.hyperutil.reference.fasta.GenomeSequenceAccessorBuilder;
 import xyz.ielis.hyperutil.reference.fasta.InvalidFastaFileException;
@@ -39,14 +39,21 @@ import java.util.function.UnaryOperator;
  * @author Daniel Danis <daniel.danis@jax.org>
  */
 @Configuration
+@EnableConfigurationProperties({ThreesProperties.class})
 public class ThreesAutoConfiguration {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ThreesAutoConfiguration.class);
 
+    private final ThreesProperties properties;
+
+    public ThreesAutoConfiguration(ThreesProperties properties) {
+        this.properties = properties;
+    }
+
     @Bean
     @ConditionalOnMissingBean(name = "threesDataDirectory")
-    public Path threesDataDirectory(Environment environment) throws UndefinedThreesResourceException {
-        String dataDir = environment.getProperty("threes.data-directory");
+    public Path threesDataDirectory() throws UndefinedThreesResourceException {
+        final String dataDir = properties.getDataDirectory();
         if (dataDir == null || dataDir.isEmpty()) {
             throw new UndefinedThreesResourceException("Path to 3S data directory (`--threes.data-directory`) is not specified");
         }
@@ -60,8 +67,8 @@ public class ThreesAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean(name = "threesGenomeAssembly")
-    public String threesGenomeAssembly(Environment environment) throws UndefinedThreesResourceException {
-        String assembly = environment.getProperty("threes.genome-assembly");
+    public String threesGenomeAssembly() throws UndefinedThreesResourceException {
+        final String assembly = properties.getGenomeAssembly();
         if (assembly == null) {
             throw new UndefinedThreesResourceException("Genome assembly (`--threes.genome-assembly`) is not specified");
         }
@@ -71,8 +78,8 @@ public class ThreesAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean(name = "threesDataVersion")
-    public String threesDataVersion(Environment environment) throws UndefinedThreesResourceException {
-        String dataVersion = environment.getProperty("threes.data-version");
+    public String threesDataVersion() throws UndefinedThreesResourceException {
+        final String dataVersion = properties.getDataVersion();
         if (dataVersion == null) {
             throw new UndefinedThreesResourceException("Data version (`--threes.data-version`) is not specified");
         }
@@ -81,30 +88,30 @@ public class ThreesAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean(name = "scorerFactoryType")
-    public String scorerFactoryType(Environment environment) {
-        return environment.getProperty("threes.sparse.scorer-factory-type", "scaling");
+    public String scorerFactoryType() {
+        return properties.getSparse().getScorerFactoryType();
     }
 
     @Bean
     @ConditionalOnMissingBean(name = "genomeSequenceAccessorType")
-    public String genomeSequenceAccessorType(Environment environment) {
-        return environment.getProperty("threes.genome-sequence-accessor-type", "simple");
+    public String genomeSequenceAccessorType() {
+        return properties.getGenomeSequenceAccessorType();
     }
 
 
     @Bean(name = "maxDistanceExonUpstream")
-    public int maxDistanceExonUpstream(Environment environment) {
-        String distance = environment.getProperty("threes.max-distance-exon-upstream", "50");
+    public int maxDistanceExonUpstream() {
+        final int distance = properties.getMaxDistanceExonUpstream();
         LOGGER.info("Analyzing variants up to {}bp upstream from exon", distance);
-        return Integer.parseInt(distance);
+        return distance;
     }
 
 
     @Bean(name = "maxDistanceExonDownstream")
-    public int maxDistanceExonDownstream(Environment environment) {
-        String distance = environment.getProperty("threes.max-distance-exon-downstream", "50");
+    public int maxDistanceExonDownstream() {
+        final int distance = properties.getMaxDistanceExonDownstream();
         LOGGER.info("Analyzing variants up to {}bp downstream from exon", distance);
-        return Integer.parseInt(distance);
+        return distance;
     }
 
 
@@ -120,20 +127,18 @@ public class ThreesAutoConfiguration {
     }
 
     @Bean
-    public SplicingEvaluator splicingEvaluator(Environment environment,
-                                               SplicingPwmData splicingPwmData,
+    public SplicingEvaluator splicingEvaluator(SplicingPwmData splicingPwmData,
                                                int maxDistanceExonUpstream,
                                                int maxDistanceExonDownstream,
                                                SMSCalculator smsCalculator) {
         final SplicingInformationContentCalculator calculator = new SplicingInformationContentCalculator(splicingPwmData);
         final SplicingTranscriptLocator locator = new NaiveSplicingTranscriptLocator(splicingPwmData.getParameters());
 
-
-        final String splicingEvaluatorType = environment.getProperty("threes.splicing-evaluator-type", "sparse");
+        final String splicingEvaluatorType = properties.getSplicingEvaluatorType();
         switch (splicingEvaluatorType) {
             case "sparse":
                 // TODO - simplify
-                final String scorerFactoryType = environment.getProperty("threes.sparse.scorer-factory-type", "scaling");
+                final String scorerFactoryType = properties.getSparse().getScorerFactoryType();
                 final RawScorerFactory rawScorerFactory = new RawScorerFactory(calculator, smsCalculator, maxDistanceExonDownstream, maxDistanceExonUpstream);
                 final ScorerFactory scorerFactory;
                 switch (scorerFactoryType) {
