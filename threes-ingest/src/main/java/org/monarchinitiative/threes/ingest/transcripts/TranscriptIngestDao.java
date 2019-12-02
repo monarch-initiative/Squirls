@@ -55,6 +55,15 @@ public class TranscriptIngestDao {
             return 0;
         }
 
+        final String txContigName = transcript.getChrName();
+        if (!referenceDictionary.getContigNameToID().containsKey(txContigName)) {
+            LOGGER.warn("Unknown contig `{}` of transcript `{}` `{}`", txContigName, transcript.getAccessionId(), transcript.getTxRegionCoordinates());
+            return 0;
+        }
+
+        // perform mapping to internal coordinate system
+        final int internalContigId = referenceDictionary.getContigNameToID().get(txContigName);
+
         String transcriptsSql = "INSERT INTO SPLICING.TRANSCRIPTS (CONTIG, BEGIN_POS, END_POS, " +
                 "BEGIN_ON_FWD, END_ON_FWD, STRAND, TX_ACCESSION) " +
                 "VALUES (?, ?, ?, ?, ?, ?, ?)";
@@ -72,8 +81,6 @@ public class TranscriptIngestDao {
                  final PreparedStatement featureRegionsPs = connection.prepareStatement(featureRegionsSql)) {
 
                 final GenomeInterval txOnFwd = transcript.getTxRegionCoordinates().withStrand(Strand.FWD);
-                final String internalContigName = referenceDictionary.getContigIDToName().get(transcript.getChr());
-                final Integer internalContigId = referenceDictionary.getContigNameToID().get(internalContigName);
 
                 // insert transcript
                 transcriptPs.setInt(1, internalContigId);

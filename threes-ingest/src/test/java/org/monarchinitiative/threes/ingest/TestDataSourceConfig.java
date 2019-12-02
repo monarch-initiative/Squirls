@@ -124,7 +124,13 @@ public class TestDataSourceConfig {
     @Bean
     public GenomeSequenceAccessor genomeSequenceAccessor() {
         Path fasta = Paths.get(TestDataSourceConfig.class.getResource("chr2chr3_small.fa").getPath());
-        return GenomeSequenceAccessorBuilder.builder().setFastaPath(fasta).build();
+        Path fastaFai = Paths.get(TestDataSourceConfig.class.getResource("chr2chr3_small.fa.fai").getPath());
+        Path fastaDict = Paths.get(TestDataSourceConfig.class.getResource("chr2chr3_small.fa.dict").getPath());
+        return GenomeSequenceAccessorBuilder.builder()
+                .setFastaPath(fasta)
+                .setFastaFaiPath(fastaFai)
+                .setFastaDictPath(fastaDict)
+                .build();
     }
 
 }
