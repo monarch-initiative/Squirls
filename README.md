@@ -17,8 +17,8 @@ The module `threes-ingest` is responsible for building of a database(s) and for 
 ---
 
 **Please note that building of the databases is optional**. You can download the pre-built files from AWS:
-- [1902_hg19](https://exomiser-threes.s3.amazonaws.com/1902_hg19_splicing.zip)
-- [1902_hg38](https://exomiser-threes.s3.amazonaws.com/1902_hg38_splicing.zip)
+- [1902_hg19](https://exomiser-threes.s3.amazonaws.com/1902_hg19.zip)
+- [1902_hg38](https://exomiser-threes.s3.amazonaws.com/1902_hg38.zip)
 
 After unzipping, place the files into your Exomiser data directory. 
 
