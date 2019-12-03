@@ -5,7 +5,7 @@ import org.monarchinitiative.threes.core.model.SplicingTernate;
 import org.monarchinitiative.threes.core.model.SplicingTranscript;
 import org.monarchinitiative.threes.core.reference.SplicingLocationData;
 import org.monarchinitiative.threes.core.reference.transcript.SplicingTranscriptLocator;
-import org.monarchinitiative.threes.core.scoring.SplicingEvaluator;
+import org.monarchinitiative.threes.core.scoring.SplicingAnnotator;
 import org.monarchinitiative.threes.core.scoring.SplicingPathogenicityData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,16 +20,16 @@ import java.util.Set;
  * <li>apply scorers for each location</li>
  * </ul>
  */
-public class SparseSplicingEvaluator implements SplicingEvaluator {
+public class SparseSplicingAnnotator implements SplicingAnnotator {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(SparseSplicingEvaluator.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(SparseSplicingAnnotator.class);
 
     private final ScorerFactory factory;
 
     private final SplicingTranscriptLocator transcriptLocator;
 
 
-    public SparseSplicingEvaluator(ScorerFactory factory, SplicingTranscriptLocator transcriptLocator) {
+    public SparseSplicingAnnotator(ScorerFactory factory, SplicingTranscriptLocator transcriptLocator) {
         this.transcriptLocator = transcriptLocator;
         this.factory = factory;
     }

@@ -1,9 +1,9 @@
 package org.monarchinitiative.threes.autoconfigure;
 
 import org.junit.jupiter.api.Test;
-import org.monarchinitiative.threes.core.scoring.SplicingEvaluator;
-import org.monarchinitiative.threes.core.scoring.dense.DenseSplicingEvaluator;
-import org.monarchinitiative.threes.core.scoring.sparse.SparseSplicingEvaluator;
+import org.monarchinitiative.threes.core.scoring.SplicingAnnotator;
+import org.monarchinitiative.threes.core.scoring.dense.DenseSplicingAnnotator;
+import org.monarchinitiative.threes.core.scoring.sparse.SparseSplicingAnnotator;
 import org.springframework.beans.factory.BeanCreationException;
 import xyz.ielis.hyperutil.reference.fasta.GenomeSequenceAccessor;
 import xyz.ielis.hyperutil.reference.fasta.SingleChromosomeGenomeSequenceAccessor;
@@ -42,8 +42,8 @@ class ThreesAutoConfigurationTest extends AbstractAutoConfigurationTest {
         GenomeSequenceAccessor accessor = context.getBean("genomeSequenceAccessor", GenomeSequenceAccessor.class);
         assertThat(accessor, is(instanceOf(SingleFastaGenomeSequenceAccessor.class)));
 
-        SplicingEvaluator splicingEvaluator = context.getBean("splicingEvaluator", SplicingEvaluator.class);
-        assertThat(splicingEvaluator, is(instanceOf(SparseSplicingEvaluator.class)));
+        SplicingAnnotator splicingAnnotator = context.getBean("splicingEvaluator", SplicingAnnotator.class);
+        assertThat(splicingAnnotator, is(instanceOf(SparseSplicingAnnotator.class)));
     }
 
     @Test
@@ -65,8 +65,8 @@ class ThreesAutoConfigurationTest extends AbstractAutoConfigurationTest {
         GenomeSequenceAccessor accessor = context.getBean("genomeSequenceAccessor", GenomeSequenceAccessor.class);
         assertThat(accessor, is(instanceOf(SingleChromosomeGenomeSequenceAccessor.class)));
 
-        SplicingEvaluator splicingEvaluator = context.getBean("splicingEvaluator", SplicingEvaluator.class);
-        assertThat(splicingEvaluator, is(instanceOf(DenseSplicingEvaluator.class)));
+        SplicingAnnotator splicingAnnotator = context.getBean("splicingEvaluator", SplicingAnnotator.class);
+        assertThat(splicingAnnotator, is(instanceOf(DenseSplicingAnnotator.class)));
     }
 
     @Test

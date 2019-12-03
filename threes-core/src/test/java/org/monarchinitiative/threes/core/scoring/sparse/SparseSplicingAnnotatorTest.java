@@ -25,7 +25,7 @@ import static org.hamcrest.Matchers.hasEntry;
 import static org.mockito.Mockito.when;
 
 @SpringBootTest(classes = TestDataSourceConfig.class)
-class SparseSplicingEvaluatorTest {
+class SparseSplicingAnnotatorTest {
 
 
     private SequenceInterval sequence;
@@ -38,14 +38,14 @@ class SparseSplicingEvaluatorTest {
     @Mock
     private SplicingTranscriptLocator locator;
 
-    private SparseSplicingEvaluator evaluator;
+    private SparseSplicingAnnotator evaluator;
 
     @Autowired
     private ReferenceDictionary referenceDictionary;
 
     @BeforeEach
     void setUp() {
-        evaluator = new SparseSplicingEvaluator(factory, locator);
+        evaluator = new SparseSplicingAnnotator(factory, locator);
         sequence = PojosForTesting.getSequenceIntervalForTranscriptWithThreeExons(referenceDictionary);
         transcript = PojosForTesting.getTranscriptWithThreeExons(referenceDictionary);
     }

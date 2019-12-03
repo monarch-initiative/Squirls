@@ -15,8 +15,8 @@ import org.monarchinitiative.threes.core.data.ic.SplicingPwmData;
 import org.monarchinitiative.threes.core.data.sms.DbSmsDao;
 import org.monarchinitiative.threes.core.reference.transcript.NaiveSplicingTranscriptLocator;
 import org.monarchinitiative.threes.core.reference.transcript.SplicingTranscriptLocator;
-import org.monarchinitiative.threes.core.scoring.SplicingEvaluator;
-import org.monarchinitiative.threes.core.scoring.dense.DenseSplicingEvaluator;
+import org.monarchinitiative.threes.core.scoring.SplicingAnnotator;
+import org.monarchinitiative.threes.core.scoring.dense.DenseSplicingAnnotator;
 import org.monarchinitiative.threes.core.scoring.sparse.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -127,7 +127,7 @@ public class ThreesAutoConfiguration {
     }
 
     @Bean
-    public SplicingEvaluator splicingEvaluator(SplicingPwmData splicingPwmData,
+    public SplicingAnnotator splicingEvaluator(SplicingPwmData splicingPwmData,
                                                int maxDistanceExonUpstream,
                                                int maxDistanceExonDownstream,
                                                SMSCalculator smsCalculator) {
@@ -164,10 +164,10 @@ public class ThreesAutoConfiguration {
                         throw new ThreeSRuntimeException(String.format("Unknown `threes.sparse.scorer-factory-type` value: `%s`", scorerFactoryType));
                 }
                 LOGGER.info("Using sparse splicing evaluator");
-                return new SparseSplicingEvaluator(scorerFactory, locator);
+                return new SparseSplicingAnnotator(scorerFactory, locator);
             case "dense":
                 LOGGER.info("Using dense splicing evaluator");
-                return new DenseSplicingEvaluator(splicingPwmData);
+                return new DenseSplicingAnnotator(splicingPwmData);
             default:
                 LOGGER.error("Unknown `threes.splicing-evaluator-type` value `{}`", splicingEvaluatorType);
                 throw new ThreeSRuntimeException(String.format("Unknown `threes.splicing-evaluator-type` value: `%s`", splicingEvaluatorType));
