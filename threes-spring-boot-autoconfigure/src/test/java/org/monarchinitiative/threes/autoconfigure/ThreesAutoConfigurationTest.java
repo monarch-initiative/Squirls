@@ -33,16 +33,16 @@ class ThreesAutoConfigurationTest extends AbstractAutoConfigurationTest {
         assertThat(threesDataVersion, is("1710"));
 
         // default values
-        Integer maxDistanceExonUpstream = context.getBean("maxDistanceExonUpstream", Integer.class);
-        assertThat(maxDistanceExonUpstream, is(50));
-
-        Integer maxDistanceExonDownstream = context.getBean("maxDistanceExonDownstream", Integer.class);
-        assertThat(maxDistanceExonDownstream, is(50));
+        ThreesProperties properties = context.getBean(ThreesProperties.class);
+        assertThat(properties.getMaxDistanceExonUpstream(), is(50));
+        assertThat(properties.getMaxDistanceExonDownstream(), is(50));
+        assertThat(properties.getGenomeSequenceAccessorType(), is("simple"));
+        assertThat(properties.getSplicingEvaluatorType(), is("sparse"));
 
         GenomeSequenceAccessor accessor = context.getBean("genomeSequenceAccessor", GenomeSequenceAccessor.class);
         assertThat(accessor, is(instanceOf(SingleFastaGenomeSequenceAccessor.class)));
 
-        SplicingAnnotator splicingAnnotator = context.getBean("splicingEvaluator", SplicingAnnotator.class);
+        SplicingAnnotator splicingAnnotator = context.getBean("splicingAnnotator", SplicingAnnotator.class);
         assertThat(splicingAnnotator, is(instanceOf(SparseSplicingAnnotator.class)));
     }
 
@@ -56,16 +56,16 @@ class ThreesAutoConfigurationTest extends AbstractAutoConfigurationTest {
                 "threes.genome-sequence-accessor-type=chromosome",
                 "threes.splicing-evaluator-type=dense");
 
-        Integer maxDistanceExonUpstream = context.getBean("maxDistanceExonUpstream", Integer.class);
-        assertThat(maxDistanceExonUpstream, is(100));
-
-        Integer maxDistanceExonDownstream = context.getBean("maxDistanceExonDownstream", Integer.class);
-        assertThat(maxDistanceExonDownstream, is(200));
+        ThreesProperties properties = context.getBean(ThreesProperties.class);
+        assertThat(properties.getMaxDistanceExonUpstream(), is(100));
+        assertThat(properties.getMaxDistanceExonDownstream(), is(200));
+        assertThat(properties.getGenomeSequenceAccessorType(), is("chromosome"));
+        assertThat(properties.getSplicingEvaluatorType(), is("dense"));
 
         GenomeSequenceAccessor accessor = context.getBean("genomeSequenceAccessor", GenomeSequenceAccessor.class);
         assertThat(accessor, is(instanceOf(SingleChromosomeGenomeSequenceAccessor.class)));
 
-        SplicingAnnotator splicingAnnotator = context.getBean("splicingEvaluator", SplicingAnnotator.class);
+        SplicingAnnotator splicingAnnotator = context.getBean("splicingAnnotator", SplicingAnnotator.class);
         assertThat(splicingAnnotator, is(instanceOf(DenseSplicingAnnotator.class)));
     }
 

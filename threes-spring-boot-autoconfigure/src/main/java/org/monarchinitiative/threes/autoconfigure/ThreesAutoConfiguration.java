@@ -15,7 +15,9 @@ import org.monarchinitiative.threes.core.data.ic.SplicingPwmData;
 import org.monarchinitiative.threes.core.data.sms.DbSmsDao;
 import org.monarchinitiative.threes.core.reference.transcript.NaiveSplicingTranscriptLocator;
 import org.monarchinitiative.threes.core.reference.transcript.SplicingTranscriptLocator;
+import org.monarchinitiative.threes.core.scoring.SimpleVariantSplicingEvaluator;
 import org.monarchinitiative.threes.core.scoring.SplicingAnnotator;
+import org.monarchinitiative.threes.core.scoring.VariantSplicingEvaluator;
 import org.monarchinitiative.threes.core.scoring.dense.DenseSplicingAnnotator;
 import org.monarchinitiative.threes.core.scoring.sparse.*;
 import org.slf4j.Logger;
@@ -86,34 +88,6 @@ public class ThreesAutoConfiguration {
         return dataVersion;
     }
 
-    @Bean
-    @ConditionalOnMissingBean(name = "scorerFactoryType")
-    public String scorerFactoryType() {
-        return properties.getSparse().getScorerFactoryType();
-    }
-
-    @Bean
-    @ConditionalOnMissingBean(name = "genomeSequenceAccessorType")
-    public String genomeSequenceAccessorType() {
-        return properties.getGenomeSequenceAccessorType();
-    }
-
-
-    @Bean(name = "maxDistanceExonUpstream")
-    public int maxDistanceExonUpstream() {
-        final int distance = properties.getMaxDistanceExonUpstream();
-        LOGGER.info("Analyzing variants up to {}bp upstream from exon", distance);
-        return distance;
-    }
-
-
-    @Bean(name = "maxDistanceExonDownstream")
-    public int maxDistanceExonDownstream() {
-        final int distance = properties.getMaxDistanceExonDownstream();
-        LOGGER.info("Analyzing variants up to {}bp downstream from exon", distance);
-        return distance;
-    }
-
 
     @Bean
     public ThreesDataResolver threesDataResolver(Path threesDataDirectory, String threesGenomeAssembly, String threesDataVersion) {
@@ -127,10 +101,14 @@ public class ThreesAutoConfiguration {
     }
 
     @Bean
-    public SplicingAnnotator splicingEvaluator(SplicingPwmData splicingPwmData,
-                                               int maxDistanceExonUpstream,
-                                               int maxDistanceExonDownstream,
-                                               SMSCalculator smsCalculator) {
+    public VariantSplicingEvaluator variantSplicingEvaluator(GenomeSequenceAccessor genomeSequenceAccessor,
+                                                             SplicingTranscriptSource splicingTranscriptSource,
+                                                             SplicingAnnotator splicingAnnotator) {
+        return new SimpleVariantSplicingEvaluator(genomeSequenceAccessor, splicingTranscriptSource, splicingAnnotator);
+    }
+
+    @Bean
+    public SplicingAnnotator splicingAnnotator(SplicingPwmData splicingPwmData, SMSCalculator smsCalculator) {
         final SplicingInformationContentCalculator calculator = new SplicingInformationContentCalculator(splicingPwmData);
         final SplicingTranscriptLocator locator = new NaiveSplicingTranscriptLocator(splicingPwmData.getParameters());
 
@@ -138,6 +116,9 @@ public class ThreesAutoConfiguration {
         switch (splicingEvaluatorType) {
             case "sparse":
                 // TODO - simplify
+                final int maxDistanceExonUpstream = properties.getMaxDistanceExonUpstream();
+                final int maxDistanceExonDownstream = properties.getMaxDistanceExonDownstream();
+                LOGGER.info("Analyzing variants up to {} bp upstream and {} bp downstream from exon", maxDistanceExonUpstream, maxDistanceExonDownstream);
                 final String scorerFactoryType = properties.getSparse().getScorerFactoryType();
                 final RawScorerFactory rawScorerFactory = new RawScorerFactory(calculator, smsCalculator, maxDistanceExonDownstream, maxDistanceExonUpstream);
                 final ScorerFactory scorerFactory;
@@ -176,12 +157,12 @@ public class ThreesAutoConfiguration {
 
 
     @Bean
-    public GenomeSequenceAccessor genomeSequenceAccessor(ThreesDataResolver threesDataResolver, String genomeSequenceAccessorType) throws InvalidFastaFileException {
+    public GenomeSequenceAccessor genomeSequenceAccessor(ThreesDataResolver threesDataResolver) throws InvalidFastaFileException {
         final GenomeSequenceAccessorBuilder builder = GenomeSequenceAccessorBuilder.builder()
                 .setFastaPath(threesDataResolver.genomeFastaPath())
                 .setFastaFaiPath(threesDataResolver.genomeFastaFaiPath())
                 .setFastaDictPath(threesDataResolver.genomeFastaDictPath());
-        switch (genomeSequenceAccessorType) {
+        switch (properties.getGenomeSequenceAccessorType()) {
             case "chromosome":
                 LOGGER.info("Using single chromosome genome sequence accessor");
                 builder.setType(GenomeSequenceAccessor.Type.SINGLE_CHROMOSOME);
