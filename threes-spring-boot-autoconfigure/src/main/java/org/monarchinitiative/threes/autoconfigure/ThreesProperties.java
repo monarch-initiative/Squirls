@@ -39,7 +39,7 @@ public class ThreesProperties {
     /**
      * Choose from {sparse, dense}.
      */
-    private String splicingEvaluatorType = "sparse";
+    private String splicingAnnotatorType = "sparse";
 
     // threes.sparse
     @NestedConfigurationProperty
@@ -93,12 +93,12 @@ public class ThreesProperties {
         this.genomeSequenceAccessorType = genomeSequenceAccessorType;
     }
 
-    public String getSplicingEvaluatorType() {
-        return splicingEvaluatorType;
+    public String getSplicingAnnotatorType() {
+        return splicingAnnotatorType;
     }
 
-    public void setSplicingEvaluatorType(String splicingEvaluatorType) {
-        this.splicingEvaluatorType = splicingEvaluatorType;
+    public void setSplicingAnnotatorType(String splicingAnnotatorType) {
+        this.splicingAnnotatorType = splicingAnnotatorType;
     }
 
     public SparseProperties getSparse() {

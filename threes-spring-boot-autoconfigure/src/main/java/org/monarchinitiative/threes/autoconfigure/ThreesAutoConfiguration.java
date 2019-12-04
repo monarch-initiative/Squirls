@@ -112,8 +112,8 @@ public class ThreesAutoConfiguration {
         final SplicingInformationContentCalculator calculator = new SplicingInformationContentCalculator(splicingPwmData);
         final SplicingTranscriptLocator locator = new NaiveSplicingTranscriptLocator(splicingPwmData.getParameters());
 
-        final String splicingEvaluatorType = properties.getSplicingEvaluatorType();
-        switch (splicingEvaluatorType) {
+        final String splicingAnnotatorType = properties.getSplicingAnnotatorType();
+        switch (splicingAnnotatorType) {
             case "sparse":
                 // TODO - simplify
                 final int maxDistanceExonUpstream = properties.getMaxDistanceExonUpstream();
@@ -144,14 +144,14 @@ public class ThreesAutoConfiguration {
                         LOGGER.error("Unknown `threes.sparse.scorer-factory-type` value `{}`", scorerFactoryType);
                         throw new ThreeSRuntimeException(String.format("Unknown `threes.sparse.scorer-factory-type` value: `%s`", scorerFactoryType));
                 }
-                LOGGER.info("Using sparse splicing evaluator");
+                LOGGER.info("Using sparse splicing annotator");
                 return new SparseSplicingAnnotator(scorerFactory, locator);
             case "dense":
-                LOGGER.info("Using dense splicing evaluator");
+                LOGGER.info("Using dense splicing annotator");
                 return new DenseSplicingAnnotator(splicingPwmData);
             default:
-                LOGGER.error("Unknown `threes.splicing-evaluator-type` value `{}`", splicingEvaluatorType);
-                throw new ThreeSRuntimeException(String.format("Unknown `threes.splicing-evaluator-type` value: `%s`", splicingEvaluatorType));
+                LOGGER.error("Unknown `threes.splicing-annotator-type` value `{}`", splicingAnnotatorType);
+                throw new ThreeSRuntimeException(String.format("Unknown `threes.splicing-annotator-type` value: `%s`", splicingAnnotatorType));
         }
     }
 
