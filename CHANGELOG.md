@@ -1,5 +1,16 @@
 # Changelog
 
+## v1.2.0
+✈ rename API class `SplicingEvaluator` to `SplicingAnnotator`
+
+✈ implement `VariantSplicingEvaluator` - high level API interface
+
+✈ rework autoconfiguration:
+- add configuration properties as `ThreesProperties` class,
+- create `@EnableThrees` annotation
+
+✈ add `annotate-pos` command to CLI
+
 ## v1.1.0
 ✈ store all transcripts in a single database table
 - allow query by coordinates and accession ID
