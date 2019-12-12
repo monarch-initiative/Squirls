@@ -9,14 +9,14 @@ import org.monarchinitiative.threes.core.reference.SplicingLocationData;
 import org.monarchinitiative.threes.core.reference.allele.AlleleGenerator;
 import org.monarchinitiative.threes.core.reference.transcript.NaiveSplicingTranscriptLocator;
 import org.monarchinitiative.threes.core.reference.transcript.SplicingTranscriptLocator;
-import org.monarchinitiative.threes.core.scoring.SplicingEvaluator;
+import org.monarchinitiative.threes.core.scoring.SplicingAnnotator;
 import org.monarchinitiative.threes.core.scoring.SplicingPathogenicityData;
 import xyz.ielis.hyperutil.reference.fasta.SequenceInterval;
 
 import java.util.Optional;
 
 
-public class DenseSplicingEvaluator implements SplicingEvaluator {
+public class DenseSplicingAnnotator implements SplicingAnnotator {
 
     private static final int MAX_BP_IN_INTRON = 50;
 
@@ -30,7 +30,7 @@ public class DenseSplicingEvaluator implements SplicingEvaluator {
 
     private final CrypticAcceptorScorer crypticAcceptorScorer;
 
-    public DenseSplicingEvaluator(SplicingPwmData splicingPwmData) {
+    public DenseSplicingAnnotator(SplicingPwmData splicingPwmData) {
         SplicingInformationContentCalculator calculator = new SplicingInformationContentCalculator(splicingPwmData);
         AlleleGenerator generator = new AlleleGenerator(calculator.getSplicingParameters());
 

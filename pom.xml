@@ -7,7 +7,7 @@
     <groupId>org.monarchinitiative.threes</groupId>
     <artifactId>3S</artifactId>
     <packaging>pom</packaging>
-    <version>1.1.0</version>
+    <version>1.2.0</version>
     <modules>
         <module>threes-core</module>
         <module>threes-ingest</module>
@@ -51,12 +51,6 @@
     </parent>
 
     <dependencies>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-configuration-processor</artifactId>
-            <optional>true</optional>
-        </dependency>
-
         <!--        Libraries for testing         -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>

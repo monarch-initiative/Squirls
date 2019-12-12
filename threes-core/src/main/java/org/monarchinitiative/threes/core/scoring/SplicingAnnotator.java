@@ -8,7 +8,7 @@ import xyz.ielis.hyperutil.reference.fasta.SequenceInterval;
  * Splicing evaluator applies appropriate scoring functions to given variant (e.g. variant affecting canonical donor site
  * will not be evaluated with respect to canonical acceptor site).
  */
-public interface SplicingEvaluator {
+public interface SplicingAnnotator {
 
     /**
      * Evaluate {@code variant} with respect to given {@code transcript}.

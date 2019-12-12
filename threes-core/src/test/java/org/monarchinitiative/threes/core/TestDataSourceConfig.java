@@ -13,6 +13,7 @@ import org.monarchinitiative.threes.core.data.sms.FileSMSParser;
 import org.monarchinitiative.threes.core.data.sms.SMSParser;
 import org.monarchinitiative.threes.core.model.SplicingParameters;
 import org.monarchinitiative.threes.core.reference.allele.AlleleGenerator;
+import org.monarchinitiative.threes.core.scoring.dense.DenseSplicingAnnotator;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -86,6 +87,11 @@ public class TestDataSourceConfig {
     @Bean
     public AlleleGenerator alleleGenerator(SplicingParameters splicingParameters) {
         return new AlleleGenerator(splicingParameters);
+    }
+
+    @Bean
+    public DenseSplicingAnnotator denseSplicingEvaluator(SplicingPwmData splicingPwmData) {
+        return new DenseSplicingAnnotator(splicingPwmData);
     }
 
     @Bean

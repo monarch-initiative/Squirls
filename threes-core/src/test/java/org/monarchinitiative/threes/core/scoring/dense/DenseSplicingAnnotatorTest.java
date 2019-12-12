@@ -20,7 +20,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.closeTo;
 
 @SpringBootTest(classes = TestDataSourceConfig.class)
-class DenseSplicingEvaluatorTest {
+class DenseSplicingAnnotatorTest {
 
     private static final double EPSILON = 0.0005;
 
@@ -34,7 +34,7 @@ class DenseSplicingEvaluatorTest {
 
     private SequenceInterval sequenceInterval;
 
-    private DenseSplicingEvaluator evaluator;
+    private DenseSplicingAnnotator evaluator;
 
 
     @BeforeEach
@@ -42,7 +42,7 @@ class DenseSplicingEvaluatorTest {
         transcript = PojosForTesting.getTranscriptWithThreeExons(referenceDictionary);
         sequenceInterval = PojosForTesting.getSequenceIntervalForTranscriptWithThreeExons(referenceDictionary);
 
-        evaluator = new DenseSplicingEvaluator(splicingPwmData);
+        evaluator = new DenseSplicingAnnotator(splicingPwmData);
     }
 
     @Test

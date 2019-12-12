@@ -15,15 +15,17 @@ import org.monarchinitiative.threes.core.data.ic.SplicingPwmData;
 import org.monarchinitiative.threes.core.data.sms.DbSmsDao;
 import org.monarchinitiative.threes.core.reference.transcript.NaiveSplicingTranscriptLocator;
 import org.monarchinitiative.threes.core.reference.transcript.SplicingTranscriptLocator;
-import org.monarchinitiative.threes.core.scoring.SplicingEvaluator;
-import org.monarchinitiative.threes.core.scoring.dense.DenseSplicingEvaluator;
+import org.monarchinitiative.threes.core.scoring.SimpleVariantSplicingEvaluator;
+import org.monarchinitiative.threes.core.scoring.SplicingAnnotator;
+import org.monarchinitiative.threes.core.scoring.VariantSplicingEvaluator;
+import org.monarchinitiative.threes.core.scoring.dense.DenseSplicingAnnotator;
 import org.monarchinitiative.threes.core.scoring.sparse.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.env.Environment;
 import xyz.ielis.hyperutil.reference.fasta.GenomeSequenceAccessor;
 import xyz.ielis.hyperutil.reference.fasta.GenomeSequenceAccessorBuilder;
 import xyz.ielis.hyperutil.reference.fasta.InvalidFastaFileException;
@@ -39,14 +41,21 @@ import java.util.function.UnaryOperator;
  * @author Daniel Danis <daniel.danis@jax.org>
  */
 @Configuration
+@EnableConfigurationProperties({ThreesProperties.class})
 public class ThreesAutoConfiguration {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ThreesAutoConfiguration.class);
 
+    private final ThreesProperties properties;
+
+    public ThreesAutoConfiguration(ThreesProperties properties) {
+        this.properties = properties;
+    }
+
     @Bean
     @ConditionalOnMissingBean(name = "threesDataDirectory")
-    public Path threesDataDirectory(Environment environment) throws UndefinedThreesResourceException {
-        String dataDir = environment.getProperty("threes.data-directory");
+    public Path threesDataDirectory() throws UndefinedThreesResourceException {
+        final String dataDir = properties.getDataDirectory();
         if (dataDir == null || dataDir.isEmpty()) {
             throw new UndefinedThreesResourceException("Path to 3S data directory (`--threes.data-directory`) is not specified");
         }
@@ -60,8 +69,8 @@ public class ThreesAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean(name = "threesGenomeAssembly")
-    public String threesGenomeAssembly(Environment environment) throws UndefinedThreesResourceException {
-        String assembly = environment.getProperty("threes.genome-assembly");
+    public String threesGenomeAssembly() throws UndefinedThreesResourceException {
+        final String assembly = properties.getGenomeAssembly();
         if (assembly == null) {
             throw new UndefinedThreesResourceException("Genome assembly (`--threes.genome-assembly`) is not specified");
         }
@@ -71,40 +80,12 @@ public class ThreesAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean(name = "threesDataVersion")
-    public String threesDataVersion(Environment environment) throws UndefinedThreesResourceException {
-        String dataVersion = environment.getProperty("threes.data-version");
+    public String threesDataVersion() throws UndefinedThreesResourceException {
+        final String dataVersion = properties.getDataVersion();
         if (dataVersion == null) {
             throw new UndefinedThreesResourceException("Data version (`--threes.data-version`) is not specified");
         }
         return dataVersion;
-    }
-
-    @Bean
-    @ConditionalOnMissingBean(name = "scorerFactoryType")
-    public String scorerFactoryType(Environment environment) {
-        return environment.getProperty("threes.sparse.scorer-factory-type", "scaling");
-    }
-
-    @Bean
-    @ConditionalOnMissingBean(name = "genomeSequenceAccessorType")
-    public String genomeSequenceAccessorType(Environment environment) {
-        return environment.getProperty("threes.genome-sequence-accessor-type", "simple");
-    }
-
-
-    @Bean(name = "maxDistanceExonUpstream")
-    public int maxDistanceExonUpstream(Environment environment) {
-        String distance = environment.getProperty("threes.max-distance-exon-upstream", "50");
-        LOGGER.info("Analyzing variants up to {}bp upstream from exon", distance);
-        return Integer.parseInt(distance);
-    }
-
-
-    @Bean(name = "maxDistanceExonDownstream")
-    public int maxDistanceExonDownstream(Environment environment) {
-        String distance = environment.getProperty("threes.max-distance-exon-downstream", "50");
-        LOGGER.info("Analyzing variants up to {}bp downstream from exon", distance);
-        return Integer.parseInt(distance);
     }
 
 
@@ -120,20 +101,25 @@ public class ThreesAutoConfiguration {
     }
 
     @Bean
-    public SplicingEvaluator splicingEvaluator(Environment environment,
-                                               SplicingPwmData splicingPwmData,
-                                               int maxDistanceExonUpstream,
-                                               int maxDistanceExonDownstream,
-                                               SMSCalculator smsCalculator) {
+    public VariantSplicingEvaluator variantSplicingEvaluator(GenomeSequenceAccessor genomeSequenceAccessor,
+                                                             SplicingTranscriptSource splicingTranscriptSource,
+                                                             SplicingAnnotator splicingAnnotator) {
+        return new SimpleVariantSplicingEvaluator(genomeSequenceAccessor, splicingTranscriptSource, splicingAnnotator);
+    }
+
+    @Bean
+    public SplicingAnnotator splicingAnnotator(SplicingPwmData splicingPwmData, SMSCalculator smsCalculator) {
         final SplicingInformationContentCalculator calculator = new SplicingInformationContentCalculator(splicingPwmData);
         final SplicingTranscriptLocator locator = new NaiveSplicingTranscriptLocator(splicingPwmData.getParameters());
 
-
-        final String splicingEvaluatorType = environment.getProperty("threes.splicing-evaluator-type", "sparse");
-        switch (splicingEvaluatorType) {
+        final String splicingAnnotatorType = properties.getSplicingAnnotatorType();
+        switch (splicingAnnotatorType) {
             case "sparse":
                 // TODO - simplify
-                final String scorerFactoryType = environment.getProperty("threes.sparse.scorer-factory-type", "scaling");
+                final int maxDistanceExonUpstream = properties.getMaxDistanceExonUpstream();
+                final int maxDistanceExonDownstream = properties.getMaxDistanceExonDownstream();
+                LOGGER.info("Analyzing variants up to {} bp upstream and {} bp downstream from exon", maxDistanceExonUpstream, maxDistanceExonDownstream);
+                final String scorerFactoryType = properties.getSparse().getScorerFactoryType();
                 final RawScorerFactory rawScorerFactory = new RawScorerFactory(calculator, smsCalculator, maxDistanceExonDownstream, maxDistanceExonUpstream);
                 final ScorerFactory scorerFactory;
                 switch (scorerFactoryType) {
@@ -158,25 +144,25 @@ public class ThreesAutoConfiguration {
                         LOGGER.error("Unknown `threes.sparse.scorer-factory-type` value `{}`", scorerFactoryType);
                         throw new ThreeSRuntimeException(String.format("Unknown `threes.sparse.scorer-factory-type` value: `%s`", scorerFactoryType));
                 }
-                LOGGER.info("Using sparse splicing evaluator");
-                return new SparseSplicingEvaluator(scorerFactory, locator);
+                LOGGER.info("Using sparse splicing annotator");
+                return new SparseSplicingAnnotator(scorerFactory, locator);
             case "dense":
-                LOGGER.info("Using dense splicing evaluator");
-                return new DenseSplicingEvaluator(splicingPwmData);
+                LOGGER.info("Using dense splicing annotator");
+                return new DenseSplicingAnnotator(splicingPwmData);
             default:
-                LOGGER.error("Unknown `threes.splicing-evaluator-type` value `{}`", splicingEvaluatorType);
-                throw new ThreeSRuntimeException(String.format("Unknown `threes.splicing-evaluator-type` value: `%s`", splicingEvaluatorType));
+                LOGGER.error("Unknown `threes.splicing-annotator-type` value `{}`", splicingAnnotatorType);
+                throw new ThreeSRuntimeException(String.format("Unknown `threes.splicing-annotator-type` value: `%s`", splicingAnnotatorType));
         }
     }
 
 
     @Bean
-    public GenomeSequenceAccessor genomeSequenceAccessor(ThreesDataResolver threesDataResolver, String genomeSequenceAccessorType) throws InvalidFastaFileException {
+    public GenomeSequenceAccessor genomeSequenceAccessor(ThreesDataResolver threesDataResolver) throws InvalidFastaFileException {
         final GenomeSequenceAccessorBuilder builder = GenomeSequenceAccessorBuilder.builder()
                 .setFastaPath(threesDataResolver.genomeFastaPath())
                 .setFastaFaiPath(threesDataResolver.genomeFastaFaiPath())
                 .setFastaDictPath(threesDataResolver.genomeFastaDictPath());
-        switch (genomeSequenceAccessorType) {
+        switch (properties.getGenomeSequenceAccessorType()) {
             case "chromosome":
                 LOGGER.info("Using single chromosome genome sequence accessor");
                 builder.setType(GenomeSequenceAccessor.Type.SINGLE_CHROMOSOME);
