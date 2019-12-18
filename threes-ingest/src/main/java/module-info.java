@@ -1,13 +1,14 @@
 module org.monarchinitiative.threes.ingest {
     requires org.monarchinitiative.threes.core;
-
+    requires exomiser.core;
     requires jannovar.core;
-    requires com.google.common;
+
+    requires xyz.ielis.hyperutil.reference;
+    requires htsjdk;
     requires jblas;
     requires commons.io;
+    requires com.google.common;
     requires org.apache.commons.compress;
-    requires htsjdk;
-    requires xyz.ielis.hyperutil.reference;
 
     requires spring.core;
     requires spring.context;
@@ -24,5 +25,4 @@ module org.monarchinitiative.threes.ingest {
     opens org.monarchinitiative.threes.ingest.pwm;
     opens org.monarchinitiative.threes.ingest.reference;
     opens org.monarchinitiative.threes.ingest.transcripts;
-    opens db.migration;
 }

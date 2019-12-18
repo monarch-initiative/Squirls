@@ -1,15 +1,17 @@
 package org.monarchinitiative.threes.ingest.transcripts;
 
 import de.charite.compbio.jannovar.data.JannovarData;
-import de.charite.compbio.jannovar.data.JannovarDataSerializer;
-import de.charite.compbio.jannovar.data.SerializationException;
 import de.charite.compbio.jannovar.reference.TranscriptModel;
+import org.monarchinitiative.exomiser.core.genome.jannovar.JannovarDataSourceLoader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 public class JannovarDataManager {
@@ -27,6 +29,7 @@ public class JannovarDataManager {
      * @return jannovar data manager with loaded jannovar data
      */
     public static JannovarDataManager fromDirectory(Path path) {
+        LOGGER.debug("Analyzing ");
         final File[] files = path.toFile().listFiles(name -> name.getName().endsWith(".ser"));
         if (files != null) {
             return fromPaths(Arrays.stream(files).map(File::toPath).toArray(Path[]::new));
@@ -36,16 +39,23 @@ public class JannovarDataManager {
         }
     }
 
+    /**
+     * @param paths pointing to jannovar cache `*.ser` files
+     * @return instance with loaded Jannovar data
+     */
     public static JannovarDataManager fromPaths(Path... paths) {
-        Set<JannovarData> data = new HashSet<>();
-        for (Path path : paths) {
-            try {
-                final JannovarData jd = new JannovarDataSerializer(path.toFile().getAbsolutePath()).load();
-                data.add(jd);
-            } catch (SerializationException se) {
-                LOGGER.warn("Error deserializing Jannovar data at `{}`", path, se);
-            }
-        }
+        /*
+        Jannovar data parsing is delegated to Exomiser's `JannovarDataSourceLoader` class.
+        This way we handle correctly deserialization of both types of Jannovar cache:
+         - Jannovar's native cache
+         - Exomiser's improved protobuf-based cache .
+
+        Unfortunately, in order to support this, we have to depend on `exomiser.core` JAR which is not yet
+        available in Maven central.
+        */
+        Set<JannovarData> data = Arrays.stream(paths)
+                .map(JannovarDataSourceLoader::loadJannovarData)
+                .collect(Collectors.toSet());
         return new JannovarDataManager(data);
     }
 
