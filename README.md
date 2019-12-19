@@ -10,17 +10,21 @@ mvn clean install
 
 This command will install project files into your local Maven repository.
 
-## Create databases for Exomiser (optional) 
-
-The module `threes-ingest` is responsible for building of a database(s) and for running the Exomiser with 3S.
-
----
-
-**Please note that building of the databases is optional**. You can download the pre-built files from AWS:
+## Download pre-built data files
+Download the pre-built files from AWS:
 - [1902_hg19](https://exomiser-threes.s3.amazonaws.com/1902_hg19.zip)
 - [1902_hg38](https://exomiser-threes.s3.amazonaws.com/1902_hg38.zip)
 
 After unzipping, place the files into your Exomiser data directory. 
+
+
+## Create databases for Exomiser (optional) 
+
+**The building process and this manual are out of sync. The building is being done in a different way. The manual will be updated soon.** 
+
+The module `threes-ingest` is responsible for building of a database(s) and for running the Exomiser with 3S.
+
+---
 
 ### Download required data
 
@@ -83,21 +87,40 @@ Use following starter within your Spring Boot project in order to use the 3S cod
 When using the starter, you have to provide path to 3S data directory, and some other properties as well:
 
 ```
+#
+## Mandatory arguments
+
 # Path to directory with 3S databases & genome FASTA file
 threes.data-directory=
 # genome assembly - choose from {hg19, hg38}
-threes.genome-assembly=
+threes.genome-assembly=hg19
 # Exomiser-like data version
-threes.data-version=
-# jannovar transcript source - choose from {ucsc, refseq, ensembl}
-threes.transcript-source=
+threes.data-version=1902
 
+#
+## Optional arguments
 
-## Uncomment and replace the default values if required
-
-# max distance upstream from exon for variant to be analyzed
+# Variants max n bases away from exon will be evaluated
 #threes.max-distance-exon-upstream=50
-
-# max distance downstream from exon for variant to be analyzed
 #threes.max-distance-exon-downstream=50
+# Type of genome sequence accessor, choose from {simple, chromosome}
+#threes.genome-sequence-accessor-type=simple
+# Choose from {sparse, dense}
+#threes.splicing-annotator-type=sparse
+# Choose from {raw, scaling} scorer factory type to either scale the scores or return raw scores
+# Exomiser requires scaled scores
+#threes.sparse.scorer-factory-type=scaling
 ``` 
+
+## 3S command line interface
+
+Available commands:
+- `annotate-pos` - calculate splicing scores for given variant, e.g. `chr10:123276885C>T`
+  ```bash
+  java -jar threes-cli/target/threes-cli-1.2.0.jar \ 
+    -c path/to/application.properties \
+    annotate-pos \
+    --change "chr10:123276885C>T"
+  ```
+  > The `application.properties` should define all mandatory properties specified in the section above.
+ 
