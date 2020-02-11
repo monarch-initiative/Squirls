@@ -3,7 +3,7 @@ module org.monarchinitiative.threes.core {
     requires jblas;
     requires com.google.common;
     requires java.sql;
-    requires snakeyaml;
+    requires org.yaml.snakeyaml;
     requires htsjdk;
     requires jannovar.core;
     requires xyz.ielis.hyperutil.reference;
