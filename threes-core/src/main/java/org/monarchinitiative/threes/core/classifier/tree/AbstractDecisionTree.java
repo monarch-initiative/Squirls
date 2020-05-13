@@ -1,0 +1,239 @@
+package org.monarchinitiative.threes.core.classifier.tree;
+
+import org.jblas.DoubleMatrix;
+import org.monarchinitiative.threes.core.classifier.AbstractClassifier;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.IntStream;
+
+/**
+ * An implementation of a decision tree that only supports prediction, not training.
+ *
+ * @param <T>
+ */
+public abstract class AbstractDecisionTree<T> extends AbstractClassifier<T> {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractDecisionTree.class);
+
+    /**
+     * In arrays that define this tree, this is the index of the root node.
+     */
+    private static final int ROOT_IDX = 0;
+
+    /**
+     * How many nodes this decision tree consists of.
+     */
+    private final int nNodes;
+
+    /**
+     * Expecting to see a vector with {@link #nNodes} elements containing index of feature that is supposed to be used \
+     * for making a decision in a particular decision node.
+     */
+    private final int[] features;
+
+    /**
+     * Expecting to see a vector with {@link #nNodes} elements containing threshold that is used when making a decision
+     * in a particular decision node.
+     */
+    private final double[] thresholds;
+
+    /**
+     * Expecting to see a vector with {@link #nNodes} elements containing index of left child node for a particular
+     * node. The index corresponds to <code>-1</code> if the node does <em>not</em> have a left child.
+     */
+    private final int[] childrenLeft;
+
+    /**
+     * Expecting to see a vector with {@link #nNodes} elements containing index of right child node for a particular
+     * node. The index corresponds to <code>-1</code> if the node does <em>not</em> have a right child.
+     */
+    private final int[] childrenRight;
+
+    /**
+     * Expecting to see an array/matrix with shape (nNodes, nClasses)
+     */
+    private final int[][] values;
+
+
+    protected AbstractDecisionTree(Builder<?> builder) {
+        super(builder);
+        this.nNodes = builder.nNodes;
+        this.features = toIntArray(builder.features);
+        this.thresholds = toDoubleArray(builder.thresholds);
+        this.childrenLeft = toIntArray(builder.childrenLeft);
+        this.childrenRight = toIntArray(builder.childrenRight);
+        this.values = toNestedIntArray(builder.values);
+        check();
+    }
+
+    /**
+     * Convert list of lists of integers to a nested integer array.
+     *
+     * @param values list of lists of integers
+     * @return nested integer array
+     */
+    private static int[][] toNestedIntArray(List<List<Integer>> values) {
+        final int[][] array = new int[values.size()][];
+        for (int i = 0; i < values.size(); i++) {
+            final List<Integer> innerList = values.get(i);
+            final int[] inner = new int[innerList.size()];
+            for (int j = 0; j < innerList.size(); j++) {
+                inner[j] = innerList.get(j);
+            }
+            array[i] = inner;
+        }
+        return array;
+    }
+
+    /**
+     * Sanity checks for the abstract decision tree.
+     * <p>
+     * We check that:
+     * <ul>
+     *     <li># feature indices matches # nodes</li>
+     *     <li># thresholds matches # nodes</li>
+     *     <li># childrenLeft matches # nodes</li>
+     *     <li># childrenRight matches # nodes</li>
+     *     <li># values matches # nodes</li>
+     *     <li>each value array contains the same number of elements as there are labels in `classes` array</li>
+     * </ul>
+     */
+    private void check() {
+        if (nNodes != features.length) {
+            String msg = String.format("#feature indices (`%d`) must match #nodes (`%d`)", nNodes, features.length);
+            LOGGER.warn(msg);
+            throw new RuntimeException(msg);
+        }
+        if (nNodes != thresholds.length) {
+            String msg = String.format("#thresholds (`%d`) must match #nodes (`%d`)", nNodes, thresholds.length);
+            LOGGER.warn(msg);
+            throw new RuntimeException(msg);
+        }
+        if (nNodes != childrenLeft.length) {
+            String msg = String.format("#childrenLeft (`%d`) must match #nodes (`%d`)", nNodes, childrenLeft.length);
+            LOGGER.warn(msg);
+            throw new RuntimeException(msg);
+        }
+        if (nNodes != childrenRight.length) {
+            String msg = String.format("#childrenRight (`%d`) must match #nodes (`%d`)", nNodes, childrenRight.length);
+            LOGGER.warn(msg);
+            throw new RuntimeException(msg);
+        }
+        if (nNodes != values.length) {
+            String msg = String.format("#values (`%d`) must match #nodes (`%d`)", nNodes, values.length);
+            LOGGER.warn(msg);
+            throw new RuntimeException(msg);
+        }
+        if (!Arrays.stream(values)
+                .map(ia -> ia.length)
+                .allMatch(i -> i == classes.length)) {
+            String msg = "All `values` arrays must have the same length as the `classes` array";
+            LOGGER.warn(msg);
+            throw new RuntimeException(msg);
+        }
+    }
+
+    @Override
+    public int predict(T instance) {
+        final DoubleMatrix proba = predictProba(instance);
+        return classes[proba.argmax()];
+    }
+
+    @Override
+    public DoubleMatrix predictProba(T instance) {
+        return predictProba(instance, ROOT_IDX);
+    }
+
+    /**
+     * Get class probabilities of this instance.
+     *
+     * @param instance instance
+     * @param nodeIdx  index of the  node that is currently being processed
+     * @return class probabilities in the same order as in {@link #classes} attribute
+     */
+    private DoubleMatrix predictProba(T instance, int nodeIdx) {
+        if (childrenLeft[nodeIdx] != childrenRight[nodeIdx]) {
+            /*
+             * Indices of the child nodes are not equal. In context of our model, this means that the node
+             * is a decision node and not a leaf. We make a decision by:
+             * - get threshold
+             * - test feature value and select idx of left/right node
+             * - recurse down
+             */
+            final int feature_idx = features[nodeIdx];
+            final double feature = getFeatureMap().get(feature_idx).apply(instance);
+            final double threshold = thresholds[nodeIdx];
+
+            return (feature <= threshold)
+                    ? predictProba(instance, childrenLeft[nodeIdx])
+                    : predictProba(instance, childrenRight[nodeIdx]);
+        } else {
+            /*
+             * Both indices are -1, this is a leaf node.
+             * We are making a prediction here
+             */
+            // how many samples do we have in this node?
+            final int[] classCounts = values[nodeIdx];
+            int sum = IntStream.of(classCounts).sum();
+            // calculate probability as a fraction of samples existing in this node for each class
+            final DoubleMatrix proba = new DoubleMatrix(classCounts.length);
+            for (int i = 0; i < classCounts.length; i++) {
+                proba.put(i, classCounts[i]);
+            }
+            return proba.div(sum);
+        }
+    }
+
+    protected abstract Map<Integer, Function<T, Double>> getFeatureMap();
+
+    public abstract static class Builder<A extends Builder<A>> extends AbstractClassifier.Builder<A> {
+
+        private int nNodes;
+
+        private List<Integer> features;
+
+        private List<Double> thresholds;
+
+        private List<Integer> childrenLeft;
+
+        private List<Integer> childrenRight;
+
+        private List<List<Integer>> values;
+
+        public A nNodes(int nNodes) {
+            this.nNodes = nNodes;
+            return self();
+        }
+
+        public A features(List<Integer> features) {
+            this.features = List.copyOf(features);
+            return self();
+        }
+
+        public A thresholds(List<Double> thresholds) {
+            this.thresholds = List.copyOf(thresholds);
+            return self();
+        }
+
+        public A childrenLeft(List<Integer> childrenLeft) {
+            this.childrenLeft = List.copyOf(childrenLeft);
+            return self();
+        }
+
+        public A childrenRight(List<Integer> childrenRight) {
+            this.childrenRight = List.copyOf(childrenRight);
+            return self();
+        }
+
+        public A values(List<List<Integer>> values) {
+            this.values = List.copyOf(values);
+            return self();
+        }
+
+    }
+}
