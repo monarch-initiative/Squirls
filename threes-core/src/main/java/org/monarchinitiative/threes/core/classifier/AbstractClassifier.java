@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public abstract class AbstractClassifier<T> implements Classifier<T> {
+public abstract class AbstractClassifier<T extends FeatureData> implements Classifier<T> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractClassifier.class);
 

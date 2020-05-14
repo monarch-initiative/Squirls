@@ -2,13 +2,14 @@ package org.monarchinitiative.threes.core.classifier.tree;
 
 import org.jblas.DoubleMatrix;
 import org.monarchinitiative.threes.core.classifier.AbstractClassifier;
+import org.monarchinitiative.threes.core.classifier.FeatureData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 /**
@@ -16,7 +17,7 @@ import java.util.stream.IntStream;
  *
  * @param <T>
  */
-public abstract class AbstractDecisionTree<T> extends AbstractClassifier<T> {
+public abstract class AbstractDecisionTree<T extends FeatureData> extends AbstractClassifier<T> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractDecisionTree.class);
 
@@ -146,6 +147,14 @@ public abstract class AbstractDecisionTree<T> extends AbstractClassifier<T> {
 
     @Override
     public DoubleMatrix predictProba(T instance) {
+        if (!instance.getFeatureNames().containsAll(getFeatureIndices().values())) {
+            // instance does not contain all the required features
+            String msg = String.format("Missing at least one required feature. Required: `%s`, Provided: `%s`",
+                    getFeatureIndices().values().stream().collect(Collectors.joining(",", "[", "]")),
+                    instance.getFeatureNames().stream().collect(Collectors.joining(",", "[", "]")));
+            LOGGER.warn(msg);
+            throw new RuntimeException(msg);
+        }
         return predictProba(instance, ROOT_IDX);
     }
 
@@ -165,8 +174,11 @@ public abstract class AbstractDecisionTree<T> extends AbstractClassifier<T> {
              * - test feature value and select idx of left/right node
              * - recurse down
              */
-            final int feature_idx = features[nodeIdx];
-            final double feature = getFeatureMap().get(feature_idx).apply(instance);
+            final int featureIdx = features[nodeIdx];
+            final String featureName = getFeatureIndices().get(featureIdx);
+
+            @SuppressWarnings("OptionalGetWithoutIsPresent") // we check that we have the feature name upstream
+            final double feature = instance.getFeature(featureName, Double.class).get();
             final double threshold = thresholds[nodeIdx];
 
             return (feature <= threshold)
@@ -189,7 +201,7 @@ public abstract class AbstractDecisionTree<T> extends AbstractClassifier<T> {
         }
     }
 
-    protected abstract Map<Integer, Function<T, Double>> getFeatureMap();
+    protected abstract Map<Integer, String> getFeatureIndices();
 
     public abstract static class Builder<A extends Builder<A>> extends AbstractClassifier.Builder<A> {
 

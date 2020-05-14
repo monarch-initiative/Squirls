@@ -23,7 +23,7 @@ public class TestTreeInstances {
      */
     public static AbstractDecisionTree<FeatureData> getTreeOne() {
         // dtc = DecisionTreeClassifier(random_state=50, max_depth=3).fit(X,y)
-        return SimpleDecisionTree.builder()
+        return IrisDecisionTree.builder()
                 .nNodes(9)
                 .classes(List.of(0, 1, 2))
                 .childrenLeft(List.of(1, -1, 3, 4, -1, -1, 7, -1, -1))
@@ -57,7 +57,7 @@ public class TestTreeInstances {
      * @return tree <code>one</code>
      */
     public static AbstractDecisionTree<FeatureData> getRandomForestTreeOne() {
-        return SimpleDecisionTree.builder()
+        return IrisDecisionTree.builder()
                 .nNodes(5)
                 .classes(List.of(0, 1, 2))
                 .childrenLeft(List.of(1, 2, -1, -1, -1))
@@ -87,7 +87,7 @@ public class TestTreeInstances {
      * @return tree <code>two</code>
      */
     public static AbstractDecisionTree<FeatureData> getRandomForestTreeTwo() {
-        return SimpleDecisionTree.builder()
+        return IrisDecisionTree.builder()
                 .nNodes(5)
                 .classes(List.of(0, 1, 2))
                 .childrenLeft(List.of(1, -1, 3, -1, -1))

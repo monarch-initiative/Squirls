@@ -3,7 +3,6 @@ package org.monarchinitiative.threes.core.classifier.tree;
 import org.monarchinitiative.threes.core.classifier.FeatureData;
 
 import java.util.Map;
-import java.util.function.Function;
 
 public class DonorSplicingDecisionTree extends AbstractDecisionTree<FeatureData> {
 
@@ -16,19 +15,18 @@ public class DonorSplicingDecisionTree extends AbstractDecisionTree<FeatureData>
     }
 
     @Override
-    protected Map<Integer, Function<FeatureData, Double>> getFeatureMap() {
+    protected Map<Integer, String> getFeatureIndices() {
         /*
          * This is the order of features for donor classifier:
          * ['donor_offset', 'canonical_donor', 'cryptic_donor', 'phylop', 'hexamer', 'septamer']
          */
         return Map.of(
-                0, sf -> sf.getFeature(0, Double.class).orElseThrow(RuntimeException::new), // donor_offset
-                1, sf -> sf.getFeature(1, Double.class).orElseThrow(RuntimeException::new), // canonical_donor
-                2, sf -> sf.getFeature(2, Double.class).orElseThrow(RuntimeException::new), // cryptic_donor
-                3, sf -> sf.getFeature(3, Double.class).orElseThrow(RuntimeException::new), // phylop
-                4, sf -> sf.getFeature(4, Double.class).orElseThrow(RuntimeException::new), // hexamer
-                5, sf -> sf.getFeature(5, Double.class).orElseThrow(RuntimeException::new) // septamer
-        );
+                0, "donor_offset",
+                1, "canonical_donor",
+                2, "cryptic_donor",
+                3, "phylop",
+                4, "hexamer",
+                5, "septamer");
     }
 
     public static class Builder extends AbstractDecisionTree.Builder<Builder> {

@@ -3,48 +3,28 @@ package org.monarchinitiative.threes.core.classifier;
 import java.util.Map;
 
 /**
- * This class defines test instances from
+ * This class defines test instances from Iris dataset.
  */
 public class TestBasedOnIrisInstances {
 
     // the first instance of the iris dataset, class 0 (setosa)
-    protected final FeatureData setosaOne = SimpleFeatureData.of(
-            Map.of(0, 5.1,
-                    1, 3.5,
-                    2, 1.4,
-                    3, 0.2));
-
+    protected final FeatureData setosaOne = makeIrisFeature(5.1, 3.5, 1.4, 0.2);
     // the fifth instance of the iris dataset, class 0 (setosa)
-    protected final FeatureData setosaFive = SimpleFeatureData.of(
-            Map.of(0, 5.,
-                    1, 3.6,
-                    2, 1.4,
-                    3, 0.2));
-
+    protected final FeatureData setosaFive = makeIrisFeature(5., 3.6, 1.4, .2);
     // the fifty-first instance of the iris dataset, class 1 (versicolor)
-    protected final FeatureData versicolorOne = SimpleFeatureData.of(
-            Map.of(0, 7.,
-                    1, 3.2,
-                    2, 4.7,
-                    3, 1.4));
-
+    protected final FeatureData versicolorOne = makeIrisFeature(7., 3.2, 4.7, 1.4);
     // the fifty-fifth instance of the iris dataset, class 1 (versicolor)
-    protected final FeatureData versicolorFive = SimpleFeatureData.of(
-            Map.of(0, 6.5,
-                    1, 2.8,
-                    2, 4.6,
-                    3, 1.5));
+    protected final FeatureData versicolorFive = makeIrisFeature(6.5, 2.8, 4.6, 1.5);
     // the 101st instance of the iris dataset, class 2 (virginica)
-    protected final FeatureData virginicaOne = SimpleFeatureData.of(
-            Map.of(0, 6.3,
-                    1, 3.3,
-                    2, 6.,
-                    3, 2.5));
-
+    protected final FeatureData virginicaOne = makeIrisFeature(6.3, 3.3, 6., 2.5);
     // the 105th instance of the iris dataset, class 2 (virginica)
-    protected final FeatureData virginicaFive = SimpleFeatureData.of(
-            Map.of(0, 6.5,
-                    1, 3,
-                    2, 5.8,
-                    3, 2.2));
+    protected final FeatureData virginicaFive = makeIrisFeature(6.5, 3., 5.8, 2.2);
+
+    private static FeatureData makeIrisFeature(double sepalLength, double sepalWidth, double petalLength, double petalWidth) {
+        return SimpleFeatureData.of(Map.of(
+                "sepal_length", sepalLength,
+                "sepal_width", sepalWidth,
+                "petal_length", petalLength,
+                "petal_width", petalWidth));
+    }
 }

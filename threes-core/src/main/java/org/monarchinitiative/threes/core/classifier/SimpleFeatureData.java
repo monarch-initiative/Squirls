@@ -3,26 +3,33 @@ package org.monarchinitiative.threes.core.classifier;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 
 /**
  * POJO that contains all data required by {@link OverlordClassifier}.
  */
 public class SimpleFeatureData implements FeatureData {
 
-    private final Map<Integer, Object> features;
+    private final Map<String, Object> features;
 
-    private SimpleFeatureData(Map<Integer, Object> features) {
+    private SimpleFeatureData(Map<String, Object> features) {
         this.features = features;
     }
 
-    public static SimpleFeatureData of(Map<Integer, Object> features) {
+    public static SimpleFeatureData of(Map<String, Object> features) {
         return new SimpleFeatureData(features);
     }
 
+
     @Override
-    public <T> Optional<T> getFeature(int featureIdx, Class<T> clz) {
-        return features.containsKey(featureIdx)
-                ? Optional.of(clz.cast(features.get(featureIdx)))
+    public Set<String> getFeatureNames() {
+        return features.keySet();
+    }
+
+    @Override
+    public <T> Optional<T> getFeature(String featureName, Class<T> clz) {
+        return features.containsKey(featureName)
+                ? Optional.of(clz.cast(features.get(featureName)))
                 : Optional.empty();
     }
 

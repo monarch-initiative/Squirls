@@ -2,6 +2,7 @@ package org.monarchinitiative.threes.core.classifier.forest;
 
 import org.jblas.DoubleMatrix;
 import org.monarchinitiative.threes.core.classifier.AbstractClassifier;
+import org.monarchinitiative.threes.core.classifier.FeatureData;
 import org.monarchinitiative.threes.core.classifier.tree.AbstractDecisionTree;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,7 +24,7 @@ import java.util.List;
  *
  * @param <T> type of the data point
  */
-public class RandomForest<T> extends AbstractClassifier<T> {
+public class RandomForest<T extends FeatureData> extends AbstractClassifier<T> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RandomForest.class);
 
@@ -35,7 +36,7 @@ public class RandomForest<T> extends AbstractClassifier<T> {
         check();
     }
 
-    public static <A> Builder<A> builder() {
+    public static <A extends FeatureData> Builder<A> builder() {
         return new Builder<>();
     }
 
@@ -69,7 +70,7 @@ public class RandomForest<T> extends AbstractClassifier<T> {
                 .orElseThrow(() -> new RuntimeException("Cannot make predictions with no trees!"));
     }
 
-    public static class Builder<A> extends AbstractClassifier.Builder<Builder<A>> {
+    public static class Builder<A extends FeatureData> extends AbstractClassifier.Builder<Builder<A>> {
 
         private final Collection<AbstractDecisionTree<A>> trees = new ArrayList<>();
 
