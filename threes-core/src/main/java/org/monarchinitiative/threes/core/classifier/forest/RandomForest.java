@@ -73,12 +73,16 @@ public class RandomForest<T> extends AbstractClassifier<T> {
 
         private final Collection<AbstractDecisionTree<A>> trees = new ArrayList<>();
 
-        @Override
-        protected RandomForest<A> build() {
-            return new RandomForest<>(this);
+        private Builder() {
+            // private no-op
         }
 
-        public Builder<A> trees(Collection<AbstractDecisionTree<A>> trees) {
+        public Builder<A> addTree(AbstractDecisionTree<A> tree) {
+            this.trees.add(tree);
+            return self();
+        }
+
+        public Builder<A> addTrees(Collection<AbstractDecisionTree<A>> trees) {
             this.trees.addAll(List.copyOf(trees));
             return self();
         }
@@ -86,6 +90,11 @@ public class RandomForest<T> extends AbstractClassifier<T> {
         @Override
         protected Builder<A> self() {
             return this;
+        }
+
+        @Override
+        public RandomForest<A> build() {
+            return new RandomForest<>(this);
         }
     }
 

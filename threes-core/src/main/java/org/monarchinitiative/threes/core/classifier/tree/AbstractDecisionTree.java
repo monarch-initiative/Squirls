@@ -205,6 +205,10 @@ public abstract class AbstractDecisionTree<T> extends AbstractClassifier<T> {
 
         private List<List<Integer>> values;
 
+        protected Builder() {
+            // protected no-op
+        }
+
         public A nNodes(int nNodes) {
             this.nNodes = nNodes;
             return self();

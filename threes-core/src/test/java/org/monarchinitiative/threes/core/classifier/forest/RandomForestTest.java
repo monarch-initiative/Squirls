@@ -3,8 +3,8 @@ package org.monarchinitiative.threes.core.classifier.forest;
 import org.jblas.DoubleMatrix;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.monarchinitiative.threes.core.classifier.ClassifierTestBasedOnIrisInstances;
 import org.monarchinitiative.threes.core.classifier.FeatureData;
+import org.monarchinitiative.threes.core.classifier.TestBasedOnIrisInstances;
 import org.monarchinitiative.threes.core.classifier.TestTreeInstances;
 
 import java.util.List;
@@ -12,7 +12,7 @@ import java.util.List;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 
-class RandomForestTest extends ClassifierTestBasedOnIrisInstances {
+class RandomForestTest extends TestBasedOnIrisInstances {
 
     private RandomForest<FeatureData> forest;
 
@@ -21,7 +21,7 @@ class RandomForestTest extends ClassifierTestBasedOnIrisInstances {
         // this test consists of two trees only
         forest = RandomForest.<FeatureData>builder()
                 .classes(List.of(0, 1, 2))
-                .trees(List.of(TestTreeInstances.getRandomForestTreeOne(),
+                .addTrees(List.of(TestTreeInstances.getRandomForestTreeOne(),
                         TestTreeInstances.getRandomForestTreeTwo()))
                 .build();
     }

@@ -3,6 +3,8 @@ package org.monarchinitiative.threes.core.classifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public abstract class AbstractClassifier<T> implements Classifier<T> {
@@ -65,10 +67,19 @@ public abstract class AbstractClassifier<T> implements Classifier<T> {
 
     public abstract static class Builder<A extends Builder<A>> {
 
-        private List<Integer> classes;
+        private final List<Integer> classes = new ArrayList<>();
+
+        protected Builder() {
+            // protected no-op
+        }
 
         public A classes(List<Integer> classes) {
-            this.classes = List.copyOf(classes);
+            this.classes.addAll(classes);
+            return self();
+        }
+
+        public A classes(Integer... classes) {
+            this.classes.addAll(Arrays.asList(classes));
             return self();
         }
 

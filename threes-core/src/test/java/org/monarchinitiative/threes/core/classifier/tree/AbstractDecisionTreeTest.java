@@ -3,8 +3,8 @@ package org.monarchinitiative.threes.core.classifier.tree;
 import org.jblas.DoubleMatrix;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.monarchinitiative.threes.core.classifier.ClassifierTestBasedOnIrisInstances;
 import org.monarchinitiative.threes.core.classifier.FeatureData;
+import org.monarchinitiative.threes.core.classifier.TestBasedOnIrisInstances;
 import org.monarchinitiative.threes.core.classifier.TestTreeInstances;
 
 import static org.hamcrest.CoreMatchers.is;
@@ -28,7 +28,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
  * </pre>
  * and the test compares output value of Java implementation with the output above.
  */
-class AbstractDecisionTreeTest extends ClassifierTestBasedOnIrisInstances {
+class AbstractDecisionTreeTest extends TestBasedOnIrisInstances {
 
     private AbstractDecisionTree<FeatureData> tree;
 

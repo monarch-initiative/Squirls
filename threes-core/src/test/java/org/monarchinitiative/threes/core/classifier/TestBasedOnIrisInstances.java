@@ -5,7 +5,7 @@ import java.util.Map;
 /**
  * This class defines test instances from
  */
-public class ClassifierTestBasedOnIrisInstances {
+public class TestBasedOnIrisInstances {
 
     // the first instance of the iris dataset, class 0 (setosa)
     protected final FeatureData setosaOne = SimpleFeatureData.of(
