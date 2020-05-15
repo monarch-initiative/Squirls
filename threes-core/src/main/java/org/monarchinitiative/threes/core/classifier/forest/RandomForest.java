@@ -10,6 +10,8 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * This class uses a collection of {@link AbstractDecisionTree}s to perform classification of a {@link T} instance.
@@ -57,6 +59,14 @@ public class RandomForest<T extends FeatureData> extends AbstractClassifier<T> {
     }
 
     @Override
+    public Set<String> usedFeatureNames() {
+        return trees.stream()
+                .map(AbstractDecisionTree::usedFeatureNames)
+                .flatMap(Collection::stream)
+                .collect(Collectors.toSet());
+    }
+
+    @Override
     public int predict(T instance) {
         final DoubleMatrix proba = predictProba(instance);
         return classes[proba.argmax()];
@@ -66,8 +76,10 @@ public class RandomForest<T extends FeatureData> extends AbstractClassifier<T> {
     public DoubleMatrix predictProba(final T instance) {
         return trees.parallelStream() // why not, what the heck
                 .map(tree -> tree.predictProba(instance))
-                .reduce((left, right) -> left.add(right).div(2.)) // calculate mean
-                .orElseThrow(() -> new RuntimeException("Cannot make predictions with no trees!"));
+                .reduce(DoubleMatrix::concatVertically)
+                .map(DoubleMatrix::columnMeans)
+                // this should not happen since we check for that in the constructor
+                .orElseThrow(() -> new RuntimeException("Hoops, there is no tree in the forest!"));
     }
 
     public static class Builder<A extends FeatureData> extends AbstractClassifier.Builder<Builder<A>> {

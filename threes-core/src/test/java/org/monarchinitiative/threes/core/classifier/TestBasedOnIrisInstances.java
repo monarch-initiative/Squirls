@@ -21,10 +21,10 @@ public class TestBasedOnIrisInstances {
     protected final FeatureData virginicaFive = makeIrisFeature(6.5, 3., 5.8, 2.2);
 
     private static FeatureData makeIrisFeature(double sepalLength, double sepalWidth, double petalLength, double petalWidth) {
-        return SimpleFeatureData.of(Map.of(
+        return FeatureData.builder().addFeatures(Map.of(
                 "sepal_length", sepalLength,
                 "sepal_width", sepalWidth,
                 "petal_length", petalLength,
-                "petal_width", petalWidth));
+                "petal_width", petalWidth)).build();
     }
 }

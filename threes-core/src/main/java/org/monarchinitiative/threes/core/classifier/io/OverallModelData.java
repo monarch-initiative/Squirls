@@ -6,24 +6,8 @@ public class OverallModelData {
 
     private double donorThreshold;
     private double acceptorThreshold;
-    private RandomForestTransferModel donorClf;
-    private RandomForestTransferModel acceptorClf;
-
-    public RandomForestTransferModel getDonorClf() {
-        return donorClf;
-    }
-
-    public void setDonorClf(RandomForestTransferModel donorClf) {
-        this.donorClf = donorClf;
-    }
-
-    public RandomForestTransferModel getAcceptorClf() {
-        return acceptorClf;
-    }
-
-    public void setAcceptorClf(RandomForestTransferModel acceptorClf) {
-        this.acceptorClf = acceptorClf;
-    }
+    private PipelineTransferModel donorClf;
+    private PipelineTransferModel acceptorClf;
 
     public double getDonorThreshold() {
         return donorThreshold;
@@ -39,6 +23,22 @@ public class OverallModelData {
 
     public void setAcceptorThreshold(double acceptorThreshold) {
         this.acceptorThreshold = acceptorThreshold;
+    }
+
+    public PipelineTransferModel getDonorClf() {
+        return donorClf;
+    }
+
+    public void setDonorClf(PipelineTransferModel donorClf) {
+        this.donorClf = donorClf;
+    }
+
+    public PipelineTransferModel getAcceptorClf() {
+        return acceptorClf;
+    }
+
+    public void setAcceptorClf(PipelineTransferModel acceptorClf) {
+        this.acceptorClf = acceptorClf;
     }
 
     @Override

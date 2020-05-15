@@ -1,9 +1,8 @@
 package org.monarchinitiative.threes.core.classifier.io;
 
-import org.monarchinitiative.threes.core.classifier.FeatureData;
-import org.monarchinitiative.threes.core.classifier.OverlordClassifier;
-import org.monarchinitiative.threes.core.classifier.SimpleOverlordClassifier;
+import org.monarchinitiative.threes.core.classifier.*;
 import org.monarchinitiative.threes.core.classifier.forest.RandomForest;
+import org.monarchinitiative.threes.core.classifier.impute.SplicingDataImputer;
 import org.monarchinitiative.threes.core.classifier.tree.AcceptorSplicingDecisionTree;
 import org.monarchinitiative.threes.core.classifier.tree.DonorSplicingDecisionTree;
 import org.yaml.snakeyaml.Yaml;
@@ -15,35 +14,54 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+/**
+ * This class deserializes {@link OverlordClassifier} from a YAML file.
+ */
 public class Deserializer {
 
-    public static OverlordClassifier deserialize(InputStream is) throws IOException {
-        OverallModelData data = deserializeOverallModelData(is);
+    private Deserializer() {
+        // private no-op
+    }
 
+    public static OverlordClassifier deserialize(InputStream is) throws IOException {
+        return deserialize(deserializeOverallModelData(is));
+    }
+
+    public static OverlordClassifier deserialize(OverallModelData data) {
         return SimpleOverlordClassifier.builder()
-                .donorClf(deserializeDonorClassifier(data.getDonorClf()))
+                .donorClf(deserializeDonorPipeline(data.getDonorClf()))
                 .donorThreshold(data.getDonorThreshold())
-                .acceptorClf(deserializeAcceptorClassifier(data.getAcceptorClf()))
+                .acceptorClf(deserializeAcceptorPipeline(data.getAcceptorClf()))
                 .acceptorThreshold(data.getAcceptorThreshold())
                 .build();
     }
 
-    static OverallModelData deserializeOverallModelData(InputStream is) {
+    public static OverallModelData deserializeOverallModelData(InputStream is) {
         Yaml yaml = new Yaml(new Constructor(OverallModelData.class));
         return yaml.load(is);
     }
 
-    static RandomForest<FeatureData> deserializeDonorClassifier(RandomForestTransferModel rfModel) {
-        return RandomForest.<FeatureData>builder()
-                .classes(rfModel.getClasses())
-                .addTrees(rfModel.getTrees().values().stream()
-                        .map(toDonorClassifierTree(rfModel.getClasses()))
-                        .collect(Collectors.toList())
-                )
+    static Classifier<FeatureData> deserializeDonorPipeline(PipelineTransferModel ptm) {
+        return Pipeline.builder()
+                .transformer(deserializeImputer(ptm.getFeatureNames(), ptm.getFeatureStatistics()))
+                .classifier(deserializeDonorClassifier(ptm.getRf()))
                 .build();
     }
 
-    private static Function<DecisionTreeTransferModel, DonorSplicingDecisionTree> toDonorClassifierTree(List<Integer> classes) {
+    private static FeatureTransformer<FeatureData> deserializeImputer(List<String> featureNames, List<Double> featureStatistics) {
+        return new SplicingDataImputer(featureNames, featureStatistics);
+    }
+
+    public static RandomForest<FeatureData> deserializeDonorClassifier(RandomForestTransferModel rfModel) {
+        return RandomForest.builder()
+                .classes(rfModel.getClasses())
+                .addTrees(rfModel.getTrees().values().stream()
+                        .map(toDonorClassifierTree(rfModel.getClasses()))
+                        .collect(Collectors.toList()))
+                .build();
+    }
+
+    public static Function<DecisionTreeTransferModel, DonorSplicingDecisionTree> toDonorClassifierTree(List<Integer> classes) {
         return md -> DonorSplicingDecisionTree.builder()
                 .classes(classes)
                 .nNodes(md.getNodeCount())
@@ -55,17 +73,23 @@ public class Deserializer {
                 .build();
     }
 
-    private static RandomForest<FeatureData> deserializeAcceptorClassifier(RandomForestTransferModel rfModel) {
-        return RandomForest.<FeatureData>builder()
-                .classes(rfModel.getClasses())
-                .addTrees(rfModel.getTrees().values().stream()
-                        .map(toAcceptorClassifierTree(rfModel.getClasses()))
-                        .collect(Collectors.toList())
-                )
+    static Classifier<FeatureData> deserializeAcceptorPipeline(PipelineTransferModel ptm) {
+        return Pipeline.builder()
+                .transformer(deserializeImputer(ptm.getFeatureNames(), ptm.getFeatureStatistics()))
+                .classifier(deserializeAcceptorClassifier(ptm.getRf()))
                 .build();
     }
 
-    private static Function<DecisionTreeTransferModel, AcceptorSplicingDecisionTree> toAcceptorClassifierTree(List<Integer> classes) {
+    public static RandomForest<FeatureData> deserializeAcceptorClassifier(RandomForestTransferModel rfModel) {
+        return RandomForest.builder()
+                .classes(rfModel.getClasses())
+                .addTrees(rfModel.getTrees().values().stream()
+                        .map(toAcceptorClassifierTree(rfModel.getClasses()))
+                        .collect(Collectors.toList()))
+                .build();
+    }
+
+    public static Function<DecisionTreeTransferModel, AcceptorSplicingDecisionTree> toAcceptorClassifierTree(List<Integer> classes) {
         return md -> AcceptorSplicingDecisionTree.builder()
                 .classes(classes)
                 .nNodes(md.getNodeCount())

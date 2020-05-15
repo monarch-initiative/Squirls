@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * This class represents a single
+ * This class represents a single decision tree in the transfer format from Python to Java.
  */
 public class DecisionTreeTransferModel {
 
@@ -100,7 +100,7 @@ public class DecisionTreeTransferModel {
 
     @Override
     public String toString() {
-        return "ModelData{" +
+        return "DecisionTreeTransferModel{" +
                 "nodeCount=" + nodeCount +
                 ", childrenLeft=" + childrenLeft +
                 ", childrenRight=" + childrenRight +

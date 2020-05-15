@@ -1,6 +1,5 @@
 package org.monarchinitiative.threes.core.classifier.tree;
 
-import org.jblas.DoubleMatrix;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.monarchinitiative.threes.core.classifier.FeatureData;
@@ -57,12 +56,12 @@ class AbstractDecisionTreeTest extends TestBasedOnIrisInstances {
      */
     @Test
     void predictProba() {
-        assertThat(tree.predictProba(setosaOne), is(new DoubleMatrix(new double[]{1.0, 0., 0.})));
-        assertThat(tree.predictProba(setosaFive), is(new DoubleMatrix(new double[]{1.0, 0., 0.})));
-        assertThat(tree.predictProba(versicolorOne), is(new DoubleMatrix(new double[]{0., .97916667, .02083333})));
-        assertThat(tree.predictProba(versicolorFive), is(new DoubleMatrix(new double[]{0., .97916667, .02083333})));
-        assertThat(tree.predictProba(virginicaOne), is(new DoubleMatrix(new double[]{0., 0., 1.})));
-        assertThat(tree.predictProba(virginicaFive), is(new DoubleMatrix(new double[]{0., 0., 1.})));
+        assertThat(tree.predictProba(setosaOne).toArray(), is(new double[]{1.000, 0.000, 0.}));
+        assertThat(tree.predictProba(setosaFive).toArray(), is(new double[]{1.0, 0., 0.}));
+        assertThat(tree.predictProba(versicolorOne).toArray(), is(new double[]{0., .9791666666666666, .020833333333333332}));
+        assertThat(tree.predictProba(versicolorFive).toArray(), is(new double[]{0., .9791666666666666, .020833333333333332}));
+        assertThat(tree.predictProba(virginicaOne).toArray(), is(new double[]{0., 0., 1.}));
+        assertThat(tree.predictProba(virginicaFive).toArray(), is(new double[]{0., 0., 1.}));
     }
 
     /**

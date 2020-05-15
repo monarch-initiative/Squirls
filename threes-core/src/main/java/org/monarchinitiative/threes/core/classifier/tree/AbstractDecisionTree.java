@@ -9,7 +9,6 @@ import org.slf4j.LoggerFactory;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 /**
@@ -58,7 +57,7 @@ public abstract class AbstractDecisionTree<T extends FeatureData> extends Abstra
     /**
      * Expecting to see an array/matrix with shape (nNodes, nClasses)
      */
-    private final int[][] values;
+    private final int[][] classCounts;
 
 
     protected AbstractDecisionTree(Builder<?> builder) {
@@ -68,7 +67,7 @@ public abstract class AbstractDecisionTree<T extends FeatureData> extends Abstra
         this.thresholds = toDoubleArray(builder.thresholds);
         this.childrenLeft = toIntArray(builder.childrenLeft);
         this.childrenRight = toIntArray(builder.childrenRight);
-        this.values = toNestedIntArray(builder.values);
+        this.classCounts = toNestedIntArray(builder.values);
         check();
     }
 
@@ -125,13 +124,13 @@ public abstract class AbstractDecisionTree<T extends FeatureData> extends Abstra
             LOGGER.warn(msg);
             throw new RuntimeException(msg);
         }
-        if (nNodes != values.length) {
-            String msg = String.format("#values (`%d`) must match #nodes (`%d`)", nNodes, values.length);
+        if (nNodes != classCounts.length) {
+            String msg = String.format("#class counts (`%d`) must match #nodes (`%d`)", nNodes, classCounts.length);
             LOGGER.warn(msg);
             throw new RuntimeException(msg);
         }
-        if (!Arrays.stream(values)
-                .map(ia -> ia.length)
+        if (!Arrays.stream(classCounts)
+                .map(classCount -> classCount.length)
                 .allMatch(i -> i == classes.length)) {
             String msg = "All `values` arrays must have the same length as the `classes` array";
             LOGGER.warn(msg);
@@ -139,22 +138,26 @@ public abstract class AbstractDecisionTree<T extends FeatureData> extends Abstra
         }
     }
 
+    /**
+     * Predict class label for given instance. Expecting to get an instance with all features available.
+     *
+     * @param instance to be used for prediction
+     * @return label of the predicted class
+     */
     @Override
     public int predict(T instance) {
         final DoubleMatrix proba = predictProba(instance);
         return classes[proba.argmax()];
     }
 
+    /**
+     * Predict class probabilities for given instance. Expecting to get an instance with all features available.
+     *
+     * @param instance to be used for prediction
+     * @return label of the predicted class
+     */
     @Override
     public DoubleMatrix predictProba(T instance) {
-        if (!instance.getFeatureNames().containsAll(getFeatureIndices().values())) {
-            // instance does not contain all the required features
-            String msg = String.format("Missing at least one required feature. Required: `%s`, Provided: `%s`",
-                    getFeatureIndices().values().stream().collect(Collectors.joining(",", "[", "]")),
-                    instance.getFeatureNames().stream().collect(Collectors.joining(",", "[", "]")));
-            LOGGER.warn(msg);
-            throw new RuntimeException(msg);
-        }
         return predictProba(instance, ROOT_IDX);
     }
 
@@ -177,8 +180,11 @@ public abstract class AbstractDecisionTree<T extends FeatureData> extends Abstra
             final int featureIdx = features[nodeIdx];
             final String featureName = getFeatureIndices().get(featureIdx);
 
-            @SuppressWarnings("OptionalGetWithoutIsPresent") // we check that we have the feature name upstream
-            final double feature = instance.getFeature(featureName, Double.class).get();
+            /*
+             We should not get null pointer here since we check that we have all the features at the level of
+             OverlordClassifier.
+             */
+            final double feature = instance.getFeature(featureName, Double.class);
             final double threshold = thresholds[nodeIdx];
 
             return (feature <= threshold)
@@ -189,18 +195,24 @@ public abstract class AbstractDecisionTree<T extends FeatureData> extends Abstra
              * Both indices are -1, this is a leaf node.
              * We are making a prediction here
              */
-            // how many samples do we have in this node?
-            final int[] classCounts = values[nodeIdx];
+            // how many samples of each class do we have in this particular node?
+            final int[] classCounts = this.classCounts[nodeIdx];
             int sum = IntStream.of(classCounts).sum();
             // calculate probability as a fraction of samples existing in this node for each class
-            final DoubleMatrix proba = new DoubleMatrix(classCounts.length);
+            final DoubleMatrix proba = new DoubleMatrix(classCounts.length).transpose();
             for (int i = 0; i < classCounts.length; i++) {
-                proba.put(i, classCounts[i]);
+                proba.put(0, i, classCounts[i]);
             }
             return proba.div(sum);
         }
     }
 
+    /**
+     * When the model was trained in python, the feature matrix had columns in certain order. The map returned by this
+     * method translates feature names into the feature order in that feature matrix.
+     *
+     * @return map with mappings from feature matrix id to feature name
+     */
     protected abstract Map<Integer, String> getFeatureIndices();
 
     public abstract static class Builder<A extends Builder<A>> extends AbstractClassifier.Builder<A> {
