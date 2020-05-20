@@ -7,7 +7,7 @@
     <groupId>org.monarchinitiative.threes</groupId>
     <artifactId>3S</artifactId>
     <packaging>pom</packaging>
-    <version>1.2.1-SNAPSHOT</version>
+    <version>1.3.0-SNAPSHOT</version>
     <modules>
         <module>threes-core</module>
         <module>threes-ingest</module>
