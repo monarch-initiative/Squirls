@@ -31,5 +31,6 @@ public interface Classifier<T extends FeatureData> {
      * @throws PredictionException if a required feature is missing or if if there are any other problems in the
      *                             prediction process
      */
+    // TODO - make this binary pathogenicity probability
     DoubleMatrix predictProba(T instance) throws PredictionException;
 }

@@ -1,9 +1,8 @@
 package org.monarchinitiative.threes.autoconfigure;
 
 import org.junit.jupiter.api.Test;
+import org.monarchinitiative.threes.core.scoring.DenseSplicingAnnotator;
 import org.monarchinitiative.threes.core.scoring.SplicingAnnotator;
-import org.monarchinitiative.threes.core.scoring.dense.DenseSplicingAnnotator;
-import org.monarchinitiative.threes.core.scoring.sparse.SparseSplicingAnnotator;
 import org.springframework.beans.factory.BeanCreationException;
 import xyz.ielis.hyperutil.reference.fasta.GenomeSequenceAccessor;
 import xyz.ielis.hyperutil.reference.fasta.SingleChromosomeGenomeSequenceAccessor;
@@ -43,7 +42,7 @@ class ThreesAutoConfigurationTest extends AbstractAutoConfigurationTest {
         assertThat(accessor, is(instanceOf(SingleFastaGenomeSequenceAccessor.class)));
 
         SplicingAnnotator splicingAnnotator = context.getBean("splicingAnnotator", SplicingAnnotator.class);
-        assertThat(splicingAnnotator, is(instanceOf(SparseSplicingAnnotator.class)));
+        assertThat(splicingAnnotator, is(instanceOf(DenseSplicingAnnotator.class)));
     }
 
     @Test

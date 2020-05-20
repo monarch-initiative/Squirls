@@ -1,25 +1,17 @@
 package org.monarchinitiative.threes.autoconfigure;
 
 
-import com.google.common.collect.ImmutableMap;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
-import org.monarchinitiative.threes.core.ThreeSRuntimeException;
-import org.monarchinitiative.threes.core.Utils;
-import org.monarchinitiative.threes.core.calculators.ic.SplicingInformationContentCalculator;
-import org.monarchinitiative.threes.core.calculators.sms.SMSCalculator;
+import org.monarchinitiative.threes.core.VariantSplicingEvaluator;
 import org.monarchinitiative.threes.core.data.DbSplicingTranscriptSource;
 import org.monarchinitiative.threes.core.data.SplicingTranscriptSource;
 import org.monarchinitiative.threes.core.data.ic.DbSplicingPositionalWeightMatrixParser;
 import org.monarchinitiative.threes.core.data.ic.SplicingPwmData;
 import org.monarchinitiative.threes.core.data.sms.DbSmsDao;
-import org.monarchinitiative.threes.core.reference.transcript.NaiveSplicingTranscriptLocator;
-import org.monarchinitiative.threes.core.reference.transcript.SplicingTranscriptLocator;
-import org.monarchinitiative.threes.core.scoring.SimpleVariantSplicingEvaluator;
+import org.monarchinitiative.threes.core.scoring.DenseSplicingAnnotator;
 import org.monarchinitiative.threes.core.scoring.SplicingAnnotator;
-import org.monarchinitiative.threes.core.scoring.VariantSplicingEvaluator;
-import org.monarchinitiative.threes.core.scoring.dense.DenseSplicingAnnotator;
-import org.monarchinitiative.threes.core.scoring.sparse.*;
+import org.monarchinitiative.threes.core.scoring.calculators.sms.SMSCalculator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -34,7 +26,6 @@ import javax.sql.DataSource;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.function.UnaryOperator;
 
 
 /**
@@ -104,55 +95,17 @@ public class ThreesAutoConfiguration {
     public VariantSplicingEvaluator variantSplicingEvaluator(GenomeSequenceAccessor genomeSequenceAccessor,
                                                              SplicingTranscriptSource splicingTranscriptSource,
                                                              SplicingAnnotator splicingAnnotator) {
-        return new SimpleVariantSplicingEvaluator(genomeSequenceAccessor, splicingTranscriptSource, splicingAnnotator);
+        // FIXME: 20. 5. 2020 add classifier bean
+//        return new VariantSplicingEvaluatorImpl(genomeSequenceAccessor, splicingTranscriptSource, splicingAnnotator);
+        return null;
+
     }
 
     @Bean
     public SplicingAnnotator splicingAnnotator(SplicingPwmData splicingPwmData, SMSCalculator smsCalculator) {
-        final SplicingInformationContentCalculator calculator = new SplicingInformationContentCalculator(splicingPwmData);
-        final SplicingTranscriptLocator locator = new NaiveSplicingTranscriptLocator(splicingPwmData.getParameters());
+        LOGGER.info("Using dense splicing annotator");
+        return new DenseSplicingAnnotator(splicingPwmData);
 
-        final String splicingAnnotatorType = properties.getSplicingAnnotatorType();
-        switch (splicingAnnotatorType) {
-            case "sparse":
-                // TODO - simplify
-                final int maxDistanceExonUpstream = properties.getMaxDistanceExonUpstream();
-                final int maxDistanceExonDownstream = properties.getMaxDistanceExonDownstream();
-                LOGGER.info("Analyzing variants up to {} bp upstream and {} bp downstream from exon", maxDistanceExonUpstream, maxDistanceExonDownstream);
-                final String scorerFactoryType = properties.getSparse().getScorerFactoryType();
-                final RawScorerFactory rawScorerFactory = new RawScorerFactory(calculator, smsCalculator, maxDistanceExonDownstream, maxDistanceExonUpstream);
-                final ScorerFactory scorerFactory;
-                switch (scorerFactoryType) {
-                    case "scaling":
-                        LOGGER.info("Using scaling scorer factory");
-                        ImmutableMap<ScoringStrategy, UnaryOperator<Double>> scalerMap = ImmutableMap.<ScoringStrategy, UnaryOperator<Double>>builder()
-                                .put(ScoringStrategy.CANONICAL_DONOR, Utils.sigmoidScaler(0.29, -1))
-                                .put(ScoringStrategy.CRYPTIC_DONOR, Utils.sigmoidScaler(-5.52, -1))
-                                .put(ScoringStrategy.CRYPTIC_DONOR_IN_CANONICAL_POSITION, Utils.sigmoidScaler(-4.56, -1))
-                                .put(ScoringStrategy.CANONICAL_ACCEPTOR, Utils.sigmoidScaler(-1.50, -1))
-                                .put(ScoringStrategy.CRYPTIC_ACCEPTOR, Utils.sigmoidScaler(-8.24, -1))
-                                .put(ScoringStrategy.CRYPTIC_ACCEPTOR_IN_CANONICAL_POSITION, Utils.sigmoidScaler(-4.59, -1))
-                                .put(ScoringStrategy.SMS, UnaryOperator.identity()) // TODO - decide how to scale the scores
-                                .build();
-                        scorerFactory = new ScalingScorerFactory(rawScorerFactory, scalerMap);
-                        break;
-                    case "raw":
-                        LOGGER.info("Using raw scorer factory");
-                        scorerFactory = rawScorerFactory;
-                        break;
-                    default:
-                        LOGGER.error("Unknown `threes.sparse.scorer-factory-type` value `{}`", scorerFactoryType);
-                        throw new ThreeSRuntimeException(String.format("Unknown `threes.sparse.scorer-factory-type` value: `%s`", scorerFactoryType));
-                }
-                LOGGER.info("Using sparse splicing annotator");
-                return new SparseSplicingAnnotator(scorerFactory, locator);
-            case "dense":
-                LOGGER.info("Using dense splicing annotator");
-                return new DenseSplicingAnnotator(splicingPwmData);
-            default:
-                LOGGER.error("Unknown `threes.splicing-annotator-type` value `{}`", splicingAnnotatorType);
-                throw new ThreeSRuntimeException(String.format("Unknown `threes.splicing-annotator-type` value: `%s`", splicingAnnotatorType));
-        }
     }
 
 

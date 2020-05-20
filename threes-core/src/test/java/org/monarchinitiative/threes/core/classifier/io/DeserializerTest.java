@@ -1,7 +1,7 @@
 package org.monarchinitiative.threes.core.classifier.io;
 
-import org.jblas.DoubleMatrix;
 import org.junit.jupiter.api.Test;
+import org.monarchinitiative.threes.core.Prediction;
 import org.monarchinitiative.threes.core.classifier.FeatureData;
 import org.monarchinitiative.threes.core.classifier.OverlordClassifier;
 import org.monarchinitiative.threes.core.classifier.TestBasedOnIrisInstances;
@@ -17,6 +17,7 @@ import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.closeTo;
 import static org.hamcrest.Matchers.contains;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class DeserializerTest extends TestBasedOnIrisInstances {
 
@@ -40,10 +41,11 @@ class DeserializerTest extends TestBasedOnIrisInstances {
                 "hexamer", 1.696948,
                 "septamer", 1.5778)).build();
         assertThat(clf, is(notNullValue()));
-        assertThat(clf.predict(instance), is(1));
 
-        final DoubleMatrix proba = clf.predictProba(instance);
-        assertThat(proba.toArray(), is(new double[]{0.8370020726421241, 0.16299792735787583}));
+        final Prediction prediction = clf.predict(instance);
+        assertTrue(prediction.isPathogenic());
+        assertThat(prediction.getPathoProba(), is(closeTo(0.162997, 1E-5)));
+//        assertThat(proba.toArray(), is(new double[]{0.8370020726421241, 0.16299792735787583})); // TODO - remove
     }
 
     @Test

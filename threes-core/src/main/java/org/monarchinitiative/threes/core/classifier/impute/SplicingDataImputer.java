@@ -48,7 +48,7 @@ public class SplicingDataImputer implements FeatureTransformer<FeatureData> {
             LOGGER.warn(msg);
             throw new PredictionException(msg);
         }
-        final FeatureData.Builder<FeatureData> builder = fd.toBuilder();
+        final FeatureData.Builder builder = fd.toBuilder();
 
         for (String featureName : fd.getFeatureNames()) {
             final Double value = fd.getFeature(featureName, Double.class);

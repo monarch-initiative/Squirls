@@ -28,7 +28,7 @@ public class Deserializer {
     }
 
     public static OverlordClassifier deserialize(OverallModelData data) {
-        return SimpleOverlordClassifier.builder()
+        return OverlordClassifierImpl.builder()
                 .donorClf(deserializeDonorPipeline(data.getDonorClf()))
                 .donorThreshold(data.getDonorThreshold())
                 .acceptorClf(deserializeAcceptorPipeline(data.getAcceptorClf()))

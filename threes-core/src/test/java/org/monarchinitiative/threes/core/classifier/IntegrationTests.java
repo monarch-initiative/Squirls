@@ -3,6 +3,7 @@ package org.monarchinitiative.threes.core.classifier;
 import org.jblas.DoubleMatrix;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.monarchinitiative.threes.core.Prediction;
 import org.monarchinitiative.threes.core.classifier.forest.RandomForest;
 import org.monarchinitiative.threes.core.classifier.io.DecisionTreeTransferModel;
 import org.monarchinitiative.threes.core.classifier.io.Deserializer;
@@ -16,6 +17,8 @@ import java.util.List;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.closeTo;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * These tests assume that deserialization works and test predicted probabilities and classes for selected data points
@@ -136,21 +139,29 @@ public class IntegrationTests {
     /*
     Tests at level of classifier
      */
-
     @Test
     void ensembleClfPredictProba() throws Exception {
         final OverlordClassifier overlord = Deserializer.deserialize(overallModelData);
 
-        DoubleMatrix doubleMatrix = overlord.predictProba(TestVariantInstances.pathogenicDonor()).transpose();
-        assertThat(doubleMatrix.toArray(), is(new double[]{.2126336336231357, .7873663663768643}));
+        Prediction prediction = overlord.predict(TestVariantInstances.pathogenicDonor());
+        assertTrue(prediction.isPathogenic());
+        assertThat(prediction.getPathoProba(), is(closeTo(.7873663663768643, 1E-5)));
+//        DoubleMatrix doubleMatrix = overlord.predictProba(TestVariantInstances.pathogenicDonor()).transpose();
+//        assertThat(doubleMatrix.toArray(), is(new double[]{.2126336336231357, .7873663663768643}));
 
-        doubleMatrix = overlord.predictProba(TestVariantInstances.donorCryptic()).transpose();
-        assertThat(doubleMatrix.toArray(), is(new double[]{.7756036656384153, .22439633436158474}));
+        prediction = overlord.predict(TestVariantInstances.donorCryptic());
+        assertTrue(prediction.isPathogenic());
+        assertThat(prediction.getPathoProba(), is(closeTo(.22439633436158474, 1E-5)));
+//        assertThat(doubleMatrix.toArray(), is(new double[]{.7756036656384153, .22439633436158474}));
 
-        doubleMatrix = overlord.predictProba(TestVariantInstances.pathogenicAcceptor()).transpose();
-        assertThat(doubleMatrix.toArray(), is(new double[]{.6273108291286154, .3726891708713847}));
+        prediction = overlord.predict(TestVariantInstances.pathogenicAcceptor());
+        assertTrue(prediction.isPathogenic());
+        assertThat(prediction.getPathoProba(), is(closeTo(.3726891708713847, 1E-5)));
+//        assertThat(doubleMatrix.toArray(), is(new double[]{.6273108291286154, .3726891708713847}));
 
-        doubleMatrix = overlord.predictProba(TestVariantInstances.acceptorCryptic()).transpose();
-        assertThat(doubleMatrix.toArray(), is(new double[]{.9775198781743903, .022480121825609604}));
+        prediction = overlord.predict(TestVariantInstances.acceptorCryptic());
+        assertTrue(prediction.isPathogenic());
+        assertThat(prediction.getPathoProba(), is(closeTo(.022480121825609604, 1E-5)));
+//        assertThat(doubleMatrix.toArray(), is(new double[]{.9775198781743903, .022480121825609604}));
     }
 }

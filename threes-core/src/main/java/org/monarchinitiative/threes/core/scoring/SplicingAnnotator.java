@@ -1,12 +1,12 @@
 package org.monarchinitiative.threes.core.scoring;
 
 import de.charite.compbio.jannovar.reference.GenomeVariant;
+import org.monarchinitiative.threes.core.classifier.FeatureData;
 import org.monarchinitiative.threes.core.model.SplicingTranscript;
 import xyz.ielis.hyperutil.reference.fasta.SequenceInterval;
 
 /**
- * Splicing evaluator applies appropriate scoring functions to given variant (e.g. variant affecting canonical donor site
- * will not be evaluated with respect to canonical acceptor site).
+ * Splicing evaluator applies scoring functions to given variant.
  */
 public interface SplicingAnnotator {
 
@@ -18,5 +18,5 @@ public interface SplicingAnnotator {
      * @param sequenceInterval reference sequence
      * @return splicing pathogenicity data
      */
-    SplicingPathogenicityData evaluate(GenomeVariant variant, SplicingTranscript transcript, SequenceInterval sequenceInterval);
+    FeatureData evaluate(GenomeVariant variant, SplicingTranscript transcript, SequenceInterval sequenceInterval);
 }
