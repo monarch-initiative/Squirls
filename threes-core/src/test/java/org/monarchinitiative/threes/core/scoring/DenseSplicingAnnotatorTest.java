@@ -12,8 +12,11 @@ import org.monarchinitiative.threes.core.classifier.FeatureData;
 import org.monarchinitiative.threes.core.data.ic.SplicingPwmData;
 import org.monarchinitiative.threes.core.model.SplicingTranscript;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.SpringBootTest;
 import xyz.ielis.hyperutil.reference.fasta.SequenceInterval;
+
+import java.util.Map;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -30,6 +33,14 @@ class DenseSplicingAnnotatorTest {
     @Autowired
     private SplicingPwmData splicingPwmData;
 
+    @Qualifier("hexamerMap")
+    @Autowired
+    private Map<String, Double> hexamerMap;
+
+    @Qualifier("septamerMap")
+    @Autowired
+    private Map<String, Double> septamerMap;
+
     private SplicingTranscript transcript;
 
     private SequenceInterval sequenceInterval;
@@ -42,7 +53,7 @@ class DenseSplicingAnnotatorTest {
         transcript = PojosForTesting.getTranscriptWithThreeExons(referenceDictionary);
         sequenceInterval = PojosForTesting.getSequenceIntervalForTranscriptWithThreeExons(referenceDictionary);
 
-        evaluator = new DenseSplicingAnnotator(splicingPwmData);
+        evaluator = new DenseSplicingAnnotator(splicingPwmData, hexamerMap, septamerMap);
     }
 
     @Test
@@ -65,6 +76,10 @@ class DenseSplicingAnnotatorTest {
         assertThat(data.getFeature("canonical_donor", Double.class), is(closeTo(-1.7926, EPSILON)));
         assertThat(data.getFeature("cryptic_acceptor", Double.class), is(closeTo(-8.1159, EPSILON)));
         assertThat(data.getFeature("canonical_acceptor", Double.class), is(closeTo(0., EPSILON)));
+        assertThat(data.getFeature("hexamer", Double.class), is(closeTo(1.306309, EPSILON)));
+        assertThat(data.getFeature("septamer", Double.class), is(closeTo(.339600, EPSILON)));
+
+        System.out.println(data);
     }
 
     @Test

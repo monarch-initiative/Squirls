@@ -8,12 +8,12 @@ import org.monarchinitiative.threes.core.data.DbSplicingTranscriptSource;
 import org.monarchinitiative.threes.core.data.SplicingTranscriptSource;
 import org.monarchinitiative.threes.core.data.ic.DbSplicingPositionalWeightMatrixParser;
 import org.monarchinitiative.threes.core.data.ic.SplicingPwmData;
-import org.monarchinitiative.threes.core.data.sms.DbSmsDao;
+import org.monarchinitiative.threes.core.data.kmer.DbKMerDao;
 import org.monarchinitiative.threes.core.scoring.DenseSplicingAnnotator;
 import org.monarchinitiative.threes.core.scoring.SplicingAnnotator;
-import org.monarchinitiative.threes.core.scoring.calculators.sms.SMSCalculator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -102,12 +102,15 @@ public class ThreesAutoConfiguration {
     }
 
     @Bean
-    public SplicingAnnotator splicingAnnotator(SplicingPwmData splicingPwmData, SMSCalculator smsCalculator) {
+    public SplicingAnnotator splicingAnnotator(SplicingPwmData splicingPwmData, DbKMerDao dbKMerDao) {
         LOGGER.info("Using dense splicing annotator");
-        return new DenseSplicingAnnotator(splicingPwmData);
-
+        return new DenseSplicingAnnotator(splicingPwmData, dbKMerDao.getHexamerMap(), dbKMerDao.getSeptamerMap());
     }
 
+    @Bean
+    public DbKMerDao dbKMerDao(@Qualifier("threesDatasource") DataSource threesDatasource) {
+        return new DbKMerDao(threesDatasource);
+    }
 
     @Bean
     public GenomeSequenceAccessor genomeSequenceAccessor(ThreesDataResolver threesDataResolver) throws InvalidFastaFileException {
@@ -125,22 +128,13 @@ public class ThreesAutoConfiguration {
                 LOGGER.info("Using simple genome sequence accessor");
                 break;
         }
-        return builder
-                .build();
+        return builder.build();
     }
 
     @Bean
     public SplicingPwmData splicingPwmData(DataSource threesDatasource) {
         return new DbSplicingPositionalWeightMatrixParser(threesDatasource).getSplicingPwmData();
     }
-
-
-    @Bean
-    public SMSCalculator smsCalculator(DataSource threesDatasource) {
-        final DbSmsDao dbSmsDao = new DbSmsDao(threesDatasource);
-        return new SMSCalculator(dbSmsDao.getSeptamerMap());
-    }
-
 
     @Bean
     public DataSource threesDatasource(ThreesDataResolver threesDataResolver) {

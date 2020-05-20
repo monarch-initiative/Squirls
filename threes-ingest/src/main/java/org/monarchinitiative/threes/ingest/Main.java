@@ -107,7 +107,10 @@ public class Main implements ApplicationRunner {
             }
 
             ThreesDataBuilder.buildDatabase(genomeBuildDir, genomeUrl, jannovarDbDir,
-                    ingestProperties.getSplicingInformationContentMatrixPath(), versionedAssembly);
+                    ingestProperties.getSplicingInformationContentMatrixPath(),
+                    ingestProperties.getHexamersTsvPath(),
+                    ingestProperties.getSeptamersTsvPath(),
+                    versionedAssembly);
 
         } catch (ThreeSException e) {
             LOGGER.error("Error: ", e);

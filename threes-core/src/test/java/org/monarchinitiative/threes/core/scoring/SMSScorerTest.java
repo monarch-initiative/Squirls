@@ -1,6 +1,6 @@
 package org.monarchinitiative.threes.core.scoring;
 
-class SMSScorerTest extends ScorerTestBase {
+class SMSScorerTest extends CalculatorTestBase {
 
     /*
 

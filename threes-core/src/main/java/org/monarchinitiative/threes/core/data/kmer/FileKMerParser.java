@@ -1,4 +1,4 @@
-package org.monarchinitiative.threes.core.data.sms;
+package org.monarchinitiative.threes.core.data.kmer;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,19 +14,19 @@ import java.util.function.Predicate;
 /**
  *
  */
-public class FileSMSParser implements SMSParser {
+public class FileKMerParser {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(FileSMSParser.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(FileKMerParser.class);
 
-    private final Map<String, Double> septamerMap;
+    private final Map<String, Double> kmerMap;
 
-    public FileSMSParser(Path septamerTsvPath) throws IOException {
-        septamerMap = parseSeptamerTsvFile(septamerTsvPath);
+    public FileKMerParser(Path kmerTsvPath) throws IOException {
+        kmerMap = parseKmerTsvFile(kmerTsvPath);
     }
 
-    private static Map<String, Double> parseSeptamerTsvFile(Path septamerTsvPath) throws IOException {
-        Map<String, Double> septamerMap = new HashMap<>();
-        try (BufferedReader reader = Files.newBufferedReader(septamerTsvPath)) {
+    private static Map<String, Double> parseKmerTsvFile(Path kmerTsvPath) throws IOException {
+        Map<String, Double> kmerMap = new HashMap<>();
+        try (BufferedReader reader = Files.newBufferedReader(kmerTsvPath)) {
             reader.lines()
                     .filter(emptyLines()).filter(comments())
                     .forEach(line -> {
@@ -44,11 +44,11 @@ public class FileSMSParser implements SMSParser {
                             LOGGER.warn("Invalid score {} in line {}", tokens[1], line);
                             return;
                         }
-                        septamerMap.put(seq, score);
+                        kmerMap.put(seq, score);
                     });
 
         }
-        return septamerMap;
+        return kmerMap;
     }
 
     private static Predicate<? super String> comments() {
@@ -59,8 +59,7 @@ public class FileSMSParser implements SMSParser {
         return line -> !line.isEmpty();
     }
 
-    @Override
-    public Map<String, Double> getSeptamerMap() {
-        return septamerMap;
+    public Map<String, Double> getKmerMap() {
+        return kmerMap;
     }
 }

@@ -16,9 +16,9 @@ import xyz.ielis.hyperutil.reference.fasta.SequenceInterval;
  *
  */
 @SpringBootTest(classes = {TestDataSourceConfig.class})
-public class ScorerTestBase {
+public class CalculatorTestBase {
 
-    protected static final double EPSILON = 0.0005;
+    protected static final double EPSILON = 5E-4;
 
     @Autowired
     protected SplicingParameters splicingParameters;

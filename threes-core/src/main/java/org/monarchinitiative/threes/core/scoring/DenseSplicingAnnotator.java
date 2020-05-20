@@ -12,6 +12,7 @@ import org.monarchinitiative.threes.core.reference.transcript.SplicingTranscript
 import org.monarchinitiative.threes.core.scoring.calculators.ic.SplicingInformationContentCalculator;
 import xyz.ielis.hyperutil.reference.fasta.SequenceInterval;
 
+import java.util.Map;
 import java.util.Optional;
 
 
@@ -29,7 +30,13 @@ public class DenseSplicingAnnotator implements SplicingAnnotator {
 
     private final CrypticAcceptorFeatureCalculator crypticAcceptorScorer;
 
-    public DenseSplicingAnnotator(SplicingPwmData splicingPwmData) {
+    private final HexamerFeatureCalculator hexamerFeatureCalculator;
+
+    private final SeptamerFeatureCalculator septamerFeatureCalculator;
+
+    public DenseSplicingAnnotator(SplicingPwmData splicingPwmData,
+                                  Map<String, Double> hexamerMap,
+                                  Map<String, Double> septamerMap) {
         SplicingInformationContentCalculator calculator = new SplicingInformationContentCalculator(splicingPwmData);
         AlleleGenerator generator = new AlleleGenerator(calculator.getSplicingParameters());
 
@@ -39,6 +46,9 @@ public class DenseSplicingAnnotator implements SplicingAnnotator {
         canonicalAcceptorScorer = new CanonicalAcceptorFeatureCalculator(calculator, generator);
         crypticDonorScorer = new CrypticDonorFeatureCalculator(calculator, generator);
         crypticAcceptorScorer = new CrypticAcceptorFeatureCalculator(calculator, generator);
+
+        hexamerFeatureCalculator = new HexamerFeatureCalculator(hexamerMap);
+        septamerFeatureCalculator = new SeptamerFeatureCalculator(septamerMap);
     }
 
     @Override
@@ -77,6 +87,11 @@ public class DenseSplicingAnnotator implements SplicingAnnotator {
             builder.addFeature("canonical_acceptor", 0.);
             builder.addFeature("cryptic_acceptor", 0.);
         }
+
+        final double hexamerScore = hexamerFeatureCalculator.score(null, variant, sequenceInterval);
+        builder.addFeature("hexamer", hexamerScore);
+        final double septamerScore = septamerFeatureCalculator.score(null, variant, sequenceInterval);
+        builder.addFeature("septamer", septamerScore);
 
         // TODO - add other features - donor_offset, acceptor_offset, SMS, ESRSeq, PhyloP
 

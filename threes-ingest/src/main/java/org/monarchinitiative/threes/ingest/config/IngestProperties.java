@@ -59,8 +59,13 @@ public class IngestProperties {
         return getPathOrThrow(propertyKey, String.format("'%s' has not been specified", propertyKey));
     }
 
+    public Path getHexamersTsvPath() {
+        String propertyKey = "hexamer-tsv-path";
+        return getPathOrThrow(propertyKey, String.format("'%s' has not been specified", propertyKey));
+    }
+
     public Path getSeptamersTsvPath() {
-        String propertyKey = "sms-tsv-path";
+        String propertyKey = "septamer-tsv-path";
         return getPathOrThrow(propertyKey, String.format("'%s' has not been specified", propertyKey));
     }
 

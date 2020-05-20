@@ -27,8 +27,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
 
 @SpringBootTest(classes = {TestDataSourceConfig.class})
-@Sql(scripts = {"file:src/test/resources/org/monarchinitiative/threes/ingest/pwm/create_pwm_tables.sql",
-        "file:src/test/resources/org/monarchinitiative/threes/ingest/transcripts/create_transcript_intron_exon_tables.sql"})
+@Sql(scripts = {"pwm/create_pwm_tables.sql", "transcripts/create_transcript_intron_exon_tables.sql"})
 class ThreesDataBuilderTest {
 
     private static final String ASSEMBLY = "hg19";

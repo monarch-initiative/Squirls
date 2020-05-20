@@ -1,36 +1,42 @@
-package org.monarchinitiative.threes.core.scoring.calculators.sms;
+package org.monarchinitiative.threes.core.scoring;
 
-
+import de.charite.compbio.jannovar.reference.GenomePosition;
+import de.charite.compbio.jannovar.reference.GenomeVariant;
+import de.charite.compbio.jannovar.reference.Strand;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
-import org.monarchinitiative.threes.core.TestDataSourceConfig;
-import org.monarchinitiative.threes.core.data.sms.SMSParser;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.beans.factory.annotation.Qualifier;
+
+import java.util.Map;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.closeTo;
 
+class SeptamerFeatureCalculatorTest extends CalculatorTestBase {
 
-@SpringBootTest(classes = TestDataSourceConfig.class)
-class SMSCalculatorTest {
-
-    private static final double EPSILON = 0.0005;
-
+    @Qualifier("septamerMap")
     @Autowired
-    private SMSParser smsParser;
+    private Map<String, Double> septamerMap;
 
-    private SMSCalculator calculator;
 
+    private SeptamerFeatureCalculator calculator;
 
     @BeforeEach
-    void setUp() {
-        calculator = new SMSCalculator(smsParser.getSeptamerMap());
+    public void setUp() {
+        super.setUp();
+        calculator = new SeptamerFeatureCalculator(septamerMap);
     }
 
+    @Test
+    void score() {
+        GenomeVariant variant = new GenomeVariant(new GenomePosition(referenceDictionary, Strand.FWD, 1, 1201), "t", "g");
+        final double score = calculator.score(null, variant, sequenceInterval);
+        assertThat(score, is(closeTo(.317399, EPSILON)));
+    }
 
     @ParameterizedTest
     @CsvSource({"AAAAAAA,-0.016", "TTTTTTG,-0.4587", "TTTCACC,0.1455"})
@@ -73,5 +79,4 @@ class SMSCalculatorTest {
         double s = calculator.scoreSequence("ACGTACGTAAC#TTA");
         assertThat(s, is(Double.NaN));
     }
-
 }

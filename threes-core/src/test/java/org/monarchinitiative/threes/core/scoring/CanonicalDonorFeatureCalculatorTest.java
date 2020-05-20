@@ -10,7 +10,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.closeTo;
 
-class CanonicalDonorFeatureCalculatorTest extends ScorerTestBase {
+class CanonicalDonorFeatureCalculatorTest extends CalculatorTestBase {
 
     private CanonicalDonorFeatureCalculator scorer;
 

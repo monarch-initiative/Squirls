@@ -1,4 +1,4 @@
-package org.monarchinitiative.threes.core.data.sms;
+package org.monarchinitiative.threes.core.data.kmer;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,24 +11,19 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- *
- */
-public class DbSmsDao implements SMSParser {
+public class DbKMerDao {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(DbSmsDao.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(DbKMerDao.class);
 
     private final DataSource dataSource;
 
-    public DbSmsDao(DataSource dataSource) {
+    public DbKMerDao(DataSource dataSource) {
         this.dataSource = dataSource;
     }
 
-    @Override
-    public Map<String, Double> getSeptamerMap() {
+    private Map<String, Double> getScoreMap(String sql) {
         Map<String, Double> septamerMap = new HashMap<>();
 
-        String sql = "select SEQUENCE, SCORE from SPLICING.SEPTAMERS";
         try (Connection connection = dataSource.getConnection();
              PreparedStatement ps = connection.prepareStatement(sql)) {
             try (ResultSet rs = ps.executeQuery()) {
@@ -40,9 +35,17 @@ public class DbSmsDao implements SMSParser {
             }
 
         } catch (SQLException e) {
-            LOGGER.warn("Error occured during loading septamer map from database", e);
+            LOGGER.warn("Error occurred during loading score map from database", e);
         }
 
         return septamerMap;
+    }
+
+    public Map<String, Double> getHexamerMap() {
+        return getScoreMap("select SEQUENCE, SCORE from SPLICING.HEXAMERS");
+    }
+
+    public Map<String, Double> getSeptamerMap() {
+        return getScoreMap("select SEQUENCE, SCORE from SPLICING.SEPTAMERS");
     }
 }
