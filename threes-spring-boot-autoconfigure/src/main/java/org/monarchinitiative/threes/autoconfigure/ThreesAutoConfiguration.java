@@ -4,6 +4,10 @@ package org.monarchinitiative.threes.autoconfigure;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import org.monarchinitiative.threes.core.VariantSplicingEvaluator;
+import org.monarchinitiative.threes.core.VariantSplicingEvaluatorImpl;
+import org.monarchinitiative.threes.core.classifier.OverlordClassifier;
+import org.monarchinitiative.threes.core.classifier.io.Deserializer;
+import org.monarchinitiative.threes.core.data.ClassifierDao;
 import org.monarchinitiative.threes.core.data.DbSplicingTranscriptSource;
 import org.monarchinitiative.threes.core.data.SplicingTranscriptSource;
 import org.monarchinitiative.threes.core.data.ic.DbSplicingPositionalWeightMatrixParser;
@@ -24,10 +28,13 @@ import xyz.ielis.hyperutil.reference.fasta.GenomeSequenceAccessorBuilder;
 import xyz.ielis.hyperutil.reference.fasta.InvalidFastaFileException;
 
 import javax.sql.DataSource;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Collection;
+import java.util.stream.Collectors;
 
 
 /**
@@ -110,10 +117,9 @@ public class ThreesAutoConfiguration {
     @Bean
     public VariantSplicingEvaluator variantSplicingEvaluator(GenomeSequenceAccessor genomeSequenceAccessor,
                                                              SplicingTranscriptSource splicingTranscriptSource,
-                                                             SplicingAnnotator splicingAnnotator) {
-        // FIXME: 20. 5. 2020 add classifier bean
-//        return new VariantSplicingEvaluatorImpl(genomeSequenceAccessor, splicingTranscriptSource, splicingAnnotator);
-        return null;
+                                                             SplicingAnnotator splicingAnnotator,
+                                                             OverlordClassifier classifier) {
+        return new VariantSplicingEvaluatorImpl(genomeSequenceAccessor, splicingTranscriptSource, splicingAnnotator, classifier);
 
     }
 
@@ -130,6 +136,24 @@ public class ThreesAutoConfiguration {
         return new DbKMerDao(threesDatasource);
     }
 
+    @Bean
+    public OverlordClassifier classifier(@Qualifier("threesDatasource") DataSource threesDatasource) throws CorruptedThreesResourceException {
+        final ClassifierDao clfDao = new ClassifierDao(threesDatasource);
+        final String clfVersion = properties.getClassifierVersion();
+        LOGGER.info("Reading classifier `{}` from database", clfVersion);
+        final byte[] bytes = clfDao.readClassifier(clfVersion);
+        if (bytes == null) {
+            final Collection<String> avail = clfDao.getAvailableClassifiers();
+            throw new CorruptedThreesResourceException(String.format("Classifier `%s` is not available. Available: %s",
+                    clfVersion, avail.stream().sorted().collect(Collectors.joining(", ", "[ ", " ]"))));
+        }
+
+        try {
+            return Deserializer.deserialize(new ByteArrayInputStream(bytes));
+        } catch (IOException e) {
+            throw new CorruptedThreesResourceException(e.getMessage());
+        }
+    }
 
     @Bean
     public GenomeSequenceAccessor genomeSequenceAccessor(ThreesDataResolver threesDataResolver) throws InvalidFastaFileException {

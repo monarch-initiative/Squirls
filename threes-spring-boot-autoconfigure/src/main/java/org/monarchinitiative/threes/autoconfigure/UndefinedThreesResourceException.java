@@ -1,7 +1,8 @@
 package org.monarchinitiative.threes.autoconfigure;
 
 /**
- *
+ * This exception is thrown during autoconfiguration, if an information that should have been provided by the user
+ * is missing.
  */
 public class UndefinedThreesResourceException extends Exception {
 

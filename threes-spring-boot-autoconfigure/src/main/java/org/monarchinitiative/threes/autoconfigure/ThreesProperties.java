@@ -34,7 +34,16 @@ public class ThreesProperties {
      * Choose from {simple, single}.
      */
     private String genomeSequenceAccessorType = "simple";
+
+    /**
+     * Path to bigwig file with genome-wide PhyloP scores.
+     */
     private String phylopBigwigPath;
+
+    /**
+     * Version of the classifier to use.
+     */
+    private String classifierVersion = "v1";
 
     public String getPhylopBigwigPath() {
         return phylopBigwigPath;
@@ -92,4 +101,11 @@ public class ThreesProperties {
         this.genomeSequenceAccessorType = genomeSequenceAccessorType;
     }
 
+    public String getClassifierVersion() {
+        return classifierVersion;
+    }
+
+    public void setClassifierVersion(String classifierVersion) {
+        this.classifierVersion = classifierVersion;
+    }
 }

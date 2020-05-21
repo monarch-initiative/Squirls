@@ -8,6 +8,9 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 
 public class ClassifierDao {
 
@@ -17,6 +20,22 @@ public class ClassifierDao {
 
     public ClassifierDao(DataSource dataSource) {
         this.dataSource = dataSource;
+    }
+
+    public Collection<String> getAvailableClassifiers() {
+        String sql = "select version from SPLICING.CLASSIFIER";
+        final Set<String> versions = new HashSet<>();
+        try (final Connection connection = dataSource.getConnection();
+             final PreparedStatement ps = connection.prepareStatement(sql)) {
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next())
+                    versions.add(rs.getString("version"));
+            }
+
+        } catch (SQLException e) {
+            LOGGER.warn("Error: ", e);
+        }
+        return versions;
     }
 
     public int storeClassifier(String version, byte[] clfBytes) {

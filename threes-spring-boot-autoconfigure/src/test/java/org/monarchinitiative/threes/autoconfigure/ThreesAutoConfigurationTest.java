@@ -1,6 +1,8 @@
 package org.monarchinitiative.threes.autoconfigure;
 
 import org.junit.jupiter.api.Test;
+import org.monarchinitiative.threes.core.VariantSplicingEvaluator;
+import org.monarchinitiative.threes.core.VariantSplicingEvaluatorImpl;
 import org.monarchinitiative.threes.core.scoring.DenseSplicingAnnotator;
 import org.monarchinitiative.threes.core.scoring.SplicingAnnotator;
 import org.springframework.beans.factory.BeanCreationException;
@@ -22,6 +24,9 @@ class ThreesAutoConfigurationTest extends AbstractAutoConfigurationTest {
      */
     private static final Path SMALL_BW = TEST_DATA.getParent().resolve("small.bw");
 
+    /**
+     * Test how the normal configuration should look like and beans that should be available
+     */
     @Test
     void testAllPropertiesSupplied() {
         load(ThreesAutoConfiguration.class, "threes.data-directory=" + TEST_DATA,
@@ -48,6 +53,9 @@ class ThreesAutoConfigurationTest extends AbstractAutoConfigurationTest {
 
         SplicingAnnotator splicingAnnotator = context.getBean("splicingAnnotator", SplicingAnnotator.class);
         assertThat(splicingAnnotator, is(instanceOf(DenseSplicingAnnotator.class)));
+
+        final VariantSplicingEvaluator evaluator = context.getBean("variantSplicingEvaluator", VariantSplicingEvaluator.class);
+        assertThat(evaluator, is(instanceOf(VariantSplicingEvaluatorImpl.class)));
     }
 
     @Test
@@ -118,5 +126,17 @@ class ThreesAutoConfigurationTest extends AbstractAutoConfigurationTest {
                 "threes.data-version=1710"
         ));
         assertThat(thrown.getMessage(), containsString("Path to PhyloP bigwig file is not specified"));
+    }
+
+    @Test
+    void testMissingClassifier() {
+        Throwable thrown = assertThrows(BeanCreationException.class, () -> load(ThreesAutoConfiguration.class,
+                "threes.data-directory=" + TEST_DATA,
+                "threes.genome-assembly=hg19",
+                "threes.data-version=1710",
+                "threes.phylop-bigwig-path=" + SMALL_BW,
+                "threes.classifier-version=puddle"
+        ));
+        assertThat(thrown.getMessage(), containsString("Classifier `puddle` is not available. Available: [ v1 ]"));
     }
 }

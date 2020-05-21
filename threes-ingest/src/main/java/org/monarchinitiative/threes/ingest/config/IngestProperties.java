@@ -25,7 +25,7 @@ public class IngestProperties {
 
     // config.classifier
     @NestedConfigurationProperty
-    private ClassifierProperties classifier;
+    private ClassifierProperties classifier = new ClassifierProperties();
 
     public IngestProperties(Environment env) {
         this.env = env;

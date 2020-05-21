@@ -11,13 +11,12 @@ import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.util.Collection;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.nullValue;
+import static org.hamcrest.Matchers.*;
 
 @SpringBootTest(classes = {TestDataSourceConfig.class})
-@Sql(scripts = {"create_classifier_table.sql"})
 class ClassifierDaoTest {
 
 
@@ -32,6 +31,7 @@ class ClassifierDaoTest {
     }
 
     @Test
+    @Sql(scripts = {"create_classifier_table.sql"})
     void storeClassifier() throws Exception {
         final byte[] payload = new byte[]{-128, 6, 0, 88, 127};
         final String version = "v1";
@@ -69,5 +69,15 @@ class ClassifierDaoTest {
 
         final byte[] na = dao.readClassifier("v2");
         assertThat(na, is(nullValue()));
+    }
+
+    @Test
+    @Sql(scripts = "create_classifier_table.sql",
+            statements = "insert into SPLICING.CLASSIFIER(version, data) " +
+                    " values ('beef_duet', 'BEEFBEEF'), ('beef_quartet', 'BEEFBEEFBEEFBEEF')")
+    void getAllClassifiers() {
+        final Collection<String> clfs = dao.getAvailableClassifiers();
+        assertThat(clfs, hasSize(2));
+        assertThat(clfs, hasItems("beef_duet", "beef_quartet"));
     }
 }
