@@ -1,7 +1,6 @@
 package org.monarchinitiative.threes.autoconfigure;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.boot.context.properties.NestedConfigurationProperty;
 
 @ConfigurationProperties(prefix = "threes")
 public class ThreesProperties {
@@ -35,15 +34,15 @@ public class ThreesProperties {
      * Choose from {simple, single}.
      */
     private String genomeSequenceAccessorType = "simple";
+    private String phylopBigwigPath;
 
-    /**
-     * Choose from {sparse, dense}.
-     */
-    private String splicingAnnotatorType = "sparse";
+    public String getPhylopBigwigPath() {
+        return phylopBigwigPath;
+    }
 
-    // threes.sparse
-    @NestedConfigurationProperty
-    private SparseProperties sparse = new SparseProperties();
+    public void setPhylopBigwigPath(String phylopBigwigPath) {
+        this.phylopBigwigPath = phylopBigwigPath;
+    }
 
     public int getMaxDistanceExonUpstream() {
         return maxDistanceExonUpstream;
@@ -93,19 +92,4 @@ public class ThreesProperties {
         this.genomeSequenceAccessorType = genomeSequenceAccessorType;
     }
 
-    public String getSplicingAnnotatorType() {
-        return splicingAnnotatorType;
-    }
-
-    public void setSplicingAnnotatorType(String splicingAnnotatorType) {
-        this.splicingAnnotatorType = splicingAnnotatorType;
-    }
-
-    public SparseProperties getSparse() {
-        return sparse;
-    }
-
-    public void setSparse(SparseProperties sparse) {
-        this.sparse = sparse;
-    }
 }

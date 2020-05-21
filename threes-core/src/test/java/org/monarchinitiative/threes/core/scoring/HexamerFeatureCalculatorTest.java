@@ -24,7 +24,7 @@ class HexamerFeatureCalculatorTest extends CalculatorTestBase {
     private HexamerFeatureCalculator calculator;
 
     @BeforeEach
-    public void setUp() {
+    public void setUp() throws Exception {
         super.setUp();
         calculator = new HexamerFeatureCalculator(hexamerMap);
     }

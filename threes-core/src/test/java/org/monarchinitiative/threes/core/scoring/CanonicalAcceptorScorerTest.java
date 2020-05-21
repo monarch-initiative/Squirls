@@ -16,7 +16,7 @@ class CanonicalAcceptorScorerTest extends CalculatorTestBase {
     private CanonicalAcceptorFeatureCalculator scorer;
 
     @BeforeEach
-    public void setUp() {
+    public void setUp() throws Exception {
         super.setUp();
         scorer = new CanonicalAcceptorFeatureCalculator(calculator, generator);
     }

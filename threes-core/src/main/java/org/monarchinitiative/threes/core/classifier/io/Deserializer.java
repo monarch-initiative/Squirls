@@ -22,6 +22,7 @@ public class Deserializer {
     private Deserializer() {
         // private no-op
     }
+    // TODO - add deserialization from database
 
     public static OverlordClassifier deserialize(InputStream is) throws IOException {
         return deserialize(deserializeOverallModelData(is));

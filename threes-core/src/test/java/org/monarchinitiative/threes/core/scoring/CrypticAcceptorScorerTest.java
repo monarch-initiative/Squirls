@@ -16,7 +16,7 @@ class CrypticAcceptorScorerTest extends CalculatorTestBase {
 
 
     @BeforeEach
-    public void setUp() {
+    public void setUp() throws Exception {
         super.setUp();
         scorer = new CrypticAcceptorFeatureCalculator(calculator, generator);
     }

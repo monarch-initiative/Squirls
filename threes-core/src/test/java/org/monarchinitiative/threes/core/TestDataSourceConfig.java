@@ -13,6 +13,8 @@ import org.monarchinitiative.threes.core.reference.allele.AlleleGenerator;
 import org.monarchinitiative.threes.core.scoring.DenseSplicingAnnotator;
 import org.monarchinitiative.threes.core.scoring.SplicingAnnotator;
 import org.monarchinitiative.threes.core.scoring.calculators.ic.SplicingInformationContentCalculator;
+import org.monarchinitiative.threes.core.scoring.conservation.BigWigAccessor;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -92,8 +94,9 @@ public class TestDataSourceConfig {
     @Bean
     public SplicingAnnotator denseSplicingEvaluator(SplicingPwmData splicingPwmData,
                                                     Map<String, Double> hexamerMap,
-                                                    Map<String, Double> septamerMap) {
-        return new DenseSplicingAnnotator(splicingPwmData, hexamerMap, septamerMap);
+                                                    Map<String, Double> septamerMap,
+                                                    @Qualifier("phylopAccessor") BigWigAccessor phylopAccessor) {
+        return new DenseSplicingAnnotator(splicingPwmData, hexamerMap, septamerMap, phylopAccessor);
     }
 
     @Bean
@@ -106,5 +109,11 @@ public class TestDataSourceConfig {
     public Map<String, Double> septamerMap() throws IOException {
         Path path = Paths.get(TestDataSourceConfig.class.getResource("data/kmer/septamer-scores.tsv").getPath());
         return new FileKMerParser(path).getKmerMap();
+    }
+
+    @Bean
+    public BigWigAccessor phylopAccessor() throws IOException {
+        Path path = Paths.get(TestDataSourceConfig.class.getResource("scoring/conservation/small.bw").getPath());
+        return new BigWigAccessor(path);
     }
 }

@@ -15,7 +15,7 @@ class CrypticDonorScorerTest extends CalculatorTestBase {
     private CrypticDonorFeatureCalculator scorer;
 
     @BeforeEach
-    public void setUp() {
+    public void setUp() throws Exception {
         super.setUp();
         scorer = new CrypticDonorFeatureCalculator(calculator, generator);
     }

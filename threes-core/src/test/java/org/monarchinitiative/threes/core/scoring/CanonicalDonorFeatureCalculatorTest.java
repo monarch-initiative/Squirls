@@ -16,7 +16,7 @@ class CanonicalDonorFeatureCalculatorTest extends CalculatorTestBase {
 
 
     @BeforeEach
-    public void setUp() {
+    public void setUp() throws Exception {
         super.setUp();
         scorer = new CanonicalDonorFeatureCalculator(calculator, generator);
     }

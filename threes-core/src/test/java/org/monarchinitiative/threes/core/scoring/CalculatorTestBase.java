@@ -38,7 +38,7 @@ public class CalculatorTestBase {
 
 
     @BeforeEach
-    public void setUp() {
+    public void setUp() throws Exception {
         st = PojosForTesting.getTranscriptWithThreeExons(referenceDictionary);
         sequenceInterval = PojosForTesting.getSequenceIntervalForTranscriptWithThreeExons(referenceDictionary);
     }

@@ -11,6 +11,7 @@ import org.monarchinitiative.threes.core.data.ic.SplicingPwmData;
 import org.monarchinitiative.threes.core.data.kmer.DbKMerDao;
 import org.monarchinitiative.threes.core.scoring.DenseSplicingAnnotator;
 import org.monarchinitiative.threes.core.scoring.SplicingAnnotator;
+import org.monarchinitiative.threes.core.scoring.conservation.BigWigAccessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -23,6 +24,7 @@ import xyz.ielis.hyperutil.reference.fasta.GenomeSequenceAccessorBuilder;
 import xyz.ielis.hyperutil.reference.fasta.InvalidFastaFileException;
 
 import javax.sql.DataSource;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -68,7 +70,6 @@ public class ThreesAutoConfiguration {
         return assembly;
     }
 
-
     @Bean
     @ConditionalOnMissingBean(name = "threesDataVersion")
     public String threesDataVersion() throws UndefinedThreesResourceException {
@@ -79,6 +80,21 @@ public class ThreesAutoConfiguration {
         return dataVersion;
     }
 
+    @Bean
+    @ConditionalOnMissingBean(name = "phylopBigwigPath")
+    public Path phylopBigwigPath() throws UndefinedThreesResourceException {
+        if (properties.getPhylopBigwigPath() == null) {
+            throw new UndefinedThreesResourceException("Path to PhyloP bigwig file is not specified");
+        }
+        return Paths.get(properties.getPhylopBigwigPath());
+    }
+
+
+    @Bean
+    public BigWigAccessor phylopBigwigAccessor(Path phylopBigwigPath) throws IOException {
+        LOGGER.info("Using phyloP bigwig file at `{}`", phylopBigwigPath);
+        return new BigWigAccessor(phylopBigwigPath);
+    }
 
     @Bean
     public ThreesDataResolver threesDataResolver(Path threesDataDirectory, String threesGenomeAssembly, String threesDataVersion) {
@@ -102,15 +118,18 @@ public class ThreesAutoConfiguration {
     }
 
     @Bean
-    public SplicingAnnotator splicingAnnotator(SplicingPwmData splicingPwmData, DbKMerDao dbKMerDao) {
+    public SplicingAnnotator splicingAnnotator(SplicingPwmData splicingPwmData,
+                                               DbKMerDao dbKMerDao,
+                                               BigWigAccessor phylopBigwigAccessor) {
         LOGGER.info("Using dense splicing annotator");
-        return new DenseSplicingAnnotator(splicingPwmData, dbKMerDao.getHexamerMap(), dbKMerDao.getSeptamerMap());
+        return new DenseSplicingAnnotator(splicingPwmData, dbKMerDao.getHexamerMap(), dbKMerDao.getSeptamerMap(), phylopBigwigAccessor);
     }
 
     @Bean
     public DbKMerDao dbKMerDao(@Qualifier("threesDatasource") DataSource threesDatasource) {
         return new DbKMerDao(threesDatasource);
     }
+
 
     @Bean
     public GenomeSequenceAccessor genomeSequenceAccessor(ThreesDataResolver threesDataResolver) throws InvalidFastaFileException {

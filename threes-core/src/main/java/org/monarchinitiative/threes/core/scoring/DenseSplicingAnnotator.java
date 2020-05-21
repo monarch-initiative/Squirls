@@ -10,6 +10,7 @@ import org.monarchinitiative.threes.core.reference.allele.AlleleGenerator;
 import org.monarchinitiative.threes.core.reference.transcript.NaiveSplicingTranscriptLocator;
 import org.monarchinitiative.threes.core.reference.transcript.SplicingTranscriptLocator;
 import org.monarchinitiative.threes.core.scoring.calculators.ic.SplicingInformationContentCalculator;
+import org.monarchinitiative.threes.core.scoring.conservation.BigWigAccessor;
 import xyz.ielis.hyperutil.reference.fasta.SequenceInterval;
 
 import java.util.Map;
@@ -34,9 +35,12 @@ public class DenseSplicingAnnotator implements SplicingAnnotator {
 
     private final SeptamerFeatureCalculator septamerFeatureCalculator;
 
+    private final BigWigFeatureCalculator phyloPFeatureCalculator;
+
     public DenseSplicingAnnotator(SplicingPwmData splicingPwmData,
                                   Map<String, Double> hexamerMap,
-                                  Map<String, Double> septamerMap) {
+                                  Map<String, Double> septamerMap,
+                                  BigWigAccessor bigWigAccessor) {
         SplicingInformationContentCalculator calculator = new SplicingInformationContentCalculator(splicingPwmData);
         AlleleGenerator generator = new AlleleGenerator(calculator.getSplicingParameters());
 
@@ -49,6 +53,8 @@ public class DenseSplicingAnnotator implements SplicingAnnotator {
 
         hexamerFeatureCalculator = new HexamerFeatureCalculator(hexamerMap);
         septamerFeatureCalculator = new SeptamerFeatureCalculator(septamerMap);
+
+        phyloPFeatureCalculator = new BigWigFeatureCalculator(bigWigAccessor);
     }
 
     @Override
@@ -93,7 +99,10 @@ public class DenseSplicingAnnotator implements SplicingAnnotator {
         final double septamerScore = septamerFeatureCalculator.score(null, variant, sequenceInterval);
         builder.addFeature("septamer", septamerScore);
 
-        // TODO - add other features - donor_offset, acceptor_offset, SMS, ESRSeq, PhyloP
+        final double phylopScore = phyloPFeatureCalculator.score(null, variant, sequenceInterval);
+        builder.addFeature("phylop", phylopScore);
+
+        // TODO - add other features - donor_offset, acceptor_offset
 
         return builder.build();
 
