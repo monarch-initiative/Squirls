@@ -9,6 +9,7 @@ import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
+import java.io.InputStream;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -106,10 +107,20 @@ public class Main implements ApplicationRunner {
                 return;
             }
 
+            LOGGER.info("Reading classifier `{}` from `{}`",
+                    ingestProperties.getClassifier().getVersion(),
+                    ingestProperties.getClassifier().getClassifierPath());
+            byte[] clfData;
+            try (final InputStream is = Files.newInputStream(Paths.get(ingestProperties.getClassifier().getClassifierPath()))) {
+                clfData = is.readAllBytes();
+            }
+
             ThreesDataBuilder.buildDatabase(genomeBuildDir, genomeUrl, jannovarDbDir,
                     ingestProperties.getSplicingInformationContentMatrixPath(),
                     ingestProperties.getHexamersTsvPath(),
                     ingestProperties.getSeptamersTsvPath(),
+                    ingestProperties.getClassifier().getVersion(),
+                    clfData,
                     versionedAssembly);
 
         } catch (ThreeSException e) {

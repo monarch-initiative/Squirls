@@ -1,6 +1,7 @@
 package org.monarchinitiative.threes.ingest.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.boot.context.properties.NestedConfigurationProperty;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 
@@ -22,10 +23,22 @@ public class IngestProperties {
 
     private String hg38FastaUrl;
 
+    // config.classifier
+    @NestedConfigurationProperty
+    private ClassifierProperties classifier;
+
     public IngestProperties(Environment env) {
         this.env = env;
         String propertyKey = "build-dir";
         this.buildDir = getPathOrThrow(propertyKey, String.format("'%s' has not been specified", propertyKey));
+    }
+
+    public ClassifierProperties getClassifier() {
+        return classifier;
+    }
+
+    public void setClassifier(ClassifierProperties classifier) {
+        this.classifier = classifier;
     }
 
     public Path getBuildDir() {

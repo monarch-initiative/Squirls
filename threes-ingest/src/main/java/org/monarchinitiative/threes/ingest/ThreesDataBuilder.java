@@ -6,6 +6,7 @@ import de.charite.compbio.jannovar.data.ReferenceDictionary;
 import de.charite.compbio.jannovar.reference.TranscriptModel;
 import org.flywaydb.core.Flyway;
 import org.monarchinitiative.threes.core.ThreeSException;
+import org.monarchinitiative.threes.core.data.ClassifierDao;
 import org.monarchinitiative.threes.core.data.ic.InputStreamBasedPositionalWeightMatrixParser;
 import org.monarchinitiative.threes.core.data.ic.SplicingPositionalWeightMatrixParser;
 import org.monarchinitiative.threes.core.data.ic.SplicingPwmData;
@@ -127,6 +128,20 @@ public class ThreesDataBuilder {
     }
 
     /**
+     * Store classifier data
+     *
+     * @param dataSource data source for a database
+     * @param clfVersion classifier version
+     * @param clfBytes   classifier data
+     */
+    private static void processClassifier(DataSource dataSource, String clfVersion, byte[] clfBytes) {
+        LOGGER.info("Inserting classifier `{}`", clfVersion);
+        final ClassifierDao clfDao = new ClassifierDao(dataSource);
+        final int updated = clfDao.storeClassifier(clfVersion, clfBytes);
+        LOGGER.info("Updated {} rows", updated);
+    }
+
+    /**
      * Build the database given inputs.
      *
      * @param buildDir          path to directory where the database file should be stored
@@ -138,6 +153,7 @@ public class ThreesDataBuilder {
      */
     public static void buildDatabase(Path buildDir, URL genomeUrl, Path jannovarDbDir, Path yamlPath,
                                      Path hexamerPath, Path septamerPath,
+                                     String clfVersion, byte[] clfBytes,
                                      String versionedAssembly) throws ThreeSException {
 
         // 0 - deserialize Jannovar transcript databases
@@ -206,6 +222,9 @@ public class ThreesDataBuilder {
         } catch (IOException e) {
             throw new ThreeSException(e);
         }
+
+        // 3f - store classifier
+        processClassifier(dataSource, clfVersion, clfBytes);
     }
 
 }
