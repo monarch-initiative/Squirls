@@ -7,7 +7,8 @@ import org.monarchinitiative.threes.core.classifier.forest.RandomForest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
+import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -23,7 +24,7 @@ public class OverlordClassifierImpl implements OverlordClassifier {
 
     private final Classifier<FeatureData> donorClf, acceptorClf;
 
-    private final Set<String> requiredFeatures;
+    private final Set<String> usedFeatures;
 
     private final Double donorThreshold, acceptorThreshold;
 
@@ -40,9 +41,10 @@ public class OverlordClassifierImpl implements OverlordClassifier {
         }
         acceptorThreshold = builder.acceptorThreshold;
 
-        requiredFeatures = Set.copyOf(builder.requiredFeatures);
-        LOGGER.info("initialized classifier that uses the following features: `{}`",
-                requiredFeatures.stream().collect(Collectors.joining(",", "[", "]")));
+        usedFeatures = Stream.concat(donorClf.usedFeatureNames().stream(), acceptorClf.usedFeatureNames().stream())
+                .collect(Collectors.toSet());
+        LOGGER.debug("initialized classifier with the following features: {}",
+                usedFeatures.stream().sorted().collect(Collectors.joining(", ", "[", "]")));
     }
 
     public static Builder builder() {
@@ -54,8 +56,7 @@ public class OverlordClassifierImpl implements OverlordClassifier {
      */
     @Override
     public Set<String> usedFeatureNames() {
-        return Stream.concat(donorClf.usedFeatureNames().stream(), acceptorClf.usedFeatureNames().stream())
-                .collect(Collectors.toSet());
+        return usedFeatures;
     }
 
     /**
@@ -69,9 +70,9 @@ public class OverlordClassifierImpl implements OverlordClassifier {
      */
     @Override
     public Prediction predict(FeatureData instance) throws PredictionException {
-        if (!instance.getFeatureNames().containsAll(requiredFeatures)) {
+        if (!instance.getFeatureNames().containsAll(usedFeatures)) {
             throw new PredictionException(String.format("Missing one or more required features `%s`",
-                    Sets.difference(requiredFeatures, instance.getFeatureNames()).stream()
+                    Sets.difference(usedFeatures, instance.getFeatureNames()).stream()
                             .collect(Collectors.joining(",", "[", "]"))));
         }
 
@@ -107,23 +108,12 @@ public class OverlordClassifierImpl implements OverlordClassifier {
     }
 
     public static final class Builder {
-        private final Set<String> requiredFeatures = new HashSet<>();
         private Classifier<FeatureData> donorClf;
         private Classifier<FeatureData> acceptorClf;
         private Double donorThreshold = Double.NaN;
         private Double acceptorThreshold = Double.NaN;
 
         private Builder() {
-        }
-
-        public Builder featureNames(Collection<String> featureNames) {
-            this.requiredFeatures.addAll(featureNames);
-            return this;
-        }
-
-        public Builder featureNames(String... featureNames) {
-            this.requiredFeatures.addAll(Arrays.asList(featureNames));
-            return this;
         }
 
         public Builder donorClf(Classifier<FeatureData> donorClf) {
