@@ -104,7 +104,9 @@ public class ThreesAutoConfiguration {
     }
 
     @Bean
-    public ThreesDataResolver threesDataResolver(Path threesDataDirectory, String threesGenomeAssembly, String threesDataVersion) {
+    public ThreesDataResolver threesDataResolver(Path threesDataDirectory,
+                                                 String threesGenomeAssembly,
+                                                 String threesDataVersion) {
         return new ThreesDataResolver(threesDataDirectory, threesDataVersion, threesGenomeAssembly);
     }
 

@@ -80,9 +80,9 @@ public class BigWigAccessor implements AutoCloseable {
     /**
      * Get list of feature values for given {@link GenomeInterval} object.
      *
-     * @param chrom
-     * @param begin
-     * @param end
+     * @param chrom chromosome name, e.g. `chrX`
+     * @param begin 0-based (excluded) begin coordinate on FWD strand
+     * @param end   0-based (included) end coordinate on FWD strand
      * @return list of values for the interval
      * @throws ColesvarWigException if there doesn't exist value for every genomic position from within given genomeInterval
      */
@@ -133,7 +133,8 @@ public class BigWigAccessor implements AutoCloseable {
      * guarantee, that there exist an object for every position in genomeInterval.
      *
      * @param chrom chromosome string
-     * @param start 0-based
+     * @param start 0-based (excluded)
+     * @param end   0-based (included)
      * @return iterator
      */
     private BigWigIterator getIterator(String chrom, int start, int end) {
@@ -150,11 +151,12 @@ public class BigWigAccessor implements AutoCloseable {
      * Close the underlying reader.
      */
     @Override
-    public void close() {
+    public void close() throws Exception {
         try {
             reader.close();
         } catch (Exception e) {
             LOGGER.warn("Error closing the bigWig file at `{}`", bigWigPath);
+            throw e;
         }
     }
 }
