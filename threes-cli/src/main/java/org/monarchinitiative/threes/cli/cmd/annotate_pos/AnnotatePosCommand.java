@@ -16,8 +16,10 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+/**
+ * TODO - implement
+ */
 @Component
-@Deprecated
 public class AnnotatePosCommand extends Command {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AnnotatePosCommand.class);
@@ -53,15 +55,15 @@ public class AnnotatePosCommand extends Command {
 
         for (VariantChange change : changes) {
             final Map<String, Prediction> dataMap = variantSplicingEvaluator.evaluate(change.getContig(), change.getPos(), change.getRef(), change.getAlt());
-            final List<String> transcripts = dataMap.keySet().stream().sorted().collect(Collectors.toUnmodifiableList());
-            for (String tx : transcripts) {
-                final Prediction data = dataMap.get(tx);
+//            final List<String> transcripts = dataMap.keySet().stream().sorted().collect(Collectors.toUnmodifiableList());
+//            for (String tx : transcripts) {
+//                final Prediction data = dataMap.get(tx);
 //                final List<String> scoresNames = data.getScoresMap().keySet().stream().sorted().collect(Collectors.toUnmodifiableList());
 //                String scores = scoresNames.stream()
 //                        .map(name -> name + "=" + data.getOrDefault(name, Double.NaN))
 //                        .collect(Collectors.joining(";"));
 //                System.out.println(String.join("\t", change.getVariantChange(), tx, scores));
-            }
+//            }
         }
     }
 }

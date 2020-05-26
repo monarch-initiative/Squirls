@@ -159,21 +159,12 @@ public class ThreesAutoConfiguration {
 
     @Bean
     public GenomeSequenceAccessor genomeSequenceAccessor(ThreesDataResolver threesDataResolver) throws InvalidFastaFileException {
-        final GenomeSequenceAccessorBuilder builder = GenomeSequenceAccessorBuilder.builder()
+        return GenomeSequenceAccessorBuilder.builder()
                 .setFastaPath(threesDataResolver.genomeFastaPath())
                 .setFastaFaiPath(threesDataResolver.genomeFastaFaiPath())
-                .setFastaDictPath(threesDataResolver.genomeFastaDictPath());
-        switch (properties.getGenomeSequenceAccessorType()) {
-            case "chromosome":
-                LOGGER.info("Using single chromosome genome sequence accessor");
-                builder.setType(GenomeSequenceAccessor.Type.SINGLE_CHROMOSOME);
-                break;
-            case "simple":
-            default:
-                LOGGER.info("Using simple genome sequence accessor");
-                break;
-        }
-        return builder.build();
+                .setFastaDictPath(threesDataResolver.genomeFastaDictPath())
+                .setType(GenomeSequenceAccessor.Type.SINGLE_FASTA)
+                .build();
     }
 
     @Bean

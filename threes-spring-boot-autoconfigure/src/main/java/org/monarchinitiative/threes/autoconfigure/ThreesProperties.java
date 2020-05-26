@@ -21,21 +21,6 @@ public class ThreesProperties {
     private String dataVersion;
 
     /**
-     * Maximum distance variant can be upstream from an exon in order to be evaluated.
-     */
-    private int maxDistanceExonUpstream = 50;
-
-    /**
-     * Maximum distance variant can be downstream from an exon in order to be evaluated.
-     */
-    private int maxDistanceExonDownstream = 50;
-
-    /**
-     * Choose from {simple, single}.
-     */
-    private String genomeSequenceAccessorType = "simple";
-
-    /**
      * Path to bigwig file with genome-wide PhyloP scores.
      */
     private String phylopBigwigPath;
@@ -51,22 +36,6 @@ public class ThreesProperties {
 
     public void setPhylopBigwigPath(String phylopBigwigPath) {
         this.phylopBigwigPath = phylopBigwigPath;
-    }
-
-    public int getMaxDistanceExonUpstream() {
-        return maxDistanceExonUpstream;
-    }
-
-    public void setMaxDistanceExonUpstream(int maxDistanceExonUpstream) {
-        this.maxDistanceExonUpstream = maxDistanceExonUpstream;
-    }
-
-    public int getMaxDistanceExonDownstream() {
-        return maxDistanceExonDownstream;
-    }
-
-    public void setMaxDistanceExonDownstream(int maxDistanceExonDownstream) {
-        this.maxDistanceExonDownstream = maxDistanceExonDownstream;
     }
 
     public String getDataDirectory() {
@@ -91,14 +60,6 @@ public class ThreesProperties {
 
     public void setDataVersion(String dataVersion) {
         this.dataVersion = dataVersion;
-    }
-
-    public String getGenomeSequenceAccessorType() {
-        return genomeSequenceAccessorType;
-    }
-
-    public void setGenomeSequenceAccessorType(String genomeSequenceAccessorType) {
-        this.genomeSequenceAccessorType = genomeSequenceAccessorType;
     }
 
     public String getClassifierVersion() {
