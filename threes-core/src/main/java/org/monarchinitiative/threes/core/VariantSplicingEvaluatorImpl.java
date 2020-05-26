@@ -133,7 +133,7 @@ public class VariantSplicingEvaluatorImpl implements VariantSplicingEvaluator {
                 if (sto.isPresent()) {
                     txMap.put(txId, sto.get());
                 } else {
-                    LOGGER.info("Unknown transcript id");
+                    LOGGER.info("Unknown transcript id `{}`", txId);
                 }
             }
         }

@@ -137,6 +137,70 @@ public class PojosForTesting {
                 .build();
     }
 
+
+    /**
+     * Get a real transcript corresponding to <em>SURF2</em> <em>NM_017503.5</em>.
+     *
+     * @param rd {@link ReferenceDictionary} to use
+     * @return transcript
+     */
+    public static SplicingTranscript surf2_NM_017503_5(ReferenceDictionary rd) {
+        return SplicingTranscript.builder()
+                .setAccessionId("NM_017503.5")
+                .setCoordinates(new GenomeInterval(rd, Strand.FWD, 9, 136223425, 136228034))
+                // 1
+                .addExon(SplicingExon.builder()
+                        .setInterval(new GenomeInterval(rd, Strand.FWD, 9, 136223425, 136223546))
+                        .build())
+                .addIntron(SplicingIntron.builder()
+                        .setInterval(new GenomeInterval(rd, Strand.FWD, 9, 136223546, 136223789))
+                        .setDonorScore(3.6156746223715936)
+                        .setAcceptorScore(4.277366650982434)
+                        .build())
+                // 2
+                .addExon(SplicingExon.builder()
+                        .setInterval(new GenomeInterval(rd, Strand.FWD, 9, 136223789, 136223944))
+                        .build())
+                .addIntron(SplicingIntron.builder()
+                        .setInterval(new GenomeInterval(rd, Strand.FWD, 9, 136223944, 136224586))
+                        .setDonorScore(2.937332682375464)
+                        .setAcceptorScore(10.499414519258275)
+                        .build())
+                // 3
+                .addExon(SplicingExon.builder()
+                        .setInterval(new GenomeInterval(rd, Strand.FWD, 9, 136224586, 136224690))
+                        .build())
+                .addIntron(SplicingIntron.builder()
+                        .setInterval(new GenomeInterval(rd, Strand.FWD, 9, 136224690, 136226825))
+                        .setDonorScore(9.136968204255682)
+                        .setAcceptorScore(6.7796902152895875)
+                        .build())
+                // 4
+                .addExon(SplicingExon.builder()
+                        .setInterval(new GenomeInterval(rd, Strand.FWD, 9, 136226825, 136227005))
+                        .build())
+                .addIntron(SplicingIntron.builder()
+                        .setInterval(new GenomeInterval(rd, Strand.FWD, 9, 136227005, 136227140))
+                        .setDonorScore(6.3660441535158965)
+                        .setAcceptorScore(8.610070990445257)
+                        .build())
+                // 5
+                .addExon(SplicingExon.builder()
+                        .setInterval(new GenomeInterval(rd, Strand.FWD, 9, 136227140, 136227310))
+                        .build())
+                .addIntron(SplicingIntron.builder()
+                        .setInterval(new GenomeInterval(rd, Strand.FWD, 9, 136227310, 136227931))
+                        .setDonorScore(10.25048397144629)
+                        .setAcceptorScore(10.042811633569952)
+                        .build())
+                // 6
+                .addExon(SplicingExon.builder()
+                        .setInterval(new GenomeInterval(rd, Strand.FWD, 9, 136227931, 136228034))
+                        .build())
+                .build();
+    }
+
+
     public static SplicingParameters makeFakeSplicingParameters() {
         return SplicingParameters.builder()
                 .setDonorExonic(2).setDonorIntronic(3)
