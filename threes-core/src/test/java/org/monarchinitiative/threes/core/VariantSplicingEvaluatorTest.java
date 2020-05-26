@@ -17,15 +17,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import xyz.ielis.hyperutil.reference.fasta.GenomeSequenceAccessor;
 import xyz.ielis.hyperutil.reference.fasta.SequenceInterval;
 
-import java.io.BufferedReader;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
+import java.util.*;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -40,13 +32,6 @@ import static org.mockito.Mockito.when;
  */
 @SpringBootTest(classes = TestDataSourceConfig.class)
 class VariantSplicingEvaluatorTest {
-
-    /**
-     * FASTA file containing 20kb region at chr9 that spans my favourite genes <em>SURF1</em> and <em>SURF2</em>
-     * chr9:136210000-136230000
-     */
-    private static final Path SURF_FASTA_PATH = Paths.get(VariantSplicingEvaluatorTest.class.getResource("hg19_small_surf.fa").getPath());
-
 
     private static SequenceInterval SI;
 
@@ -69,23 +54,18 @@ class VariantSplicingEvaluatorTest {
 
 
     @BeforeAll
-    static void beforeAll() throws Exception {
-        final String fastaSeq;
-        try (final BufferedReader reader = Files.newBufferedReader(SURF_FASTA_PATH)) {
-            fastaSeq = reader.lines()
-                    .filter(line -> !line.isBlank() && !line.startsWith(">")) //  remove header or empty lines
-                    .collect(Collectors.joining(""));
-        }
-
+    static void beforeAll() {
         final ReferenceDictionaryBuilder rdBuilder = new ReferenceDictionaryBuilder();
         rdBuilder.putContigID("chr9", 9);
         rdBuilder.putContigID("9", 9);
         rdBuilder.putContigName(9, "chr9");
         rdBuilder.putContigLength(9, 141_213_431);
         RD = rdBuilder.build();
+        char[] chars = new char[136_230_000 - 136_210_000 + 1];
+        Arrays.fill(chars, 'A');
         SI = SequenceInterval.builder()
-                .interval(new GenomeInterval(RD, Strand.FWD, 9, 136210000, 136230000, PositionType.ONE_BASED))
-                .sequence(fastaSeq)
+                .interval(new GenomeInterval(RD, Strand.FWD, 9, 136_210_000, 136_230_000, PositionType.ONE_BASED))
+                .sequence(new String(chars))
                 .build();
     }
 
