@@ -5,8 +5,7 @@ import java.nio.file.Path;
 /**
  * This class provides paths to resources, such as path to FASTA file, or splicing transcript database.
  * <p>
- * The paths are provided based on {@code threesDataDirectory}, {@code dataVersion}, {@code genomeAssembly}, and
- * {@code transcriptSource}.
+ * The paths are provided based on {@code threesDataDirectory}, {@code dataVersion}, and {@code genomeAssembly}.
  */
 public class ThreesDataResolver {
 
@@ -17,7 +16,7 @@ public class ThreesDataResolver {
     private final String genomeAssembly;
 
     public ThreesDataResolver(Path threesDataDirectory, String dataVersion, String genomeAssembly) {
-        this.threesDataDirectory = threesDataDirectory;
+        this.threesDataDirectory = threesDataDirectory.resolve(String.format("%s_%s", dataVersion, genomeAssembly));
         this.dataVersion = dataVersion;
         this.genomeAssembly = genomeAssembly;
     }

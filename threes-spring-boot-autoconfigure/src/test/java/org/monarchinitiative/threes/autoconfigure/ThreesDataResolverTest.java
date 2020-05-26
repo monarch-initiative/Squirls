@@ -21,9 +21,10 @@ class ThreesDataResolverTest {
 
     @Test
     void getFastaStuff() {
-        assertThat(resolver.genomeFastaPath(), is(TEST_DATA.resolve("1710_hg19.fa")));
-        assertThat(resolver.genomeFastaFaiPath(), is(TEST_DATA.resolve("1710_hg19.fa.fai")));
-        assertThat(resolver.genomeFastaDictPath(), is(TEST_DATA.resolve("1710_hg19.fa.dict")));
+        final Path versionedAssemblyDataDirPath = TEST_DATA.resolve("1710_hg19");
+        assertThat(resolver.genomeFastaPath(), is(versionedAssemblyDataDirPath.resolve("1710_hg19.fa")));
+        assertThat(resolver.genomeFastaFaiPath(), is(versionedAssemblyDataDirPath.resolve("1710_hg19.fa.fai")));
+        assertThat(resolver.genomeFastaDictPath(), is(versionedAssemblyDataDirPath.resolve("1710_hg19.fa.dict")));
     }
 
     @Test
