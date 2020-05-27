@@ -1,8 +1,12 @@
 # 3S ingest
 
-This module is responsible for building of 3S resource files for *Refseq*, *Ensembl*, and *Ucsc* transcripts.
+This module is responsible for building of 3S resource files.
 
 ## How to build the resource files
+
+There are two commands that need to be run in order to build the resource files for a genome assembly:
+- `generate-config` - generate the config file
+- `ingest | run-ingest` - build the resource directory
 
 ### Generate a config file
 We need to generate and fill the config file first. If you do not have some resources, download a resource bundle from 
@@ -15,7 +19,7 @@ java -jar threes-ingest-1.0.4.jar generate-config config.yml
 Then, open the `config.yml` file and provide the required information. 
 
 ### Build the resource
-Having config file ready, we can build the resource directory:
+Having the config file ready, we can build the resource directory.
 
 ```bash
 java -jar threes-ingest-1.0.4.jar ingest -c config.yml run-ingest build-dir 2005 hg19
@@ -25,7 +29,15 @@ where
 - `2005` - denotes an arbitrary version tag for this build
 - `hg19` - denotes a genome assembly tag 
 
-After 
+After running the command above, the `build-dir` should have a similar structure:
+```
+build-dir
+  \- 2005_hg19
+    |- 2005_hg19.fa
+    |- 2005_hg19.fa.dict
+    |- 2005_hg19.fa.fai
+    \- 2005_hg19_splicing.mv.db
+``` 
 
 ## How to build the resource files within another software
 
