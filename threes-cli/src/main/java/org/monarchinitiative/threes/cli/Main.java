@@ -78,10 +78,10 @@ public class Main {
         /*
          3. run the command
          */
-        String cmdName = namespace.get("cmd");
+        final Command command;
+        final String cmdName = namespace.get("cmd");
         if (cmdName.equals("generate-config")) {
-            final GenerateConfigCommand cmd = new GenerateConfigCommand();
-            cmd.run(namespace);
+            command = new GenerateConfigCommand();
         } else {
             String configPath = namespace.getString("config");
             LOGGER.info("Reading 3S configuration from `{}`", configPath);
@@ -96,7 +96,6 @@ public class Main {
                     .run(args);
 
             // get the selected command and run it
-            Command command;
 
             switch (cmdName) {
                 case "annotate-pos":
@@ -113,8 +112,9 @@ public class Main {
                     System.exit(1);
                     return; // unreachable, but still required
             }
-            command.run(namespace);
         }
+
+        command.run(namespace);
         LOGGER.info("Done!");
     }
 
