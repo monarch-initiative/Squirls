@@ -102,7 +102,7 @@ public class VariantSplicingEvaluatorImpl implements VariantSplicingEvaluator {
             try {
                 resultMap.put(txId, classifier.predict(featureData));
             } catch (PredictionException e) {
-                LOGGER.warn("Error while computing scores for `{}` with respect to `{}`", variant, txId);
+                LOGGER.debug("Error while computing scores for `{}` with respect to `{}`: {}", variant, txId, e.getMessage());
             }
         }
         return resultMap;
