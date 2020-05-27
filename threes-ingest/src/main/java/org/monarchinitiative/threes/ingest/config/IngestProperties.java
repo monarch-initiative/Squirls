@@ -1,94 +1,89 @@
 package org.monarchinitiative.threes.ingest.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.boot.context.properties.NestedConfigurationProperty;
-import org.springframework.core.env.Environment;
-import org.springframework.stereotype.Component;
 
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.util.List;
 
 /**
  *
  */
-@Component
-@ConfigurationProperties(prefix = "config")
+@ConfigurationProperties(prefix = "threes.ingest")
 public class IngestProperties {
 
-    private final Environment env;
 
-    private final Path buildDir;
+    private String splicingInformationContentMatrix;
+    private String jannovarTranscriptDbDir;
+    private String hexamerTsvPath;
+    private String septamerTsvPath;
+    private String fastaUrl;
+    private List<ClassifierData> classifiers;
 
-    private String hg19FastaUrl;
-
-    private String hg38FastaUrl;
-
-    // config.classifier
-    @NestedConfigurationProperty
-    private ClassifierProperties classifier = new ClassifierProperties();
-
-    public IngestProperties(Environment env) {
-        this.env = env;
-        String propertyKey = "build-dir";
-        this.buildDir = getPathOrThrow(propertyKey, String.format("'%s' has not been specified", propertyKey));
+    public List<ClassifierData> getClassifiers() {
+        return classifiers;
     }
 
-    public ClassifierProperties getClassifier() {
-        return classifier;
+    public void setClassifiers(List<ClassifierData> classifiers) {
+        this.classifiers = classifiers;
     }
 
-    public void setClassifier(ClassifierProperties classifier) {
-        this.classifier = classifier;
+    public String getSplicingInformationContentMatrix() {
+        return splicingInformationContentMatrix;
     }
 
-    public Path getBuildDir() {
-        return buildDir;
+    public void setSplicingInformationContentMatrix(String splicingInformationContentMatrix) {
+        this.splicingInformationContentMatrix = splicingInformationContentMatrix;
     }
 
-    public String getHg19FastaUrl() {
-        return hg19FastaUrl;
+    public String getJannovarTranscriptDbDir() {
+        return jannovarTranscriptDbDir;
     }
 
-    public void setHg19FastaUrl(String hg19FastaUrl) {
-        this.hg19FastaUrl = hg19FastaUrl;
+    public void setJannovarTranscriptDbDir(String jannovarTranscriptDbDir) {
+        this.jannovarTranscriptDbDir = jannovarTranscriptDbDir;
     }
 
-    public String getHg38FastaUrl() {
-        return hg38FastaUrl;
+    public String getHexamerTsvPath() {
+        return hexamerTsvPath;
     }
 
-    public void setHg38FastaUrl(String hg38FastaUrl) {
-        this.hg38FastaUrl = hg38FastaUrl;
+    public void setHexamerTsvPath(String hexamerTsvPath) {
+        this.hexamerTsvPath = hexamerTsvPath;
     }
 
-
-    public Path getJannovarDbDir() {
-        String propertyKey = "jannovar-transcript-db-dir";
-        return getPathOrThrow(propertyKey, String.format("'%s' has not been specified", propertyKey));
+    public String getSeptamerTsvPath() {
+        return septamerTsvPath;
     }
 
-    public Path getSplicingInformationContentMatrixPath() {
-        String propertyKey = "splicing-information-content-matrix";
-        return getPathOrThrow(propertyKey, String.format("'%s' has not been specified", propertyKey));
+    public void setSeptamerTsvPath(String septamerTsvPath) {
+        this.septamerTsvPath = septamerTsvPath;
     }
 
-    public Path getHexamersTsvPath() {
-        String propertyKey = "hexamer-tsv-path";
-        return getPathOrThrow(propertyKey, String.format("'%s' has not been specified", propertyKey));
+    public String getFastaUrl() {
+        return fastaUrl;
     }
 
-    public Path getSeptamersTsvPath() {
-        String propertyKey = "septamer-tsv-path";
-        return getPathOrThrow(propertyKey, String.format("'%s' has not been specified", propertyKey));
+    public void setFastaUrl(String fastaUrl) {
+        this.fastaUrl = fastaUrl;
     }
 
+    public static class ClassifierData {
+        private String version;
+        private String classifierPath;
 
-    private Path getPathOrThrow(String propertyKey, String message) {
-        String path = env.getProperty(propertyKey, "");
-
-        if (path.isEmpty()) {
-            throw new IllegalArgumentException(message);
+        public String getVersion() {
+            return version;
         }
-        return Paths.get(path);
+
+        public void setVersion(String version) {
+            this.version = version;
+        }
+
+        public String getClassifierPath() {
+            return classifierPath;
+        }
+
+        public void setClassifierPath(String classifierPath) {
+            this.classifierPath = classifierPath;
+        }
     }
 }

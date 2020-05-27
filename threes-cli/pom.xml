@@ -34,7 +34,7 @@
         <dependency>
             <groupId>net.sourceforge.argparse4j</groupId>
             <artifactId>argparse4j</artifactId>
-            <version>0.8.1</version>
+            <version>${argparse.version}</version>
         </dependency>
 
         <!--  TEST DEPENDENCIES  -->

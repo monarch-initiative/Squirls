@@ -153,7 +153,7 @@ public class ThreesDataBuilder {
      */
     public static void buildDatabase(Path buildDir, URL genomeUrl, Path jannovarDbDir, Path yamlPath,
                                      Path hexamerPath, Path septamerPath,
-                                     String clfVersion, byte[] clfBytes,
+                                     Map<String, byte[]> classifiers,
                                      String versionedAssembly) throws ThreeSException {
 
         // 0 - deserialize Jannovar transcript databases
@@ -224,7 +224,10 @@ public class ThreesDataBuilder {
         }
 
         // 3f - store classifier
-        processClassifier(dataSource, clfVersion, clfBytes);
+        for (Map.Entry<String, byte[]> entry : classifiers.entrySet()) {
+            processClassifier(dataSource, entry.getKey(), entry.getValue());
+        }
+
     }
 
 }
