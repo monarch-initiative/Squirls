@@ -4,6 +4,7 @@ import net.sourceforge.argparse4j.ArgumentParsers;
 import net.sourceforge.argparse4j.inf.*;
 import org.monarchinitiative.threes.cli.cmd.Command;
 import org.monarchinitiative.threes.cli.cmd.GenerateConfigCommand;
+import org.monarchinitiative.threes.cli.cmd.annotate_csv.AnnotateCsvCommand;
 import org.monarchinitiative.threes.cli.cmd.annotate_pos.AnnotatePosCommand;
 import org.monarchinitiative.threes.cli.cmd.annotate_vcf.AnnotateVcfCommand;
 import org.slf4j.Logger;
@@ -54,6 +55,7 @@ public class Main {
         final Subparsers runCommandGroupSubparsers = runParser.addSubparsers();
         AnnotatePosCommand.setupSubparsers(runCommandGroupSubparsers);
         AnnotateVcfCommand.setupSubparsers(runCommandGroupSubparsers);
+        AnnotateCsvCommand.setupSubparsers(runCommandGroupSubparsers);
 
         // - we require 3S properties to be provided
         runParser.addArgument("-c", "--config")
@@ -82,7 +84,7 @@ public class Main {
             cmd.run(namespace);
         } else {
             String configPath = namespace.getString("config");
-            LOGGER.info("Reading PBGA configuration from '{}'", configPath);
+            LOGGER.info("Reading 3S configuration from `{}`", configPath);
             if (!unknownArgsList.isEmpty()) {
                 LOGGER.info("Passing the following args to Spring: '{}'",
                         String.join(", ", unknownArgsList));
@@ -102,6 +104,9 @@ public class Main {
                     break;
                 case "annotate-vcf":
                     command = appContext.getBean(AnnotateVcfCommand.class);
+                    break;
+                case "annotate-csv":
+                    command = appContext.getBean(AnnotateCsvCommand.class);
                     break;
                 default:
                     LOGGER.warn("Unknown command '{}'", cmdName);
