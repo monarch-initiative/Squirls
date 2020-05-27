@@ -1,5 +1,7 @@
 package org.monarchinitiative.threes.core.scoring;
 
+import com.google.common.collect.ComparisonChain;
+import de.charite.compbio.jannovar.reference.GenomeInterval;
 import de.charite.compbio.jannovar.reference.GenomePosition;
 import de.charite.compbio.jannovar.reference.GenomeVariant;
 import org.monarchinitiative.threes.core.classifier.FeatureData;
@@ -13,8 +15,10 @@ import org.monarchinitiative.threes.core.scoring.calculators.ic.SplicingInformat
 import org.monarchinitiative.threes.core.scoring.conservation.BigWigAccessor;
 import xyz.ielis.hyperutil.reference.fasta.SequenceInterval;
 
+import java.util.Comparator;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 
 public class DenseSplicingAnnotator implements SplicingAnnotator {
@@ -55,6 +59,38 @@ public class DenseSplicingAnnotator implements SplicingAnnotator {
         septamerFeatureCalculator = new SeptamerFeatureCalculator(septamerMap);
 
         phyloPFeatureCalculator = new BigWigFeatureCalculator(bigWigAccessor);
+    }
+
+    static int getOffset(Stream<GenomePosition> positions, GenomeInterval variant) {
+        final Comparator<GenomePosition> findClosestExonIntronBorder = (left, right) -> ComparisonChain.start()
+                .compare(Math.abs(left.differenceTo(variant)), Math.abs(right.differenceTo(variant)))
+                .result();
+
+        final GenomePosition closestPosition = positions.min(findClosestExonIntronBorder).orElseThrow();
+        final int diff = closestPosition.differenceTo(variant);
+        if (diff > 0) {
+            // variant is upstream from the border position
+            return -diff;
+        } else if (diff < 0) {
+            // variant is downstream from the border position
+            return -diff + 1;
+        } else {
+            /*
+            Due to representation of exon|Intron / intron|Exon boundary as a GenomePosition that represents position of
+            the capital E/I character above, we need to distinguish when variant interval denotes
+              - a deletion of the boundary, or
+              - SNP at +1 position.
+
+            The code below handles these situations.
+            */
+            if (variant.contains(closestPosition) && variant.length() > 1) {
+                // deletion of the boundary
+                return 0;
+            } else {
+                // SNP at +1 position
+                return 1;
+            }
+        }
     }
 
     @Override
@@ -102,9 +138,16 @@ public class DenseSplicingAnnotator implements SplicingAnnotator {
         final double phylopScore = phyloPFeatureCalculator.score(null, variant, sequenceInterval);
         builder.addFeature("phylop", phylopScore);
 
-        // TODO - add other features - donor_offset, acceptor_offset
+        final int donorOffset = getOffset(transcript.getExons().stream()
+                        .map(e -> e.getInterval().getGenomeEndPos()),
+                variantOnStrand.getGenomeInterval());
+        builder.addFeature("donor_offset", donorOffset);
+
+        final int acceptorOffset = getOffset(transcript.getExons().stream()
+                        .map(e -> e.getInterval().getGenomeBeginPos()),
+                variantOnStrand.getGenomeInterval());
+        builder.addFeature("acceptor_offset", acceptorOffset);
 
         return builder.build();
-
     }
 }
