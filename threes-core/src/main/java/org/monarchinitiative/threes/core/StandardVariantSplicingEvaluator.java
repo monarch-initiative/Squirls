@@ -20,11 +20,11 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-public class VariantSplicingEvaluatorImpl implements VariantSplicingEvaluator {
+public class StandardVariantSplicingEvaluator implements VariantSplicingEvaluator {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(StandardVariantSplicingEvaluator.class);
 
     private static final int PADDING = 100;
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(VariantSplicingEvaluatorImpl.class);
 
     private final GenomeSequenceAccessor accessor;
 
@@ -37,10 +37,10 @@ public class VariantSplicingEvaluatorImpl implements VariantSplicingEvaluator {
     private final OverlordClassifier classifier;
 
 
-    public VariantSplicingEvaluatorImpl(GenomeSequenceAccessor genomeSequenceAccessor,
-                                        SplicingTranscriptSource splicingTranscriptSource,
-                                        SplicingAnnotator splicingAnnotator,
-                                        OverlordClassifier overlordClassifier) {
+    public StandardVariantSplicingEvaluator(GenomeSequenceAccessor genomeSequenceAccessor,
+                                            SplicingTranscriptSource splicingTranscriptSource,
+                                            SplicingAnnotator splicingAnnotator,
+                                            OverlordClassifier overlordClassifier) {
         this.accessor = genomeSequenceAccessor;
         this.rd = genomeSequenceAccessor.getReferenceDictionary();
         this.txSource = splicingTranscriptSource;

@@ -3,8 +3,8 @@ package org.monarchinitiative.threes.autoconfigure;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
+import org.monarchinitiative.threes.core.StandardVariantSplicingEvaluator;
 import org.monarchinitiative.threes.core.VariantSplicingEvaluator;
-import org.monarchinitiative.threes.core.VariantSplicingEvaluatorImpl;
 import org.monarchinitiative.threes.core.classifier.OverlordClassifier;
 import org.monarchinitiative.threes.core.classifier.io.Deserializer;
 import org.monarchinitiative.threes.core.data.ClassifierDao;
@@ -121,8 +121,7 @@ public class ThreesAutoConfiguration {
                                                              SplicingTranscriptSource splicingTranscriptSource,
                                                              SplicingAnnotator splicingAnnotator,
                                                              OverlordClassifier classifier) {
-        return new VariantSplicingEvaluatorImpl(genomeSequenceAccessor, splicingTranscriptSource, splicingAnnotator, classifier);
-
+        return new StandardVariantSplicingEvaluator(genomeSequenceAccessor, splicingTranscriptSource, splicingAnnotator, classifier);
     }
 
     @Bean

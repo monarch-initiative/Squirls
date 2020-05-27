@@ -31,7 +31,7 @@ import static org.mockito.Mockito.when;
  * Here we test some real-world variants.
  */
 @SpringBootTest(classes = TestDataSourceConfig.class)
-class VariantSplicingEvaluatorTest {
+class StandardVariantSplicingEvaluatorTest {
 
     private static SequenceInterval SI;
 
@@ -50,7 +50,7 @@ class VariantSplicingEvaluatorTest {
     private OverlordClassifier classifier;
 
 
-    private VariantSplicingEvaluator evaluator;
+    private StandardVariantSplicingEvaluator evaluator;
 
 
     @BeforeAll
@@ -62,7 +62,7 @@ class VariantSplicingEvaluatorTest {
         rdBuilder.putContigLength(9, 141_213_431);
         RD = rdBuilder.build();
         char[] chars = new char[136_230_000 - 136_210_000 + 1];
-        Arrays.fill(chars, 'A');
+        Arrays.fill(chars, 'A'); // the sequence does not really matter since we use mocks
         SI = SequenceInterval.builder()
                 .interval(new GenomeInterval(RD, Strand.FWD, 9, 136_210_000, 136_230_000, PositionType.ONE_BASED))
                 .sequence(new String(chars))
@@ -73,7 +73,7 @@ class VariantSplicingEvaluatorTest {
     void setUp() {
         // genome sequence accessor
         when(accessor.getReferenceDictionary()).thenReturn(RD);
-        evaluator = new VariantSplicingEvaluatorImpl(accessor, transcriptSource, annotator, classifier);
+        evaluator = new StandardVariantSplicingEvaluator(accessor, transcriptSource, annotator, classifier);
     }
 
     @Test
