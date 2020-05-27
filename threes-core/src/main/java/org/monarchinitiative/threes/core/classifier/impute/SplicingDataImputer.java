@@ -50,7 +50,7 @@ public class SplicingDataImputer implements FeatureTransformer<FeatureData> {
         }
         final FeatureData.Builder builder = fd.toBuilder();
 
-        for (String featureName : fd.getFeatureNames()) {
+        for (String featureName : usedFeatureNames()) { // we only impute the features we know about
             final Double value = fd.getFeature(featureName, Double.class);
             builder.addFeature(featureName, value.isNaN() ? medianMap.get(featureName) : value);
         }
