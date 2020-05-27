@@ -5,7 +5,8 @@ This module is responsible for building of 3S resource files for *Refseq*, *Ense
 ## How to build the resource files
 
 ### Generate a config file
-We need to generate and fill the config file first:
+We need to generate and fill the config file first. If you do not have some resources, download a resource bundle from 
+[here](https://exomiser-threes.s3.amazonaws.com/threes-build-resources.zip).
 
 ```bash
 java -jar threes-ingest-1.0.4.jar generate-config config.yml
