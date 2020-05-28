@@ -1,7 +1,6 @@
 package org.monarchinitiative.threes.core.classifier.tree;
 
-import org.jblas.DoubleMatrix;
-import org.monarchinitiative.threes.core.classifier.AbstractClassifier;
+import org.monarchinitiative.threes.core.classifier.AbstractBinaryClassifier;
 import org.monarchinitiative.threes.core.classifier.FeatureData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,9 +15,9 @@ import java.util.stream.IntStream;
  *
  * @param <T>
  */
-public abstract class AbstractDecisionTree<T extends FeatureData> extends AbstractClassifier<T> {
+public abstract class AbstractBinaryDecisionTree<T extends FeatureData> extends AbstractBinaryClassifier<T> {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractDecisionTree.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractBinaryDecisionTree.class);
 
     /**
      * In arrays that define this tree, this is the index of the root node.
@@ -60,7 +59,7 @@ public abstract class AbstractDecisionTree<T extends FeatureData> extends Abstra
     private final int[][] classCounts;
 
 
-    protected AbstractDecisionTree(Builder<?> builder) {
+    protected AbstractBinaryDecisionTree(Builder<?> builder) {
         super(builder);
         this.nNodes = builder.nNodes;
         this.features = toIntArray(builder.features);
@@ -139,25 +138,13 @@ public abstract class AbstractDecisionTree<T extends FeatureData> extends Abstra
     }
 
     /**
-     * Predict class label for given instance. Expecting to get an instance with all features available.
-     *
-     * @param instance to be used for prediction
-     * @return label of the predicted class
-     */
-    @Override
-    public int predict(T instance) {
-        final DoubleMatrix proba = predictProba(instance);
-        return classes[proba.argmax()];
-    }
-
-    /**
      * Predict class probabilities for given instance. Expecting to get an instance with all features available.
      *
      * @param instance to be used for prediction
      * @return label of the predicted class
      */
     @Override
-    public DoubleMatrix predictProba(T instance) {
+    public double predictProba(T instance) {
         return predictProba(instance, ROOT_IDX);
     }
 
@@ -168,7 +155,7 @@ public abstract class AbstractDecisionTree<T extends FeatureData> extends Abstra
      * @param nodeIdx  index of the  node that is currently being processed
      * @return class probabilities in the same order as in {@link #classes} attribute
      */
-    private DoubleMatrix predictProba(T instance, int nodeIdx) {
+    private double predictProba(T instance, int nodeIdx) {
         if (childrenLeft[nodeIdx] != childrenRight[nodeIdx]) {
             /*
              * Indices of the child nodes are not equal. In context of our model, this means that the node
@@ -197,13 +184,11 @@ public abstract class AbstractDecisionTree<T extends FeatureData> extends Abstra
              */
             // how many samples of each class do we have in this particular node?
             final int[] classCounts = this.classCounts[nodeIdx];
-            int sum = IntStream.of(classCounts).sum();
+            double sum = IntStream.of(classCounts).sum();
             // calculate probability as a fraction of samples existing in this node for each class
-            final DoubleMatrix proba = new DoubleMatrix(classCounts.length).transpose();
-            for (int i = 0; i < classCounts.length; i++) {
-                proba.put(0, i, classCounts[i]);
-            }
-            return proba.div(sum);
+            int nPathogenicSamples = classCounts[1];
+
+            return nPathogenicSamples / sum;
         }
     }
 
@@ -215,7 +200,7 @@ public abstract class AbstractDecisionTree<T extends FeatureData> extends Abstra
      */
     protected abstract Map<Integer, String> getFeatureIndices();
 
-    public abstract static class Builder<A extends Builder<A>> extends AbstractClassifier.Builder<A> {
+    public abstract static class Builder<A extends Builder<A>> extends AbstractBinaryClassifier.Builder<A> {
 
         private int nNodes;
 

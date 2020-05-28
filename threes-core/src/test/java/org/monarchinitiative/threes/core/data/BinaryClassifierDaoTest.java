@@ -17,7 +17,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 
 @SpringBootTest(classes = {TestDataSourceConfig.class})
-class ClassifierDaoTest {
+class BinaryClassifierDaoTest {
 
 
     @Autowired

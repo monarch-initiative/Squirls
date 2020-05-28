@@ -1,6 +1,5 @@
 package org.monarchinitiative.threes.core.classifier;
 
-import org.jblas.DoubleMatrix;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.monarchinitiative.threes.core.Prediction;
@@ -29,6 +28,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  */
 public class IntegrationTests {
 
+    private static final double EPSILON = 5E-12;
+
     private static final String TOY_MODEL_PATH = "io/example_model.yaml";
 
     private static OverallModelData overallModelData;
@@ -52,11 +53,11 @@ public class IntegrationTests {
         final DonorSplicingDecisionTree tree = Deserializer.toDonorClassifierTree(List.of(0, 1)).apply(treeOne);
 
         // perform classification & assert
-        DoubleMatrix doubleMatrix = tree.predictProba(TestVariantInstances.pathogenicDonor()).transpose();
-        assertThat(doubleMatrix.toArray(), is(new double[]{.07267441860465117, .9273255813953488}));
+        double pathoProba = tree.predictProba(TestVariantInstances.pathogenicDonor());
+        assertThat(pathoProba, is(closeTo(.9273255813953488, EPSILON)));
 
-        doubleMatrix = tree.predictProba(TestVariantInstances.donorCryptic()).transpose();
-        assertThat(doubleMatrix.toArray(), is(new double[]{.3076923076923077, .6923076923076923}));
+        pathoProba = tree.predictProba(TestVariantInstances.donorCryptic());
+        assertThat(pathoProba, is(closeTo(.6923076923076923, EPSILON)));
     }
 
     @Test
@@ -67,11 +68,11 @@ public class IntegrationTests {
         final DonorSplicingDecisionTree tree = Deserializer.toDonorClassifierTree(List.of(0, 1)).apply(treeOne);
 
         // perform classification & assert
-        DoubleMatrix doubleMatrix = tree.predictProba(TestVariantInstances.pathogenicDonor()).transpose();
-        assertThat(doubleMatrix.toArray(), is(new double[]{.08433734939759036, .9156626506024096}));
+        double pathoProba = tree.predictProba(TestVariantInstances.pathogenicDonor());
+        assertThat(pathoProba, is(closeTo(.9156626506024096, EPSILON)));
 
-        doubleMatrix = tree.predictProba(TestVariantInstances.donorCryptic()).transpose();
-        assertThat(doubleMatrix.toArray(), is(new double[]{.908256880733945, .09174311926605505}));
+        pathoProba = tree.predictProba(TestVariantInstances.donorCryptic());
+        assertThat(pathoProba, is(closeTo(.09174311926605505, EPSILON)));
     }
 
     @Test
@@ -82,11 +83,11 @@ public class IntegrationTests {
         final AcceptorSplicingDecisionTree tree = Deserializer.toAcceptorClassifierTree(List.of(0, 1)).apply(treeOne);
 
         // perform classification & assert
-        DoubleMatrix doubleMatrix = tree.predictProba(TestVariantInstances.pathogenicAcceptor()).transpose();
-        assertThat(doubleMatrix.toArray(), is(new double[]{.609375, .390625}));
+        double pathoProba = tree.predictProba(TestVariantInstances.pathogenicAcceptor());
+        assertThat(pathoProba, is(closeTo(.390625, EPSILON)));
 
-        doubleMatrix = tree.predictProba(TestVariantInstances.acceptorCryptic()).transpose();
-        assertThat(doubleMatrix.toArray(), is(new double[]{.851063829787234, .14893617021276595}));
+        pathoProba = tree.predictProba(TestVariantInstances.acceptorCryptic());
+        assertThat(pathoProba, is(closeTo(.14893617021276595, EPSILON)));
     }
 
     @Test
@@ -97,11 +98,11 @@ public class IntegrationTests {
         final AcceptorSplicingDecisionTree tree = Deserializer.toAcceptorClassifierTree(List.of(0, 1)).apply(treeOne);
 
         // perform classification & assert
-        DoubleMatrix doubleMatrix = tree.predictProba(TestVariantInstances.pathogenicAcceptor()).transpose();
-        assertThat(doubleMatrix.toArray(), is(new double[]{.39655172413793105, .603448275862069}));
+        double pathoProba = tree.predictProba(TestVariantInstances.pathogenicAcceptor());
+        assertThat(pathoProba, is(closeTo(.603448275862069, EPSILON)));
 
-        doubleMatrix = tree.predictProba(TestVariantInstances.acceptorCryptic()).transpose();
-        assertThat(doubleMatrix.toArray(), is(new double[]{.9726627103803872, .027337289619612803}));
+        pathoProba = tree.predictProba(TestVariantInstances.acceptorCryptic());
+        assertThat(pathoProba, is(closeTo(.027337289619612803, EPSILON)));
     }
 
     /*
@@ -115,11 +116,11 @@ public class IntegrationTests {
         // make classifier
         final RandomForest<FeatureData> forest = Deserializer.deserializeDonorClassifier(rftm);
 
-        DoubleMatrix doubleMatrix = forest.predictProba(TestVariantInstances.pathogenicDonor()).transpose();
-        assertThat(doubleMatrix.toArray(), is(new double[]{.21263363362313573, .7873663663768643}));
+        double pathoProba = forest.predictProba(TestVariantInstances.pathogenicDonor());
+        assertThat(pathoProba, is(closeTo(.7873663663768643, EPSILON)));
 
-        doubleMatrix = forest.predictProba(TestVariantInstances.donorCryptic()).transpose();
-        assertThat(doubleMatrix.toArray(), is(new double[]{.7756036656384151, .22439633436158474}));
+        pathoProba = forest.predictProba(TestVariantInstances.donorCryptic());
+        assertThat(pathoProba, is(closeTo(.22439633436158474, EPSILON)));
     }
 
     @Test
@@ -129,11 +130,11 @@ public class IntegrationTests {
         // make classifier
         final RandomForest<FeatureData> forest = Deserializer.deserializeAcceptorClassifier(rftm);
 
-        DoubleMatrix doubleMatrix = forest.predictProba(TestVariantInstances.pathogenicAcceptor()).transpose();
-        assertThat(doubleMatrix.toArray(), is(new double[]{.6273108291286152, .3726891708713847}));
+        double pathoProba = forest.predictProba(TestVariantInstances.pathogenicAcceptor());
+        assertThat(pathoProba, is(closeTo(.3726891708713847, EPSILON)));
 
-        doubleMatrix = forest.predictProba(TestVariantInstances.acceptorCryptic()).transpose();
-        assertThat(doubleMatrix.toArray(), is(new double[]{.9775198781743903, .022480121825609604}));
+        pathoProba = forest.predictProba(TestVariantInstances.acceptorCryptic());
+        assertThat(pathoProba, is(closeTo(.022480121825609604, EPSILON)));
     }
 
     /*
@@ -145,23 +146,23 @@ public class IntegrationTests {
 
         Prediction prediction = overlord.predict(TestVariantInstances.pathogenicDonor());
         assertTrue(prediction.isPathogenic());
-        assertThat(prediction.getPathoProba(), is(closeTo(.7873663663768643, 1E-5)));
+        assertThat(prediction.getPathoProba(), is(closeTo(.7873663663768643, EPSILON)));
 //        DoubleMatrix doubleMatrix = overlord.predictProba(TestVariantInstances.pathogenicDonor()).transpose();
 //        assertThat(doubleMatrix.toArray(), is(new double[]{.2126336336231357, .7873663663768643}));
 
         prediction = overlord.predict(TestVariantInstances.donorCryptic());
         assertTrue(prediction.isPathogenic());
-        assertThat(prediction.getPathoProba(), is(closeTo(.22439633436158474, 1E-5)));
+        assertThat(prediction.getPathoProba(), is(closeTo(.22439633436158474, EPSILON)));
 //        assertThat(doubleMatrix.toArray(), is(new double[]{.7756036656384153, .22439633436158474}));
 
         prediction = overlord.predict(TestVariantInstances.pathogenicAcceptor());
         assertTrue(prediction.isPathogenic());
-        assertThat(prediction.getPathoProba(), is(closeTo(.3726891708713847, 1E-5)));
+        assertThat(prediction.getPathoProba(), is(closeTo(.3726891708713847, EPSILON)));
 //        assertThat(doubleMatrix.toArray(), is(new double[]{.6273108291286154, .3726891708713847}));
 
         prediction = overlord.predict(TestVariantInstances.acceptorCryptic());
         assertTrue(prediction.isPathogenic());
-        assertThat(prediction.getPathoProba(), is(closeTo(.022480121825609604, 1E-5)));
+        assertThat(prediction.getPathoProba(), is(closeTo(.022480121825609604, EPSILON)));
 //        assertThat(doubleMatrix.toArray(), is(new double[]{.9775198781743903, .022480121825609604}));
     }
 }

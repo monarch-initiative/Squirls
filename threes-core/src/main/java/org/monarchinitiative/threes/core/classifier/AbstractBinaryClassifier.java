@@ -7,9 +7,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public abstract class AbstractClassifier<T extends FeatureData> implements Classifier<T> {
+public abstract class AbstractBinaryClassifier<T extends FeatureData> implements BinaryClassifier<T> {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractClassifier.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractBinaryClassifier.class);
 
     /**
      * Array with class labels, e.g. [0,1] for binary classification.
@@ -17,7 +17,7 @@ public abstract class AbstractClassifier<T extends FeatureData> implements Class
     protected final int[] classes;
 
 
-    protected AbstractClassifier(Builder<?> builder) {
+    protected AbstractBinaryClassifier(Builder<?> builder) {
         this.classes = toIntArray(builder.classes);
         check();
     }
@@ -55,13 +55,13 @@ public abstract class AbstractClassifier<T extends FeatureData> implements Class
      * <p>
      * We check that:
      * <ul>
-     * <li>the classes attribute must not be empty, it must contain at least 2 values</li>
+     * <li>the classes attribute must not be empty, it must contain 2 values (we only support binary classification here)</li>
      * </ul>
      */
     private void check() {
-        if (classes.length < 2) {
-            LOGGER.warn("The `classes` attribute must contain at least 2 class labels");
-            throw new RuntimeException(String.format("The `classes` attribute must contain at least 2 class labels. Found `%d`", classes.length));
+        if (classes.length != 2) {
+            LOGGER.warn("The `classes` attribute must contain exactly 2 class labels");
+            throw new RuntimeException(String.format("The `classes` attribute must contain exactly 2 class labels. Found `%d`", classes.length));
         }
     }
 
@@ -83,7 +83,7 @@ public abstract class AbstractClassifier<T extends FeatureData> implements Class
             return self();
         }
 
-        protected abstract AbstractClassifier<?> build();
+        protected abstract AbstractBinaryClassifier<?> build();
 
         protected abstract A self();
     }

@@ -8,6 +8,7 @@ import org.monarchinitiative.threes.core.classifier.TestTreeInstances;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.number.IsCloseTo.closeTo;
 
 /**
  * This test suite tests if the decision tree works at all. The tests compare predictions of Python's Scikit-Learn
@@ -29,7 +30,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
  */
 class AbstractDecisionTreeTest extends TestBasedOnIrisInstances {
 
-    private AbstractDecisionTree<FeatureData> tree;
+    private AbstractBinaryDecisionTree<FeatureData> tree;
 
     @BeforeEach
     void setUp() {
@@ -37,59 +38,32 @@ class AbstractDecisionTreeTest extends TestBasedOnIrisInstances {
     }
 
     /**
-     * The test compares outputs of {@link AbstractDecisionTree} with outputs of Scikit-learn's
+     * The test compares outputs of {@link AbstractBinaryDecisionTree} with outputs of Scikit-learn's
      * <code>DecisionTreeClassifier</code> trained on Iris dataset as described below:
      * <pre>
      * from sklearn.tree import DecisionTreeClassifier
      * from sklearn.datasets import load_iris
      *
      * X, y = load_iris(return_X_y=True)
-     * dtc = DecisionTreeClassifier(random_state=50, max_depth=3).fit(X,y)
+     * # only use the `versicolor` and `virginica` classes
+     * Xbin = X[50:, :]
+     * ybin = y[50:]
+     * dtc = DecisionTreeClassifier(random_state=50, max_depth=3).fit(Xbin,ybin)
      * </pre>
      * <p>
      * Predictions are made by executing:
      * <pre>
-     * dtc.predict_proba(X[[0,4,50,54,100,104]])
-     * dtc.predict(X[[0,4,50,54,100,104]])
+     * dtc.predict_proba(X[[50,54,100,104]])
+     * dtc.predict(X[[50,54,100,104]])
      * </pre>
      * and this test compares output value of Java implementation with the output above.
      */
     @Test
     void predictProba() {
-        assertThat(tree.predictProba(setosaOne).toArray(), is(new double[]{1.000, 0.000, 0.}));
-        assertThat(tree.predictProba(setosaFive).toArray(), is(new double[]{1.0, 0., 0.}));
-        assertThat(tree.predictProba(versicolorOne).toArray(), is(new double[]{0., .9791666666666666, .020833333333333332}));
-        assertThat(tree.predictProba(versicolorFive).toArray(), is(new double[]{0., .9791666666666666, .020833333333333332}));
-        assertThat(tree.predictProba(virginicaOne).toArray(), is(new double[]{0., 0., 1.}));
-        assertThat(tree.predictProba(virginicaFive).toArray(), is(new double[]{0., 0., 1.}));
-    }
-
-    /**
-     * Similarly to the {@link #predictProba()}, this test compares outputs of {@link AbstractDecisionTree} with
-     * outputs of Scikit-learn's <code>DecisionTreeClassifier</code> trained on Iris dataset as described below:
-     * <pre>
-     * from sklearn.tree import DecisionTreeClassifier
-     * from sklearn.datasets import load_iris
-     *
-     * X, y = load_iris(return_X_y=True)
-     * dtc = DecisionTreeClassifier(random_state=50, max_depth=3).fit(X,y)
-     * </pre>
-     * <p>
-     * Predictions are made by executing:
-     * <pre>
-     * dtc.predict_proba(X[[0,4,50,54,100,104]])
-     * dtc.predict(X[[0,4,50,54,100,104]])
-     * </pre>
-     * and this test compares output value of Java implementation with the output above.
-     */
-    @Test
-    void predict() {
-        assertThat(tree.predict(setosaOne), is(0));
-        assertThat(tree.predict(setosaFive), is(0));
-        assertThat(tree.predict(versicolorOne), is(1));
-        assertThat(tree.predict(versicolorFive), is(1));
-        assertThat(tree.predict(virginicaOne), is(2));
-        assertThat(tree.predict(virginicaFive), is(2));
+        assertThat(tree.predictProba(versicolorOne), is(closeTo(0., EPSILON)));
+        assertThat(tree.predictProba(versicolorFive), is(closeTo(0., EPSILON)));
+        assertThat(tree.predictProba(virginicaOne), is(closeTo(1., EPSILON)));
+        assertThat(tree.predictProba(virginicaFive), is(closeTo(1., EPSILON)));
     }
 
 }

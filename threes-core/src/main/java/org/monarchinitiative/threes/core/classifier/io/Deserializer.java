@@ -8,7 +8,6 @@ import org.monarchinitiative.threes.core.classifier.tree.DonorSplicingDecisionTr
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.Constructor;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 import java.util.function.Function;
@@ -23,7 +22,7 @@ public class Deserializer {
         // private no-op
     }
 
-    public static OverlordClassifier deserialize(InputStream is) throws IOException {
+    public static OverlordClassifier deserialize(InputStream is) {
         return deserialize(deserializeOverallModelData(is));
     }
 
@@ -41,7 +40,7 @@ public class Deserializer {
         return yaml.load(is);
     }
 
-    static Classifier<FeatureData> deserializeDonorPipeline(PipelineTransferModel ptm) {
+    static BinaryClassifier<FeatureData> deserializeDonorPipeline(PipelineTransferModel ptm) {
         return Pipeline.builder()
                 .transformer(deserializeImputer(ptm.getFeatureNames(), ptm.getFeatureStatistics()))
                 .classifier(deserializeDonorClassifier(ptm.getRf()))
@@ -73,7 +72,7 @@ public class Deserializer {
                 .build();
     }
 
-    static Classifier<FeatureData> deserializeAcceptorPipeline(PipelineTransferModel ptm) {
+    static BinaryClassifier<FeatureData> deserializeAcceptorPipeline(PipelineTransferModel ptm) {
         return Pipeline.builder()
                 .transformer(deserializeImputer(ptm.getFeatureNames(), ptm.getFeatureStatistics()))
                 .classifier(deserializeAcceptorClassifier(ptm.getRf()))

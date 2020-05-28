@@ -1,9 +1,8 @@
 package org.monarchinitiative.threes.core.classifier.forest;
 
-import org.jblas.DoubleMatrix;
-import org.monarchinitiative.threes.core.classifier.AbstractClassifier;
+import org.monarchinitiative.threes.core.classifier.AbstractBinaryClassifier;
 import org.monarchinitiative.threes.core.classifier.FeatureData;
-import org.monarchinitiative.threes.core.classifier.tree.AbstractDecisionTree;
+import org.monarchinitiative.threes.core.classifier.tree.AbstractBinaryDecisionTree;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -14,7 +13,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
- * This class uses a collection of {@link AbstractDecisionTree}s to perform classification of a {@link T} instance.
+ * This class uses a collection of {@link AbstractBinaryDecisionTree}s to perform classification of a {@link T} instance.
  * <p>
  * When making class predictions the prediction is based on the most likely class label as identified by
  * {@link #predictProba(T)}.
@@ -26,11 +25,11 @@ import java.util.stream.Collectors;
  *
  * @param <T> type of the data point
  */
-public class RandomForest<T extends FeatureData> extends AbstractClassifier<T> {
+public class RandomForest<T extends FeatureData> extends AbstractBinaryClassifier<T> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RandomForest.class);
 
-    private final Collection<AbstractDecisionTree<T>> trees;
+    private final Collection<AbstractBinaryDecisionTree<T>> trees;
 
     public RandomForest(Builder<T> builder) {
         super(builder);
@@ -61,41 +60,34 @@ public class RandomForest<T extends FeatureData> extends AbstractClassifier<T> {
     @Override
     public Set<String> usedFeatureNames() {
         return trees.stream()
-                .map(AbstractDecisionTree::usedFeatureNames)
+                .map(AbstractBinaryDecisionTree::usedFeatureNames)
                 .flatMap(Collection::stream)
                 .collect(Collectors.toSet());
     }
 
     @Override
-    public int predict(T instance) {
-        final DoubleMatrix proba = predictProba(instance);
-        return classes[proba.argmax()];
-    }
-
-    @Override
-    public DoubleMatrix predictProba(final T instance) {
+    public double predictProba(final T instance) {
         return trees.parallelStream() // why not, what the heck
-                .map(tree -> tree.predictProba(instance))
-                .reduce(DoubleMatrix::concatVertically)
-                .map(DoubleMatrix::columnMeans)
+                .mapToDouble(tree -> tree.predictProba(instance))
+                .average()
                 // this should not happen since we check for that in the constructor
                 .orElseThrow(() -> new RuntimeException("Hoops, there is no tree in the forest!"));
     }
 
-    public static class Builder<A extends FeatureData> extends AbstractClassifier.Builder<Builder<A>> {
+    public static class Builder<A extends FeatureData> extends AbstractBinaryClassifier.Builder<Builder<A>> {
 
-        private final Collection<AbstractDecisionTree<A>> trees = new ArrayList<>();
+        private final Collection<AbstractBinaryDecisionTree<A>> trees = new ArrayList<>();
 
         private Builder() {
             // private no-op
         }
 
-        public Builder<A> addTree(AbstractDecisionTree<A> tree) {
+        public Builder<A> addTree(AbstractBinaryDecisionTree<A> tree) {
             this.trees.add(tree);
             return self();
         }
 
-        public Builder<A> addTrees(Collection<AbstractDecisionTree<A>> trees) {
+        public Builder<A> addTrees(Collection<AbstractBinaryDecisionTree<A>> trees) {
             this.trees.addAll(List.copyOf(trees));
             return self();
         }

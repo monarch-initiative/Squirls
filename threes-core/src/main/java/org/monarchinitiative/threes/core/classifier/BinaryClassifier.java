@@ -1,10 +1,13 @@
 package org.monarchinitiative.threes.core.classifier;
 
-import org.jblas.DoubleMatrix;
-
 import java.util.Set;
 
-public interface Classifier<T extends FeatureData> {
+/**
+ * Class for labeling of an <code>instance</code> either as <code>positive</code> or <code>negative</code>.
+ *
+ * @param <T> <code>instance</code> type
+ */
+public interface BinaryClassifier<T extends FeatureData> {
 
     /**
      * @return set with expected feature names
@@ -20,17 +23,16 @@ public interface Classifier<T extends FeatureData> {
      * @throws PredictionException if a required feature is missing or if if there are any other problems in the
      *                             prediction process
      */
-    int predict(T instance) throws PredictionException;
+//    int predict(T instance) throws PredictionException;
 
     /**
      * Predict class probabilities for given instance. The instance should contain all features that are required by
      * {@link #usedFeatureNames()}.
      *
      * @param instance instance used for prediction
-     * @return class label
+     * @return probability that the <code>instance</code> belongs to the positive class
      * @throws PredictionException if a required feature is missing or if if there are any other problems in the
      *                             prediction process
      */
-    // TODO - make this binary pathogenicity probability
-    DoubleMatrix predictProba(T instance) throws PredictionException;
+    double predictProba(T instance) throws PredictionException;
 }

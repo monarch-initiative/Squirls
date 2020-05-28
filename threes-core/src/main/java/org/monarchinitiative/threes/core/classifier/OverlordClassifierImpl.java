@@ -1,7 +1,6 @@
 package org.monarchinitiative.threes.core.classifier;
 
 import com.google.common.collect.Sets;
-import org.jblas.DoubleMatrix;
 import org.monarchinitiative.threes.core.Prediction;
 import org.monarchinitiative.threes.core.classifier.forest.RandomForest;
 import org.slf4j.Logger;
@@ -22,7 +21,7 @@ public class OverlordClassifierImpl implements OverlordClassifier {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OverlordClassifierImpl.class);
 
-    private final Classifier<FeatureData> donorClf, acceptorClf;
+    private final BinaryClassifier<FeatureData> donorClf, acceptorClf;
 
     private final Set<String> usedFeatures;
 
@@ -76,52 +75,30 @@ public class OverlordClassifierImpl implements OverlordClassifier {
                             .collect(Collectors.joining(",", "[", "]"))));
         }
 
-        // TODO - replace with pathogenicity probability
-        final DoubleMatrix donorProba = donorClf.predictProba(instance);
-        final DoubleMatrix acceptorProba = acceptorClf.predictProba(instance);
+        final double donorProba = donorClf.predictProba(instance);
+        final double acceptorProba = acceptorClf.predictProba(instance);
 
         return PredictionImpl.builder()
-                .setDonorData(donorProba.get(0, 1), donorThreshold)
-                .setAcceptorData(acceptorProba.get(0, 1), acceptorThreshold)
+                .setDonorData(donorProba, donorThreshold)
+                .setAcceptorData(acceptorProba, acceptorThreshold)
                 .build();
     }
 
-    /**
-     * Predict class probabilities for given instance. The instance should contain all features that are required by
-     * {@link #usedFeatureNames()}.
-     *
-     * @param instance instance used for prediction
-     * @return class label
-     * @throws PredictionException if a required feature is missing or if if there are any other problems in the
-     *                             prediction process
-     */
-    @Deprecated
-    public DoubleMatrix predictProba(FeatureData instance) throws PredictionException {
-        final DoubleMatrix donorProba = donorClf.predictProba(instance);
-        final DoubleMatrix acceptorProba = acceptorClf.predictProba(instance);
-
-        final DoubleMatrix pathoProba = donorProba.getColumn(1).max(acceptorProba.getColumn(1));
-        final DoubleMatrix ones = DoubleMatrix.ones(pathoProba.rows, pathoProba.columns);
-        final DoubleMatrix benignProba = ones.sub(pathoProba);
-
-        return DoubleMatrix.concatHorizontally(benignProba, pathoProba);
-    }
-
     public static final class Builder {
-        private Classifier<FeatureData> donorClf;
-        private Classifier<FeatureData> acceptorClf;
+        private BinaryClassifier<FeatureData> donorClf;
+        private BinaryClassifier<FeatureData> acceptorClf;
         private Double donorThreshold = Double.NaN;
         private Double acceptorThreshold = Double.NaN;
 
         private Builder() {
         }
 
-        public Builder donorClf(Classifier<FeatureData> donorClf) {
+        public Builder donorClf(BinaryClassifier<FeatureData> donorClf) {
             this.donorClf = donorClf;
             return this;
         }
 
-        public Builder acceptorClf(Classifier<FeatureData> acceptorClf) {
+        public Builder acceptorClf(BinaryClassifier<FeatureData> acceptorClf) {
             this.acceptorClf = acceptorClf;
             return this;
         }

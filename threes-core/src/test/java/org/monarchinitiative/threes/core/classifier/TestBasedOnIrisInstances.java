@@ -7,10 +7,12 @@ import java.util.Map;
  */
 public class TestBasedOnIrisInstances {
 
+    protected static final double EPSILON = 5e-12;
+
     // the first instance of the iris dataset, class 0 (setosa)
-    protected final FeatureData setosaOne = makeIrisFeature(5.1, 3.5, 1.4, 0.2);
-    // the fifth instance of the iris dataset, class 0 (setosa)
-    protected final FeatureData setosaFive = makeIrisFeature(5., 3.6, 1.4, .2);
+//    protected final FeatureData setosaOne = makeIrisFeature(5.1, 3.5, 1.4, 0.2);
+//     the fifth instance of the iris dataset, class 0 (setosa)
+//    protected final FeatureData setosaFive = makeIrisFeature(5., 3.6, 1.4, .2);
     // the fifty-first instance of the iris dataset, class 1 (versicolor)
     protected final FeatureData versicolorOne = makeIrisFeature(7., 3.2, 4.7, 1.4);
     // the fifty-fifth instance of the iris dataset, class 1 (versicolor)

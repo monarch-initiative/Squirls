@@ -1,7 +1,5 @@
 package org.monarchinitiative.threes.core.classifier;
 
-import org.jblas.DoubleMatrix;
-
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -9,11 +7,11 @@ import java.util.stream.Stream;
 /**
  * Pipeline class inspired by scikit-learn. This pipeline consists of an imputer followed by a classifier.
  */
-public class Pipeline<T extends FeatureData> implements Classifier<T> {
+public class Pipeline<T extends FeatureData> implements BinaryClassifier<T> {
 
     private final FeatureTransformer<T> transformer;
 
-    private final Classifier<T> classifier;
+    private final BinaryClassifier<T> classifier;
 
     private Pipeline(Builder<T> builder) {
         transformer = builder.transformer;
@@ -32,20 +30,14 @@ public class Pipeline<T extends FeatureData> implements Classifier<T> {
     }
 
     @Override
-    public int predict(T instance) throws PredictionException {
-        final T transformed = this.transformer.transform(instance);
-        return classifier.predict(transformed);
-    }
-
-    @Override
-    public DoubleMatrix predictProba(T instance) throws PredictionException {
+    public double predictProba(T instance) throws PredictionException {
         final T transformed = this.transformer.transform(instance);
         return classifier.predictProba(transformed);
     }
 
     public static final class Builder<T extends FeatureData> {
         private FeatureTransformer<T> transformer;
-        private Classifier<T> randomForest;
+        private BinaryClassifier<T> randomForest;
 
         private Builder() {
         }
@@ -55,7 +47,7 @@ public class Pipeline<T extends FeatureData> implements Classifier<T> {
             return this;
         }
 
-        public Builder<T> classifier(Classifier<T> randomForest) {
+        public Builder<T> classifier(BinaryClassifier<T> randomForest) {
             this.randomForest = randomForest;
             return this;
         }

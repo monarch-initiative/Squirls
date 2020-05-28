@@ -151,7 +151,7 @@ public class ThreesAutoConfiguration {
 
         try {
             return Deserializer.deserialize(new ByteArrayInputStream(bytes));
-        } catch (IOException e) {
+        } catch (Exception e) {
             throw new CorruptedThreesResourceException(e.getMessage());
         }
     }

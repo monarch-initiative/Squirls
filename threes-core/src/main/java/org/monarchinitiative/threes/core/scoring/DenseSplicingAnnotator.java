@@ -25,8 +25,6 @@ public class DenseSplicingAnnotator implements SplicingAnnotator {
 
     private final SplicingTranscriptLocator transcriptLocator;
 
-    // TODO - make a map of FeatureCalculators
-
     private final CanonicalDonorFeatureCalculator canonicalDonorFeatureCalculator;
 
     private final CanonicalAcceptorFeatureCalculator canonicalAcceptorScorer;
