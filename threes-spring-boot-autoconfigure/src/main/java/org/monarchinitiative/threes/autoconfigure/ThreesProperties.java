@@ -1,7 +1,6 @@
 package org.monarchinitiative.threes.autoconfigure;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.boot.context.properties.NestedConfigurationProperty;
 
 @ConfigurationProperties(prefix = "threes")
 public class ThreesProperties {
@@ -22,43 +21,21 @@ public class ThreesProperties {
     private String dataVersion;
 
     /**
-     * Maximum distance variant can be upstream from an exon in order to be evaluated.
+     * Path to bigwig file with genome-wide PhyloP scores.
      */
-    private int maxDistanceExonUpstream = 50;
+    private String phylopBigwigPath;
 
     /**
-     * Maximum distance variant can be downstream from an exon in order to be evaluated.
+     * Version of the classifier to use.
      */
-    private int maxDistanceExonDownstream = 50;
+    private String classifierVersion = "v1";
 
-    /**
-     * Choose from {simple, single}.
-     */
-    private String genomeSequenceAccessorType = "simple";
-
-    /**
-     * Choose from {sparse, dense}.
-     */
-    private String splicingAnnotatorType = "sparse";
-
-    // threes.sparse
-    @NestedConfigurationProperty
-    private SparseProperties sparse = new SparseProperties();
-
-    public int getMaxDistanceExonUpstream() {
-        return maxDistanceExonUpstream;
+    public String getPhylopBigwigPath() {
+        return phylopBigwigPath;
     }
 
-    public void setMaxDistanceExonUpstream(int maxDistanceExonUpstream) {
-        this.maxDistanceExonUpstream = maxDistanceExonUpstream;
-    }
-
-    public int getMaxDistanceExonDownstream() {
-        return maxDistanceExonDownstream;
-    }
-
-    public void setMaxDistanceExonDownstream(int maxDistanceExonDownstream) {
-        this.maxDistanceExonDownstream = maxDistanceExonDownstream;
+    public void setPhylopBigwigPath(String phylopBigwigPath) {
+        this.phylopBigwigPath = phylopBigwigPath;
     }
 
     public String getDataDirectory() {
@@ -85,27 +62,11 @@ public class ThreesProperties {
         this.dataVersion = dataVersion;
     }
 
-    public String getGenomeSequenceAccessorType() {
-        return genomeSequenceAccessorType;
+    public String getClassifierVersion() {
+        return classifierVersion;
     }
 
-    public void setGenomeSequenceAccessorType(String genomeSequenceAccessorType) {
-        this.genomeSequenceAccessorType = genomeSequenceAccessorType;
-    }
-
-    public String getSplicingAnnotatorType() {
-        return splicingAnnotatorType;
-    }
-
-    public void setSplicingAnnotatorType(String splicingAnnotatorType) {
-        this.splicingAnnotatorType = splicingAnnotatorType;
-    }
-
-    public SparseProperties getSparse() {
-        return sparse;
-    }
-
-    public void setSparse(SparseProperties sparse) {
-        this.sparse = sparse;
+    public void setClassifierVersion(String classifierVersion) {
+        this.classifierVersion = classifierVersion;
     }
 }

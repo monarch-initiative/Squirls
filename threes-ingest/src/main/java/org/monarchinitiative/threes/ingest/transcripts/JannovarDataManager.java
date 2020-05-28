@@ -29,7 +29,6 @@ public class JannovarDataManager {
      * @return jannovar data manager with loaded jannovar data
      */
     public static JannovarDataManager fromDirectory(Path path) {
-        LOGGER.debug("Analyzing ");
         final File[] files = path.toFile().listFiles(name -> name.getName().endsWith(".ser"));
         if (files != null) {
             return fromPaths(Arrays.stream(files).map(File::toPath).toArray(Path[]::new));

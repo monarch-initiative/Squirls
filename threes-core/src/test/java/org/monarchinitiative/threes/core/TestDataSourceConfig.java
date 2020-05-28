@@ -4,16 +4,17 @@ import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import de.charite.compbio.jannovar.data.ReferenceDictionary;
 import de.charite.compbio.jannovar.data.ReferenceDictionaryBuilder;
-import org.monarchinitiative.threes.core.calculators.ic.SplicingInformationContentCalculator;
-import org.monarchinitiative.threes.core.calculators.sms.SMSCalculator;
 import org.monarchinitiative.threes.core.data.ic.InputStreamBasedPositionalWeightMatrixParser;
 import org.monarchinitiative.threes.core.data.ic.SplicingPositionalWeightMatrixParser;
 import org.monarchinitiative.threes.core.data.ic.SplicingPwmData;
-import org.monarchinitiative.threes.core.data.sms.FileSMSParser;
-import org.monarchinitiative.threes.core.data.sms.SMSParser;
+import org.monarchinitiative.threes.core.data.kmer.FileKMerParser;
 import org.monarchinitiative.threes.core.model.SplicingParameters;
 import org.monarchinitiative.threes.core.reference.allele.AlleleGenerator;
-import org.monarchinitiative.threes.core.scoring.dense.DenseSplicingAnnotator;
+import org.monarchinitiative.threes.core.scoring.DenseSplicingAnnotator;
+import org.monarchinitiative.threes.core.scoring.SplicingAnnotator;
+import org.monarchinitiative.threes.core.scoring.calculators.ic.SplicingInformationContentCalculator;
+import org.monarchinitiative.threes.core.scoring.conservation.BigWigAccessor;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -23,6 +24,7 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Map;
 
 /**
  *
@@ -90,18 +92,28 @@ public class TestDataSourceConfig {
     }
 
     @Bean
-    public DenseSplicingAnnotator denseSplicingEvaluator(SplicingPwmData splicingPwmData) {
-        return new DenseSplicingAnnotator(splicingPwmData);
+    public SplicingAnnotator denseSplicingEvaluator(SplicingPwmData splicingPwmData,
+                                                    Map<String, Double> hexamerMap,
+                                                    Map<String, Double> septamerMap,
+                                                    @Qualifier("phylopAccessor") BigWigAccessor phylopAccessor) {
+        return new DenseSplicingAnnotator(splicingPwmData, hexamerMap, septamerMap, phylopAccessor);
     }
 
     @Bean
-    public SMSCalculator smsCalculator(SMSParser smsParser) {
-        return new SMSCalculator(smsParser.getSeptamerMap());
+    public Map<String, Double> hexamerMap() throws IOException {
+        Path path = Paths.get(TestDataSourceConfig.class.getResource("data/kmer/hexamer-scores-full.tsv").getPath());
+        return new FileKMerParser(path).getKmerMap();
     }
 
     @Bean
-    public SMSParser smsParser() throws IOException {
-        Path path = Paths.get(TestDataSourceConfig.class.getResource("data/sms/septamer-scores.tsv").getPath());
-        return new FileSMSParser(path);
+    public Map<String, Double> septamerMap() throws IOException {
+        Path path = Paths.get(TestDataSourceConfig.class.getResource("data/kmer/septamer-scores.tsv").getPath());
+        return new FileKMerParser(path).getKmerMap();
+    }
+
+    @Bean
+    public BigWigAccessor phylopAccessor() throws IOException {
+        Path path = Paths.get(TestDataSourceConfig.class.getResource("scoring/conservation/small.bw").getPath());
+        return new BigWigAccessor(path);
     }
 }

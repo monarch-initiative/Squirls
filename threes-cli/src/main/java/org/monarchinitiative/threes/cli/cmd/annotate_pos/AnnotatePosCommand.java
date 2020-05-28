@@ -5,8 +5,8 @@ import net.sourceforge.argparse4j.inf.Subparser;
 import net.sourceforge.argparse4j.inf.Subparsers;
 import org.monarchinitiative.threes.cli.cmd.Command;
 import org.monarchinitiative.threes.cli.cmd.CommandException;
-import org.monarchinitiative.threes.core.scoring.SplicingPathogenicityData;
-import org.monarchinitiative.threes.core.scoring.VariantSplicingEvaluator;
+import org.monarchinitiative.threes.core.Prediction;
+import org.monarchinitiative.threes.core.VariantSplicingEvaluator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -16,6 +16,9 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+/**
+ * TODO - implement
+ */
 @Component
 public class AnnotatePosCommand extends Command {
 
@@ -51,16 +54,16 @@ public class AnnotatePosCommand extends Command {
                 .collect(Collectors.toUnmodifiableList());
 
         for (VariantChange change : changes) {
-            final Map<String, SplicingPathogenicityData> dataMap = variantSplicingEvaluator.evaluate(change.getContig(), change.getPos(), change.getRef(), change.getAlt());
-            final List<String> transcripts = dataMap.keySet().stream().sorted().collect(Collectors.toUnmodifiableList());
-            for (String tx : transcripts) {
-                final SplicingPathogenicityData data = dataMap.get(tx);
-                final List<String> scoresNames = data.getScoresMap().keySet().stream().sorted().collect(Collectors.toUnmodifiableList());
-                String scores = scoresNames.stream()
-                        .map(name -> name + "=" + data.getOrDefault(name, Double.NaN))
-                        .collect(Collectors.joining(";"));
-                System.out.println(String.join("\t", change.getVariantChange(), tx, scores));
-            }
+            final Map<String, Prediction> dataMap = variantSplicingEvaluator.evaluate(change.getContig(), change.getPos(), change.getRef(), change.getAlt());
+//            final List<String> transcripts = dataMap.keySet().stream().sorted().collect(Collectors.toUnmodifiableList());
+//            for (String tx : transcripts) {
+//                final Prediction data = dataMap.get(tx);
+//                final List<String> scoresNames = data.getScoresMap().keySet().stream().sorted().collect(Collectors.toUnmodifiableList());
+//                String scores = scoresNames.stream()
+//                        .map(name -> name + "=" + data.getOrDefault(name, Double.NaN))
+//                        .collect(Collectors.joining(";"));
+//                System.out.println(String.join("\t", change.getVariantChange(), tx, scores));
+//            }
         }
     }
 }

@@ -1,13 +1,11 @@
 package org.monarchinitiative.threes.autoconfigure;
 
 import org.junit.jupiter.api.Test;
+import org.monarchinitiative.threes.core.VariantSplicingEvaluator;
+import org.monarchinitiative.threes.core.data.SplicingTranscriptSource;
 import org.monarchinitiative.threes.core.scoring.SplicingAnnotator;
-import org.monarchinitiative.threes.core.scoring.dense.DenseSplicingAnnotator;
-import org.monarchinitiative.threes.core.scoring.sparse.SparseSplicingAnnotator;
 import org.springframework.beans.factory.BeanCreationException;
 import xyz.ielis.hyperutil.reference.fasta.GenomeSequenceAccessor;
-import xyz.ielis.hyperutil.reference.fasta.SingleChromosomeGenomeSequenceAccessor;
-import xyz.ielis.hyperutil.reference.fasta.SingleFastaGenomeSequenceAccessor;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -18,11 +16,23 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class ThreesAutoConfigurationTest extends AbstractAutoConfigurationTest {
 
+    /**
+     * Small bigWig file containing phyloP scores for region chr9:100,000-101,000 (0-based).
+     */
+    private static final Path SMALL_BW = TEST_DATA.getParent().resolve("small.bw");
+
+    /**
+     * Test how the normal configuration should look like and beans that should be available
+     */
     @Test
     void testAllPropertiesSupplied() {
         load(ThreesAutoConfiguration.class, "threes.data-directory=" + TEST_DATA,
                 "threes.genome-assembly=hg19",
-                "threes.data-version=1710");
+                "threes.data-version=1710",
+                "threes.phylop-bigwig-path=" + SMALL_BW);
+        /*
+         * Data we expect to get from the user
+         */
         Path threesDataDirectory = context.getBean("threesDataDirectory", Path.class);
         assertThat(threesDataDirectory.getFileName(), equalTo(Paths.get("data")));
 
@@ -32,18 +42,29 @@ class ThreesAutoConfigurationTest extends AbstractAutoConfigurationTest {
         String threesDataVersion = context.getBean("threesDataVersion", String.class);
         assertThat(threesDataVersion, is("1710"));
 
-        // default values
-        ThreesProperties properties = context.getBean(ThreesProperties.class);
-        assertThat(properties.getMaxDistanceExonUpstream(), is(50));
-        assertThat(properties.getMaxDistanceExonDownstream(), is(50));
-        assertThat(properties.getGenomeSequenceAccessorType(), is("simple"));
-        assertThat(properties.getSplicingAnnotatorType(), is("sparse"));
+        Path phylopBigwigPath = context.getBean("phylopBigwigPath", Path.class);
+        assertThat(phylopBigwigPath, is(SMALL_BW));
 
-        GenomeSequenceAccessor accessor = context.getBean("genomeSequenceAccessor", GenomeSequenceAccessor.class);
-        assertThat(accessor, is(instanceOf(SingleFastaGenomeSequenceAccessor.class)));
+        /*
+         * Optional - default values
+         */
+        ThreesProperties properties = context.getBean(ThreesProperties.class);
+        assertThat(properties.getClassifierVersion(), is("v1"));
+
+        /*
+         * High-level beans
+         */
+        GenomeSequenceAccessor genomeSequenceAccessor = context.getBean("genomeSequenceAccessor", GenomeSequenceAccessor.class);
+        assertThat(genomeSequenceAccessor, is(notNullValue()));
+
+        SplicingTranscriptSource splicingTranscriptSource = context.getBean("splicingTranscriptSource", SplicingTranscriptSource.class);
+        assertThat(splicingTranscriptSource, is(notNullValue()));
 
         SplicingAnnotator splicingAnnotator = context.getBean("splicingAnnotator", SplicingAnnotator.class);
-        assertThat(splicingAnnotator, is(instanceOf(SparseSplicingAnnotator.class)));
+        assertThat(splicingAnnotator, is(notNullValue()));
+
+        VariantSplicingEvaluator evaluator = context.getBean("variantSplicingEvaluator", VariantSplicingEvaluator.class);
+        assertThat(evaluator, is(notNullValue()));
     }
 
     @Test
@@ -51,22 +72,12 @@ class ThreesAutoConfigurationTest extends AbstractAutoConfigurationTest {
         load(ThreesAutoConfiguration.class, "threes.data-directory=" + TEST_DATA,
                 "threes.genome-assembly=hg19",
                 "threes.data-version=1710",
-                "threes.max-distance-exon-upstream=100",
-                "threes.max-distance-exon-downstream=200",
-                "threes.genome-sequence-accessor-type=chromosome",
-                "threes.splicing-annotator-type=dense");
+                "threes.phylop-bigwig-path=" + SMALL_BW,
+                "threes.classifier-version=v1");
 
+        // the test database currently only contains the `v1` model so it's not really possible to test this :/
         ThreesProperties properties = context.getBean(ThreesProperties.class);
-        assertThat(properties.getMaxDistanceExonUpstream(), is(100));
-        assertThat(properties.getMaxDistanceExonDownstream(), is(200));
-        assertThat(properties.getGenomeSequenceAccessorType(), is("chromosome"));
-        assertThat(properties.getSplicingAnnotatorType(), is("dense"));
-
-        GenomeSequenceAccessor accessor = context.getBean("genomeSequenceAccessor", GenomeSequenceAccessor.class);
-        assertThat(accessor, is(instanceOf(SingleChromosomeGenomeSequenceAccessor.class)));
-
-        SplicingAnnotator splicingAnnotator = context.getBean("splicingAnnotator", SplicingAnnotator.class);
-        assertThat(splicingAnnotator, is(instanceOf(DenseSplicingAnnotator.class)));
+        assertThat(properties.getClassifierVersion(), is("v1"));
     }
 
     @Test
@@ -106,5 +117,25 @@ class ThreesAutoConfigurationTest extends AbstractAutoConfigurationTest {
         assertThat(thrown.getMessage(), containsString("Data version (`--threes.data-version`) is not specified"));
     }
 
+    @Test
+    void testMissingPhylopPath() {
+        Throwable thrown = assertThrows(BeanCreationException.class, () -> load(ThreesAutoConfiguration.class,
+                "threes.data-directory=" + TEST_DATA,
+                "threes.genome-assembly=hg19",
+                "threes.data-version=1710"
+        ));
+        assertThat(thrown.getMessage(), containsString("Path to PhyloP bigwig file is not specified"));
+    }
 
+    @Test
+    void testMissingClassifier() {
+        Throwable thrown = assertThrows(BeanCreationException.class, () -> load(ThreesAutoConfiguration.class,
+                "threes.data-directory=" + TEST_DATA,
+                "threes.genome-assembly=hg19",
+                "threes.data-version=1710",
+                "threes.phylop-bigwig-path=" + SMALL_BW,
+                "threes.classifier-version=puddle"
+        ));
+        assertThat(thrown.getMessage(), containsString("Classifier `puddle` is not available. Available: [ v1 ]"));
+    }
 }

@@ -12,20 +12,20 @@ public class FeatureData {
 
     private final Map<String, Double> featureMap;
 
-    private FeatureData(Builder<?> builder) {
+    private FeatureData(Builder builder) {
         featureMap = builder.featureMap;
     }
 
-    public static <T extends FeatureData> Builder<T> builder() {
-        return new Builder<>(Map.of());
+    public static Builder builder() {
+        return new Builder(Map.of());
     }
 
     public Set<String> getFeatureNames() {
         return featureMap.keySet();
     }
 
-    public Builder<FeatureData> toBuilder() {
-        return new Builder<>(featureMap);
+    public Builder toBuilder() {
+        return new Builder(featureMap);
     }
 
     public <T> T getFeature(String featureName, Class<T> clz) {
@@ -52,19 +52,19 @@ public class FeatureData {
                 '}';
     }
 
-    public static final class Builder<T extends FeatureData> {
+    public static final class Builder {
         private final Map<String, Double> featureMap = new HashMap<>();
 
         private Builder(Map<String, Double> featureMap) {
             this.featureMap.putAll(featureMap);
         }
 
-        public Builder<T> addFeature(String featureName, double feature) {
+        public Builder addFeature(String featureName, double feature) {
             this.featureMap.put(featureName, feature);
             return this;
         }
 
-        public Builder<T> addFeatures(Map<String, Double> features) {
+        public Builder addFeatures(Map<String, Double> features) {
             this.featureMap.putAll(features);
             return this;
         }

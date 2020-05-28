@@ -5,7 +5,7 @@ import org.monarchinitiative.threes.core.classifier.FeatureData;
 import java.util.Map;
 import java.util.Set;
 
-public class AcceptorSplicingDecisionTree extends AbstractDecisionTree<FeatureData> {
+public class AcceptorSplicingDecisionTree extends AbstractBinaryDecisionTree<FeatureData> {
 
     /*
      * This is the order of features for acceptor classifier:
@@ -37,7 +37,7 @@ public class AcceptorSplicingDecisionTree extends AbstractDecisionTree<FeatureDa
         return Set.copyOf(featureNames.values());
     }
 
-    public static class Builder extends AbstractDecisionTree.Builder<Builder> {
+    public static class Builder extends AbstractBinaryDecisionTree.Builder<Builder> {
 
         private Builder() {
             // private no-op

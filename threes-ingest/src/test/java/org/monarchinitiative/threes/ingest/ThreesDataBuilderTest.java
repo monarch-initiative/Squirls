@@ -5,7 +5,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.monarchinitiative.threes.core.ThreeSException;
-import org.monarchinitiative.threes.core.calculators.ic.SplicingInformationContentCalculator;
+import org.monarchinitiative.threes.core.scoring.calculators.ic.SplicingInformationContentCalculator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.jdbc.Sql;
@@ -27,8 +27,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
 
 @SpringBootTest(classes = {TestDataSourceConfig.class})
-@Sql(scripts = {"file:src/test/resources/org/monarchinitiative/threes/ingest/pwm/create_pwm_tables.sql",
-        "file:src/test/resources/org/monarchinitiative/threes/ingest/transcripts/create_transcript_intron_exon_tables.sql"})
+@Sql(scripts = {"pwm/create_pwm_tables.sql", "transcripts/create_transcript_intron_exon_tables.sql"})
 class ThreesDataBuilderTest {
 
     private static final String ASSEMBLY = "hg19";

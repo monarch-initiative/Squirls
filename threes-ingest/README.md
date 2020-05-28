@@ -1,22 +1,46 @@
 # 3S ingest
 
-This module is responsible for building of 3S databases for *Refseq*, *Ensembl*, and *Ucsc* transcripts.
+This module is responsible for building of 3S resource files.
 
-## How to build database
+## How to build the resource files
 
-The command below will create a new directory `/home/user/data/1902_hg19` and store all the files inside. 
-At first it will download & process the UCSC reference genome, then the splicing database with *RefSeq*, *Ucsc*, and *Ensembl* transcripts will be built in case appropriate Jannovar caches are present in the `/path/to/jannovar/dir` folder. 
+There are two commands that need to be run in order to build the resource files for a genome assembly:
+- `generate-config` - generate the config file
+- `ingest | run-ingest` - build the resource directory
+
+### Generate a config file
+We need to generate and fill the config file first. If you do not have some resources, download a resource bundle from 
+[here](https://exomiser-threes.s3.amazonaws.com/threes-build-resources.zip).
 
 ```bash
-java -jar threes-ingest-1.0.4.jar
---build-dir=/home/user/data --genome-assembly=hg19 --version=1902 --jannovar-transcript-db-dir=/path/to/jannovar/dir
+java -jar threes-ingest-1.0.4.jar generate-config config.yml
+``` 
+
+Then, open the `config.yml` file and provide the required information. 
+
+### Build the resource
+Having the config file ready, we can build the resource directory.
+
+```bash
+java -jar threes-ingest-1.0.4.jar ingest -c config.yml run-ingest build-dir 2005 hg19
 ```
-> **Note:**
-> - `--version` - use any string you want, this is present in order to follow Exomiser build process as closely as possible
-> - `--genome-assembly` - choose from `hg19`, and `hg38`
+where
+- `build-dir` - denotes a path to resource directory
+- `2005` - denotes an arbitrary version tag for this build
+- `hg19` - denotes a genome assembly tag 
 
-## How to use the database building process within another software
+After running the command above, the `build-dir` should have a similar structure:
+```
+build-dir
+  \- 2005_hg19
+    |- 2005_hg19.fa
+    |- 2005_hg19.fa.dict
+    |- 2005_hg19.fa.fai
+    \- 2005_hg19_splicing.mv.db
+``` 
 
-The methods for database building are defined in the `org.monarchinitiative.threes.ingest.ThreesDataBuilder` class. 
+## How to build the resource files within another software
 
-An example usage of these methods is showed in the `org.monarchinitiative.threes.ingest.Main` class.
+The methods for resource building are defined in the `org.monarchinitiative.threes.ingest.ThreesDataBuilder` class. 
+
+An example usage of these methods is showed in the `org.monarchinitiative.threes.ingest.cmd.RunIngestCommand` class.

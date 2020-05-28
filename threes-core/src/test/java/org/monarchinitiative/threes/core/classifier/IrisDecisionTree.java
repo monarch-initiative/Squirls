@@ -1,6 +1,6 @@
 package org.monarchinitiative.threes.core.classifier;
 
-import org.monarchinitiative.threes.core.classifier.tree.AbstractDecisionTree;
+import org.monarchinitiative.threes.core.classifier.tree.AbstractBinaryDecisionTree;
 
 import java.util.Map;
 import java.util.Set;
@@ -8,7 +8,7 @@ import java.util.Set;
 /**
  * The simplest implementation of the decision tree for using with the Iris dataset.
  */
-public class IrisDecisionTree extends AbstractDecisionTree<FeatureData> {
+public class IrisDecisionTree extends AbstractBinaryDecisionTree<FeatureData> {
 
     private static final Map<Integer, String> featureIndices = Map.of(0, "sepal_length",
             1, "sepal_width",
@@ -33,7 +33,7 @@ public class IrisDecisionTree extends AbstractDecisionTree<FeatureData> {
         return Set.copyOf(featureIndices.values());
     }
 
-    public static class Builder extends AbstractDecisionTree.Builder<Builder> {
+    public static class Builder extends AbstractBinaryDecisionTree.Builder<Builder> {
 
         @Override
         public IrisDecisionTree build() {

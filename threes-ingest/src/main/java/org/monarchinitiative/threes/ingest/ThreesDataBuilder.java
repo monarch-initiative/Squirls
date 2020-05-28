@@ -6,11 +6,14 @@ import de.charite.compbio.jannovar.data.ReferenceDictionary;
 import de.charite.compbio.jannovar.reference.TranscriptModel;
 import org.flywaydb.core.Flyway;
 import org.monarchinitiative.threes.core.ThreeSException;
-import org.monarchinitiative.threes.core.calculators.ic.SplicingInformationContentCalculator;
+import org.monarchinitiative.threes.core.data.ClassifierDao;
 import org.monarchinitiative.threes.core.data.ic.InputStreamBasedPositionalWeightMatrixParser;
 import org.monarchinitiative.threes.core.data.ic.SplicingPositionalWeightMatrixParser;
 import org.monarchinitiative.threes.core.data.ic.SplicingPwmData;
+import org.monarchinitiative.threes.core.data.kmer.FileKMerParser;
 import org.monarchinitiative.threes.core.model.SplicingParameters;
+import org.monarchinitiative.threes.core.scoring.calculators.ic.SplicingInformationContentCalculator;
+import org.monarchinitiative.threes.ingest.kmers.KmerIngestDao;
 import org.monarchinitiative.threes.ingest.pwm.PwmIngestDao;
 import org.monarchinitiative.threes.ingest.reference.GenomeAssemblyDownloader;
 import org.monarchinitiative.threes.ingest.reference.ReferenceDictionaryIngestDao;
@@ -27,6 +30,7 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collection;
+import java.util.Map;
 
 /**
  * A static class with methods for building splicing database.
@@ -56,7 +60,7 @@ public class ThreesDataBuilder {
     }
 
     private static DataSource makeDataSource(Path databasePath) {
-        // TODO - add JDBC parameters?
+        // TODO(optional) - add JDBC parameters?
         String jdbcUrl = String.format("jdbc:h2:file:%s", databasePath.toString());
         HikariConfig config = new HikariConfig();
         config.setUsername("sa");
@@ -109,6 +113,35 @@ public class ThreesDataBuilder {
     }
 
     /**
+     * Store data for septamers and hexamer methods.
+     *
+     * @param dataSource  data source for a database
+     * @param hexamerMap  map with hexamer scores
+     * @param septamerMap map with septamer scores
+     */
+    private static void processKmers(DataSource dataSource, Map<String, Double> hexamerMap, Map<String, Double> septamerMap) {
+        KmerIngestDao dao = new KmerIngestDao(dataSource);
+        int updated = dao.insertHexamers(hexamerMap);
+        LOGGER.info("Updated {} rows in hexamer table", updated);
+        updated = dao.insertSeptamers(septamerMap);
+        LOGGER.info("Updated {} rows in septamer table", updated);
+    }
+
+    /**
+     * Store classifier data
+     *
+     * @param dataSource data source for a database
+     * @param clfVersion classifier version
+     * @param clfBytes   classifier data
+     */
+    private static void processClassifier(DataSource dataSource, String clfVersion, byte[] clfBytes) {
+        LOGGER.info("Inserting classifier `{}`", clfVersion);
+        final ClassifierDao clfDao = new ClassifierDao(dataSource);
+        final int updated = clfDao.storeClassifier(clfVersion, clfBytes);
+        LOGGER.info("Updated {} rows", updated);
+    }
+
+    /**
      * Build the database given inputs.
      *
      * @param buildDir          path to directory where the database file should be stored
@@ -118,16 +151,29 @@ public class ThreesDataBuilder {
      * @param versionedAssembly a string like `1710_hg19`, etc.
      * @throws ThreeSException if anything goes wrong
      */
-    public static void buildDatabase(Path buildDir, URL genomeUrl, Path jannovarDbDir, Path yamlPath, String versionedAssembly) throws ThreeSException {
+    public static void buildDatabase(Path buildDir, URL genomeUrl, Path jannovarDbDir, Path yamlPath,
+                                     Path hexamerPath, Path septamerPath,
+                                     Map<String, byte[]> classifiers,
+                                     String versionedAssembly) throws ThreeSException {
 
         // 0 - deserialize Jannovar transcript databases
         JannovarDataManager manager = JannovarDataManager.fromDirectory(jannovarDbDir);
 
-        // 1 - parse YAML with splicing matrices
+        // 1a - parse YAML with splicing matrices
         SplicingPwmData splicingPwmData;
         try (InputStream is = Files.newInputStream(yamlPath)) {
             SplicingPositionalWeightMatrixParser parser = new InputStreamBasedPositionalWeightMatrixParser(is);
             splicingPwmData = parser.getSplicingPwmData();
+        } catch (IOException e) {
+            throw new ThreeSException(e);
+        }
+
+        // 1b - parse k-mer maps
+        final Map<String, Double> hexamerMap;
+        final Map<String, Double> septamerMap;
+        try {
+            hexamerMap = new FileKMerParser(hexamerPath).getKmerMap();
+            septamerMap = new FileKMerParser(septamerPath).getKmerMap();
         } catch (IOException e) {
             throw new ThreeSException(e);
         }
@@ -155,7 +201,11 @@ public class ThreesDataBuilder {
         LOGGER.info("Inserting PWMs");
         processPwms(dataSource, splicingPwmData);
 
-        // 3d - store reference dictionary and transcripts
+        // 3d - store k-mer maps
+        LOGGER.info("Inserting k-mer maps");
+        processKmers(dataSource, hexamerMap, septamerMap);
+
+        // 3e - store reference dictionary and transcripts
         SplicingInformationContentCalculator calculator = new SplicingInformationContentCalculator(splicingPwmData);
         try (GenomeSequenceAccessor accessor = GenomeSequenceAccessorBuilder.builder()
                 .setFastaPath(genomeFastaPath)
@@ -172,5 +222,12 @@ public class ThreesDataBuilder {
         } catch (IOException e) {
             throw new ThreeSException(e);
         }
+
+        // 3f - store classifier
+        for (Map.Entry<String, byte[]> entry : classifiers.entrySet()) {
+            processClassifier(dataSource, entry.getKey(), entry.getValue());
+        }
+
     }
+
 }

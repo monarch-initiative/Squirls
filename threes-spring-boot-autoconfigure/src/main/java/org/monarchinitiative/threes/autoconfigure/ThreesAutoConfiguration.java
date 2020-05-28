@@ -1,27 +1,24 @@
 package org.monarchinitiative.threes.autoconfigure;
 
 
-import com.google.common.collect.ImmutableMap;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
-import org.monarchinitiative.threes.core.ThreeSRuntimeException;
-import org.monarchinitiative.threes.core.Utils;
-import org.monarchinitiative.threes.core.calculators.ic.SplicingInformationContentCalculator;
-import org.monarchinitiative.threes.core.calculators.sms.SMSCalculator;
+import org.monarchinitiative.threes.core.StandardVariantSplicingEvaluator;
+import org.monarchinitiative.threes.core.VariantSplicingEvaluator;
+import org.monarchinitiative.threes.core.classifier.OverlordClassifier;
+import org.monarchinitiative.threes.core.classifier.io.Deserializer;
+import org.monarchinitiative.threes.core.data.ClassifierDao;
 import org.monarchinitiative.threes.core.data.DbSplicingTranscriptSource;
 import org.monarchinitiative.threes.core.data.SplicingTranscriptSource;
 import org.monarchinitiative.threes.core.data.ic.DbSplicingPositionalWeightMatrixParser;
 import org.monarchinitiative.threes.core.data.ic.SplicingPwmData;
-import org.monarchinitiative.threes.core.data.sms.DbSmsDao;
-import org.monarchinitiative.threes.core.reference.transcript.NaiveSplicingTranscriptLocator;
-import org.monarchinitiative.threes.core.reference.transcript.SplicingTranscriptLocator;
-import org.monarchinitiative.threes.core.scoring.SimpleVariantSplicingEvaluator;
+import org.monarchinitiative.threes.core.data.kmer.DbKMerDao;
+import org.monarchinitiative.threes.core.scoring.DenseSplicingAnnotator;
 import org.monarchinitiative.threes.core.scoring.SplicingAnnotator;
-import org.monarchinitiative.threes.core.scoring.VariantSplicingEvaluator;
-import org.monarchinitiative.threes.core.scoring.dense.DenseSplicingAnnotator;
-import org.monarchinitiative.threes.core.scoring.sparse.*;
+import org.monarchinitiative.threes.core.scoring.conservation.BigWigAccessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -31,10 +28,13 @@ import xyz.ielis.hyperutil.reference.fasta.GenomeSequenceAccessorBuilder;
 import xyz.ielis.hyperutil.reference.fasta.InvalidFastaFileException;
 
 import javax.sql.DataSource;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.function.UnaryOperator;
+import java.util.Collection;
+import java.util.stream.Collectors;
 
 
 /**
@@ -77,7 +77,6 @@ public class ThreesAutoConfiguration {
         return assembly;
     }
 
-
     @Bean
     @ConditionalOnMissingBean(name = "threesDataVersion")
     public String threesDataVersion() throws UndefinedThreesResourceException {
@@ -88,9 +87,26 @@ public class ThreesAutoConfiguration {
         return dataVersion;
     }
 
+    @Bean
+    @ConditionalOnMissingBean(name = "phylopBigwigPath")
+    public Path phylopBigwigPath() throws UndefinedThreesResourceException {
+        if (properties.getPhylopBigwigPath() == null) {
+            throw new UndefinedThreesResourceException("Path to PhyloP bigwig file is not specified");
+        }
+        return Paths.get(properties.getPhylopBigwigPath());
+    }
+
 
     @Bean
-    public ThreesDataResolver threesDataResolver(Path threesDataDirectory, String threesGenomeAssembly, String threesDataVersion) {
+    public BigWigAccessor phylopBigwigAccessor(Path phylopBigwigPath) throws IOException {
+        LOGGER.info("Using phyloP bigwig file at `{}`", phylopBigwigPath);
+        return new BigWigAccessor(phylopBigwigPath);
+    }
+
+    @Bean
+    public ThreesDataResolver threesDataResolver(Path threesDataDirectory,
+                                                 String threesGenomeAssembly,
+                                                 String threesDataVersion) {
         return new ThreesDataResolver(threesDataDirectory, threesDataVersion, threesGenomeAssembly);
     }
 
@@ -103,76 +119,50 @@ public class ThreesAutoConfiguration {
     @Bean
     public VariantSplicingEvaluator variantSplicingEvaluator(GenomeSequenceAccessor genomeSequenceAccessor,
                                                              SplicingTranscriptSource splicingTranscriptSource,
-                                                             SplicingAnnotator splicingAnnotator) {
-        return new SimpleVariantSplicingEvaluator(genomeSequenceAccessor, splicingTranscriptSource, splicingAnnotator);
+                                                             SplicingAnnotator splicingAnnotator,
+                                                             OverlordClassifier classifier) {
+        return new StandardVariantSplicingEvaluator(genomeSequenceAccessor, splicingTranscriptSource, splicingAnnotator, classifier);
     }
 
     @Bean
-    public SplicingAnnotator splicingAnnotator(SplicingPwmData splicingPwmData, SMSCalculator smsCalculator) {
-        final SplicingInformationContentCalculator calculator = new SplicingInformationContentCalculator(splicingPwmData);
-        final SplicingTranscriptLocator locator = new NaiveSplicingTranscriptLocator(splicingPwmData.getParameters());
-
-        final String splicingAnnotatorType = properties.getSplicingAnnotatorType();
-        switch (splicingAnnotatorType) {
-            case "sparse":
-                // TODO - simplify
-                final int maxDistanceExonUpstream = properties.getMaxDistanceExonUpstream();
-                final int maxDistanceExonDownstream = properties.getMaxDistanceExonDownstream();
-                LOGGER.info("Analyzing variants up to {} bp upstream and {} bp downstream from exon", maxDistanceExonUpstream, maxDistanceExonDownstream);
-                final String scorerFactoryType = properties.getSparse().getScorerFactoryType();
-                final RawScorerFactory rawScorerFactory = new RawScorerFactory(calculator, smsCalculator, maxDistanceExonDownstream, maxDistanceExonUpstream);
-                final ScorerFactory scorerFactory;
-                switch (scorerFactoryType) {
-                    case "scaling":
-                        LOGGER.info("Using scaling scorer factory");
-                        ImmutableMap<ScoringStrategy, UnaryOperator<Double>> scalerMap = ImmutableMap.<ScoringStrategy, UnaryOperator<Double>>builder()
-                                .put(ScoringStrategy.CANONICAL_DONOR, Utils.sigmoidScaler(0.29, -1))
-                                .put(ScoringStrategy.CRYPTIC_DONOR, Utils.sigmoidScaler(-5.52, -1))
-                                .put(ScoringStrategy.CRYPTIC_DONOR_IN_CANONICAL_POSITION, Utils.sigmoidScaler(-4.56, -1))
-                                .put(ScoringStrategy.CANONICAL_ACCEPTOR, Utils.sigmoidScaler(-1.50, -1))
-                                .put(ScoringStrategy.CRYPTIC_ACCEPTOR, Utils.sigmoidScaler(-8.24, -1))
-                                .put(ScoringStrategy.CRYPTIC_ACCEPTOR_IN_CANONICAL_POSITION, Utils.sigmoidScaler(-4.59, -1))
-                                .put(ScoringStrategy.SMS, UnaryOperator.identity()) // TODO - decide how to scale the scores
-                                .build();
-                        scorerFactory = new ScalingScorerFactory(rawScorerFactory, scalerMap);
-                        break;
-                    case "raw":
-                        LOGGER.info("Using raw scorer factory");
-                        scorerFactory = rawScorerFactory;
-                        break;
-                    default:
-                        LOGGER.error("Unknown `threes.sparse.scorer-factory-type` value `{}`", scorerFactoryType);
-                        throw new ThreeSRuntimeException(String.format("Unknown `threes.sparse.scorer-factory-type` value: `%s`", scorerFactoryType));
-                }
-                LOGGER.info("Using sparse splicing annotator");
-                return new SparseSplicingAnnotator(scorerFactory, locator);
-            case "dense":
-                LOGGER.info("Using dense splicing annotator");
-                return new DenseSplicingAnnotator(splicingPwmData);
-            default:
-                LOGGER.error("Unknown `threes.splicing-annotator-type` value `{}`", splicingAnnotatorType);
-                throw new ThreeSRuntimeException(String.format("Unknown `threes.splicing-annotator-type` value: `%s`", splicingAnnotatorType));
-        }
+    public SplicingAnnotator splicingAnnotator(SplicingPwmData splicingPwmData,
+                                               DbKMerDao dbKMerDao,
+                                               BigWigAccessor phylopBigwigAccessor) {
+        LOGGER.info("Using dense splicing annotator");
+        return new DenseSplicingAnnotator(splicingPwmData, dbKMerDao.getHexamerMap(), dbKMerDao.getSeptamerMap(), phylopBigwigAccessor);
     }
 
+    @Bean
+    public DbKMerDao dbKMerDao(@Qualifier("threesDatasource") DataSource threesDatasource) {
+        return new DbKMerDao(threesDatasource);
+    }
+
+    @Bean
+    public OverlordClassifier classifier(@Qualifier("threesDatasource") DataSource threesDatasource) throws CorruptedThreesResourceException {
+        final ClassifierDao clfDao = new ClassifierDao(threesDatasource);
+        final String clfVersion = properties.getClassifierVersion();
+        LOGGER.info("Reading classifier `{}` from database", clfVersion);
+        final byte[] bytes = clfDao.readClassifier(clfVersion);
+        if (bytes == null) {
+            final Collection<String> avail = clfDao.getAvailableClassifiers();
+            throw new CorruptedThreesResourceException(String.format("Classifier `%s` is not available. Available: %s",
+                    clfVersion, avail.stream().sorted().collect(Collectors.joining(", ", "[ ", " ]"))));
+        }
+
+        try {
+            return Deserializer.deserialize(new ByteArrayInputStream(bytes));
+        } catch (Exception e) {
+            throw new CorruptedThreesResourceException(e.getMessage());
+        }
+    }
 
     @Bean
     public GenomeSequenceAccessor genomeSequenceAccessor(ThreesDataResolver threesDataResolver) throws InvalidFastaFileException {
-        final GenomeSequenceAccessorBuilder builder = GenomeSequenceAccessorBuilder.builder()
+        return GenomeSequenceAccessorBuilder.builder()
                 .setFastaPath(threesDataResolver.genomeFastaPath())
                 .setFastaFaiPath(threesDataResolver.genomeFastaFaiPath())
-                .setFastaDictPath(threesDataResolver.genomeFastaDictPath());
-        switch (properties.getGenomeSequenceAccessorType()) {
-            case "chromosome":
-                LOGGER.info("Using single chromosome genome sequence accessor");
-                builder.setType(GenomeSequenceAccessor.Type.SINGLE_CHROMOSOME);
-                break;
-            case "simple":
-            default:
-                LOGGER.info("Using simple genome sequence accessor");
-                break;
-        }
-        return builder
+                .setFastaDictPath(threesDataResolver.genomeFastaDictPath())
+                .setType(GenomeSequenceAccessor.Type.SINGLE_FASTA)
                 .build();
     }
 
@@ -180,14 +170,6 @@ public class ThreesAutoConfiguration {
     public SplicingPwmData splicingPwmData(DataSource threesDatasource) {
         return new DbSplicingPositionalWeightMatrixParser(threesDatasource).getSplicingPwmData();
     }
-
-
-    @Bean
-    public SMSCalculator smsCalculator(DataSource threesDatasource) {
-        final DbSmsDao dbSmsDao = new DbSmsDao(threesDatasource);
-        return new SMSCalculator(dbSmsDao.getSeptamerMap());
-    }
-
 
     @Bean
     public DataSource threesDatasource(ThreesDataResolver threesDataResolver) {

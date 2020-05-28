@@ -1,26 +1,57 @@
 # 3S
 Code for splicing calculations.
 
-## Build from source
+## Build JAR files from sources
 
-Install as a Maven project:
+After cloning this repository, run the following commands to build the JAR files.
 ```bash
-mvn clean install
+cd 3S
+mvn clean package
 ```
 
-This command will install project files into your local Maven repository.
+This command will compile & test Java code, and package classes as well as resource files into JAR files. The JAR files 
+are located in the build directory, which is `<module>/target` by default (e.g. `threes-cli/target/threes-cli-1.3.0.jar`.
 
-## Create databases for Exomiser (optional) 
+After successful packaging, you should be able to see the CLI help message by running:
 
-The module `threes-ingest` is responsible for building of a database(s) and for running the Exomiser with 3S.
+```bash
+java -jar threes-cli/target/threes-cli-1.3.0-SNAPSHOT.jar --help
+```
 
----
+## Command-line interface
 
-**Please note that building of the databases is optional**. You can download the pre-built files from AWS:
-- [1902_hg19](https://exomiser-threes.s3.amazonaws.com/1902_hg19.zip)
-- [1902_hg38](https://exomiser-threes.s3.amazonaws.com/1902_hg38.zip)
+The command-line interface defines 2 command groups:
+- `generate-config` - command for generating a config file for commands from the `run` group
+- `run` - commands that do useful things, e.g. annotate a single variant, a VCF file, etc. 
 
-After unzipping, place the files into your Exomiser data directory. 
+### `generate-config` (installation)
+
+In order to be able to do anything useful with this app, you must download/prepare resources. Run the following to generate the config file:
+
+```bash
+java -jar threes-cli/target/threes-cli-1.3.0-SNAPSHOT.jar generate-config config.yml
+``` 
+
+The command generates an empty configuration file in YAML format. Open the file and provide paths to required resources:
+- `data-directory` - path to directory with 3S databases & genome FASTA file, either downloaded or built by `threes-ingest` module. Download ZIP files with pre-built databases from AWS:
+  - [2003_hg19]()
+  - [2003_hg38]()
+  - **TODO - add links once ready**
+- `genome-assembly` - genome assembly - choose from {`hg19`, `hg38`}   
+- `data-version` - Exomiser-like data version (e.g. `1902`)
+- `phylop-bigwig-path` - path to bigwig file with genome-wide PhyloP scores (download the file `` from [here]())). The files for the supported genome assemblies can be downloaded at the following locations:
+  - [hg19](https://hgdownload.cse.ucsc.edu/goldenpath/hg19/phyloP100way/hg19.100way.phyloP100way.bw)
+  - [hg38](https://hgdownload.soe.ucsc.edu/goldenPath/hg38/phyloP100way/hg38.phyloP100way.bw)  
+
+### Annotate VCF file
+
+**TODO - write the docs**
+
+## Build database files for supported genome assemblies
+
+**TODO - write the docs**  
+
+# Everything below this line is not up-to-date anymore
 
 ### Download required data
 
@@ -81,23 +112,3 @@ Use following starter within your Spring Boot project in order to use the 3S cod
 ```
 
 When using the starter, you have to provide path to 3S data directory, and some other properties as well:
-
-```
-# Path to directory with 3S databases & genome FASTA file
-threes.data-directory=
-# genome assembly - choose from {hg19, hg38}
-threes.genome-assembly=
-# Exomiser-like data version
-threes.data-version=
-# jannovar transcript source - choose from {ucsc, refseq, ensembl}
-threes.transcript-source=
-
-
-## Uncomment and replace the default values if required
-
-# max distance upstream from exon for variant to be analyzed
-#threes.max-distance-exon-upstream=50
-
-# max distance downstream from exon for variant to be analyzed
-#threes.max-distance-exon-downstream=50
-``` 

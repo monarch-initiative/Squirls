@@ -1,0 +1,13 @@
+# Required properties template
+threes:
+  # path to directory with 3S databases & genome FASTA file
+  data-directory:
+  # genome assembly - choose from {hg19, hg38}
+  genome-assembly:
+  # exomiser-like data version
+  data-version:
+  # Path to bigwig file with genome-wide PhyloP scores
+  phylop-bigwig-path:
+  # Which classifier to use
+  #classifier-version=v1
+
