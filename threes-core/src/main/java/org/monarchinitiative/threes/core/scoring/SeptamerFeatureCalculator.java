@@ -3,7 +3,7 @@ package org.monarchinitiative.threes.core.scoring;
 import java.util.Map;
 
 /**
- * This scorer TODO - add docs
+ * This scorer uses SMS scores as described in <a href="https://pubmed.ncbi.nlm.nih.gov/29242188">Ke et al.</a>.
  */
 public class SeptamerFeatureCalculator extends KmerFeatureCalculator {
 

@@ -45,7 +45,6 @@ class DeserializerTest extends TestBasedOnIrisInstances {
         final Prediction prediction = clf.predict(instance);
         assertTrue(prediction.isPathogenic());
         assertThat(prediction.getPathoProba(), is(closeTo(0.162997, 1E-5)));
-//        assertThat(proba.toArray(), is(new double[]{0.8370020726421241, 0.16299792735787583})); // TODO - remove
     }
 
     @Test

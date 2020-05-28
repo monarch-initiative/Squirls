@@ -60,7 +60,7 @@ public class ThreesDataBuilder {
     }
 
     private static DataSource makeDataSource(Path databasePath) {
-        // TODO - add JDBC parameters?
+        // TODO(optional) - add JDBC parameters?
         String jdbcUrl = String.format("jdbc:h2:file:%s", databasePath.toString());
         HikariConfig config = new HikariConfig();
         config.setUsername("sa");
