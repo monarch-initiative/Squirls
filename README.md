@@ -24,7 +24,7 @@ The command-line interface defines 2 command groups:
 - `generate-config` - command for generating a config file for commands from the `run` group
 - `run` - commands that do useful things, e.g. annotate a single variant, a VCF file, etc. 
 
-### `generate-config` (installation)
+### `generate-config` command (installation)
 
 In order to be able to do anything useful with this app, you must download/prepare resources. Run the following to generate the config file:
 
@@ -34,22 +34,32 @@ java -jar threes-cli/target/threes-cli-1.3.0-SNAPSHOT.jar generate-config config
 
 The command generates an empty configuration file in YAML format. Open the file and provide paths to required resources:
 - `data-directory` - path to directory with 3S databases & genome FASTA file, either downloaded or built by `threes-ingest` module. Download ZIP files with pre-built databases from AWS:
-  - [2003_hg19]()
-  - [2003_hg38]()
-  - **TODO - add links once ready**
+  - [1902_hg19](https://exomiser-threes.s3.amazonaws.com/1902_hg19.zip)
+  - [1902_hg38](https://exomiser-threes.s3.amazonaws.com/1902_hg38.zip)
 - `genome-assembly` - genome assembly - choose from {`hg19`, `hg38`}   
 - `data-version` - Exomiser-like data version (e.g. `1902`)
-- `phylop-bigwig-path` - path to bigwig file with genome-wide PhyloP scores (download the file `` from [here]())). The files for the supported genome assemblies can be downloaded at the following locations:
+- `phylop-bigwig-path` - path to bigwig file with genome-wide PhyloP scores. The files for the supported genome assemblies can be downloaded at the following locations:
   - [hg19](https://hgdownload.cse.ucsc.edu/goldenpath/hg19/phyloP100way/hg19.100way.phyloP100way.bw)
   - [hg38](https://hgdownload.soe.ucsc.edu/goldenPath/hg38/phyloP100way/hg38.phyloP100way.bw)  
 
 ### Annotate VCF file
 
-**TODO - write the docs**
+Annotate VCF file by running:
 
-## Build database files for supported genome assemblies
+```bash
+java -jar threes-cli/target/threes-cli-1.3.0-SNAPSHOT.jar run -c config.yml annotate-vcf example.vcf example.annotated.vcf
+```
 
-**TODO - write the docs**  
+At the moment, the annotation adds 2 INFO fields:
+- `3S` - variant is pathogenic if the flag is present
+- `3S_SCORE` - pathogenicity score for given alternate allele with respect to transcript, e.g. `T|NM_123456=0.9|NM_987654=0.1`   
+
+
+## Build resource files for supported genome assemblies
+
+Resource file building is handled by the `threes-ingest` module. Please refer to module-specific `README` file that is located
+in `threes-ingest` module directory.
+
 
 # Everything below this line is not up-to-date anymore
 
