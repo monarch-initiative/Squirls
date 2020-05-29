@@ -47,12 +47,14 @@ The command generates an empty configuration file in YAML format. Open the file 
 Annotate VCF file by running:
 
 ```bash
-java -jar threes-cli/target/threes-cli-1.3.0-SNAPSHOT.jar run -c config.yml annotate-vcf example.vcf example.annotated.vcf
+java -jar threes-cli/target/threes-cli-1.3.0-SNAPSHOT.jar run -c config.yml annotate-vcf 
+--threshold 0.5
+example.vcf example.annotated.vcf
 ```
 
 At the moment, the annotation adds 2 INFO fields:
-- `3S` - variant is pathogenic if the flag is present
-- `3S_SCORE` - pathogenicity score for given alternate allele with respect to transcript, e.g. `T|NM_123456=0.9|NM_987654=0.1`   
+- `3S` - variant is pathogenic if the flag is present. The flag is added if pathogenicity is above the given `--threshold` (`0.2` by default) 
+- `3S_SCORE` - pathogenicity score for alternate allele with respect to transcript, e.g. `T|NM_123456=0.9|NM_987654=0.1`   
 
 
 ## Build resource files for supported genome assemblies
