@@ -25,7 +25,7 @@ public class Main {
     private static final String EPILOG =
             "            ____\n" +
                     "      _,.-'`_ o `;__,\n" +
-                    "       _.-'` '---'  '";
+                    "       _.-'` '---'  '\n";
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Main.class);
 
