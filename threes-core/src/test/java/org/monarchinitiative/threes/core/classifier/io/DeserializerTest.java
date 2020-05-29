@@ -21,13 +21,13 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class DeserializerTest extends TestBasedOnIrisInstances {
 
-    private static final Path TOY_MODEL = Paths.get(DeserializerTest.class.getResource("example_model.yaml").getPath());
+    private static final Path TOY_MODEL_v1 = Paths.get(DeserializerTest.class.getResource("example_model.yaml").getPath());
     private static final Path TOY_MODEL_v1_1 = Paths.get(DeserializerTest.class.getResource("example_model.v1.1.yaml").getPath());
 
     @Test
     void deserialize() throws Exception {
         final OverlordClassifier clf;
-        try (InputStream inputStream = Files.newInputStream(TOY_MODEL)) {
+        try (InputStream inputStream = Files.newInputStream(TOY_MODEL_v1)) {
             clf = Deserializer.deserialize(inputStream);
         }
 
@@ -62,15 +62,19 @@ class DeserializerTest extends TestBasedOnIrisInstances {
     }
 
     @Test
-    void deserializeOverallModelData() throws Exception {
+    void deserializeOverallModelData_v1() throws Exception {
         final OverallModelData data;
-        try (InputStream is = Files.newInputStream(TOY_MODEL)) {
+        try (InputStream is = Files.newInputStream(TOY_MODEL_v1)) {
             data = Deserializer.deserializeOverallModelData(is);
         }
         assertThat(data, is(notNullValue()));
 
         assertThat(data.getDonorThreshold(), is(closeTo(.033530, 1e-5)));
         assertThat(data.getAcceptorThreshold(), is(closeTo(.018888, 1e-5)));
+
+        // these are the default values
+        assertThat(data.getIntercept(), is(closeTo(0., EPSILON)));
+        assertThat(data.getSlope(), is(closeTo(1., EPSILON)));
 
         final PipelineTransferModel donorPipe = data.getDonorClf();
         final RandomForestTransferModel donorClf = donorPipe.getRf();

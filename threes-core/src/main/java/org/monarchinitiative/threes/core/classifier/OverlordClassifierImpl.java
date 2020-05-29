@@ -25,7 +25,7 @@ public class OverlordClassifierImpl implements OverlordClassifier {
 
     private final Set<String> usedFeatures;
 
-    private final Double donorThreshold, acceptorThreshold;
+    private final Double donorThreshold, acceptorThreshold, slope, intercept;
 
     private OverlordClassifierImpl(Builder builder) {
         donorClf = Objects.requireNonNull(builder.donorClf, "Donor classifier cannot be null");
@@ -39,6 +39,16 @@ public class OverlordClassifierImpl implements OverlordClassifier {
             throw new IllegalArgumentException("acceptor threshold cannot be NaN");
         }
         acceptorThreshold = builder.acceptorThreshold;
+
+        if (builder.slope.isNaN()) {
+            throw new IllegalArgumentException("slope cannot be NaN");
+        }
+        slope = builder.slope;
+
+        if (builder.intercept.isNaN()) {
+            throw new IllegalArgumentException("intercept cannot be NaN");
+        }
+        intercept = builder.intercept;
 
         usedFeatures = Stream.concat(donorClf.usedFeatureNames().stream(), acceptorClf.usedFeatureNames().stream())
                 .collect(Collectors.toSet());
@@ -78,7 +88,7 @@ public class OverlordClassifierImpl implements OverlordClassifier {
         final double donorProba = donorClf.predictProba(instance);
         final double acceptorProba = acceptorClf.predictProba(instance);
 
-        return PredictionImpl.builder()
+        return SimplePrediction.builder()
                 .setDonorData(donorProba, donorThreshold)
                 .setAcceptorData(acceptorProba, acceptorThreshold)
                 .build();
@@ -89,6 +99,8 @@ public class OverlordClassifierImpl implements OverlordClassifier {
         private BinaryClassifier<FeatureData> acceptorClf;
         private Double donorThreshold = Double.NaN;
         private Double acceptorThreshold = Double.NaN;
+        private Double slope = 1.;
+        private Double intercept = 0.;
 
         private Builder() {
         }
@@ -110,6 +122,17 @@ public class OverlordClassifierImpl implements OverlordClassifier {
 
         public Builder acceptorThreshold(double acceptorThreshold) {
             this.acceptorThreshold = acceptorThreshold;
+            return this;
+        }
+
+        public Builder slope(double slope) {
+            this.slope = slope;
+            return this;
+        }
+
+
+        public Builder intercept(double intercept) {
+            this.intercept = intercept;
             return this;
         }
 

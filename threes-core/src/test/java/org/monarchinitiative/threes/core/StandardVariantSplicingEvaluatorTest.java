@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.monarchinitiative.threes.core.classifier.FeatureData;
 import org.monarchinitiative.threes.core.classifier.OverlordClassifier;
-import org.monarchinitiative.threes.core.classifier.PredictionImpl;
+import org.monarchinitiative.threes.core.classifier.SimplePrediction;
 import org.monarchinitiative.threes.core.data.SplicingTranscriptSource;
 import org.monarchinitiative.threes.core.model.SplicingTranscript;
 import org.monarchinitiative.threes.core.scoring.SplicingAnnotator;
@@ -98,7 +98,7 @@ class StandardVariantSplicingEvaluatorTest {
         when(annotator.evaluate(any(GenomeVariant.class), eq(stx), eq(SI))).thenReturn(featureData);
 
         // 3 - classifier
-        Prediction prediction = PredictionImpl.builder()
+        Prediction prediction = SimplePrediction.builder()
                 .setDonorData(.6, .7)
                 .setAcceptorData(.1, .6)
                 .build();
@@ -180,7 +180,7 @@ class StandardVariantSplicingEvaluatorTest {
         when(annotator.evaluate(any(GenomeVariant.class), eq(stx), eq(SI))).thenReturn(featureData);
 
         // 3 - classifier
-        Prediction prediction = PredictionImpl.builder()
+        Prediction prediction = SimplePrediction.builder()
                 .setDonorData(.6, .7)
                 .setAcceptorData(.1, .6)
                 .build();

@@ -32,6 +32,8 @@ public class Deserializer {
                 .donorThreshold(data.getDonorThreshold())
                 .acceptorClf(deserializeAcceptorPipeline(data.getAcceptorClf()))
                 .acceptorThreshold(data.getAcceptorThreshold())
+                .slope(data.getSlope())
+                .intercept(data.getIntercept())
                 .build();
     }
 
