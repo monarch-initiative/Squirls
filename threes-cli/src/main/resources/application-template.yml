@@ -1,17 +1,29 @@
-# Required properties template
+# Required properties template, the file follows YAML syntax.
 threes:
-  # path to directory with 3S databases & genome FASTA file
+  # Path to `data-directory` with 3S databases & genome FASTA file.
+  # If the directory has the following structure:
+  # path/to/a_folder:
+  #  |- 1902_hg19:
+  #  |   |- 1902_hg19.fa
+  #  |   |- 1902_hg19.fa.dict
+  #  |   |- 1902_hg19.fa.fai
+  #  |   \- 1902_hg19_splicing.mv.db
+  #  \- 1902_hg38:
+  #      |- 1902_hg38.fa
+  #      ...
+  #
+  # then set `data-directory: path/to/a_folder`
   data-directory:
-  # genome assembly - choose from {hg19, hg38}
+  # Genome assembly - choose from {hg19, hg38}
   genome-assembly:
-  # exomiser-like data version
+  # Exomiser-like data version (1902 in examples above)
   data-version:
   # Path to bigwig file with genome-wide PhyloP scores
   phylop-bigwig-path:
 
   classifier:
-  # which classifier to use
-  #version: v1
-  # variant with longer REF allele will not be evaluated
-  #max-variant-length: 100
+    # Which classifier to use
+    #version: v1
+    # Variant with longer REF allele will not be evaluated
+    #max-variant-length: 100
 
