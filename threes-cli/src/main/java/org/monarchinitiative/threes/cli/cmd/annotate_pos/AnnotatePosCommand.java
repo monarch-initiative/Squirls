@@ -6,15 +6,9 @@ import net.sourceforge.argparse4j.inf.Subparsers;
 import org.monarchinitiative.threes.cli.cmd.Command;
 import org.monarchinitiative.threes.cli.cmd.CommandException;
 import org.monarchinitiative.threes.core.VariantSplicingEvaluator;
-import org.monarchinitiative.threes.core.classifier.Prediction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
-
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 /**
  * TODO - implement
@@ -44,17 +38,20 @@ public class AnnotatePosCommand extends Command {
 
     @Override
     public void run(Namespace namespace) throws CommandException {
-        final List<String> rawChanges = namespace.getList("change");
-        LOGGER.info("Analyzing {} changes: `{}`", rawChanges.size(), String.join(", ", rawChanges));
+        // TODO: 26. 5. 2020 implement
+        throw new CommandException("Not yet implemented");
 
-        final List<VariantChange> changes = rawChanges.stream()
-                .map(VariantChange::fromString)
-                .filter(Optional::isPresent)
-                .map(Optional::get)
-                .collect(Collectors.toUnmodifiableList());
-
-        for (VariantChange change : changes) {
-            final Map<String, Prediction> dataMap = variantSplicingEvaluator.evaluate(change.getContig(), change.getPos(), change.getRef(), change.getAlt());
+//        final List<String> rawChanges = namespace.getList("change");
+//        LOGGER.info("Analyzing {} changes: `{}`", rawChanges.size(), String.join(", ", rawChanges));
+//
+//        final List<VariantChange> changes = rawChanges.stream()
+//                .map(VariantChange::fromString)
+//                .filter(Optional::isPresent)
+//                .map(Optional::get)
+//                .collect(Collectors.toUnmodifiableList());
+//
+//        for (VariantChange change : changes) {
+//            final Map<String, Prediction> dataMap = variantSplicingEvaluator.evaluate(change.getContig(), change.getPos(), change.getRef(), change.getAlt());
 //            final List<String> transcripts = dataMap.keySet().stream().sorted().collect(Collectors.toUnmodifiableList());
 //            for (String tx : transcripts) {
 //                final Prediction data = dataMap.get(tx);
@@ -64,6 +61,6 @@ public class AnnotatePosCommand extends Command {
 //                        .collect(Collectors.joining(";"));
 //                System.out.println(String.join("\t", change.getVariantChange(), tx, scores));
 //            }
-        }
+//        }
     }
 }

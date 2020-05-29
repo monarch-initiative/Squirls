@@ -6,8 +6,10 @@ import com.zaxxer.hikari.HikariDataSource;
 import org.monarchinitiative.threes.core.StandardVariantSplicingEvaluator;
 import org.monarchinitiative.threes.core.VariantSplicingEvaluator;
 import org.monarchinitiative.threes.core.classifier.OverlordClassifier;
-import org.monarchinitiative.threes.core.classifier.io.Deserializer;
-import org.monarchinitiative.threes.core.data.ClassifierDao;
+import org.monarchinitiative.threes.core.classifier.transform.prediction.IdentityTransformer;
+import org.monarchinitiative.threes.core.classifier.transform.prediction.PredictionTransformer;
+import org.monarchinitiative.threes.core.data.ClassifierDataManager;
+import org.monarchinitiative.threes.core.data.DbClassifierDataManager;
 import org.monarchinitiative.threes.core.data.DbSplicingTranscriptSource;
 import org.monarchinitiative.threes.core.data.SplicingTranscriptSource;
 import org.monarchinitiative.threes.core.data.ic.DbSplicingPositionalWeightMatrixParser;
@@ -28,20 +30,22 @@ import xyz.ielis.hyperutil.reference.fasta.GenomeSequenceAccessorBuilder;
 import xyz.ielis.hyperutil.reference.fasta.InvalidFastaFileException;
 
 import javax.sql.DataSource;
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collection;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 
 /**
+ * Auto-configuration of of the 3S code.
+ *
  * @author Daniel Danis <daniel.danis@jax.org>
  */
 @Configuration
-@EnableConfigurationProperties({ThreesProperties.class})
+@EnableConfigurationProperties({ThreesProperties.class, ClassifierProperties.class})
 public class ThreesAutoConfiguration {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ThreesAutoConfiguration.class);
@@ -120,14 +124,52 @@ public class ThreesAutoConfiguration {
     public VariantSplicingEvaluator variantSplicingEvaluator(GenomeSequenceAccessor genomeSequenceAccessor,
                                                              SplicingTranscriptSource splicingTranscriptSource,
                                                              SplicingAnnotator splicingAnnotator,
-                                                             OverlordClassifier classifier) {
-        // TODO - strategy, max variant length
+                                                             ClassifierDataManager classifierDataManager) throws InvalidThreesResourceException {
+        final String clfVersion = properties.getClassifier().getVersion();
+        final Collection<String> avail = classifierDataManager.getAvailableClassifiers();
+        if (!avail.contains(clfVersion)) {
+            String msg = String.format("Classifier version `%s` is not available, choose one from `%s`",
+                    clfVersion,
+                    avail.stream().sorted().collect(Collectors.joining(", ", "[ ", " ]")));
+            LOGGER.warn(msg);
+            throw new InvalidThreesResourceException(msg);
+        }
+
+        // get classifier
+        final Optional<OverlordClassifier> clfOpt = classifierDataManager.readClassifier(clfVersion);
+        final OverlordClassifier clf;
+        if (clfOpt.isPresent()) {
+            LOGGER.info("Using classifier `{}`", clfVersion);
+            clf = clfOpt.get();
+        } else {
+            String msg = String.format("Error when deserializing classifier `%s` from the database", clfVersion);
+            throw new InvalidThreesResourceException(msg);
+        }
+
+        // get transformer
+        final Optional<PredictionTransformer> transOpt = classifierDataManager.readTransformer(clfVersion);
+        final PredictionTransformer transformer;
+        if (transOpt.isPresent()) {
+            transformer = transOpt.get();
+        } else {
+            LOGGER.warn("Transformer for classifier `{}` is not available. Using identity transformer", clfVersion);
+            transformer = IdentityTransformer.getInstance();
+        }
+
+        // make variant evaluator
         return StandardVariantSplicingEvaluator.builder()
                 .accessor(genomeSequenceAccessor)
                 .txSource(splicingTranscriptSource)
                 .annotator(splicingAnnotator)
-                .classifier(classifier)
+                .classifier(clf)
+                .transformer(transformer)
+                .maxVariantLength(properties.getClassifier().getMaxVariantLength())
                 .build();
+    }
+
+    @Bean
+    public ClassifierDataManager classifierDataProvider(@Qualifier("threesDatasource") DataSource threesDatasource) {
+        return new DbClassifierDataManager(threesDatasource);
     }
 
     @Bean
@@ -141,25 +183,6 @@ public class ThreesAutoConfiguration {
     @Bean
     public DbKMerDao dbKMerDao(@Qualifier("threesDatasource") DataSource threesDatasource) {
         return new DbKMerDao(threesDatasource);
-    }
-
-    @Bean
-    public OverlordClassifier classifier(@Qualifier("threesDatasource") DataSource threesDatasource) throws CorruptedThreesResourceException {
-        final ClassifierDao clfDao = new ClassifierDao(threesDatasource);
-        final String clfVersion = properties.getClassifierVersion();
-        LOGGER.info("Reading classifier `{}` from database", clfVersion);
-        final byte[] bytes = clfDao.readClassifier(clfVersion);
-        if (bytes == null) {
-            final Collection<String> avail = clfDao.getAvailableClassifiers();
-            throw new CorruptedThreesResourceException(String.format("Classifier `%s` is not available. Available: %s",
-                    clfVersion, avail.stream().sorted().collect(Collectors.joining(", ", "[ ", " ]"))));
-        }
-
-        try {
-            return Deserializer.deserialize(new ByteArrayInputStream(bytes));
-        } catch (Exception e) {
-            throw new CorruptedThreesResourceException(e.getMessage());
-        }
     }
 
     @Bean

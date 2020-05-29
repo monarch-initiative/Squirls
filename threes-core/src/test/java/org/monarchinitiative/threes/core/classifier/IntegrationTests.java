@@ -144,24 +144,24 @@ public class IntegrationTests {
         final OverlordClassifier overlord = Deserializer.deserialize(overallModelData);
 
         Prediction prediction = overlord.predict(TestVariantInstances.pathogenicDonor());
-        assertTrue(prediction.isPathogenic());
-        assertThat(prediction.getPathoProba(), is(closeTo(.7873663663768643, EPSILON)));
+        assertTrue(prediction.isPositive());
+        assertThat(prediction.getMaxPathogenicity(), is(closeTo(.7873663663768643, EPSILON)));
 //        DoubleMatrix doubleMatrix = overlord.predictProba(TestVariantInstances.pathogenicDonor()).transpose();
 //        assertThat(doubleMatrix.toArray(), is(new double[]{.2126336336231357, .7873663663768643}));
 
         prediction = overlord.predict(TestVariantInstances.donorCryptic());
-        assertTrue(prediction.isPathogenic());
-        assertThat(prediction.getPathoProba(), is(closeTo(.22439633436158474, EPSILON)));
+        assertTrue(prediction.isPositive());
+        assertThat(prediction.getMaxPathogenicity(), is(closeTo(.22439633436158474, EPSILON)));
 //        assertThat(doubleMatrix.toArray(), is(new double[]{.7756036656384153, .22439633436158474}));
 
         prediction = overlord.predict(TestVariantInstances.pathogenicAcceptor());
-        assertTrue(prediction.isPathogenic());
-        assertThat(prediction.getPathoProba(), is(closeTo(.3726891708713847, EPSILON)));
+        assertTrue(prediction.isPositive());
+        assertThat(prediction.getMaxPathogenicity(), is(closeTo(.3726891708713847, EPSILON)));
 //        assertThat(doubleMatrix.toArray(), is(new double[]{.6273108291286154, .3726891708713847}));
 
         prediction = overlord.predict(TestVariantInstances.acceptorCryptic());
-        assertTrue(prediction.isPathogenic());
-        assertThat(prediction.getPathoProba(), is(closeTo(.022480121825609604, EPSILON)));
+        assertTrue(prediction.isPositive());
+        assertThat(prediction.getMaxPathogenicity(), is(closeTo(.022480121825609604, EPSILON)));
 //        assertThat(doubleMatrix.toArray(), is(new double[]{.9775198781743903, .022480121825609604}));
     }
 }

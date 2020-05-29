@@ -2,7 +2,8 @@ package org.monarchinitiative.threes.core.classifier.io;
 
 import org.monarchinitiative.threes.core.classifier.*;
 import org.monarchinitiative.threes.core.classifier.forest.RandomForest;
-import org.monarchinitiative.threes.core.classifier.impute.SplicingDataImputer;
+import org.monarchinitiative.threes.core.classifier.transform.feature.FeatureTransformer;
+import org.monarchinitiative.threes.core.classifier.transform.feature.SplicingDataImputer;
 import org.monarchinitiative.threes.core.classifier.tree.AcceptorSplicingDecisionTree;
 import org.monarchinitiative.threes.core.classifier.tree.DonorSplicingDecisionTree;
 import org.yaml.snakeyaml.Yaml;

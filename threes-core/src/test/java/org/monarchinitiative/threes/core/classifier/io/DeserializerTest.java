@@ -44,8 +44,8 @@ class DeserializerTest extends TestBasedOnIrisInstances {
         assertThat(clf, is(notNullValue()));
 
         final Prediction prediction = clf.predict(instance);
-        assertTrue(prediction.isPathogenic());
-        assertThat(prediction.getPathoProba(), is(closeTo(0.162997, 1E-5)));
+        assertTrue(prediction.isPositive());
+        assertThat(prediction.getMaxPathogenicity(), is(closeTo(0.162997, 1E-5)));
     }
 
     @Test

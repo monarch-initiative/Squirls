@@ -6,13 +6,12 @@ import de.charite.compbio.jannovar.reference.*;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.Mock;
 import org.monarchinitiative.threes.core.classifier.FeatureData;
 import org.monarchinitiative.threes.core.classifier.OverlordClassifier;
 import org.monarchinitiative.threes.core.classifier.Prediction;
 import org.monarchinitiative.threes.core.classifier.StandardPrediction;
+import org.monarchinitiative.threes.core.classifier.transform.prediction.IdentityTransformer;
 import org.monarchinitiative.threes.core.data.SplicingTranscriptSource;
 import org.monarchinitiative.threes.core.model.SplicingTranscript;
 import org.monarchinitiative.threes.core.scoring.SplicingAnnotator;
@@ -57,7 +56,6 @@ class StandardVariantSplicingEvaluatorTest {
     @Mock
     private OverlordClassifier classifier;
 
-
     private StandardVariantSplicingEvaluator evaluator;
 
 
@@ -86,6 +84,7 @@ class StandardVariantSplicingEvaluatorTest {
                 .txSource(transcriptSource)
                 .annotator(annotator)
                 .classifier(classifier)
+                .transformer(IdentityTransformer.getInstance())
                 .build();
     }
 
@@ -125,7 +124,7 @@ class StandardVariantSplicingEvaluatorTest {
         assertThat(predictionMap, hasValue(prediction));
         assertThat(predictionMap.size(), is(1));
 
-        verify(accessor).fetchSequence(new GenomeInterval(RD, Strand.FWD, 9, 136_223_326, 136_228_134, PositionType.ONE_BASED));
+        verify(accessor).fetchSequence(new GenomeInterval(RD, Strand.FWD, 9, 136_223_176, 136_228_284, PositionType.ONE_BASED));
         verify(annotator).evaluate(new GenomeVariant(new GenomePosition(RD, Strand.FWD, 9, 136_223_949, PositionType.ONE_BASED), "G", "C"), stx, SI);
     }
 
@@ -207,30 +206,7 @@ class StandardVariantSplicingEvaluatorTest {
         assertThat(predictionMap, hasValue(prediction));
         assertThat(predictionMap.size(), is(1));
 
-        verify(accessor).fetchSequence(new GenomeInterval(RD, Strand.FWD, 9, 136_223_326, 136_228_134, PositionType.ONE_BASED));
+        verify(accessor).fetchSequence(new GenomeInterval(RD, Strand.FWD, 9, 136_223_176, 136_228_284, PositionType.ONE_BASED));
         verify(annotator).evaluate(new GenomeVariant(new GenomePosition(RD, Strand.FWD, 9, 136_223_949, PositionType.ONE_BASED), "G", "C"), stx, SI);
-    }
-
-
-    /**
-     * Test that transformation using logistic regression coefficients work
-     */
-    @ParameterizedTest
-    @CsvSource({"0.004012,0.007730", "0.525658,0.905913", "0.004538,0.007785"})
-    void scaling(double proba, double expected) {
-        StandardVariantSplicingEvaluator evaluator = StandardVariantSplicingEvaluator.builder()
-                .accessor(accessor)
-                .txSource(transcriptSource)
-                .annotator(annotator)
-                .classifier(classifier)
-                .scalingParameters(ScalingParameters.builder() // crucial for this test
-                        .slope(13.64842177)
-                        .intercept(-4.90967636)
-                        .threshold(.5)
-                        .build())
-                .build();
-
-        double actual = evaluator.transform(proba);
-        assertThat(expected, is(closeTo(actual, EPSILON)));
     }
 }

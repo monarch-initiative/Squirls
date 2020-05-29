@@ -49,7 +49,7 @@ class ThreesAutoConfigurationTest extends AbstractAutoConfigurationTest {
          * Optional - default values
          */
         ThreesProperties properties = context.getBean(ThreesProperties.class);
-        assertThat(properties.getClassifierVersion(), is("v1"));
+        assertThat(properties.getClassifier().getVersion(), is("v1"));
 
         /*
          * High-level beans
@@ -73,11 +73,12 @@ class ThreesAutoConfigurationTest extends AbstractAutoConfigurationTest {
                 "threes.genome-assembly=hg19",
                 "threes.data-version=1710",
                 "threes.phylop-bigwig-path=" + SMALL_BW,
-                "threes.classifier-version=v1");
+                "threes.classifier.version=v1.1",
+                "threes.classifier.max-variant-length=50");
 
-        // the test database currently only contains the `v1` model so it's not really possible to test this :/
         ThreesProperties properties = context.getBean(ThreesProperties.class);
-        assertThat(properties.getClassifierVersion(), is("v1"));
+        assertThat(properties.getClassifier().getVersion(), is("v1.1"));
+        assertThat(properties.getClassifier().getMaxVariantLength(), is(50));
     }
 
     @Test
@@ -128,14 +129,13 @@ class ThreesAutoConfigurationTest extends AbstractAutoConfigurationTest {
     }
 
     @Test
-    void testMissingClassifier() {
+    void testNonExistingClassifier() {
         Throwable thrown = assertThrows(BeanCreationException.class, () -> load(ThreesAutoConfiguration.class,
                 "threes.data-directory=" + TEST_DATA,
                 "threes.genome-assembly=hg19",
                 "threes.data-version=1710",
                 "threes.phylop-bigwig-path=" + SMALL_BW,
-                "threes.classifier-version=puddle"
-        ));
-        assertThat(thrown.getMessage(), containsString("Classifier `puddle` is not available. Available: [ v1 ]"));
+                "threes.classifier.version=puddle"));
+        assertThat(thrown.getMessage(), containsString("Classifier version `puddle` is not available, choose one from "));
     }
 }

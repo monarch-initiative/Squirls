@@ -3,10 +3,10 @@ package org.monarchinitiative.threes.core.classifier;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.monarchinitiative.threes.core.classifier.impute.SplicingDataImputer;
 import org.monarchinitiative.threes.core.classifier.io.Deserializer;
 import org.monarchinitiative.threes.core.classifier.io.OverallModelData;
 import org.monarchinitiative.threes.core.classifier.io.PipelineTransferModel;
+import org.monarchinitiative.threes.core.classifier.transform.feature.SplicingDataImputer;
 
 import java.io.InputStream;
 

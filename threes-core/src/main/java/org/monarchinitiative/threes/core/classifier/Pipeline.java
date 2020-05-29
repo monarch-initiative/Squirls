@@ -1,5 +1,7 @@
 package org.monarchinitiative.threes.core.classifier;
 
+import org.monarchinitiative.threes.core.classifier.transform.feature.FeatureTransformer;
+
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;

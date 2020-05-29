@@ -63,6 +63,10 @@ public class AnnotateVcfCommand extends Command {
                 .help("path to VCF file");
         annotateVcfParser.addArgument("output")
                 .help("where to write the output VCF file");
+        annotateVcfParser.addArgument("-t", "--threshold")
+                .type(Double.class)
+                .setDefault(.2)
+                .help("add `3S` flag to variants with predicted pathogenicity above this value");
     }
 
     /**
@@ -72,11 +76,42 @@ public class AnnotateVcfCommand extends Command {
      * @return the extended header
      */
     private static VCFHeader extendHeader(VCFHeader header) {
-        // 3S_PATHOGENIC - flag
+        // 3S - flag
         header.addMetaDataLine(FLAG_LINE);
-        // SCORE - float
+        // 3S_SCORE - float
         header.addMetaDataLine(SCORE_LINE);
         return header;
+    }
+
+    /**
+     * Annotate and return a single {@link VariantContext}.
+     *
+     * @param evaluator variant splicing evaluator to use
+     * @param threshold flag variants with predicted pathogenicity value above this threshold with `3S` field
+     * @return annotated {@link VariantContext}
+     */
+    private static UnaryOperator<VariantContext> annotateVariant(VariantSplicingEvaluator evaluator, double threshold) {
+        return vc -> {
+            boolean isPathogenic = false;
+            String annotation = null;
+            for (Allele allele : vc.getAlternateAlleles()) {
+                final Map<String, Prediction> predictionMap = evaluator.evaluate(vc.getContig(), vc.getStart(), vc.getReference().getBaseString(), allele.getBaseString());
+                if (predictionMap.isEmpty()) {
+                    continue;
+                }
+                isPathogenic = predictionMap.values().stream()
+                        .mapToDouble(Prediction::getMaxPathogenicity)
+                        .anyMatch(pathogenicity -> pathogenicity > threshold);
+                annotation = predictionMap.entrySet().stream()
+                        .map(entry -> String.format("%s=%f", entry.getKey(), entry.getValue().getMaxPathogenicity()))
+                        .collect(Collectors.joining("|", String.format("%s|", allele.getBaseString()), ""));
+            }
+
+            return new VariantContextBuilder(vc)
+                    .attribute("3S", isPathogenic)
+                    .attribute("3S_SCORE", annotation)
+                    .make();
+        };
     }
 
     @Override
@@ -90,8 +125,12 @@ public class AnnotateVcfCommand extends Command {
         LOGGER.info("Reading variants from `{}`", inputPath);
         final Path outputPath = Paths.get(namespace.getString("output"));
         LOGGER.info("Writing annotated variants to `{}`", outputPath);
+        final double threshold = namespace.getDouble("threshold");
+        LOGGER.info("Adding `3S` label to variants with predicted pathogenicity value above `{}`", threshold);
 
         // initialize progress logging
+        // TODO: 29. 5. 2020 improve behavior & logging
+        // e.g. report progress in % if variant index and thus count is available
         final ProgressReporter<VariantContext> progressReporter = new ProgressReporter<>();
         try (final VCFFileReader reader = new VCFFileReader(inputPath, false);
              final CloseableIterator<VariantContext> variantIterator = reader.iterator();
@@ -107,33 +146,11 @@ public class AnnotateVcfCommand extends Command {
 
             writer.writeHeader(extended);
             try (final Stream<VariantContext> stream = variantIterator.stream()) {
-                stream.map(annotateVariant())
+                stream.map(annotateVariant(evaluator, threshold))
                         .peek(progressReporter::logEntry)
                         .onClose(progressReporter.summarize())
                         .forEach(writer::add);
             }
         }
-    }
-
-    private UnaryOperator<VariantContext> annotateVariant() {
-        return vc -> {
-            boolean isPathogenic = false;
-            String annotation = null;
-            for (Allele allele : vc.getAlternateAlleles()) {
-                final Map<String, Prediction> predictionMap = evaluator.evaluate(vc.getContig(), vc.getStart(), vc.getReference().getBaseString(), allele.getBaseString());
-                if (predictionMap.isEmpty()) {
-                    continue;
-                }
-                isPathogenic = predictionMap.values().stream().anyMatch(Prediction::isPathogenic);
-                annotation = predictionMap.entrySet().stream()
-                        .map(entry -> String.format("%s=%f", entry.getKey(), entry.getValue().getPathoProba()))
-                        .collect(Collectors.joining("|", String.format("%s|", allele.getBaseString()), ""));
-            }
-
-            return new VariantContextBuilder(vc)
-                    .attribute("3S", isPathogenic)
-                    .attribute("3S_SCORE", annotation)
-                    .make();
-        };
     }
 }
