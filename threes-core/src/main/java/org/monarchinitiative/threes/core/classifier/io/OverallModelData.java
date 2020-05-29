@@ -8,6 +8,8 @@ public class OverallModelData {
     private double acceptorThreshold;
     private PipelineTransferModel donorClf;
     private PipelineTransferModel acceptorClf;
+    private double slope = 1.;
+    private double intercept = 0.;
 
     public double getDonorThreshold() {
         return donorThreshold;
@@ -39,6 +41,22 @@ public class OverallModelData {
 
     public void setAcceptorClf(PipelineTransferModel acceptorClf) {
         this.acceptorClf = acceptorClf;
+    }
+
+    public double getSlope() {
+        return slope;
+    }
+
+    public void setSlope(double slope) {
+        this.slope = slope;
+    }
+
+    public double getIntercept() {
+        return intercept;
+    }
+
+    public void setIntercept(double intercept) {
+        this.intercept = intercept;
     }
 
     @Override

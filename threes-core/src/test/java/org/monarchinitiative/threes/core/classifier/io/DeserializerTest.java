@@ -22,6 +22,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class DeserializerTest extends TestBasedOnIrisInstances {
 
     private static final Path TOY_MODEL = Paths.get(DeserializerTest.class.getResource("example_model.yaml").getPath());
+    private static final Path TOY_MODEL_v1_1 = Paths.get(DeserializerTest.class.getResource("example_model.v1.1.yaml").getPath());
 
     @Test
     void deserialize() throws Exception {
@@ -45,6 +46,19 @@ class DeserializerTest extends TestBasedOnIrisInstances {
         final Prediction prediction = clf.predict(instance);
         assertTrue(prediction.isPathogenic());
         assertThat(prediction.getPathoProba(), is(closeTo(0.162997, 1E-5)));
+    }
+
+    @Test
+    void deserializeModel_v1_1() throws Exception {
+        final OverallModelData data;
+        try (InputStream is = Files.newInputStream(TOY_MODEL_v1_1)) {
+            data = Deserializer.deserializeOverallModelData(is);
+        }
+        assertThat(data, is(notNullValue()));
+
+        // in addition to all other attributes of the v1 model, `v1.1` also has `intercept` and `slope` fields
+        assertThat(data.getIntercept(), is(closeTo(-4.909676356421783, EPSILON)));
+        assertThat(data.getSlope(), is(closeTo(13.648421772211595, EPSILON)));
     }
 
     @Test
