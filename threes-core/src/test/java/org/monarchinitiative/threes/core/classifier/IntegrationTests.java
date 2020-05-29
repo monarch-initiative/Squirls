@@ -2,7 +2,6 @@ package org.monarchinitiative.threes.core.classifier;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.monarchinitiative.threes.core.Prediction;
 import org.monarchinitiative.threes.core.classifier.forest.RandomForest;
 import org.monarchinitiative.threes.core.classifier.io.DecisionTreeTransferModel;
 import org.monarchinitiative.threes.core.classifier.io.Deserializer;

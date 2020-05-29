@@ -121,7 +121,13 @@ public class ThreesAutoConfiguration {
                                                              SplicingTranscriptSource splicingTranscriptSource,
                                                              SplicingAnnotator splicingAnnotator,
                                                              OverlordClassifier classifier) {
-        return new StandardVariantSplicingEvaluator(genomeSequenceAccessor, splicingTranscriptSource, splicingAnnotator, classifier);
+        // TODO - strategy, max variant length
+        return StandardVariantSplicingEvaluator.builder()
+                .accessor(genomeSequenceAccessor)
+                .txSource(splicingTranscriptSource)
+                .annotator(splicingAnnotator)
+                .classifier(classifier)
+                .build();
     }
 
     @Bean

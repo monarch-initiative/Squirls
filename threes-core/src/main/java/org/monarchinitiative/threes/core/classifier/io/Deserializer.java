@@ -27,13 +27,11 @@ public class Deserializer {
     }
 
     public static OverlordClassifier deserialize(OverallModelData data) {
-        return OverlordClassifierImpl.builder()
+        return StandardOverlordClassifier.builder()
                 .donorClf(deserializeDonorPipeline(data.getDonorClf()))
                 .donorThreshold(data.getDonorThreshold())
                 .acceptorClf(deserializeAcceptorPipeline(data.getAcceptorClf()))
                 .acceptorThreshold(data.getAcceptorThreshold())
-                .slope(data.getSlope())
-                .intercept(data.getIntercept())
                 .build();
     }
 

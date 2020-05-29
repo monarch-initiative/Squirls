@@ -1,7 +1,6 @@
 package org.monarchinitiative.threes.core.classifier;
 
 import com.google.common.collect.Sets;
-import org.monarchinitiative.threes.core.Prediction;
 import org.monarchinitiative.threes.core.classifier.forest.RandomForest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,38 +16,28 @@ import java.util.stream.Stream;
  * <p>
  * For each pipeline, there are separate thresholds applied when making variant classification.
  */
-public class OverlordClassifierImpl implements OverlordClassifier {
+public class StandardOverlordClassifier implements OverlordClassifier {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(OverlordClassifierImpl.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(StandardOverlordClassifier.class);
 
     private final BinaryClassifier<FeatureData> donorClf, acceptorClf;
 
     private final Set<String> usedFeatures;
 
-    private final Double donorThreshold, acceptorThreshold, slope, intercept;
+    private final Double donorThreshold, acceptorThreshold;
 
-    private OverlordClassifierImpl(Builder builder) {
+    private StandardOverlordClassifier(Builder builder) {
         donorClf = Objects.requireNonNull(builder.donorClf, "Donor classifier cannot be null");
         acceptorClf = Objects.requireNonNull(builder.acceptorClf, "Acceptor classifier cannot be null");
-        if (builder.donorThreshold.isNaN()) {
-            throw new IllegalArgumentException("donor threshold cannot be NaN");
+        if (builder.donorThreshold == null || builder.donorThreshold.isNaN()) {
+            throw new IllegalArgumentException("donor threshold must be specified");
         }
         donorThreshold = builder.donorThreshold;
 
-        if (builder.acceptorThreshold.isNaN()) {
-            throw new IllegalArgumentException("acceptor threshold cannot be NaN");
+        if (builder.acceptorThreshold == null || builder.acceptorThreshold.isNaN()) {
+            throw new IllegalArgumentException("acceptor threshold must be specified");
         }
         acceptorThreshold = builder.acceptorThreshold;
-
-        if (builder.slope.isNaN()) {
-            throw new IllegalArgumentException("slope cannot be NaN");
-        }
-        slope = builder.slope;
-
-        if (builder.intercept.isNaN()) {
-            throw new IllegalArgumentException("intercept cannot be NaN");
-        }
-        intercept = builder.intercept;
 
         usedFeatures = Stream.concat(donorClf.usedFeatureNames().stream(), acceptorClf.usedFeatureNames().stream())
                 .collect(Collectors.toSet());
@@ -88,9 +77,10 @@ public class OverlordClassifierImpl implements OverlordClassifier {
         final double donorProba = donorClf.predictProba(instance);
         final double acceptorProba = acceptorClf.predictProba(instance);
 
-        return SimplePrediction.builder()
-                .setDonorData(donorProba, donorThreshold)
-                .setAcceptorData(acceptorProba, acceptorThreshold)
+
+        return StandardPrediction.builder()
+                .addProbaThresholdPair(donorProba, donorThreshold)
+                .addProbaThresholdPair(acceptorProba, acceptorThreshold)
                 .build();
     }
 
@@ -99,8 +89,6 @@ public class OverlordClassifierImpl implements OverlordClassifier {
         private BinaryClassifier<FeatureData> acceptorClf;
         private Double donorThreshold = Double.NaN;
         private Double acceptorThreshold = Double.NaN;
-        private Double slope = 1.;
-        private Double intercept = 0.;
 
         private Builder() {
         }
@@ -125,19 +113,8 @@ public class OverlordClassifierImpl implements OverlordClassifier {
             return this;
         }
 
-        public Builder slope(double slope) {
-            this.slope = slope;
-            return this;
-        }
-
-
-        public Builder intercept(double intercept) {
-            this.intercept = intercept;
-            return this;
-        }
-
-        public OverlordClassifierImpl build() {
-            return new OverlordClassifierImpl(this);
+        public StandardOverlordClassifier build() {
+            return new StandardOverlordClassifier(this);
         }
     }
 }

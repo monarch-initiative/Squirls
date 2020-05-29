@@ -1,9 +1,9 @@
 package org.monarchinitiative.threes.core.classifier.io;
 
 import org.junit.jupiter.api.Test;
-import org.monarchinitiative.threes.core.Prediction;
 import org.monarchinitiative.threes.core.classifier.FeatureData;
 import org.monarchinitiative.threes.core.classifier.OverlordClassifier;
+import org.monarchinitiative.threes.core.classifier.Prediction;
 import org.monarchinitiative.threes.core.classifier.TestBasedOnIrisInstances;
 
 import java.io.InputStream;

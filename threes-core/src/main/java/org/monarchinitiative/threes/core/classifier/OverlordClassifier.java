@@ -1,9 +1,10 @@
 package org.monarchinitiative.threes.core.classifier;
 
-import org.monarchinitiative.threes.core.Prediction;
-
 import java.util.Set;
 
+/**
+ * The implementing classes provide basic prediction functionality that is provided by the Python model.
+ */
 // TODO - rename once we have a name
 public interface OverlordClassifier {
 
@@ -17,7 +18,7 @@ public interface OverlordClassifier {
      * {@link #usedFeatureNames()}.
      *
      * @param instance instance used for prediction
-     * @return class label
+     * @return prediction
      * @throws PredictionException if a required feature is missing or if if there are any other problems in the
      *                             prediction process
      */

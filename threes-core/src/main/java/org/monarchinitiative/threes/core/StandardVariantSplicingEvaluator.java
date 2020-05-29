@@ -2,9 +2,7 @@ package org.monarchinitiative.threes.core;
 
 import de.charite.compbio.jannovar.data.ReferenceDictionary;
 import de.charite.compbio.jannovar.reference.*;
-import org.monarchinitiative.threes.core.classifier.FeatureData;
-import org.monarchinitiative.threes.core.classifier.OverlordClassifier;
-import org.monarchinitiative.threes.core.classifier.PredictionException;
+import org.monarchinitiative.threes.core.classifier.*;
 import org.monarchinitiative.threes.core.data.SplicingTranscriptSource;
 import org.monarchinitiative.threes.core.model.SplicingTranscript;
 import org.monarchinitiative.threes.core.scoring.SplicingAnnotator;
@@ -13,10 +11,7 @@ import org.slf4j.LoggerFactory;
 import xyz.ielis.hyperutil.reference.fasta.GenomeSequenceAccessor;
 import xyz.ielis.hyperutil.reference.fasta.SequenceInterval;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -36,16 +31,32 @@ public class StandardVariantSplicingEvaluator implements VariantSplicingEvaluato
 
     private final OverlordClassifier classifier;
 
+    private final Strategy strategy;
 
-    public StandardVariantSplicingEvaluator(GenomeSequenceAccessor genomeSequenceAccessor,
-                                            SplicingTranscriptSource splicingTranscriptSource,
-                                            SplicingAnnotator splicingAnnotator,
-                                            OverlordClassifier overlordClassifier) {
-        this.accessor = genomeSequenceAccessor;
-        this.rd = genomeSequenceAccessor.getReferenceDictionary();
-        this.txSource = splicingTranscriptSource;
-        this.annotator = splicingAnnotator;
-        this.classifier = overlordClassifier;
+    // TODO: 29. 5. 2020 implement in scoring
+    private final int maxVariantLength;
+
+    private final ScalingParameters scalingParameters;
+
+    private StandardVariantSplicingEvaluator(Builder builder) {
+        accessor = Objects.requireNonNull(builder.accessor, "Accessor cannot be null");
+        rd = builder.accessor.getReferenceDictionary();
+        txSource = Objects.requireNonNull(builder.txSource, "Transcript source cannot be null");
+        annotator = Objects.requireNonNull(builder.annotator, "Annotator cannot be null");
+        classifier = Objects.requireNonNull(builder.classifier, "Classifier cannot be null");
+        strategy = builder.strategy;
+
+        if (builder.maxVariantLength < 1) {
+            String msg = String.format("Maximum variant length cannot be less than 1: %d", builder.maxVariantLength);
+            LOGGER.error(msg);
+            throw new IllegalArgumentException(msg);
+        }
+        maxVariantLength = builder.maxVariantLength;
+        scalingParameters = builder.scalingParameters;
+    }
+
+    public static Builder builder() {
+        return new Builder();
     }
 
     @Override
@@ -100,7 +111,8 @@ public class StandardVariantSplicingEvaluator implements VariantSplicingEvaluato
             final SplicingTranscript tx = txMap.get(txId);
             final FeatureData featureData = annotator.evaluate(variant, tx, si);
             try {
-                resultMap.put(txId, classifier.predict(featureData));
+                final Prediction prediction = classifier.predict(featureData);
+                resultMap.put(txId, applyTransformation(prediction));
             } catch (PredictionException e) {
                 LOGGER.debug("Error while computing scores for `{}` with respect to `{}`: {}", variant, txId, e.getMessage());
             }
@@ -108,6 +120,50 @@ public class StandardVariantSplicingEvaluator implements VariantSplicingEvaluato
         return resultMap;
     }
 
+    /**
+     * Apply transformation corresponding to current {@link #strategy}. Now this means that score is either left as is
+     * or it is scaled using logistic regression coefficients.
+     *
+     * @param prediction to be transformed
+     * @return transformed prediction
+     */
+    private Prediction applyTransformation(Prediction prediction) {
+        switch (strategy) {
+            case STANDARD:
+            default:
+                return prediction;
+            case SCALING:
+                // perform scaling
+                // - find the most pathogenic score
+                final OptionalDouble maxPathogenicity = prediction.getFragments().stream()
+                        .mapToDouble(StandardPrediction.Fragment::getPathoProba)
+                        .max();
+
+                // transform the score (benign is default)
+                double transformedScore = maxPathogenicity.isPresent() ? transform(maxPathogenicity.getAsDouble()) : 0.;
+
+                // return the transformed score
+                return StandardPrediction.builder()
+                        .addProbaThresholdPair(transformedScore, scalingParameters.getThreshold())
+                        .build();
+        }
+    }
+
+    /**
+     * Logistic regression in small scale. Apply <code>slope</code> and <code>intercept</code>, then scale with
+     * sigmoid function.
+     *
+     * @param x probability value about to be transformed, expecting value in range [0,1]
+     * @return transformed probability value clipped to be in range [0,1] if necessary
+     */
+    double transform(double x) {
+        // apply the logistic regression transformation
+        final double exp = Math.exp(-(scalingParameters.getSlope() * x + scalingParameters.getIntercept()));
+        double score = 1 / (1 + exp);
+
+        // make sure we stay between 0.0 and 1.0
+        return Math.max(0., Math.min(1., score));
+    }
 
     /**
      * Use provided variant coordinates OR transcript accession IDs to fetch {@link SplicingTranscript}s from the database.
@@ -138,5 +194,84 @@ public class StandardVariantSplicingEvaluator implements VariantSplicingEvaluato
             }
         }
         return txMap;
+    }
+
+
+    /**
+     * Strategy to use when calculating pathogenicity prediction for a variant.
+     */
+    public enum Strategy {
+        /**
+         * Standard strategy selects all pathogenicity scores that are above the threshold and then returns the highest value.
+         * If no score is above the threshold, 0.0 is returned.
+         */
+        STANDARD,
+        /**
+         * Scaling strategy uses logistic regression to scale the pathogenicity scores.
+         */
+        SCALING;
+
+        public static Strategy parseStrategy(String strategyString) {
+            switch (strategyString.toUpperCase()) {
+                case "SCALING":
+                    return SCALING;
+                case "STANDARD":
+                default:
+                    return STANDARD;
+            }
+        }
+    }
+
+    public static final class Builder {
+        private GenomeSequenceAccessor accessor;
+        private SplicingTranscriptSource txSource;
+        private SplicingAnnotator annotator;
+        private OverlordClassifier classifier;
+        // TODO: 29. 5. 2020 change to SCALING as soon as possible
+        private Strategy strategy = Strategy.STANDARD;
+        private int maxVariantLength = 100;
+        private ScalingParameters scalingParameters = ScalingParameters.defaultParameters();
+
+        private Builder() {
+        }
+
+        public Builder accessor(GenomeSequenceAccessor accessor) {
+            this.accessor = accessor;
+            return this;
+        }
+
+        public Builder txSource(SplicingTranscriptSource txSource) {
+            this.txSource = txSource;
+            return this;
+        }
+
+        public Builder annotator(SplicingAnnotator annotator) {
+            this.annotator = annotator;
+            return this;
+        }
+
+        public Builder classifier(OverlordClassifier classifier) {
+            this.classifier = classifier;
+            return this;
+        }
+
+        public Builder strategy(Strategy strategy) {
+            this.strategy = strategy;
+            return this;
+        }
+
+        public Builder maxVariantLength(int maxVariantLength) {
+            this.maxVariantLength = maxVariantLength;
+            return this;
+        }
+
+        public Builder scalingParameters(ScalingParameters scalingParameters) {
+            this.scalingParameters = scalingParameters;
+            return this;
+        }
+
+        public StandardVariantSplicingEvaluator build() {
+            return new StandardVariantSplicingEvaluator(this);
+        }
     }
 }

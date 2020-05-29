@@ -6,10 +6,13 @@ import de.charite.compbio.jannovar.reference.*;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.Mock;
 import org.monarchinitiative.threes.core.classifier.FeatureData;
 import org.monarchinitiative.threes.core.classifier.OverlordClassifier;
-import org.monarchinitiative.threes.core.classifier.SimplePrediction;
+import org.monarchinitiative.threes.core.classifier.Prediction;
+import org.monarchinitiative.threes.core.classifier.StandardPrediction;
 import org.monarchinitiative.threes.core.data.SplicingTranscriptSource;
 import org.monarchinitiative.threes.core.model.SplicingTranscript;
 import org.monarchinitiative.threes.core.scoring.SplicingAnnotator;
@@ -32,6 +35,11 @@ import static org.mockito.Mockito.when;
  */
 @SpringBootTest(classes = TestDataSourceConfig.class)
 class StandardVariantSplicingEvaluatorTest {
+
+    /**
+     * Tolerance for numeric comparisons.
+     */
+    private static final double EPSILON = 5E-6;
 
     private static SequenceInterval SI;
 
@@ -73,7 +81,12 @@ class StandardVariantSplicingEvaluatorTest {
     void setUp() {
         // genome sequence accessor
         when(accessor.getReferenceDictionary()).thenReturn(RD);
-        evaluator = new StandardVariantSplicingEvaluator(accessor, transcriptSource, annotator, classifier);
+        evaluator = StandardVariantSplicingEvaluator.builder()
+                .accessor(accessor)
+                .txSource(transcriptSource)
+                .annotator(annotator)
+                .classifier(classifier)
+                .build();
     }
 
     @Test
@@ -98,9 +111,9 @@ class StandardVariantSplicingEvaluatorTest {
         when(annotator.evaluate(any(GenomeVariant.class), eq(stx), eq(SI))).thenReturn(featureData);
 
         // 3 - classifier
-        Prediction prediction = SimplePrediction.builder()
-                .setDonorData(.6, .7)
-                .setAcceptorData(.1, .6)
+        StandardPrediction prediction = StandardPrediction.builder()
+                .addProbaThresholdPair(.6, .7)
+                .addProbaThresholdPair(.1, .6)
                 .build();
         when(classifier.predict(featureData)).thenReturn(prediction);
 
@@ -180,9 +193,9 @@ class StandardVariantSplicingEvaluatorTest {
         when(annotator.evaluate(any(GenomeVariant.class), eq(stx), eq(SI))).thenReturn(featureData);
 
         // 3 - classifier
-        Prediction prediction = SimplePrediction.builder()
-                .setDonorData(.6, .7)
-                .setAcceptorData(.1, .6)
+        StandardPrediction prediction = StandardPrediction.builder()
+                .addProbaThresholdPair(.6, .7)
+                .addProbaThresholdPair(.1, .6)
                 .build();
         when(classifier.predict(featureData)).thenReturn(prediction);
 
@@ -199,4 +212,25 @@ class StandardVariantSplicingEvaluatorTest {
     }
 
 
+    /**
+     * Test that transformation using logistic regression coefficients work
+     */
+    @ParameterizedTest
+    @CsvSource({"0.004012,0.007730", "0.525658,0.905913", "0.004538,0.007785"})
+    void scaling(double proba, double expected) {
+        StandardVariantSplicingEvaluator evaluator = StandardVariantSplicingEvaluator.builder()
+                .accessor(accessor)
+                .txSource(transcriptSource)
+                .annotator(annotator)
+                .classifier(classifier)
+                .scalingParameters(ScalingParameters.builder() // crucial for this test
+                        .slope(13.64842177)
+                        .intercept(-4.90967636)
+                        .threshold(.5)
+                        .build())
+                .build();
+
+        double actual = evaluator.transform(proba);
+        assertThat(expected, is(closeTo(actual, EPSILON)));
+    }
 }
