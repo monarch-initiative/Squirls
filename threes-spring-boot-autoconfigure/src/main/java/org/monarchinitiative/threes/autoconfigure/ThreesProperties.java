@@ -1,6 +1,7 @@
 package org.monarchinitiative.threes.autoconfigure;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.boot.context.properties.NestedConfigurationProperty;
 
 @ConfigurationProperties(prefix = "threes")
 public class ThreesProperties {
@@ -24,11 +25,11 @@ public class ThreesProperties {
      * Path to bigwig file with genome-wide PhyloP scores.
      */
     private String phylopBigwigPath;
-
     /**
      * Version of the classifier to use.
      */
-    private String classifierVersion = "v1";
+    @NestedConfigurationProperty // threes.classifier
+    private ClassifierProperties classifier = new ClassifierProperties();
 
     public String getPhylopBigwigPath() {
         return phylopBigwigPath;
@@ -62,11 +63,11 @@ public class ThreesProperties {
         this.dataVersion = dataVersion;
     }
 
-    public String getClassifierVersion() {
-        return classifierVersion;
+    public ClassifierProperties getClassifier() {
+        return classifier;
     }
 
-    public void setClassifierVersion(String classifierVersion) {
-        this.classifierVersion = classifierVersion;
+    public void setClassifier(ClassifierProperties classifier) {
+        this.classifier = classifier;
     }
 }

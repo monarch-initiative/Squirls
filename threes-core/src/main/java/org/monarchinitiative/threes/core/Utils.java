@@ -1,6 +1,5 @@
 package org.monarchinitiative.threes.core;
 
-import java.util.function.UnaryOperator;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
@@ -23,44 +22,5 @@ public class Utils {
                 : IntStream.range(0, sequence.length() - ws + 1)
                 .boxed()
                 .map(idx -> sequence.substring(idx, idx + ws));
-    }
-
-
-
-    /**
-     * Apply <a href="https://en.wikipedia.org/wiki/Sigmoid_function">sigmoid</a> function to input variable
-     * <code>x</code>.
-     * <p>
-     * Use default parameters:
-     * <ul>
-     * <li><b>steepness = -1</b></li>
-     * <li><b>threshold = 0</b></li>
-     * </ul>
-     *
-     * @param x input value
-     * @return output in range (0, 1)
-     */
-    public static double sigmoid(double x) {
-        return sigmoid(x, -1, 0);
-    }
-
-
-    /**
-     * Apply <a href="https://en.wikipedia.org/wiki/Sigmoid_function">sigmoid</a> function to input variable
-     * <code>x</code>.
-     * <p>
-     * Use parameters:
-     *
-     * @param x <b>value</b> value to be transformed
-     * @param s <b>steepness</b> parameter - make sigmoid function more <em>threshold-like</em>
-     * @param t <b>threshold</b> parameter - center the function on the <em>threshold</em> value
-     * @return score
-     */
-    public static double sigmoid(double x, double s, double t) {
-        return 1 / (1 + Math.exp(s * (x - t)));
-    }
-
-    public static UnaryOperator<Double> sigmoidScaler(double threshold, double steepness) {
-        return d -> sigmoid(d, steepness, threshold);
     }
 }

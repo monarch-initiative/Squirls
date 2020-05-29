@@ -3,6 +3,7 @@ package org.monarchinitiative.threes.core.classifier.impute;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.monarchinitiative.threes.core.classifier.FeatureData;
+import org.monarchinitiative.threes.core.classifier.transform.feature.SplicingDataImputer;
 
 import java.util.Map;
 

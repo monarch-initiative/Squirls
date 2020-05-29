@@ -9,7 +9,9 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.monarchinitiative.threes.core.classifier.FeatureData;
 import org.monarchinitiative.threes.core.classifier.OverlordClassifier;
-import org.monarchinitiative.threes.core.classifier.PredictionImpl;
+import org.monarchinitiative.threes.core.classifier.Prediction;
+import org.monarchinitiative.threes.core.classifier.StandardPrediction;
+import org.monarchinitiative.threes.core.classifier.transform.prediction.IdentityTransformer;
 import org.monarchinitiative.threes.core.data.SplicingTranscriptSource;
 import org.monarchinitiative.threes.core.model.SplicingTranscript;
 import org.monarchinitiative.threes.core.scoring.SplicingAnnotator;
@@ -33,6 +35,11 @@ import static org.mockito.Mockito.when;
 @SpringBootTest(classes = TestDataSourceConfig.class)
 class StandardVariantSplicingEvaluatorTest {
 
+    /**
+     * Tolerance for numeric comparisons.
+     */
+    private static final double EPSILON = 5E-6;
+
     private static SequenceInterval SI;
 
     private static ReferenceDictionary RD;
@@ -48,7 +55,6 @@ class StandardVariantSplicingEvaluatorTest {
 
     @Mock
     private OverlordClassifier classifier;
-
 
     private StandardVariantSplicingEvaluator evaluator;
 
@@ -73,7 +79,13 @@ class StandardVariantSplicingEvaluatorTest {
     void setUp() {
         // genome sequence accessor
         when(accessor.getReferenceDictionary()).thenReturn(RD);
-        evaluator = new StandardVariantSplicingEvaluator(accessor, transcriptSource, annotator, classifier);
+        evaluator = StandardVariantSplicingEvaluator.builder()
+                .accessor(accessor)
+                .txSource(transcriptSource)
+                .annotator(annotator)
+                .classifier(classifier)
+                .transformer(IdentityTransformer.getInstance())
+                .build();
     }
 
     @Test
@@ -98,9 +110,9 @@ class StandardVariantSplicingEvaluatorTest {
         when(annotator.evaluate(any(GenomeVariant.class), eq(stx), eq(SI))).thenReturn(featureData);
 
         // 3 - classifier
-        Prediction prediction = PredictionImpl.builder()
-                .setDonorData(.6, .7)
-                .setAcceptorData(.1, .6)
+        StandardPrediction prediction = StandardPrediction.builder()
+                .addProbaThresholdPair(.6, .7)
+                .addProbaThresholdPair(.1, .6)
                 .build();
         when(classifier.predict(featureData)).thenReturn(prediction);
 
@@ -112,7 +124,7 @@ class StandardVariantSplicingEvaluatorTest {
         assertThat(predictionMap, hasValue(prediction));
         assertThat(predictionMap.size(), is(1));
 
-        verify(accessor).fetchSequence(new GenomeInterval(RD, Strand.FWD, 9, 136_223_326, 136_228_134, PositionType.ONE_BASED));
+        verify(accessor).fetchSequence(new GenomeInterval(RD, Strand.FWD, 9, 136_223_176, 136_228_284, PositionType.ONE_BASED));
         verify(annotator).evaluate(new GenomeVariant(new GenomePosition(RD, Strand.FWD, 9, 136_223_949, PositionType.ONE_BASED), "G", "C"), stx, SI);
     }
 
@@ -180,9 +192,9 @@ class StandardVariantSplicingEvaluatorTest {
         when(annotator.evaluate(any(GenomeVariant.class), eq(stx), eq(SI))).thenReturn(featureData);
 
         // 3 - classifier
-        Prediction prediction = PredictionImpl.builder()
-                .setDonorData(.6, .7)
-                .setAcceptorData(.1, .6)
+        StandardPrediction prediction = StandardPrediction.builder()
+                .addProbaThresholdPair(.6, .7)
+                .addProbaThresholdPair(.1, .6)
                 .build();
         when(classifier.predict(featureData)).thenReturn(prediction);
 
@@ -194,9 +206,7 @@ class StandardVariantSplicingEvaluatorTest {
         assertThat(predictionMap, hasValue(prediction));
         assertThat(predictionMap.size(), is(1));
 
-        verify(accessor).fetchSequence(new GenomeInterval(RD, Strand.FWD, 9, 136_223_326, 136_228_134, PositionType.ONE_BASED));
+        verify(accessor).fetchSequence(new GenomeInterval(RD, Strand.FWD, 9, 136_223_176, 136_228_284, PositionType.ONE_BASED));
         verify(annotator).evaluate(new GenomeVariant(new GenomePosition(RD, Strand.FWD, 9, 136_223_949, PositionType.ONE_BASED), "G", "C"), stx, SI);
     }
-
-
 }

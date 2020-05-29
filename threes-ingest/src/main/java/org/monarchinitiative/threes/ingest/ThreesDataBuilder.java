@@ -6,7 +6,11 @@ import de.charite.compbio.jannovar.data.ReferenceDictionary;
 import de.charite.compbio.jannovar.reference.TranscriptModel;
 import org.flywaydb.core.Flyway;
 import org.monarchinitiative.threes.core.ThreeSException;
-import org.monarchinitiative.threes.core.data.ClassifierDao;
+import org.monarchinitiative.threes.core.classifier.io.Deserializer;
+import org.monarchinitiative.threes.core.classifier.io.OverallModelData;
+import org.monarchinitiative.threes.core.classifier.transform.prediction.LogisticRegressionPredictionTransformer;
+import org.monarchinitiative.threes.core.classifier.transform.prediction.PredictionTransformer;
+import org.monarchinitiative.threes.core.data.DbClassifierDataManager;
 import org.monarchinitiative.threes.core.data.ic.InputStreamBasedPositionalWeightMatrixParser;
 import org.monarchinitiative.threes.core.data.ic.SplicingPositionalWeightMatrixParser;
 import org.monarchinitiative.threes.core.data.ic.SplicingPwmData;
@@ -24,6 +28,7 @@ import xyz.ielis.hyperutil.reference.fasta.GenomeSequenceAccessor;
 import xyz.ielis.hyperutil.reference.fasta.GenomeSequenceAccessorBuilder;
 
 import javax.sql.DataSource;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -136,8 +141,12 @@ public class ThreesDataBuilder {
      */
     private static void processClassifier(DataSource dataSource, String clfVersion, byte[] clfBytes) {
         LOGGER.info("Inserting classifier `{}`", clfVersion);
-        final ClassifierDao clfDao = new ClassifierDao(dataSource);
-        final int updated = clfDao.storeClassifier(clfVersion, clfBytes);
+        final OverallModelData data = Deserializer.deserializeOverallModelData(new ByteArrayInputStream(clfBytes));
+        final DbClassifierDataManager manager = new DbClassifierDataManager(dataSource);
+        int updated = manager.storeClassifier(clfVersion, clfBytes);
+        PredictionTransformer transformer = LogisticRegressionPredictionTransformer.getInstance(data.getSlope(), data.getIntercept());
+        updated += manager.storeTransformer(clfVersion, transformer);
+
         LOGGER.info("Updated {} rows", updated);
     }
 
@@ -224,6 +233,7 @@ public class ThreesDataBuilder {
         }
 
         // 3f - store classifier
+        LOGGER.info("Inserting classifiers");
         for (Map.Entry<String, byte[]> entry : classifiers.entrySet()) {
             processClassifier(dataSource, entry.getKey(), entry.getValue());
         }

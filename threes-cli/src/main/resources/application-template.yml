@@ -8,6 +8,10 @@ threes:
   data-version:
   # Path to bigwig file with genome-wide PhyloP scores
   phylop-bigwig-path:
-  # Which classifier to use
-  #classifier-version=v1
+
+  classifier:
+  # which classifier to use
+  #version: v1
+  # variant with longer REF allele will not be evaluated
+  #max-variant-length: 100
 

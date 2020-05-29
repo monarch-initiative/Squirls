@@ -9,6 +9,7 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -26,15 +27,19 @@ class FakeUpDatabase {
     private static final Path SPLICING_IC_MATRIX_PATH = Paths.get(FakeUpDatabase.class.getResource("spliceSites.yaml").getPath());
     private static final Path HEXAMER_TSV_PATH = Paths.get(FakeUpDatabase.class.getResource("hexamer-scores.tsv").getPath());
     private static final Path SEPTAMER_TSV_PATH = Paths.get(FakeUpDatabase.class.getResource("septamer-scores.tsv").getPath());
-    private static final String MODEL_VERSION = "v1";
-    private static final Path MODEL_PATH = Paths.get(FakeUpDatabase.class.getResource("ensemble_model.v1.yaml").getPath());
 
-    private static byte[] MODEL_DATA;
+    private static final Map<String, Path> MODEL_PATHS = Map.of(
+            "v1", Paths.get(FakeUpDatabase.class.getResource("ensemble_model.v1.yaml").getPath()),
+            "v1.1", Paths.get(FakeUpDatabase.class.getResource("ensemble_model.v1.1.yaml").getPath()));
+
+    private static final Map<String, byte[]> MODEL_DATA = new HashMap<>();
 
     @BeforeAll
     static void beforeAll() throws Exception {
-        try (InputStream is = Files.newInputStream(MODEL_PATH)) {
-            MODEL_DATA = is.readAllBytes();
+        for (Map.Entry<String, Path> entry : MODEL_PATHS.entrySet()) {
+            try (InputStream is = Files.newInputStream(entry.getValue())) {
+                MODEL_DATA.put(entry.getKey(), is.readAllBytes());
+            }
         }
     }
 
@@ -42,17 +47,13 @@ class FakeUpDatabase {
     void makeHg19Database() throws Exception {
         URL genomeUrl = new URL("http://hgdownload.soe.ucsc.edu/goldenPath/hg19/bigZips/chromFa.tar.gz");
         ThreesDataBuilder.buildDatabase(BUILD_DIR, genomeUrl, HG19_JANNOVAR_DB_DIR, SPLICING_IC_MATRIX_PATH,
-                HEXAMER_TSV_PATH, SEPTAMER_TSV_PATH,
-                Map.of(MODEL_VERSION, MODEL_DATA),
-                "1710_hg19");
+                HEXAMER_TSV_PATH, SEPTAMER_TSV_PATH, MODEL_DATA, "1710_hg19");
     }
 
     @Test
     void makeHg38Database() throws Exception {
         URL genomeUrl = new URL("http://hgdownload.soe.ucsc.edu/goldenPath/hg38/bigZips/hg38.chromFa.tar.gz");
         ThreesDataBuilder.buildDatabase(BUILD_DIR, genomeUrl, HG38_JANNOVAR_DB_DIR, SPLICING_IC_MATRIX_PATH,
-                HEXAMER_TSV_PATH, SEPTAMER_TSV_PATH,
-                Map.of(MODEL_VERSION, MODEL_DATA),
-                "1710_hg38");
+                HEXAMER_TSV_PATH, SEPTAMER_TSV_PATH, MODEL_DATA, "1710_hg38");
     }
 }
