@@ -122,11 +122,11 @@ public class AnnotateVcfCommand extends Command {
         - iterate
          */
         final Path inputPath = Paths.get(namespace.getString("input"));
-        LOGGER.info("Reading variants from `{}`", inputPath);
+        LOGGER.debug("Reading variants from `{}`", inputPath);
         final Path outputPath = Paths.get(namespace.getString("output"));
-        LOGGER.info("Writing annotated variants to `{}`", outputPath);
+        LOGGER.debug("Writing annotated variants to `{}`", outputPath);
         final double threshold = namespace.getDouble("threshold");
-        LOGGER.info("Adding `3S` label to variants with predicted pathogenicity value above `{}`", threshold);
+        LOGGER.debug("Adding `3S` label to variants with predicted pathogenicity value above `{}`", threshold);
 
         // initialize progress logging
         // TODO: 29. 5. 2020 improve behavior & logging

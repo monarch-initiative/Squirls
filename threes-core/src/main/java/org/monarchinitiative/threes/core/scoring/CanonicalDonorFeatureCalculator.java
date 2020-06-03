@@ -30,7 +30,7 @@ class CanonicalDonorFeatureCalculator extends BaseFeatureCalculator {
         final String donorSiteWithAltAllele = generator.getDonorSiteWithAltAllele(anchor, variant, interval);
 
         if (donorSiteSnippet == null || donorSiteWithAltAllele == null) {
-            LOGGER.warn("Unable to create wt/alt snippets for variant `{}` using interval `{}`", variant, interval.getInterval());
+            LOGGER.debug("Unable to create wt/alt snippets for variant `{}` using interval `{}`", variant, interval.getInterval());
             return Double.NaN;
         }
 

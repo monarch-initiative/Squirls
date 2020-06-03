@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>SQUIRLS - Super-quick Information Content and Random Forest Learning for Splice Variants</title>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <style>
+        #variant-div {
+            border: 1px dotted grey;
+            margin: 5px;
+        }
+
+        #variant-div h4 {
+            margin: 5px;
+        }
+
+        table td, table th {
+            border: 1px solid #ddd;
+            padding: 8px;
+        }
+
+
+        table tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+
+        table tr:hover {
+            background-color: #ddd;
+        }
+
+        table th {
+            padding-top: 12px;
+            padding-bottom: 12px;
+            text-align: left;
+        }
+
+        #allele th {
+            background-color: rgb(15, 27, 170);
+            color: white;
+        }
+
+        #stats-table th {
+            background-color: rgb(255, 0, 0);
+            color: white;
+        }
+    </style>
+</head>
+<body>
+<div class="container" id="content">
+    <h2>
+        Results for <span th:text="${sampleName}">Mr. Fantastic, Mrs. Fantastic</span>
+    </h2>
+    <h3>
+        Analysis input
+    </h3>
+    <p>Settings used for this analysis:</p>
+    <pre th:text="${settings.getYamlRepresentation()}">
+        Analysis settings:
+          - vcfPath: /path/to/input.vcf
+          - transcript database path: ensembl
+          - threshold: 0.2
+    </pre>
+    <h3>
+        Analysis statistics
+    </h3>
+    <table id="stats-table">
+        <tr>
+            <th>Type</th>
+            <th>Count</th>
+            <th>Info</th>
+        </tr>
+        <tr>
+            <td># variants</td>
+            <td th:text="${stats.getAllVariants()}">100</td>
+            <td>number of variants observed in the VCF file</td>
+        </tr>
+        <tr>
+            <td># <em>ALT</em> alleles</td>
+            <td th:text="${stats.alleleCount}">120</td>
+            <td>number of <em>ALT</em> alleles found in the VCF file</td>
+        </tr>
+        <tr>
+            <td># annotated alleles</td>
+            <td th:text="${stats.annotatedAlleleCount}">110</td>
+            <td>number of alleles with &gt;1 functional annotation</td>
+        </tr>
+        <tr>
+            <td># pathogenic alleles</td>
+            <td th:text="${stats.pathogenicAlleleCount}">5</td>
+            <td>number of alleles with predicted splicing pathogenicity above <span
+                    th:text="${settings.threshold}">0.2</span></td>
+        </tr>
+    </table>
+    <h3>
+        Prioritised Variants
+    </h3>
+    <div id="variant-div" th:each="variant, variant_is: ${variants}">
+        <h4>Variant <span th:text="${variant.getRepresentation()}">chr9:136224690A>G</span></h4>
+        <table id="allele">
+            <tr>
+                <th>Gene symbol</th>
+                <th>Tx accession ID</th>
+                <th>Effects</th>
+                <th>HGVS</th>
+                <th>Splicing pathogenicity score</th>
+            </tr>
+            <tr th:each="annots, ann_is: ${variant.getTranscriptAnnotations()}">
+                <td th:if="${ann_is.first}" th:rowspan="${ann_is.size}" th:text="${annots.getGeneSymbol()}">SURF2</td>
+                <td th:text="${annots.getTranscript().getAccession()}">NM_123456.3</td>
+                <td th:text="${annots.getMostPathogenicVarType()}">MISSENSE</td>
+                <td th:text="${annots.getCDSNTChangeStr()}">c.123A>G</td>
+                <td th:text="${variant.getPredictionMap().get(annots.getTranscript()).getMaxPathogenicity()}">0.89</td>
+            </tr>
+        </table>
+    </div>
+
+</div>
+</div>
+</body>
+</html>

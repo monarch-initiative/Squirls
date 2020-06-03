@@ -32,6 +32,18 @@
         </dependency>
 
         <dependency>
+            <groupId>de.charite.compbio</groupId>
+            <artifactId>jannovar-htsjdk</artifactId>
+            <version>${jannovar.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.testng</groupId>
+                    <artifactId>testng</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
             <groupId>net.sourceforge.argparse4j</groupId>
             <artifactId>argparse4j</artifactId>
             <version>${argparse.version}</version>

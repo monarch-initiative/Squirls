@@ -82,11 +82,11 @@ public class StandardVariantSplicingEvaluator implements VariantSplicingEvaluato
         }
 
         /*
-         0 - get overlapping splicing transcripts. Query by coordinates if no txIDs are provided
+         0 - get overlapping splicing transcripts. Query by coordinates if no txIDs are provided. Only transcripts
+         that overlap with the variant interval are considered.
          */
         final GenomeVariant variant = new GenomeVariant(new GenomePosition(rd, Strand.FWD, rd.getContigNameToID().get(contig), pos, PositionType.ONE_BASED), ref, alt);
-        final GenomeInterval variantInterval = variant.getGenomeInterval();
-        final Map<String, SplicingTranscript> txMap = fetchTranscripts(contig, variantInterval.getBeginPos(), variantInterval.getEndPos(), txIds);
+        final Map<String, SplicingTranscript> txMap = fetchTranscripts(variant, txIds);
 
         if (txMap.isEmpty()) {
             // no transcript to evaluate
@@ -138,20 +138,23 @@ public class StandardVariantSplicingEvaluator implements VariantSplicingEvaluato
     }
 
     /**
-     * Use provided variant coordinates OR transcript accession IDs to fetch {@link SplicingTranscript}s from the database.
+     * Use provided variant coordinates <em>OR</em> transcript accession IDs to fetch {@link SplicingTranscript}s from
+     * the database.
+     * <p>
+     * Only transcripts that overlap with the <code>variant</code> are returned.
+     * </p>
      *
-     * @param contig chromosome string, e.g. `chrX`, or `X`
-     * @param begin  0-based (exclusive, BED-style) begin position of the variant
-     * @param end    0-based (inclusive, BED-style) end position of the variant
-     * @param txIds  set of transcript accession IDs
+     * @param variant {@link GenomeVariant} with variant coordinates
+     * @param txIds   set of transcript accession IDs
      * @return map with transcripts group
      */
-    private Map<String, SplicingTranscript> fetchTranscripts(String contig, int begin, int end, Set<String> txIds) {
-        Map<String, SplicingTranscript> txMap = new HashMap<>();
+    private Map<String, SplicingTranscript> fetchTranscripts(GenomeVariant variant, Set<String> txIds) {
+        final Map<String, SplicingTranscript> txMap = new HashMap<>();
+        final GenomeInterval variantInterval = variant.getGenomeInterval();
 
         if (txIds.isEmpty()) {
             // querying by coordinates
-            return txSource.fetchTranscripts(contig, begin, end, accessor.getReferenceDictionary()).stream()
+            return txSource.fetchTranscripts(variant.getChrName(), variantInterval.getBeginPos(), variantInterval.getEndPos(), accessor.getReferenceDictionary()).stream()
                     .collect(Collectors.toMap(SplicingTranscript::getAccessionId, Function.identity()));
 
         } else {
@@ -159,9 +162,13 @@ public class StandardVariantSplicingEvaluator implements VariantSplicingEvaluato
             for (String txId : txIds) {
                 final Optional<SplicingTranscript> sto = txSource.fetchTranscriptByAccession(txId, accessor.getReferenceDictionary());
                 if (sto.isPresent()) {
-                    txMap.put(txId, sto.get());
+                    final SplicingTranscript st = sto.get();
+                    // transcript must overlap with the variant
+                    if (st.getTxRegionCoordinates().overlapsWith(variantInterval)) {
+                        txMap.put(txId, st);
+                    }
                 } else {
-                    LOGGER.info("Unknown transcript id `{}`", txId);
+                    LOGGER.debug("Unknown transcript id `{}`", txId);
                 }
             }
         }

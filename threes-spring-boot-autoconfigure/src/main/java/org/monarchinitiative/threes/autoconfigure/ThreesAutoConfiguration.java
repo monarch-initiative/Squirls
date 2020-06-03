@@ -103,7 +103,7 @@ public class ThreesAutoConfiguration {
 
     @Bean
     public BigWigAccessor phylopBigwigAccessor(Path phylopBigwigPath) throws IOException {
-        LOGGER.info("Using phyloP bigwig file at `{}`", phylopBigwigPath);
+        LOGGER.debug("Using phyloP bigwig file at `{}`", phylopBigwigPath);
         return new BigWigAccessor(phylopBigwigPath);
     }
 
@@ -131,7 +131,7 @@ public class ThreesAutoConfiguration {
             String msg = String.format("Classifier version `%s` is not available, choose one from `%s`",
                     clfVersion,
                     avail.stream().sorted().collect(Collectors.joining(", ", "[ ", " ]")));
-            LOGGER.warn(msg);
+            LOGGER.error(msg);
             throw new InvalidThreesResourceException(msg);
         }
 
@@ -139,7 +139,7 @@ public class ThreesAutoConfiguration {
         final Optional<OverlordClassifier> clfOpt = classifierDataManager.readClassifier(clfVersion);
         final OverlordClassifier clf;
         if (clfOpt.isPresent()) {
-            LOGGER.info("Using classifier `{}`", clfVersion);
+            LOGGER.debug("Using classifier `{}`", clfVersion);
             clf = clfOpt.get();
         } else {
             String msg = String.format("Error when deserializing classifier `%s` from the database", clfVersion);
@@ -176,7 +176,7 @@ public class ThreesAutoConfiguration {
     public SplicingAnnotator splicingAnnotator(SplicingPwmData splicingPwmData,
                                                DbKMerDao dbKMerDao,
                                                BigWigAccessor phylopBigwigAccessor) {
-        LOGGER.info("Using dense splicing annotator");
+        LOGGER.debug("Using dense splicing annotator");
         return new DenseSplicingAnnotator(splicingPwmData, dbKMerDao.getHexamerMap(), dbKMerDao.getSeptamerMap(), phylopBigwigAccessor);
     }
 

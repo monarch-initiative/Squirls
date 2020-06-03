@@ -42,7 +42,7 @@ public class BigWigFeatureCalculator implements FeatureCalculator {
                     .orElse(Double.NaN);
             return (sum / scores.size());
         } catch (ColesvarWigException e) {
-            LOGGER.warn("Unable to find scores for variant `{}`", variant);
+            LOGGER.debug("Unable to find scores for variant `{}`", variant);
             return Double.NaN;
         }
     }

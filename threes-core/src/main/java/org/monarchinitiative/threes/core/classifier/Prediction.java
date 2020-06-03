@@ -8,6 +8,10 @@ import java.util.Objects;
  */
 public interface Prediction {
 
+    static Prediction emptyPrediction() {
+        return EmptyPrediction.getInstance();
+    }
+
     /**
      * Predictions are being made by one or more decision functions, where {@link PartialPrediction} represents outcome
      * of a single decision function.
