@@ -59,6 +59,14 @@
             <artifactId>thymeleaf-spring5</artifactId>
         </dependency>
 
+        <!-- VMVT is a library for visualisation of variant impact on splice donor/acceptor sites in form of
+        SVG images. -->
+        <dependency>
+            <groupId>org.monarchinitiative.vmvt</groupId>
+            <artifactId>vmvt</artifactId>
+            <version>0.4.1-SNAPSHOT</version>
+        </dependency>
+
         <!--  TEST DEPENDENCIES  -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
