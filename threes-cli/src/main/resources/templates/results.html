@@ -65,30 +65,25 @@
     </h3>
     <table id="stats-table">
         <tr>
-            <th>Type</th>
-            <th>Count</th>
             <th>Info</th>
+            <th>Count</th>
         </tr>
         <tr>
-            <td># variants</td>
+            <td>number of variants in the VCF file</td>
             <td th:text="${stats.getAllVariants()}">100</td>
-            <td>number of variants observed in the VCF file</td>
         </tr>
         <tr>
-            <td># <em>ALT</em> alleles</td>
+            <td>number of <em>ALT</em> alleles in the VCF file</td>
             <td th:text="${stats.alleleCount}">120</td>
-            <td>number of <em>ALT</em> alleles found in the VCF file</td>
         </tr>
         <tr>
-            <td># annotated alleles</td>
-            <td th:text="${stats.annotatedAlleleCount}">110</td>
             <td>number of alleles with &gt;1 functional annotation</td>
+            <td th:text="${stats.annotatedAlleleCount}">110</td>
         </tr>
         <tr>
-            <td># pathogenic alleles</td>
+            <td>number of alleles with predicted splicing pathogenicity above
+                <span th:text="${settings.threshold}">0.2</span></td>
             <td th:text="${stats.pathogenicAlleleCount}">5</td>
-            <td>number of alleles with predicted splicing pathogenicity above <span
-                    th:text="${settings.threshold}">0.2</span></td>
         </tr>
     </table>
     <h3>
