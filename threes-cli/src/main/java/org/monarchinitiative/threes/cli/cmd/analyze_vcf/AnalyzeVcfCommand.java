@@ -18,8 +18,8 @@ import net.sourceforge.argparse4j.inf.Subparser;
 import net.sourceforge.argparse4j.inf.Subparsers;
 import org.monarchinitiative.threes.cli.cmd.Command;
 import org.monarchinitiative.threes.cli.cmd.CommandException;
+import org.monarchinitiative.threes.core.SplicingPredictionData;
 import org.monarchinitiative.threes.core.VariantSplicingEvaluator;
-import org.monarchinitiative.threes.core.classifier.Prediction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -98,12 +98,12 @@ public class AnalyzeVcfCommand extends Command {
      *
      * @return function for performing the annotation
      */
-    private static UnaryOperator<VariantDataBox> splicingAnnotation(VariantSplicingEvaluator evaluator) {
-        return vp -> {
-            final VariantAnnotations annotations = vp.getAnnotations();
+    private static UnaryOperator<SplicingVariantAlleleEvaluation> splicingAnnotation(VariantSplicingEvaluator evaluator) {
+        return variant -> {
+            final VariantAnnotations annotations = variant.getAnnotations();
             if (annotations == null || !annotations.hasAnnotation()) {
                 // nothing to be done
-                return vp;
+                return variant;
             }
 
             /*
@@ -113,32 +113,27 @@ public class AnalyzeVcfCommand extends Command {
                     .map(Annotation::getTranscript)
                     .collect(Collectors.toMap(TranscriptModel::getAccession, Function.identity()));
 
-            final Map<String, Prediction> evaluation = evaluator.evaluate(vp.getBase().getContig(),
-                    vp.getBase().getStart(),
-                    vp.getBase().getReference().getBaseString(),
-                    vp.getAltAllele().getBaseString(),
+            final SplicingPredictionData predictionData = evaluator.evaluate(variant.getBase().getContig(),
+                    variant.getBase().getStart(),
+                    variant.getBase().getReference().getBaseString(),
+                    variant.getAltAllele().getBaseString(),
                     txByAccession.keySet());
 
-//            final VmvtGenerator vmvtGenerator = new VmvtGenerator();
-
-
-            final Map<TranscriptModel, Prediction> predictions = txByAccession.keySet().stream()
-                    .collect(Collectors.toMap(txByAccession::get, txId -> evaluation.getOrDefault(txId, Prediction.emptyPrediction())));
-            vp.putAllPredictions(predictions);
-            return vp;
+            variant.setPredictionData(predictionData);
+            return variant;
         };
 
     }
 
     /**
      * Variant context might contain multiple alternate alleles. Here we melt the variant context into multiple
-     * {@link VariantDataBox}s, one for each <em>ALT</em> allele.
+     * {@link SplicingVariantAlleleEvaluation}s, one for each <em>ALT</em> allele.
      *
      * @return {@link Stream} of
      */
-    private static Function<VariantContext, Stream<VariantDataBox>> meltToAltAlleles() {
+    private static Function<VariantContext, Stream<SplicingVariantAlleleEvaluation>> meltToAltAlleles() {
         return vc -> vc.getAlternateAlleles().stream()
-                .map(allele -> new VariantDataBox(vc, allele));
+                .map(allele -> new SplicingVariantAlleleEvaluation(vc, allele));
     }
 
     /**
@@ -146,8 +141,8 @@ public class AnalyzeVcfCommand extends Command {
      *
      * @return function for performing the annotation, the function returns an empty optional if the annotation fails
      */
-    private static Function<VariantDataBox, Optional<VariantDataBox>> functionalAnnotation(ReferenceDictionary rd,
-                                                                                           VariantAnnotator annotator) {
+    private static Function<SplicingVariantAlleleEvaluation, Optional<SplicingVariantAlleleEvaluation>> functionalAnnotation(ReferenceDictionary rd,
+                                                                                                                             VariantAnnotator annotator) {
         return vc -> {
             final String contig = vc.getBase().getContig();
             if (!rd.getContigNameToID().containsKey(contig)) {
@@ -193,7 +188,7 @@ public class AnalyzeVcfCommand extends Command {
 
         final ProgressReporter progressReporter = new ProgressReporter();
         final List<String> sampleNames;
-        final Collection<VariantDataBox> annotated = Collections.synchronizedList(new LinkedList<>());
+        final Collection<SplicingVariantAlleleEvaluation> annotated = Collections.synchronizedList(new LinkedList<>());
 
         try (final VCFFileReader reader = new VCFFileReader(inputPath, false);
              final Stream<VariantContext> stream = StreamSupport.stream(reader.spliterator(), true)) {
@@ -247,22 +242,22 @@ public class AnalyzeVcfCommand extends Command {
             LOGGER.info("Starting the analysis");
         }
 
-        public void logVariant(VariantContext context) {
+        public void logVariant(Object context) {
             final int current = allVariantCount.incrementAndGet();
             if (current % 10_000 == 0) {
                 LOGGER.info("Processed {} variants", current);
             }
         }
 
-        public void logAltAllele(VariantDataBox variantDataBox) {
+        public void logAltAllele(Object variantDataBox) {
             altAlleleCount.incrementAndGet();
         }
 
-        public void logAnnotatedAllele(VariantDataBox variantDataBox) {
+        public void logAnnotatedAllele(Object variantDataBox) {
             annotatedAltAlleleCount.incrementAndGet();
         }
 
-        public void logEligibleAllele(VariantDataBox variantDataBox) {
+        public void logEligibleAllele(Object variantDataBox) {
             pathogenicAltAlleleCount.incrementAndGet();
         }
 

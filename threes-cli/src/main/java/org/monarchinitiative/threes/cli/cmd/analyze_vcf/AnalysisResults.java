@@ -11,12 +11,12 @@ public class AnalysisResults {
     private final List<String> sampleNames;
     private final SettingsData settingsData;
     private final AnalysisStats analysisStats;
-    private final List<VariantDataBox> variantData;
+    private final List<SplicingVariantAlleleEvaluation> variantData;
 
     private AnalysisResults(Builder builder) {
         sampleNames = List.copyOf(builder.sampleNames);
         variantData = builder.variantData.stream()
-                .sorted(Comparator.comparing(VariantDataBox::getMaxScore).reversed())
+                .sorted(Comparator.comparing(SplicingVariantAlleleEvaluation::getMaxScore).reversed())
                 .collect(Collectors.toList());
         analysisStats = Objects.requireNonNull(builder.analysisStats);
         settingsData = Objects.requireNonNull(builder.settingsData);
@@ -38,13 +38,13 @@ public class AnalysisResults {
         return sampleNames;
     }
 
-    public List<VariantDataBox> getVariantData() {
+    public List<SplicingVariantAlleleEvaluation> getVariantData() {
         return variantData;
     }
 
     public static final class Builder {
         private final List<String> sampleNames = new ArrayList<>();
-        private Collection<VariantDataBox> variantData;
+        private Collection<SplicingVariantAlleleEvaluation> variantData;
         private AnalysisStats analysisStats;
         private SettingsData settingsData;
 
@@ -56,7 +56,7 @@ public class AnalysisResults {
             return this;
         }
 
-        public Builder variantData(Collection<VariantDataBox> variantData) {
+        public Builder variantData(Collection<SplicingVariantAlleleEvaluation> variantData) {
             this.variantData = variantData;
             return this;
         }

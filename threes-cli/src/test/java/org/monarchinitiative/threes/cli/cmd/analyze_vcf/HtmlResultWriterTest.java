@@ -13,7 +13,8 @@ import htsjdk.variant.variantcontext.VariantContextBuilder;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.monarchinitiative.threes.cli.TestDataSourceConfig;
-import org.monarchinitiative.threes.core.classifier.Prediction;
+import org.monarchinitiative.threes.core.Metadata;
+import org.monarchinitiative.threes.core.StandardSplicingPredictionData;
 import org.monarchinitiative.threes.core.classifier.StandardPrediction;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -25,9 +26,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 import java.util.Random;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @SpringBootTest(classes = TestDataSourceConfig.class)
@@ -49,7 +48,7 @@ class HtmlResultWriterTest {
 
     private HtmlResultWriter writer;
 
-    private static VariantDataBox getFirst(ReferenceDictionary rd, VariantAnnotator annotator) throws Exception {
+    private static SplicingVariantAlleleEvaluation getFirst(ReferenceDictionary rd, VariantAnnotator annotator) throws Exception {
         /*
         Prepare POJOs
          */
@@ -65,7 +64,7 @@ class HtmlResultWriterTest {
                 .alleles(List.of(referenceAllele, altAlleleOne, altAlleleTwo))
                 .make();
 
-        final VariantDataBox box = new VariantDataBox(vc, altAlleleOne);
+        final SplicingVariantAlleleEvaluation box = new SplicingVariantAlleleEvaluation(vc, altAlleleOne);
         final GenomePosition position = new GenomePosition(rd, Strand.FWD, rd.getContigNameToID().get("chr9"), 136_224_690, PositionType.ONE_BASED);
         final GenomeVariant variant = new GenomeVariant(position, "A", "G");
 
@@ -81,21 +80,24 @@ class HtmlResultWriterTest {
                 .map(Annotation::getTranscript)
                 .collect(Collectors.toList());
 
-        final Map<TranscriptModel, Prediction> predictions = Map.copyOf(annotations.stream()
-                .collect(Collectors.toMap(Function.identity(),
-                        tx -> StandardPrediction.builder()
-                                .addProbaThresholdPair(RANDOM.nextDouble(), .2)
-                                .build())));
+        final StandardSplicingPredictionData predictionData = StandardSplicingPredictionData.newBuilder()
+                .predictionMap(annotations.stream()
+                        .collect(Collectors.toMap(TranscriptModel::getAccession,
+                                tx -> StandardPrediction.builder()
+                                        .addProbaThresholdPair(RANDOM.nextDouble(), .2)
+                                        .build())))
+                .metadata(Metadata.empty())
+                .build();
 
         /*
         Add the maps to the container
          */
         box.setAnnotations(ann);
-        box.putAllPredictions(predictions);
+        box.setPredictionData(predictionData);
         return box;
     }
 
-    private static VariantDataBox getSecond(ReferenceDictionary rd, VariantAnnotator annotator) throws Exception {
+    private static SplicingVariantAlleleEvaluation getSecond(ReferenceDictionary rd, VariantAnnotator annotator) throws Exception {
         /*
         Prepare POJOs
          */
@@ -109,7 +111,7 @@ class HtmlResultWriterTest {
                 .alleles(List.of(referenceAllele, alternateAllele))
                 .make();
 
-        final VariantDataBox container = new VariantDataBox(vc, alternateAllele);
+        final SplicingVariantAlleleEvaluation container = new SplicingVariantAlleleEvaluation(vc, alternateAllele);
 
         final GenomePosition position = new GenomePosition(rd, Strand.FWD, rd.getContigNameToID().get("chr9"), 136_224_586, PositionType.ONE_BASED);
         final GenomeVariant variant = new GenomeVariant(position, "G", "GA");
@@ -126,17 +128,20 @@ class HtmlResultWriterTest {
                 .map(Annotation::getTranscript)
                 .collect(Collectors.toList());
 
-        final Map<TranscriptModel, Prediction> predictions = Map.copyOf(annotations.stream()
-                .collect(Collectors.toMap(Function.identity(),
-                        tx -> StandardPrediction.builder()
-                                .addProbaThresholdPair(RANDOM.nextDouble(), .2)
-                                .build())));
+        final StandardSplicingPredictionData predictionData = StandardSplicingPredictionData.newBuilder()
+                .predictionMap(annotations.stream()
+                        .collect(Collectors.toMap(TranscriptModel::getAccession,
+                                tx -> StandardPrediction.builder()
+                                        .addProbaThresholdPair(RANDOM.nextDouble(), .2)
+                                        .build())))
+                .metadata(Metadata.empty())
+                .build();
 
         /*
         Add the maps to the container
          */
         container.setAnnotations(ann);
-        container.putAllPredictions(predictions);
+        container.setPredictionData(predictionData);
         return container;
     }
 
@@ -148,8 +153,8 @@ class HtmlResultWriterTest {
 
     @Test
     void writeResults() throws Exception {
-        final VariantDataBox first = getFirst(jannovarData.getRefDict(), annotator);
-        final VariantDataBox second = getSecond(jannovarData.getRefDict(), annotator);
+        final SplicingVariantAlleleEvaluation first = getFirst(jannovarData.getRefDict(), annotator);
+        final SplicingVariantAlleleEvaluation second = getSecond(jannovarData.getRefDict(), annotator);
 
         AnalysisResults results = AnalysisResults.builder()
                 .addAllSampleNames(List.of("FAKE SAMPLE"))

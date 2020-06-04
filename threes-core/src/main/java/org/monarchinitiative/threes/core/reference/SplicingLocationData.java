@@ -1,5 +1,6 @@
 package org.monarchinitiative.threes.core.reference;
 
+import de.charite.compbio.jannovar.reference.GenomeInterval;
 import de.charite.compbio.jannovar.reference.GenomePosition;
 
 import java.util.Optional;
@@ -9,10 +10,18 @@ import java.util.Optional;
  */
 public class SplicingLocationData {
 
+    private static final SplicingLocationData OUTSIDE = builder()
+            .setSplicingPosition(SplicingPosition.OUTSIDE)
+            .setExonIndex(-1)
+            .setIntronIndex(-1)
+            .build();
+
     private final SplicingPosition position;
 
     private final GenomePosition donorBoundary;
+    private final GenomeInterval donorRegion;
     private final GenomePosition acceptorBoundary;
+    private final GenomeInterval acceptorRegion;
     private final int intronIdx;
     private final int exonIdx;
 
@@ -21,15 +30,13 @@ public class SplicingLocationData {
         exonIdx = builder.exonIdx;
         position = builder.position;
         donorBoundary = builder.donorBoundary;
+        donorRegion = builder.donorRegion;
         acceptorBoundary = builder.acceptorBoundary;
+        acceptorRegion = builder.acceptorRegion;
     }
 
     public static SplicingLocationData outside() {
-        return builder()
-                .setSplicingPosition(SplicingPosition.OUTSIDE)
-                .setExonIndex(-1)
-                .setIntronIndex(-1)
-                .build();
+        return OUTSIDE;
     }
 
     public static Builder builder() {
@@ -40,8 +47,16 @@ public class SplicingLocationData {
         return Optional.ofNullable(donorBoundary);
     }
 
+    public Optional<GenomeInterval> getDonorRegion() {
+        return Optional.ofNullable(donorRegion);
+    }
+
     public Optional<GenomePosition> getAcceptorBoundary() {
         return Optional.ofNullable(acceptorBoundary);
+    }
+
+    public Optional<GenomeInterval> getAcceptorRegion() {
+        return Optional.ofNullable(acceptorRegion);
     }
 
     public int getIntronIdx() {
@@ -96,6 +111,8 @@ public class SplicingLocationData {
 
         private GenomePosition donorBoundary, acceptorBoundary;
 
+        private GenomeInterval donorRegion, acceptorRegion;
+
         private Builder() {
         }
 
@@ -119,8 +136,18 @@ public class SplicingLocationData {
             return this;
         }
 
+        public Builder setDonorRegion(GenomeInterval donorRegion) {
+            this.donorRegion = donorRegion;
+            return this;
+        }
+
         public Builder setAcceptorBoundary(GenomePosition acceptorBoundary) {
             this.acceptorBoundary = acceptorBoundary;
+            return this;
+        }
+
+        public Builder setAcceptorRegion(GenomeInterval acceptorRegion) {
+            this.acceptorRegion = acceptorRegion;
             return this;
         }
 

@@ -99,12 +99,14 @@
                 <th>HGVS</th>
                 <th>Splicing pathogenicity score</th>
             </tr>
-            <tr th:each="annots, ann_is: ${variant.getTranscriptAnnotations()}">
-                <td th:if="${ann_is.first}" th:rowspan="${ann_is.size}" th:text="${annots.getGeneSymbol()}">SURF2</td>
-                <td th:text="${annots.getTranscript().getAccession()}">NM_123456.3</td>
-                <td th:text="${annots.getMostPathogenicVarType()}">MISSENSE</td>
-                <td th:text="${annots.getCDSNTChangeStr()}">c.123A>G</td>
-                <td th:text="${variant.getPredictionMap().get(annots.getTranscript()).getMaxPathogenicity()}">0.89</td>
+            <tr th:each="ann, ann_is: ${variant.getTranscriptAnnotations()}">
+                <td th:if="${ann_is.first}" th:rowspan="${ann_is.size}" th:text="${ann.getGeneSymbol()}">SURF2</td>
+                <td th:text="${ann.getTranscript().getAccession()}">NM_123456.3</td>
+                <td th:text="${ann.getMostPathogenicVarType()}">MISSENSE</td>
+                <td th:text="${ann.getCDSNTChangeStr()}">c.123A>G</td>
+                <td th:text="${variant.getPredictionForTranscript(ann.getTranscript().getAccession()).getMaxPathogenicity()}">
+                    0.89
+                </td>
             </tr>
         </table>
     </div>

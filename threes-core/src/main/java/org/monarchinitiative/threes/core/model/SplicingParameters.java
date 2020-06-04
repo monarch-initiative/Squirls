@@ -74,7 +74,8 @@ public class SplicingParameters {
     }
 
     /**
-     * @param anchor {@link GenomePosition} representing `exon|intron` boundary
+     * @param anchor {@link GenomePosition} representing `exon|intron` boundary. If 1-based coordinate, then
+     *               the coordinate representing the position of the first intronic base
      * @return {@link GenomeInterval} representing splice donor site
      */
     public GenomeInterval makeDonorRegion(GenomePosition anchor) {
@@ -82,7 +83,8 @@ public class SplicingParameters {
     }
 
     /**
-     * @param anchor {@link GenomePosition} representing `intron|exon` boundary
+     * @param anchor {@link GenomePosition} representing `intron|exon` boundary. If 1-based coordinate, then
+     *               the coordinate representing the position of the first exonic base
      * @return {@link GenomeInterval} representing splice acceptor site
      */
     public GenomeInterval makeAcceptorRegion(GenomePosition anchor) {

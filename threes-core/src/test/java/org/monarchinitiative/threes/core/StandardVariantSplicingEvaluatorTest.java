@@ -14,6 +14,7 @@ import org.monarchinitiative.threes.core.classifier.StandardPrediction;
 import org.monarchinitiative.threes.core.classifier.transform.prediction.IdentityTransformer;
 import org.monarchinitiative.threes.core.data.SplicingTranscriptSource;
 import org.monarchinitiative.threes.core.model.SplicingTranscript;
+import org.monarchinitiative.threes.core.scoring.SplicingAnnotationData;
 import org.monarchinitiative.threes.core.scoring.SplicingAnnotator;
 import org.springframework.boot.test.context.SpringBootTest;
 import xyz.ielis.hyperutil.reference.fasta.GenomeSequenceAccessor;
@@ -88,6 +89,10 @@ class StandardVariantSplicingEvaluatorTest {
                 .build();
     }
 
+    static SplicingAnnotationData toSplicingAnnotationData(FeatureData data) {
+        return SplicingAnnotationData.newBuilder().featureData(data).build();
+    }
+
     @Test
     void evaluateWrtTx() throws Exception {
         // arrange
@@ -107,7 +112,7 @@ class StandardVariantSplicingEvaluatorTest {
                 .addFeature("donor_offset", 5)
                 .addFeature("acceptor_offset", 1234) // not real
                 .build();
-        when(annotator.evaluate(any(GenomeVariant.class), eq(stx), eq(SI))).thenReturn(featureData);
+        when(annotator.evaluate(any(GenomeVariant.class), eq(stx), eq(SI))).thenReturn(toSplicingAnnotationData(featureData));
 
         // 3 - classifier
         StandardPrediction prediction = StandardPrediction.builder()
@@ -117,7 +122,7 @@ class StandardVariantSplicingEvaluatorTest {
         when(classifier.predict(featureData)).thenReturn(prediction);
 
         // act
-        final Map<String, Prediction> predictionMap = evaluator.evaluate("chr9", 136_223_949, "G", "C", Set.of("NM_017503.5"));
+        final Map<String, Prediction> predictionMap = evaluator.evaluate("chr9", 136_223_949, "G", "C", Set.of("NM_017503.5")).getPredictions();
 
         // assert
         assertThat(predictionMap, hasKey("NM_017503.5"));
@@ -131,7 +136,7 @@ class StandardVariantSplicingEvaluatorTest {
     @Test
     void evaluateWrtTx_unknownContig() {
         // arrange & act
-        final Map<String, Prediction> predictionMap = evaluator.evaluate("BLA", 100, "G", "C");
+        final Map<String, Prediction> predictionMap = evaluator.evaluate("BLA", 100, "G", "C").getPredictions();
 
         // assert
         assertThat(predictionMap, is(anEmptyMap()));
@@ -143,7 +148,7 @@ class StandardVariantSplicingEvaluatorTest {
         when(transcriptSource.fetchTranscriptByAccession("BLABLA", RD)).thenReturn(Optional.empty());
 
         // act
-        final Map<String, Prediction> predictionMap = evaluator.evaluate("chr9", 136_223_949, "G", "C", Set.of("BLABLA"));
+        final Map<String, Prediction> predictionMap = evaluator.evaluate("chr9", 136_223_949, "G", "C", Set.of("BLABLA")).getPredictions();
 
         // assert
         assertThat(predictionMap, is(anEmptyMap()));
@@ -160,12 +165,11 @@ class StandardVariantSplicingEvaluatorTest {
         when(accessor.fetchSequence(any(GenomeInterval.class))).thenReturn(Optional.empty());
 
         // act
-        final Map<String, Prediction> predictionMap = evaluator.evaluate("chr9", 136_223_949, "G", "C", Set.of("NM_017503.5"));
+        final Map<String, Prediction> predictionMap = evaluator.evaluate("chr9", 136_223_949, "G", "C", Set.of("NM_017503.5")).getPredictions();
 
         // assert
         assertThat(predictionMap, is(anEmptyMap()));
     }
-
 
     /**
      * This test only specifies variant coordinates, thus it is evaluated with respect to all transcripts it overlaps
@@ -189,7 +193,7 @@ class StandardVariantSplicingEvaluatorTest {
                 .addFeature("donor_offset", 5) // real, but not required
                 .addFeature("acceptor_offset", 1234) // not real
                 .build();
-        when(annotator.evaluate(any(GenomeVariant.class), eq(stx), eq(SI))).thenReturn(featureData);
+        when(annotator.evaluate(any(GenomeVariant.class), eq(stx), eq(SI))).thenReturn(toSplicingAnnotationData(featureData));
 
         // 3 - classifier
         StandardPrediction prediction = StandardPrediction.builder()
@@ -199,7 +203,7 @@ class StandardVariantSplicingEvaluatorTest {
         when(classifier.predict(featureData)).thenReturn(prediction);
 
         // act
-        final Map<String, Prediction> predictionMap = evaluator.evaluate("chr9", 136_223_949, "G", "C");
+        final Map<String, Prediction> predictionMap = evaluator.evaluate("chr9", 136_223_949, "G", "C").getPredictions();
 
         // assert
         assertThat(predictionMap, hasKey("NM_017503.5"));

@@ -67,7 +67,7 @@ class DenseSplicingAnnotatorTest {
     void firstExonDonor() {
         final GenomeVariant variant = new GenomeVariant(new GenomePosition(referenceDictionary, Strand.FWD, 1, 1199), "G", "A");
 
-        final FeatureData data = evaluator.evaluate(variant, transcript, sequenceInterval);
+        final FeatureData data = evaluator.evaluate(variant, transcript, sequenceInterval).getFeatureData();
 
         assertThat(data.getFeature("cryptic_donor", Double.class), is(closeTo(0., EPSILON)));
         assertThat(data.getFeature("canonical_donor", Double.class), is(closeTo(3.0547, EPSILON)));
@@ -78,7 +78,7 @@ class DenseSplicingAnnotatorTest {
         final GenomeVariant variant = new GenomeVariant(new GenomePosition(referenceDictionary, Strand.FWD, 1, 1599), "C", "A");
 
         when(accessor.getScores(variant.getGenomeInterval())).thenReturn(List.of(.12345F));
-        final FeatureData data = evaluator.evaluate(variant, transcript, sequenceInterval);
+        final FeatureData data = evaluator.evaluate(variant, transcript, sequenceInterval).getFeatureData();
 
         assertThat(data.getFeature("cryptic_donor", Double.class), is(closeTo(0., EPSILON)));
         assertThat(data.getFeature("canonical_donor", Double.class), is(closeTo(-1.7926, EPSILON)));
@@ -96,7 +96,7 @@ class DenseSplicingAnnotatorTest {
     void secondExonAcceptor() {
         final GenomeVariant variant = new GenomeVariant(new GenomePosition(referenceDictionary, Strand.FWD, 1, 1399), "g", "a");
 
-        final FeatureData data = evaluator.evaluate(variant, transcript, sequenceInterval);
+        final FeatureData data = evaluator.evaluate(variant, transcript, sequenceInterval).getFeatureData();
 
         assertThat(data.getFeature("canonical_acceptor", Double.class), is(closeTo(9.9600, EPSILON)));
         assertThat(data.getFeature("canonical_donor", Double.class), is(closeTo(0., EPSILON)));
@@ -108,7 +108,7 @@ class DenseSplicingAnnotatorTest {
     void thirdExonAcceptor() {
         final GenomeVariant variant = new GenomeVariant(new GenomePosition(referenceDictionary, Strand.FWD, 1, 1804), "C", "T");
 
-        final FeatureData data = evaluator.evaluate(variant, transcript, sequenceInterval);
+        final FeatureData data = evaluator.evaluate(variant, transcript, sequenceInterval).getFeatureData();
 //        data.getScoresMap().keySet().stream().sorted()
 //                .forEach(key -> System.out.println(key + "=" + data.getScoresMap().get(key)));
 
