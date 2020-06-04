@@ -5,7 +5,7 @@ import net.sourceforge.argparse4j.impl.Arguments;
 import net.sourceforge.argparse4j.inf.*;
 import org.monarchinitiative.threes.cli.cmd.Command;
 import org.monarchinitiative.threes.cli.cmd.GenerateConfigCommand;
-import org.monarchinitiative.threes.cli.cmd.analyze.AnalyzeVcfCommand;
+import org.monarchinitiative.threes.cli.cmd.analyze_vcf.AnalyzeVcfCommand;
 import org.monarchinitiative.threes.cli.cmd.annotate_csv.AnnotateCsvCommand;
 import org.monarchinitiative.threes.cli.cmd.annotate_pos.AnnotatePosCommand;
 import org.monarchinitiative.threes.cli.cmd.annotate_vcf.AnnotateVcfCommand;

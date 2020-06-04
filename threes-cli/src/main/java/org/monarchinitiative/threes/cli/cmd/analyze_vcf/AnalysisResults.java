@@ -1,9 +1,6 @@
-package org.monarchinitiative.threes.cli.cmd.analyze;
+package org.monarchinitiative.threes.cli.cmd.analyze_vcf;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -47,7 +44,7 @@ public class AnalysisResults {
 
     public static final class Builder {
         private final List<String> sampleNames = new ArrayList<>();
-        private List<VariantDataBox> variantData;
+        private Collection<VariantDataBox> variantData;
         private AnalysisStats analysisStats;
         private SettingsData settingsData;
 
@@ -59,7 +56,7 @@ public class AnalysisResults {
             return this;
         }
 
-        public Builder variantData(List<VariantDataBox> variantData) {
+        public Builder variantData(Collection<VariantDataBox> variantData) {
             this.variantData = variantData;
             return this;
         }

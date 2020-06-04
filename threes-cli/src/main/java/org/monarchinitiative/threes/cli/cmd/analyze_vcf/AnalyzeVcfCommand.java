@@ -1,4 +1,4 @@
-package org.monarchinitiative.threes.cli.cmd.analyze;
+package org.monarchinitiative.threes.cli.cmd.analyze_vcf;
 
 import de.charite.compbio.jannovar.annotation.Annotation;
 import de.charite.compbio.jannovar.annotation.AnnotationException;
@@ -11,7 +11,6 @@ import de.charite.compbio.jannovar.data.ReferenceDictionary;
 import de.charite.compbio.jannovar.data.SerializationException;
 import de.charite.compbio.jannovar.reference.PositionType;
 import de.charite.compbio.jannovar.reference.TranscriptModel;
-import htsjdk.samtools.util.CloseableIterator;
 import htsjdk.variant.variantcontext.VariantContext;
 import htsjdk.variant.vcf.VCFFileReader;
 import net.sourceforge.argparse4j.inf.Namespace;
@@ -32,15 +31,13 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 /**
  * This command takes a VCF file, runs the splicing annotation and writes out the results as HTML file.
@@ -96,73 +93,12 @@ public class AnalyzeVcfCommand extends Command {
         }
     }
 
-    @Override
-    public void run(Namespace namespace) throws CommandException {
-        final Path inputPath = Paths.get(namespace.getString("input"));
-        LOGGER.debug("Reading variants from `{}`", inputPath);
-
-        final Path output = resolveOutputPath(namespace.getString("output"), inputPath);
-        LOGGER.debug("Writing report to `{}`", output);
-
-        final double threshold = namespace.getDouble("threshold");
-        LOGGER.debug("Reporting variants with predicted pathogenicity above `{}`", threshold);
-
-        final Path jannovarDb = Paths.get(namespace.getString("jannovar_database"));
-//        LOGGER.info("Using Jannovar database at `{}`", jannovarDb); // jannovar makes the announcement instead
-
-
-        final JannovarData jannovarData;
-        try {
-            jannovarData = new JannovarDataSerializer(jannovarDb.toAbsolutePath().toString()).load();
-        } catch (SerializationException e) {
-            LOGGER.error("Error deserializing Jannovar database at `{}`:", jannovarDb.toAbsolutePath());
-            throw new CommandException(e);
-        }
-
-        final VariantAnnotator annotator = new VariantAnnotator(jannovarData.getRefDict(), jannovarData.getChromosomes(), new AnnotationBuilderOptions());
-
-        final ProgressReporter progressReporter = new ProgressReporter();
-        final List<String> sampleNames;
-        final List<VariantDataBox> annotated = new ArrayList<>();
-        try (final VCFFileReader reader = new VCFFileReader(inputPath, false);
-             final CloseableIterator<VariantContext> variantIterator = reader.iterator()) {
-            sampleNames = new ArrayList<>(reader.getFileHeader().getSampleNamesInOrder());
-            try (final Stream<VariantContext> stream = variantIterator.stream()) {
-                stream.peek(progressReporter::logVariant)
-                        .flatMap(meltToAltAlleles())
-                        .peek(progressReporter::logAltAllele)
-                        .map(functionalAnnotation(jannovarData.getRefDict(), annotator))
-                        .filter(Optional::isPresent)
-                        .map(Optional::get)
-                        .peek(progressReporter::logAnnotatedAllele)
-                        .map(splicingAnnotation(evaluator))
-                        .filter(variant -> !variant.getMaxScore().isNaN() && variant.getMaxScore() > threshold)
-                        .peek(progressReporter::logEligibleAllele)
-                        .onClose(progressReporter.summarize())
-                        .forEach(annotated::add);
-            }
-        }
-
-        final AnalysisResults results = AnalysisResults.builder()
-                .addAllSampleNames(sampleNames)
-                .variantData(annotated)
-                .analysisStats(progressReporter.getAnalysisStats())
-                .settingsData(SettingsData.builder()
-                        .threshold(threshold)
-                        .inputPath(inputPath.toString())
-                        .transcriptDb(jannovarDb.toString())
-                        .build())
-                .build();
-        LOGGER.info("Writing the report to {}", output);
-        final HtmlResultWriter writer = new HtmlResultWriter();
-        try (final OutputStream os = Files.newOutputStream(output)) {
-            writer.writeResults(os, results);
-        } catch (IOException e) {
-            throw new CommandException(e);
-        }
-    }
-
-    private UnaryOperator<VariantDataBox> splicingAnnotation(VariantSplicingEvaluator evaluator) {
+    /**
+     * Perform the splicing annotation.
+     *
+     * @return function for performing the annotation
+     */
+    private static UnaryOperator<VariantDataBox> splicingAnnotation(VariantSplicingEvaluator evaluator) {
         return vp -> {
             final VariantAnnotations annotations = vp.getAnnotations();
             if (annotations == null || !annotations.hasAnnotation()) {
@@ -183,6 +119,9 @@ public class AnalyzeVcfCommand extends Command {
                     vp.getAltAllele().getBaseString(),
                     txByAccession.keySet());
 
+//            final VmvtGenerator vmvtGenerator = new VmvtGenerator();
+
+
             final Map<TranscriptModel, Prediction> predictions = txByAccession.keySet().stream()
                     .collect(Collectors.toMap(txByAccession::get, txId -> evaluation.getOrDefault(txId, Prediction.emptyPrediction())));
             vp.putAllPredictions(predictions);
@@ -197,13 +136,18 @@ public class AnalyzeVcfCommand extends Command {
      *
      * @return {@link Stream} of
      */
-    private Function<VariantContext, Stream<VariantDataBox>> meltToAltAlleles() {
+    private static Function<VariantContext, Stream<VariantDataBox>> meltToAltAlleles() {
         return vc -> vc.getAlternateAlleles().stream()
                 .map(allele -> new VariantDataBox(vc, allele));
     }
 
-    private Function<VariantDataBox, Optional<VariantDataBox>> functionalAnnotation(ReferenceDictionary rd,
-                                                                                    VariantAnnotator annotator) {
+    /**
+     * Use Jannovar's {@link VariantAnnotator} to perform functional annotation for a given variant.
+     *
+     * @return function for performing the annotation, the function returns an empty optional if the annotation fails
+     */
+    private static Function<VariantDataBox, Optional<VariantDataBox>> functionalAnnotation(ReferenceDictionary rd,
+                                                                                           VariantAnnotator annotator) {
         return vc -> {
             final String contig = vc.getBase().getContig();
             if (!rd.getContigNameToID().containsKey(contig)) {
@@ -220,6 +164,74 @@ public class AnalyzeVcfCommand extends Command {
                 return Optional.empty();
             }
         };
+    }
+
+    @Override
+    public void run(Namespace namespace) throws CommandException {
+        final Path inputPath = Paths.get(namespace.getString("input"));
+        LOGGER.debug("Reading variants from `{}`", inputPath);
+
+        final Path output = resolveOutputPath(namespace.getString("output"), inputPath);
+        LOGGER.debug("Writing report to `{}`", output);
+
+        final double threshold = namespace.getDouble("threshold");
+        LOGGER.debug("Reporting variants with predicted pathogenicity above `{}`", threshold);
+
+        final Path jannovarDb = Paths.get(namespace.getString("jannovar_database"));
+        // no need to make a log announcement, jannovar announces instead
+
+
+        final JannovarData jannovarData;
+        try {
+            jannovarData = new JannovarDataSerializer(jannovarDb.toAbsolutePath().toString()).load();
+        } catch (SerializationException e) {
+            LOGGER.error("Error deserializing Jannovar database at `{}`:", jannovarDb.toAbsolutePath());
+            throw new CommandException(e);
+        }
+
+        final VariantAnnotator annotator = new VariantAnnotator(jannovarData.getRefDict(), jannovarData.getChromosomes(), new AnnotationBuilderOptions());
+
+        final ProgressReporter progressReporter = new ProgressReporter();
+        final List<String> sampleNames;
+        final Collection<VariantDataBox> annotated = Collections.synchronizedList(new LinkedList<>());
+
+        try (final VCFFileReader reader = new VCFFileReader(inputPath, false);
+             final Stream<VariantContext> stream = StreamSupport.stream(reader.spliterator(), true)) {
+            sampleNames = new ArrayList<>(reader.getFileHeader().getSampleNamesInOrder());
+            stream.peek(progressReporter::logVariant)
+                    .flatMap(meltToAltAlleles())
+                    .peek(progressReporter::logAltAllele)
+
+                    .map(functionalAnnotation(jannovarData.getRefDict(), annotator))
+                    .filter(Optional::isPresent)
+                    .map(Optional::get)
+                    .peek(progressReporter::logAnnotatedAllele)
+
+                    .map(splicingAnnotation(evaluator))
+                    .filter(variant -> !variant.getMaxScore().isNaN() && variant.getMaxScore() > threshold)
+                    .peek(progressReporter::logEligibleAllele)
+
+                    .onClose(progressReporter.summarize())
+                    .forEach(annotated::add);
+        }
+
+        final AnalysisResults results = AnalysisResults.builder()
+                .addAllSampleNames(sampleNames)
+                .variantData(annotated)
+                .analysisStats(progressReporter.getAnalysisStats())
+                .settingsData(SettingsData.builder()
+                        .threshold(threshold)
+                        .inputPath(inputPath.toString())
+                        .transcriptDb(jannovarDb.toString())
+                        .build())
+                .build();
+        LOGGER.info("Writing the report to {}", output);
+        final HtmlResultWriter writer = new HtmlResultWriter();
+        try (final OutputStream os = Files.newOutputStream(output)) {
+            writer.writeResults(os, results);
+        } catch (IOException e) {
+            throw new CommandException(e);
+        }
     }
 
     private static class ProgressReporter {

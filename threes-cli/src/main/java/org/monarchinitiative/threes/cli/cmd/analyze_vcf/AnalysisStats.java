@@ -1,4 +1,4 @@
-package org.monarchinitiative.threes.cli.cmd.analyze;
+package org.monarchinitiative.threes.cli.cmd.analyze_vcf;
 
 /**
  * Container for storing statistics of the analysis.

@@ -1,4 +1,4 @@
-package org.monarchinitiative.threes.cli.cmd.analyze;
+package org.monarchinitiative.threes.cli.cmd.analyze_vcf;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

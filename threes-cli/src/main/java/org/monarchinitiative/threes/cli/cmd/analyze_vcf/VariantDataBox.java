@@ -1,4 +1,4 @@
-package org.monarchinitiative.threes.cli.cmd.analyze;
+package org.monarchinitiative.threes.cli.cmd.analyze_vcf;
 
 import de.charite.compbio.jannovar.annotation.Annotation;
 import de.charite.compbio.jannovar.annotation.VariantAnnotations;
