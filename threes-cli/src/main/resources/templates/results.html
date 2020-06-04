@@ -4,112 +4,136 @@
     <meta charset="UTF-8">
     <title>SQUIRLS - Super-quick Information Content and Random Forest Learning for Splice Variants</title>
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <!-- TODO - Add the CSS into the template -->
+    <!-- Latest compiled and minified CSS -->
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        #variant-div {
-            border: 1px dotted grey;
-            margin: 5px;
+        .panel > .panel-heading {
+            /*background-color: #00fa3c;*/
         }
 
-        #variant-div h4 {
-            margin: 5px;
-        }
-
-        table td, table th {
-            border: 1px solid #ddd;
-            padding: 8px;
-        }
-
-
-        table tr:nth-child(even) {
-            background-color: #f2f2f2;
-        }
-
-        table tr:hover {
-            background-color: #ddd;
-        }
-
-        table th {
-            padding-top: 12px;
-            padding-bottom: 12px;
-            text-align: left;
-        }
-
-        #allele th {
-            background-color: rgb(15, 27, 170);
-            color: white;
-        }
-
-        #stats-table th {
-            background-color: rgb(255, 0, 0);
-            color: white;
+        .panel > .panel-info {
+            margin: 15px;
         }
     </style>
 </head>
 <body>
 <div class="container" id="content">
-    <h2>
-        Results for <span th:text="${sampleName}">Mr. Fantastic, Mrs. Fantastic</span>
-    </h2>
-    <h3>
-        Analysis input
-    </h3>
-    <p>Settings used for this analysis:</p>
-    <pre th:text="${settings.getYamlRepresentation()}">
-        Analysis settings:
-          - vcfPath: /path/to/input.vcf
-          - transcript database path: ensembl
-          - threshold: 0.2
-    </pre>
-    <h3>
-        Analysis statistics
-    </h3>
-    <table id="stats-table">
-        <tr>
-            <th>Info</th>
-            <th>Count</th>
-        </tr>
-        <tr>
-            <td>number of variants in the VCF file</td>
-            <td th:text="${stats.getAllVariants()}">100</td>
-        </tr>
-        <tr>
-            <td>number of <em>ALT</em> alleles in the VCF file</td>
-            <td th:text="${stats.alleleCount}">120</td>
-        </tr>
-        <tr>
-            <td>number of alleles with &gt;1 functional annotation</td>
-            <td th:text="${stats.annotatedAlleleCount}">110</td>
-        </tr>
-        <tr>
-            <td>number of alleles with predicted splicing pathogenicity above
-                <span th:text="${settings.threshold}">0.2</span></td>
-            <td th:text="${stats.pathogenicAlleleCount}">5</td>
-        </tr>
-    </table>
-    <h3>
-        Prioritised Variants
-    </h3>
-    <div id="variant-div" th:each="variant, variant_is: ${variants}">
-        <h4>Variant <span th:text="${variant.getRepresentation()}">chr9:136224690A>G</span></h4>
-        <table id="allele">
-            <tr>
-                <th>Gene symbol</th>
-                <th>Tx accession ID</th>
-                <th>Effects</th>
-                <th>HGVS</th>
-                <th>Splicing pathogenicity score</th>
-            </tr>
-            <tr th:each="annots, ann_is: ${variant.getTranscriptAnnotations()}">
-                <td th:if="${ann_is.first}" th:rowspan="${ann_is.size}" th:text="${annots.getGeneSymbol()}">SURF2</td>
-                <td th:text="${annots.getTranscript().getAccession()}">NM_123456.3</td>
-                <td th:text="${annots.getMostPathogenicVarType()}">MISSENSE</td>
-                <td th:text="${annots.getCDSNTChangeStr()}">c.123A>G</td>
-                <td th:text="${variant.getPredictionMap().get(annots.getTranscript()).getMaxPathogenicity()}">0.89</td>
-            </tr>
-        </table>
+    <!--    TITLE -->
+    <h2>Results for <span th:text="${sampleName}">Mr. Fantastic, Mrs. Fantastic</span></h2>
+
+    <!--    NAV   -->
+    <ul class="nav nav-pills" id="tabs">
+        <li><a data-toggle="tab" href="#inputs" role="tab"><b>Analysis Inputs</b></a></li>
+        <li><a data-toggle="tab" href="#statistics" role="tab"><b>Analysis Statistics</b></a></li>
+        <li><a data-toggle="tab" href="#prioritisation" role="tab"><b>Prioritised Variants</b></a></li>
+        <li><a data-toggle="tab" href="#about" role="tab"><b>About</b></a></li>
+    </ul>
+
+    <!--    INPUTS    -->
+    <div class="panel panel-default" id="inputs">
+        <div class="panel-heading">
+            <h3 class="panel-title">
+                Analysis input
+            </h3>
+        </div>
+        <div class="panel-body">
+            <p>Settings used for this analysis:</p>
+            <pre th:text="${settings.getYamlRepresentation()}">
+  - vcfPath: /path/to/input.vcf
+  - transcript database path: ensembl
+  - threshold: 0.2</pre>
+        </div>
     </div>
 
-</div>
+    <!--    STATISTICS      -->
+    <div class="panel panel-default" id="statistics">
+        <div class="panel-heading">
+            <h3 class="panel-title">Analysis statistics</h3>
+        </div>
+        <div class="panel-body">
+            <table class="table table-striped">
+                <tr>
+                    <th>Info</th>
+                    <th>Count</th>
+                </tr>
+                <tr>
+                    <td>number of variants in the VCF file</td>
+                    <td th:text="${stats.getAllVariants()}">100</td>
+                </tr>
+                <tr>
+                    <td>number of <em>ALT</em> alleles in the VCF file</td>
+                    <td th:text="${stats.alleleCount}">120</td>
+                </tr>
+                <tr>
+                    <td>number of alleles with &gt;1 functional annotation</td>
+                    <td th:text="${stats.annotatedAlleleCount}">110</td>
+                </tr>
+                <tr>
+                    <td>number of alleles with predicted splicing pathogenicity above
+                        <span th:text="${settings.threshold}">0.2</span></td>
+                    <td th:text="${stats.pathogenicAlleleCount}">5</td>
+                </tr>
+            </table>
+        </div>
+    </div>
+
+    <!--    PRIORITISED VARIANTS     -->
+    <div class="panel panel-default" id="prioritisation">
+        <div class="panel-heading">
+            <h3 class="panel-title">Prioritised Variants</h3>
+        </div>
+        <div class="panel panel-info" th:each="variant, variant_is: ${variants}">
+            <div class="panel-heading">
+                <h4 class="panel-title">
+                    <span th:text="${variant.getRepresentation()}">chr9:136224690A>G</span>
+                </h4>
+            </div>
+            <div class="panel-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <table class="table table-striped">
+                            <tr>
+                                <th>Gene symbol</th>
+                                <th>Tx accession ID</th>
+                                <th>Effects</th>
+                                <th>HGVS</th>
+                                <th>Pathogenicity</th>
+                            </tr>
+                            <tr th:each="ann, ann_is: ${variant.getTranscriptAnnotations()}"
+                                th:with="txAccession=${ann.getTranscript().getAccession()}">
+                                <td th:if="${ann_is.first}" th:rowspan="${ann_is.size}"
+                                    th:text="${ann.getGeneSymbol()}">
+                                    SURF2
+                                </td>
+                                <td th:text="${txAccession}">NM_123456.3</td>
+                                <td th:text="${ann.getMostPathogenicVarType()}">MISSENSE</td>
+                                <td th:text="${ann.getCDSNTChangeStr()}">c.123A>G</td>
+                                <td th:text="${variant.getPredictionForTranscript(txAccession).getMaxPathogenicity()}">
+                                    0.89
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div class="col-md-6">
+                        The space for figures.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!--    FOOTER    -->
+    <div class="panel panel-default" id="about">
+        <div class="panel-heading">
+            <h3 class="panel-title">About</h3>
+        </div>
+        <div class="panel-body">
+            This is it! Let us know how you absolutely love us at our <a href="https://robinsongroup.github.io/">
+            website</a>.
+        </div>
+    </div>
+
 </div>
 </body>
 </html>

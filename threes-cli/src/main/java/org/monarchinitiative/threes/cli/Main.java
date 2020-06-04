@@ -92,7 +92,7 @@ public class Main {
         } else {
             final String configPath = namespace.getString("config");
             final LogLevel level = namespace.get("log_level");
-            LOGGER.debug("Reading 3S configuration from `{}`", configPath);
+            LOGGER.info("Reading 3S configuration from `{}`", configPath);
             if (!unknownArgsList.isEmpty()) {
                 LOGGER.debug("Passing the following args to Spring: '{}'",
                         String.join(", ", unknownArgsList));

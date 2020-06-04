@@ -2,13 +2,13 @@ package org.monarchinitiative.threes.core;
 
 import de.charite.compbio.jannovar.data.ReferenceDictionary;
 import de.charite.compbio.jannovar.reference.*;
-import org.monarchinitiative.threes.core.classifier.FeatureData;
 import org.monarchinitiative.threes.core.classifier.OverlordClassifier;
 import org.monarchinitiative.threes.core.classifier.Prediction;
 import org.monarchinitiative.threes.core.classifier.PredictionException;
 import org.monarchinitiative.threes.core.classifier.transform.prediction.PredictionTransformer;
 import org.monarchinitiative.threes.core.data.SplicingTranscriptSource;
 import org.monarchinitiative.threes.core.model.SplicingTranscript;
+import org.monarchinitiative.threes.core.scoring.SplicingAnnotationData;
 import org.monarchinitiative.threes.core.scoring.SplicingAnnotator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -67,22 +67,25 @@ public class StandardVariantSplicingEvaluator implements VariantSplicingEvaluato
     }
 
     @Override
-    public Map<String, Prediction> evaluate(String contig, int pos, String ref, String alt, Set<String> txIds) {
+    public SplicingPredictionData evaluate(String contig, int pos, String ref, String alt, Set<String> txIds) {
+        /*
+         0 - perform some sanity checks at the beginning.
+         */
         if (!rd.getContigNameToID().containsKey(contig)) {
             // unknown contig, nothing to be done here
             LOGGER.info("Unknown contig for variant {}:{}{}>{}", contig, pos, ref, alt);
-            return Map.of();
+            return SplicingPredictionData.EMPTY;
         }
 
         // do not process variants that are longer than preset value
         if (ref.length() > maxVariantLength) {
             LOGGER.debug("Not evaluating variant longer than maximum variant length: `{}` > `{}` for `{}:{}{}>{}`",
                     ref.length(), maxVariantLength, contig, pos, ref, alt);
-            return Map.of();
+            return SplicingPredictionData.EMPTY;
         }
 
         /*
-         0 - get overlapping splicing transcripts. Query by coordinates if no txIDs are provided. Only transcripts
+         1 - get overlapping splicing transcripts. Query by coordinates if no txIDs are provided. Only transcripts
          that overlap with the variant interval are considered.
          */
         final GenomeVariant variant = new GenomeVariant(new GenomePosition(rd, Strand.FWD, rd.getContigNameToID().get(contig), pos, PositionType.ONE_BASED), ref, alt);
@@ -90,11 +93,11 @@ public class StandardVariantSplicingEvaluator implements VariantSplicingEvaluato
 
         if (txMap.isEmpty()) {
             // no transcript to evaluate
-            return Map.of();
+            return SplicingPredictionData.EMPTY;
         }
 
         /*
-         1 - get enough reference sequence for evaluation with respect to all transcripts
+         2 - get enough reference sequence for evaluation with respect to all transcripts
          */
         GenomePosition bp = null, ep = null;
         for (SplicingTranscript tx : txMap.values()) {
@@ -112,29 +115,51 @@ public class StandardVariantSplicingEvaluator implements VariantSplicingEvaluato
         final Optional<SequenceInterval> sio = accessor.fetchSequence(toFetch);
         if (sio.isEmpty()) {
             LOGGER.warn("Unable to get reference sequence for `{}`", toFetch);
-            return Map.of();
+            return SplicingPredictionData.EMPTY;
         }
         final SequenceInterval si = sio.get();
 
         /*
-         2 - for each transcript:
+         3 - for each transcript:
              - calculate features
              - calculate probabilities & predictions
              - return results
          */
-        final Map<String, Prediction> resultMap = new HashMap<>();
+        final Metadata.Builder metadata = Metadata.newBuilder()
+                .variant(variant)
+                .sequence(si);
+        final Map<String, Prediction> predictionMap = new HashMap<>(txMap.size());
+
+        Double phyloPScore = null;
         for (String txId : txMap.keySet()) {
             final SplicingTranscript tx = txMap.get(txId);
-            final FeatureData featureData = annotator.evaluate(variant, tx, si);
+            final SplicingAnnotationData annotationData = annotator.evaluate(variant, tx, si);
             try {
-                final Prediction prediction = classifier.predict(featureData);
+                final Prediction prediction = classifier.predict(annotationData.getFeatureData());
                 final Prediction transformed = transformer.transform(prediction);
-                resultMap.put(txId, transformed);
+                predictionMap.put(txId, transformed);
             } catch (PredictionException e) {
                 LOGGER.debug("Error while computing scores for `{}` with respect to `{}`: {}", variant, txId, e.getMessage());
             }
+
+            if (phyloPScore == null) {
+                // this is the same number for all the transcripts we're looping through
+                phyloPScore = annotationData.getMeanPhyloPScore();
+            }
+            if (annotationData.getDonorCoordinates().isPresent()) {
+                metadata.putDonorCoordinate(txId, annotationData.getDonorCoordinates().get());
+            }
+
+            if (annotationData.getAcceptorCoordinates().isPresent()) {
+                metadata.putAcceptorCoordinate(txId, annotationData.getAcceptorCoordinates().get());
+            }
         }
-        return resultMap;
+        metadata.meanPhyloPScore(phyloPScore == null ? Double.NaN : phyloPScore);
+
+        return StandardSplicingPredictionData.newBuilder()
+                .predictionMap(predictionMap)
+                .metadata(metadata.build())
+                .build();
     }
 
     /**

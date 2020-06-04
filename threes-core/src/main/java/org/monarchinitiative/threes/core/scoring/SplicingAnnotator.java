@@ -1,7 +1,6 @@
 package org.monarchinitiative.threes.core.scoring;
 
 import de.charite.compbio.jannovar.reference.GenomeVariant;
-import org.monarchinitiative.threes.core.classifier.FeatureData;
 import org.monarchinitiative.threes.core.model.SplicingTranscript;
 import xyz.ielis.hyperutil.reference.fasta.SequenceInterval;
 
@@ -18,5 +17,5 @@ public interface SplicingAnnotator {
      * @param sequenceInterval reference sequence
      * @return splicing pathogenicity data
      */
-    FeatureData evaluate(GenomeVariant variant, SplicingTranscript transcript, SequenceInterval sequenceInterval);
+    SplicingAnnotationData evaluate(GenomeVariant variant, SplicingTranscript transcript, SequenceInterval sequenceInterval);
 }

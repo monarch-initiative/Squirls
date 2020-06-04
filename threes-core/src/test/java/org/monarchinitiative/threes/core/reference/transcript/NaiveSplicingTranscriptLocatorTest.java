@@ -1,6 +1,7 @@
 package org.monarchinitiative.threes.core.reference.transcript;
 
 import de.charite.compbio.jannovar.data.ReferenceDictionary;
+import de.charite.compbio.jannovar.reference.GenomeInterval;
 import de.charite.compbio.jannovar.reference.GenomePosition;
 import de.charite.compbio.jannovar.reference.GenomeVariant;
 import de.charite.compbio.jannovar.reference.Strand;
@@ -28,224 +29,266 @@ class NaiveSplicingTranscriptLocatorTest {
     @Autowired
     private ReferenceDictionary referenceDictionary;
 
-
     private SplicingTranscript fwdTranscript;
 
     private SplicingTranscript revTranscript;
 
+
     @BeforeEach
-    void setUp() throws Exception {
+    void setUp() {
         fwdTranscript = PojosForTesting.getTranscriptWithThreeExons(referenceDictionary);
         revTranscript = PojosForTesting.getTranscriptWithThreeExonsOnRevStrand(referenceDictionary);
         locator = new NaiveSplicingTranscriptLocator(splicingParameters);
     }
 
 
+    private GenomeInterval makeInterval(int begin, int end) {
+        return new GenomeInterval(referenceDictionary, Strand.FWD, 1, begin, end);
+    }
+
     @Test
-    void onDifferentContig() throws Exception {
+    void onDifferentContig() {
         GenomeVariant variant = new GenomeVariant(new GenomePosition(referenceDictionary, Strand.FWD, 5, 999), "C", "G");
         final SplicingLocationData data = locator.locate(variant, fwdTranscript);
-        assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.OUTSIDE));
+        assertThat(data, is(SplicingLocationData.outside()));
     }
 
 
     @Test
-    void oneBaseBeforeCds() throws Exception {
+    void oneBaseBeforeCds() {
         GenomeVariant variant = new GenomeVariant(new GenomePosition(referenceDictionary, Strand.FWD, 1, 999), "C", "G");
         final SplicingLocationData data = locator.locate(variant, fwdTranscript);
-        assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.OUTSIDE));
+        assertThat(data, is(SplicingLocationData.outside()));
     }
 
 
     @Test
-    void firstBaseOfCds() throws Exception {
+    void firstBaseOfCds() {
         GenomeVariant variant = new GenomeVariant(new GenomePosition(referenceDictionary, Strand.FWD, 1, 1000), "C", "G");
         final SplicingLocationData data = locator.locate(variant, fwdTranscript);
         assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.EXON));
         assertThat(data.getExonIdx(), is(0));
         assertThat(data.getIntronIdx(), is(-1));
+        assertThat(data.getDonorRegion().get(), is(makeInterval(1197, 1206)));
+        assertThat(data.getAcceptorRegion().isEmpty(), is(true));
     }
 
 
     @Test
-    void oneBaseBeforeFirstDonor() throws Exception {
+    void oneBaseBeforeFirstDonor() {
         GenomeVariant variant = new GenomeVariant(new GenomePosition(referenceDictionary, Strand.FWD, 1, 1196), "C", "G");
         final SplicingLocationData data = locator.locate(variant, fwdTranscript);
         assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.EXON));
         assertThat(data.getExonIdx(), is(0));
         assertThat(data.getIntronIdx(), is(-1));
+        assertThat(data.getDonorRegion().get(), is(makeInterval(1197, 1206)));
+        assertThat(data.getAcceptorRegion().isEmpty(), is(true));
     }
 
     @Test
-    void firstBaseOfFirstDonor() throws Exception {
+    void firstBaseOfFirstDonor() {
         GenomeVariant variant = new GenomeVariant(new GenomePosition(referenceDictionary, Strand.FWD, 1, 1197), "C", "G");
         final SplicingLocationData data = locator.locate(variant, fwdTranscript);
         assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.DONOR));
         assertThat(data.getIntronIdx(), is(0));
         assertThat(data.getExonIdx(), is(0));
+        assertThat(data.getDonorRegion().get(), is(makeInterval(1197, 1206)));
+        assertThat(data.getAcceptorRegion().isEmpty(), is(true));
     }
 
     @Test
-    void lastBaseOfFirstDonor() throws Exception {
+    void lastBaseOfFirstDonor() {
         GenomeVariant variant = new GenomeVariant(new GenomePosition(referenceDictionary, Strand.FWD, 1, 1205), "C", "G");
         final SplicingLocationData data = locator.locate(variant, fwdTranscript);
         assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.DONOR));
         assertThat(data.getIntronIdx(), is(0));
         assertThat(data.getExonIdx(), is(0));
+        assertThat(data.getDonorRegion().get(), is(makeInterval(1197, 1206)));
+        assertThat(data.getAcceptorRegion().isEmpty(), is(true));
     }
 
 
     @Test
-    void firstBaseAfterFirstDonor() throws Exception {
+    void firstBaseAfterFirstDonor() {
         GenomeVariant variant = new GenomeVariant(new GenomePosition(referenceDictionary, Strand.FWD, 1, 1206), "C", "G");
         final SplicingLocationData data = locator.locate(variant, fwdTranscript);
         assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.INTRON));
         assertThat(data.getIntronIdx(), is(0));
         assertThat(data.getExonIdx(), is(-1));
+        assertThat(data.getDonorRegion().get(), is(makeInterval(1197, 1206)));
+        assertThat(data.getAcceptorRegion().get(), is(makeInterval(1375, 1402)));
     }
 
     @Test
-    void oneBaseBeforeFirstAcceptor() throws Exception {
+    void oneBaseBeforeFirstAcceptor() {
         GenomeVariant variant = new GenomeVariant(new GenomePosition(referenceDictionary, Strand.FWD, 1, 1374), "C", "G");
         final SplicingLocationData data = locator.locate(variant, fwdTranscript);
         assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.INTRON));
         assertThat(data.getIntronIdx(), is(0));
         assertThat(data.getExonIdx(), is(-1));
+        assertThat(data.getDonorRegion().get(), is(makeInterval(1197, 1206)));
+        assertThat(data.getAcceptorRegion().get(), is(makeInterval(1375, 1402)));
     }
 
     @Test
-    void firstBaseOfFirstAcceptor() throws Exception {
+    void firstBaseOfFirstAcceptor() {
         GenomeVariant variant = new GenomeVariant(new GenomePosition(referenceDictionary, Strand.FWD, 1, 1375), "C", "G");
         final SplicingLocationData data = locator.locate(variant, fwdTranscript);
         assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.ACCEPTOR));
         assertThat(data.getIntronIdx(), is(0));
         assertThat(data.getExonIdx(), is(1));
+        assertThat(data.getDonorRegion().get(), is(makeInterval(1597, 1606)));
+        assertThat(data.getAcceptorRegion().get(), is(makeInterval(1375, 1402)));
     }
 
 
     @Test
-    void lastBaseOfFirstAcceptor() throws Exception {
+    void lastBaseOfFirstAcceptor() {
         GenomeVariant variant = new GenomeVariant(new GenomePosition(referenceDictionary, Strand.FWD, 1, 1401), "C", "G");
         final SplicingLocationData data = locator.locate(variant, fwdTranscript);
         assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.ACCEPTOR));
         assertThat(data.getIntronIdx(), is(0));
         assertThat(data.getExonIdx(), is(1));
+        assertThat(data.getDonorRegion().get(), is(makeInterval(1597, 1606)));
+        assertThat(data.getAcceptorRegion().get(), is(makeInterval(1375, 1402)));
     }
 
     @Test
-    void oneBaseAfterFirstAcceptor() throws Exception {
+    void oneBaseAfterFirstAcceptor() {
         GenomeVariant variant = new GenomeVariant(new GenomePosition(referenceDictionary, Strand.FWD, 1, 1402), "C", "G");
         final SplicingLocationData data = locator.locate(variant, fwdTranscript);
         assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.EXON));
         assertThat(data.getExonIdx(), is(1));
         assertThat(data.getIntronIdx(), is(-1));
+        assertThat(data.getDonorRegion().get(), is(makeInterval(1597, 1606)));
+        assertThat(data.getAcceptorRegion().get(), is(makeInterval(1375, 1402)));
     }
 
     @Test
-    void oneBaseBeforeSecondDonor() throws Exception {
+    void oneBaseBeforeSecondDonor() {
         GenomeVariant variant = new GenomeVariant(new GenomePosition(referenceDictionary, Strand.FWD, 1, 1596), "C", "G");
         final SplicingLocationData data = locator.locate(variant, fwdTranscript);
         assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.EXON));
         assertThat(data.getExonIdx(), is(1));
         assertThat(data.getIntronIdx(), is(-1));
+        assertThat(data.getDonorRegion().get(), is(makeInterval(1597, 1606)));
+        assertThat(data.getAcceptorRegion().get(), is(makeInterval(1375, 1402)));
     }
 
     @Test
-    void firstBaseOfSecondDonor() throws Exception {
+    void firstBaseOfSecondDonor() {
         GenomeVariant variant = new GenomeVariant(new GenomePosition(referenceDictionary, Strand.FWD, 1, 1597), "C", "G");
         final SplicingLocationData data = locator.locate(variant, fwdTranscript);
         assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.DONOR));
         assertThat(data.getIntronIdx(), is(1));
         assertThat(data.getExonIdx(), is(1));
+        assertThat(data.getDonorRegion().get(), is(makeInterval(1597, 1606)));
+        assertThat(data.getAcceptorRegion().get(), is(makeInterval(1375, 1402)));
     }
 
     @Test
-    void lastBaseOfSecondDonor() throws Exception {
+    void lastBaseOfSecondDonor() {
         GenomeVariant variant = new GenomeVariant(new GenomePosition(referenceDictionary, Strand.FWD, 1, 1605), "C", "G");
         final SplicingLocationData data = locator.locate(variant, fwdTranscript);
         assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.DONOR));
         assertThat(data.getExonIdx(), is(1));
         assertThat(data.getIntronIdx(), is(1));
+        assertThat(data.getDonorRegion().get(), is(makeInterval(1597, 1606)));
+        assertThat(data.getAcceptorRegion().get(), is(makeInterval(1375, 1402)));
     }
 
     @Test
-    void oneBaseAfterSecondDonor() throws Exception {
+    void oneBaseAfterSecondDonor() {
         GenomeVariant variant = new GenomeVariant(new GenomePosition(referenceDictionary, Strand.FWD, 1, 1606), "C", "G");
         final SplicingLocationData data = locator.locate(variant, fwdTranscript);
         assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.INTRON));
         assertThat(data.getIntronIdx(), is(1));
         assertThat(data.getExonIdx(), is(-1));
+        assertThat(data.getDonorRegion().get(), is(makeInterval(1597, 1606)));
+        assertThat(data.getAcceptorRegion().get(), is(makeInterval(1775, 1802)));
     }
 
 
     @Test
-    void oneBaseBeforeSecondAcceptor() throws Exception {
+    void oneBaseBeforeSecondAcceptor() {
         GenomeVariant variant = new GenomeVariant(new GenomePosition(referenceDictionary, Strand.FWD, 1, 1774), "C", "G");
         final SplicingLocationData data = locator.locate(variant, fwdTranscript);
         assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.INTRON));
         assertThat(data.getIntronIdx(), is(1));
         assertThat(data.getExonIdx(), is(-1));
+        assertThat(data.getDonorRegion().get(), is(makeInterval(1597, 1606)));
+        assertThat(data.getAcceptorRegion().get(), is(makeInterval(1775, 1802)));
     }
 
 
     @Test
-    void firstBaseOfSecondAcceptor() throws Exception {
+    void firstBaseOfSecondAcceptor() {
         GenomeVariant variant = new GenomeVariant(new GenomePosition(referenceDictionary, Strand.FWD, 1, 1775), "C", "G");
         final SplicingLocationData data = locator.locate(variant, fwdTranscript);
         assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.ACCEPTOR));
         assertThat(data.getIntronIdx(), is(1));
         assertThat(data.getExonIdx(), is(2));
+        assertThat(data.getDonorRegion().isEmpty(), is(true));
+        assertThat(data.getAcceptorRegion().get(), is(makeInterval(1775, 1802)));
     }
 
     @Test
-    void lastBaseOfSecondAcceptor() throws Exception {
+    void lastBaseOfSecondAcceptor() {
         GenomeVariant variant = new GenomeVariant(new GenomePosition(referenceDictionary, Strand.FWD, 1, 1801), "C", "G");
         final SplicingLocationData data = locator.locate(variant, fwdTranscript);
         assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.ACCEPTOR));
         assertThat(data.getIntronIdx(), is(1));
         assertThat(data.getExonIdx(), is(2));
+        assertThat(data.getDonorRegion().isEmpty(), is(true));
+        assertThat(data.getAcceptorRegion().get(), is(makeInterval(1775, 1802)));
     }
 
 
     @Test
-    void oneBaseAfterSecondAcceptor() throws Exception {
+    void oneBaseAfterSecondAcceptor() {
         GenomeVariant variant = new GenomeVariant(new GenomePosition(referenceDictionary, Strand.FWD, 1, 1802), "C", "G");
         final SplicingLocationData data = locator.locate(variant, fwdTranscript);
         assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.EXON));
         assertThat(data.getIntronIdx(), is(-1));
         assertThat(data.getExonIdx(), is(2));
+        assertThat(data.getDonorRegion().isEmpty(), is(true));
+        assertThat(data.getAcceptorRegion().get(), is(makeInterval(1775, 1802)));
     }
 
 
     @Test
-    void lastBaseOfCds() throws Exception {
+    void lastBaseOfCds() {
         GenomeVariant variant = new GenomeVariant(new GenomePosition(referenceDictionary, Strand.FWD, 1, 1999), "C", "G");
         final SplicingLocationData data = locator.locate(variant, fwdTranscript);
         assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.EXON));
         assertThat(data.getIntronIdx(), is(-1));
         assertThat(data.getExonIdx(), is(2));
+        assertThat(data.getDonorRegion().isEmpty(), is(true));
+        assertThat(data.getAcceptorRegion().get(), is(makeInterval(1775, 1802)));
     }
 
     @Test
-    void oneBaseAfterCds() throws Exception {
+    void oneBaseAfterCds() {
         GenomeVariant variant = new GenomeVariant(new GenomePosition(referenceDictionary, Strand.FWD, 1, 2000), "C", "G");
         final SplicingLocationData data = locator.locate(variant, fwdTranscript);
-        assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.OUTSIDE));
+        assertThat(data, is(SplicingLocationData.outside()));
     }
 
     @Test
-    void firstBaseOfSingleExonTranscript() throws Exception {
+    void firstBaseOfSingleExonTranscript() {
         final SplicingTranscript se = PojosForTesting.getTranscriptWithSingleExon(referenceDictionary);
         GenomeVariant variant = new GenomeVariant(new GenomePosition(referenceDictionary, Strand.FWD, 1, 1000), "C", "G");
         final SplicingLocationData data = locator.locate(variant, se);
         assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.EXON));
         assertThat(data.getExonIdx(), is(0));
         assertThat(data.getIntronIdx(), is(-1));
+        assertThat(data.getDonorRegion().isEmpty(), is(true));
+        assertThat(data.getAcceptorRegion().isEmpty(), is(true));
     }
 
 
     @Test
-    void lastBaseOfSingleExonTranscript() throws Exception {
+    void lastBaseOfSingleExonTranscript() {
         final SplicingTranscript se = PojosForTesting.getTranscriptWithSingleExon(referenceDictionary);
         GenomeVariant variant = new GenomeVariant(new GenomePosition(referenceDictionary, Strand.FWD, 1, 1999), "C", "G");
 
@@ -253,6 +296,8 @@ class NaiveSplicingTranscriptLocatorTest {
         assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.EXON));
         assertThat(data.getExonIdx(), is(0));
         assertThat(data.getIntronIdx(), is(-1));
+        assertThat(data.getDonorRegion().isEmpty(), is(true));
+        assertThat(data.getAcceptorRegion().isEmpty(), is(true));
     }
 
 }

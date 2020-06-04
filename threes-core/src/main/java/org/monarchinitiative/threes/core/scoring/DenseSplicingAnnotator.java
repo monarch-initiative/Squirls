@@ -92,7 +92,7 @@ public class DenseSplicingAnnotator implements SplicingAnnotator {
     }
 
     @Override
-    public FeatureData evaluate(GenomeVariant variant, SplicingTranscript transcript, SequenceInterval sequenceInterval) {
+    public SplicingAnnotationData evaluate(GenomeVariant variant, SplicingTranscript transcript, SequenceInterval sequenceInterval) {
 
         final GenomeVariant variantOnStrand = variant.withStrand(transcript.getStrand());
         final SplicingLocationData locationData = transcriptLocator.locate(variant, transcript);
@@ -100,52 +100,58 @@ public class DenseSplicingAnnotator implements SplicingAnnotator {
         final Optional<GenomePosition> donorBoundary = locationData.getDonorBoundary();
         final Optional<GenomePosition> acceptorBoundary = locationData.getAcceptorBoundary();
 
-        final FeatureData.Builder builder = FeatureData.builder();
+        final FeatureData.Builder featureData = FeatureData.builder();
 
         if (donorBoundary.isPresent()) {
             // `canonical_donor` feature
             final double canonicalDonor = canonicalDonorFeatureCalculator.score(donorBoundary.get(), variantOnStrand, sequenceInterval);
-            builder.addFeature("canonical_donor", canonicalDonor);
+            featureData.addFeature("canonical_donor", canonicalDonor);
 
             // `cryptic_donor` feature
             final double crypticDonor = crypticDonorScorer.score(donorBoundary.get(), variantOnStrand, sequenceInterval);
-            builder.addFeature("cryptic_donor", crypticDonor);
+            featureData.addFeature("cryptic_donor", crypticDonor);
         } else {
-            builder.addFeature("canonical_donor", 0.);
-            builder.addFeature("cryptic_donor", 0.);
+            featureData.addFeature("canonical_donor", 0.);
+            featureData.addFeature("cryptic_donor", 0.);
         }
 
         if (acceptorBoundary.isPresent()) {
             // `canonical_acceptor` feature
             final double canonicalAcceptor = canonicalAcceptorScorer.score(acceptorBoundary.get(), variantOnStrand, sequenceInterval);
-            builder.addFeature("canonical_acceptor", canonicalAcceptor);
+            featureData.addFeature("canonical_acceptor", canonicalAcceptor);
 
             // `cryptic_acceptor` feature
             final double crypticAcceptor = crypticAcceptorScorer.score(acceptorBoundary.get(), variantOnStrand, sequenceInterval);
-            builder.addFeature("cryptic_acceptor", crypticAcceptor);
+            featureData.addFeature("cryptic_acceptor", crypticAcceptor);
         } else {
-            builder.addFeature("canonical_acceptor", 0.);
-            builder.addFeature("cryptic_acceptor", 0.);
+            featureData.addFeature("canonical_acceptor", 0.);
+            featureData.addFeature("cryptic_acceptor", 0.);
         }
 
         final double hexamerScore = hexamerFeatureCalculator.score(null, variant, sequenceInterval);
-        builder.addFeature("hexamer", hexamerScore);
+        featureData.addFeature("hexamer", hexamerScore);
         final double septamerScore = septamerFeatureCalculator.score(null, variant, sequenceInterval);
-        builder.addFeature("septamer", septamerScore);
+        featureData.addFeature("septamer", septamerScore);
 
         final double phylopScore = phyloPFeatureCalculator.score(null, variant, sequenceInterval);
-        builder.addFeature("phylop", phylopScore);
+        featureData.addFeature("phylop", phylopScore);
 
         final int donorOffset = getOffset(transcript.getExons().stream()
                         .map(e -> e.getInterval().getGenomeEndPos()),
                 variantOnStrand.getGenomeInterval());
-        builder.addFeature("donor_offset", donorOffset);
+        featureData.addFeature("donor_offset", donorOffset);
 
         final int acceptorOffset = getOffset(transcript.getExons().stream()
                         .map(e -> e.getInterval().getGenomeBeginPos()),
                 variantOnStrand.getGenomeInterval());
-        builder.addFeature("acceptor_offset", acceptorOffset);
+        featureData.addFeature("acceptor_offset", acceptorOffset);
 
-        return builder.build();
+        return SplicingAnnotationData.newBuilder()
+                .featureData(featureData.build())
+                .meanPhyloPScore(phylopScore)
+                // this sucks a bit, but we'll live
+                .putDonorCoordinates(locationData.getDonorRegion().orElse(null))
+                .putAcceptorCoordinates(locationData.getAcceptorRegion().orElse(null))
+                .build();
     }
 }

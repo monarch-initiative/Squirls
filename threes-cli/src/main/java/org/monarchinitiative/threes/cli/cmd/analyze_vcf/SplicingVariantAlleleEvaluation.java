@@ -2,29 +2,50 @@ package org.monarchinitiative.threes.cli.cmd.analyze_vcf;
 
 import de.charite.compbio.jannovar.annotation.Annotation;
 import de.charite.compbio.jannovar.annotation.VariantAnnotations;
-import de.charite.compbio.jannovar.reference.TranscriptModel;
 import htsjdk.variant.variantcontext.Allele;
 import htsjdk.variant.variantcontext.VariantContext;
+import org.monarchinitiative.threes.core.SplicingPredictionData;
 import org.monarchinitiative.threes.core.classifier.Prediction;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 
 /**
  * This class is a POJO for a single ALT allele of the variant.
  */
-public class VariantDataBox {
+public class SplicingVariantAlleleEvaluation {
 
+    /**
+     * The base variant context that is being analyzed.
+     */
     private final VariantContext base;
+
+    /**
+     * The ALT allele of the variant context that is being analyzed.
+     */
     private final Allele altAllele;
-    private final Map<TranscriptModel, Prediction> predictionMap = new HashMap<>();
+
+    /**
+     * Results of the splicing analysis.
+     */
+    private SplicingPredictionData predictionData;
+
+    /**
+     * Results of Jannovar's functional annotation with respect to transcripts this variant overlaps with.
+     */
     private VariantAnnotations annotations;
 
-    public VariantDataBox(VariantContext base, Allele altAllele) {
+    public SplicingVariantAlleleEvaluation(VariantContext base, Allele altAllele) {
         this.base = base;
         this.altAllele = altAllele;
+    }
+
+    public SplicingPredictionData getPredictionData() {
+        return predictionData;
+    }
+
+    public void setPredictionData(SplicingPredictionData predictionData) {
+        this.predictionData = predictionData;
     }
 
     public VariantAnnotations getAnnotations() {
@@ -33,18 +54,6 @@ public class VariantDataBox {
 
     public void setAnnotations(VariantAnnotations annotations) {
         this.annotations = annotations;
-    }
-
-    public void putPrediction(TranscriptModel transcript, Prediction prediction) {
-        this.predictionMap.put(transcript, prediction);
-    }
-
-    public void putAllPredictions(Map<TranscriptModel, Prediction> predictionMap) {
-        this.predictionMap.putAll(predictionMap);
-    }
-
-    public Map<TranscriptModel, Prediction> getPredictionMap() {
-        return predictionMap;
     }
 
     public List<Annotation> getTranscriptAnnotations() {
@@ -59,8 +68,12 @@ public class VariantDataBox {
         return altAllele;
     }
 
+    public Prediction getPredictionForTranscript(String accessionId) {
+        return predictionData.getPredictions().get(accessionId);
+    }
+
     public Double getMaxScore() {
-        return predictionMap.values().stream()
+        return predictionData.getPredictions().values().stream()
                 .mapToDouble(Prediction::getMaxPathogenicity)
                 .max()
                 .orElse(Double.NaN);
@@ -76,16 +89,16 @@ public class VariantDataBox {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        VariantDataBox that = (VariantDataBox) o;
+        SplicingVariantAlleleEvaluation that = (SplicingVariantAlleleEvaluation) o;
         return Objects.equals(base, that.base) &&
                 Objects.equals(altAllele, that.altAllele) &&
-                Objects.equals(predictionMap, that.predictionMap) &&
+                Objects.equals(predictionData, that.predictionData) &&
                 Objects.equals(annotations, that.annotations);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(base, altAllele, predictionMap, annotations);
+        return Objects.hash(base, altAllele, predictionData, annotations);
     }
 
     @Override
@@ -93,7 +106,7 @@ public class VariantDataBox {
         return "VariantDataBox{" +
                 "base=" + base +
                 ", altAllele=" + altAllele +
-                ", predictionMap=" + predictionMap +
+                ", predictionData=" + predictionData +
                 ", annotations=" + annotations +
                 '}';
     }
