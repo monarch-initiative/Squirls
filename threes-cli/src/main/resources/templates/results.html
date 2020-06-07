@@ -109,8 +109,8 @@
                                 <td th:text="${txAccession}">NM_123456.3</td>
                                 <td th:text="${ann.getMostPathogenicVarType()}">MISSENSE</td>
                                 <td th:text="${ann.getCDSNTChangeStr()}">c.123A>G</td>
-                                <td th:text="${variant.getPredictionForTranscript(txAccession).getMaxPathogenicity()}">
-                                    0.89
+                                <td th:text="${#numbers.formatDecimal(pathogenicity, 1,3)}"
+                                    th:with="pathogenicity=${variant.getPredictionForTranscript(txAccession).getMaxPathogenicity()}">0.89
                                 </td>
                             </tr>
                         </table>
