@@ -2,13 +2,13 @@ package org.monarchinitiative.threes.cli.cmd.analyze_vcf;
 
 import de.charite.compbio.jannovar.annotation.Annotation;
 import de.charite.compbio.jannovar.annotation.VariantAnnotations;
+import de.charite.compbio.jannovar.annotation.VariantEffect;
 import htsjdk.variant.variantcontext.Allele;
 import htsjdk.variant.variantcontext.VariantContext;
 import org.monarchinitiative.threes.core.SplicingPredictionData;
 import org.monarchinitiative.threes.core.classifier.Prediction;
 
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * This class is a POJO for a single ALT allele of the variant.
@@ -56,10 +56,6 @@ public class SplicingVariantAlleleEvaluation {
         this.annotations = annotations;
     }
 
-    public List<Annotation> getTranscriptAnnotations() {
-        return annotations.getAnnotations();
-    }
-
     public VariantContext getBase() {
         return base;
     }
@@ -70,6 +66,17 @@ public class SplicingVariantAlleleEvaluation {
 
     public Prediction getPredictionForTranscript(String accessionId) {
         return predictionData.getPredictions().get(accessionId);
+    }
+
+    public Map<VariantEffect, Collection<Annotation>> getAnnotationsByEffect() {
+        Map<VariantEffect, Collection<Annotation>> effectMap = new TreeMap<>();
+        getAnnotations().getAnnotations().forEach(ann -> ann.getEffects().forEach(eff -> {
+            if (!effectMap.containsKey(eff)) {
+                effectMap.put(eff, new HashSet<>());
+            }
+            effectMap.get(eff).add(ann);
+        }));
+        return effectMap;
     }
 
     public Double getMaxScore() {

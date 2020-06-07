@@ -85,38 +85,60 @@
         </div>
         <div class="panel panel-info" th:each="variant, variant_is: ${variants}">
             <div class="panel-heading">
-                <h4 class="panel-title">
-                    <span th:text="${variant.getRepresentation()}">chr9:136224690A>G</span>
-                </h4>
+                <div class="panel-title row" th:with="ann=${variant.getAnnotations().getHighestImpactAnnotation()}">
+                    <div class="col-md-4">
+                        <b th:text="${variant.getRepresentation()}">chr9:136224690A>G</b>
+                    </div>
+                    <div class="col-md-4">
+                        <b th:text="${ann.getGeneSymbol()}">SURF2</b>
+                    </div>
+                    <div class="col-md-4">
+                        Pathogenicity:
+                        <b th:text="${#numbers.formatDecimal(${variant.getMaxScore()}, 1, 3)}">0.89</b>
+                    </div>
+                </div>
             </div>
             <div class="panel-body">
                 <div class="row">
                     <div class="col-md-6">
-                        <table class="table table-striped">
+                        <table class="table table-striped"
+                               th:with="annotations=${variant.getAnnotations().getAnnotations()}">
                             <tr>
-                                <th>Gene symbol</th>
                                 <th>Tx accession ID</th>
                                 <th>Effects</th>
                                 <th>HGVS</th>
-                                <th>Pathogenicity</th>
+                                <th>Score</th>
                             </tr>
-                            <tr th:each="ann, ann_is: ${variant.getTranscriptAnnotations()}"
+                            <tr th:each="ann, ann_is: ${annotations}"
                                 th:with="txAccession=${ann.getTranscript().getAccession()}">
-                                <td th:if="${ann_is.first}" th:rowspan="${ann_is.size}"
-                                    th:text="${ann.getGeneSymbol()}">
-                                    SURF2
-                                </td>
                                 <td th:text="${txAccession}">NM_123456.3</td>
                                 <td th:text="${ann.getMostPathogenicVarType()}">MISSENSE</td>
                                 <td th:text="${ann.getCDSNTChangeStr()}">c.123A>G</td>
-                                <td th:text="${#numbers.formatDecimal(pathogenicity, 1,3)}"
-                                    th:with="pathogenicity=${variant.getPredictionForTranscript(txAccession).getMaxPathogenicity()}">0.89
+                                <td th:with="pathogenicity=${variant.getPredictionForTranscript(txAccession).getMaxPathogenicity()}">
+                                    <span th:text="${#numbers.formatDecimal(pathogenicity, 1,3)}">0.89</span>
                                 </td>
                             </tr>
                         </table>
                     </div>
                     <div class="col-md-6">
                         The space for figures.
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <ul>
+                            <li th:each="entry, entry_is: ${variant.getAnnotationsByEffect()}"
+                                th:with="eff=${entry.getKey()}, anns=${entry.getValue()}">
+                                <b th:text="${eff}">MISSENSE_VARIANT</b>
+                                <ul>
+                                    <li th:each="ann, ann_is: ${anns}">
+                                        <span th:text="${ann.getTranscript().getAccession()}">NM_0012234.5</span>: <span th:text="${ann.getCDSNTChangeStr()}">c.123A>G</span>
+                                        <span th:text="${#numbers.formatDecimal(pathogenicity, 1,3)}"
+                                              th:with="pathogenicity=${variant.getPredictionForTranscript(ann.getTranscript().getAccession()).getMaxPathogenicity()}">0.89</span>
+                                    </li>
+                                </ul>
+                            </li>
+                        </ul>
                     </div>
                 </div>
             </div>
