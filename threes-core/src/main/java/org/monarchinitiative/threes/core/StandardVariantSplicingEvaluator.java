@@ -114,7 +114,7 @@ public class StandardVariantSplicingEvaluator implements VariantSplicingEvaluato
         final GenomeInterval toFetch = new GenomeInterval(bp.shifted(-padding), ep.differenceTo(bp) + 2 * padding);
         final Optional<SequenceInterval> sio = accessor.fetchSequence(toFetch);
         if (sio.isEmpty()) {
-            LOGGER.warn("Unable to get reference sequence for `{}`", toFetch);
+            LOGGER.debug("Unable to get reference sequence for `{}` when evaluating variant `{}`", toFetch, variant);
             return SplicingPredictionData.EMPTY;
         }
         final SequenceInterval si = sio.get();
