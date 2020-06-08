@@ -32,9 +32,39 @@
         </dependency>
 
         <dependency>
+            <groupId>de.charite.compbio</groupId>
+            <artifactId>jannovar-htsjdk</artifactId>
+            <version>${jannovar.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.testng</groupId>
+                    <artifactId>testng</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
             <groupId>net.sourceforge.argparse4j</groupId>
             <artifactId>argparse4j</artifactId>
             <version>${argparse.version}</version>
+        </dependency>
+
+        <!--Thymeleaf is a templating engine used for creating the HTML results pages -->
+        <dependency>
+            <groupId>org.thymeleaf</groupId>
+            <artifactId>thymeleaf</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.thymeleaf</groupId>
+            <artifactId>thymeleaf-spring5</artifactId>
+        </dependency>
+
+        <!-- VMVT is a library for visualisation of variant impact on splice donor/acceptor sites in form of
+        SVG images. -->
+        <dependency>
+            <groupId>org.monarchinitiative.vmvt</groupId>
+            <artifactId>vmvt</artifactId>
+            <version>0.4.1-SNAPSHOT</version>
         </dependency>
 
         <!--  TEST DEPENDENCIES  -->

@@ -28,7 +28,7 @@ public abstract class Command {
 
         public ProgressReporter() {
             begin = Instant.now();
-            LOGGER.info("Initializing progress reporting");
+            LOGGER.info("Starting the analysis");
         }
 
         public void logEntry(T entry) {

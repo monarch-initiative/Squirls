@@ -89,7 +89,7 @@ public class PojosForTesting {
                         .build())
                 // 3rd exon
                 .addExon(SplicingExon.builder()
-                        .setInterval(new GenomeInterval(referenceDictionary, Strand.FWD, 1, 1800, 200))
+                        .setInterval(new GenomeInterval(referenceDictionary, Strand.FWD, 1, 1800, 2000))
                         .build())
                 .build();
     }

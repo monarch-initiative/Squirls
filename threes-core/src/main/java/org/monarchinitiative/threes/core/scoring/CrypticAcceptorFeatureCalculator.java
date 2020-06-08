@@ -39,7 +39,7 @@ class CrypticAcceptorFeatureCalculator extends BaseFeatureCalculator {
             donorSnippet = generator.getAcceptorSiteSnippet(anchor, sequenceInterval);
         }
         if (donorSnippet == null) {
-            LOGGER.warn("Unable to create acceptor snippet at `{}` for variant `{}` using sequence `{}`",
+            LOGGER.debug("Unable to create acceptor snippet at `{}` for variant `{}` using sequence `{}`",
                     anchor, variant, sequenceInterval.getInterval());
             return Double.NaN;
         }
@@ -52,7 +52,7 @@ class CrypticAcceptorFeatureCalculator extends BaseFeatureCalculator {
         final Optional<String> downstreamOpt = sequenceInterval.getSubsequence(downstreamPaddingInterval);
 
         if (upstreamOpt.isEmpty() || downstreamOpt.isEmpty()) {
-            LOGGER.warn("Unable to create sliding window snippet +- {}bp for variant `{}` using sequence `{}`",
+            LOGGER.debug("Unable to create sliding window snippet +- {}bp for variant `{}` using sequence `{}`",
                     padding, variant, sequenceInterval.getInterval());
             return Double.NaN;
         }

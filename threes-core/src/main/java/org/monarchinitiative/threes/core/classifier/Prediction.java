@@ -4,9 +4,14 @@ import java.util.Collection;
 import java.util.Objects;
 
 /**
- * The implementing classes represent predictions made by the {@link BinaryClassifier}.
+ * The implementing classes represent predictions made by the {@link BinaryClassifier} with respect
+ * to a single transcript.
  */
 public interface Prediction {
+
+    static Prediction emptyPrediction() {
+        return EmptyPrediction.getInstance();
+    }
 
     /**
      * Predictions are being made by one or more decision functions, where {@link PartialPrediction} represents outcome

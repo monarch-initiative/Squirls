@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>SQUIRLS - Super-quick Information Content and Random Forest Learning for Splice Variants</title>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <!-- TODO - Add the CSS into the template -->
+    <!-- Latest compiled and minified CSS -->
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .panel > .panel-heading {
+            /*background-color: #00fa3c;*/
+        }
+
+        .panel > .panel-info {
+            margin: 15px;
+        }
+    </style>
+</head>
+<body>
+<div class="container" id="content">
+    <!--    TITLE -->
+    <h2>Results for <span th:text="${sampleName}">Mr. Fantastic, Mrs. Fantastic</span></h2>
+
+    <!--    NAV   -->
+    <ul class="nav nav-pills" id="tabs">
+        <li><a data-toggle="tab" href="#inputs" role="tab"><b>Analysis Inputs</b></a></li>
+        <li><a data-toggle="tab" href="#statistics" role="tab"><b>Analysis Statistics</b></a></li>
+        <li><a data-toggle="tab" href="#prioritisation" role="tab"><b>Prioritised Variants</b></a></li>
+        <li><a data-toggle="tab" href="#about" role="tab"><b>About</b></a></li>
+    </ul>
+
+    <!--    INPUTS    -->
+    <div class="panel panel-default" id="inputs">
+        <div class="panel-heading">
+            <h3 class="panel-title">
+                Analysis input
+            </h3>
+        </div>
+        <div class="panel-body">
+            <p>Settings used for this analysis:</p>
+            <pre th:text="${settings.getYamlRepresentation()}">
+  - vcfPath: /path/to/input.vcf
+  - transcript database path: ensembl
+  - threshold: 0.2</pre>
+        </div>
+    </div>
+
+    <!--    STATISTICS      -->
+    <div class="panel panel-default" id="statistics">
+        <div class="panel-heading">
+            <h3 class="panel-title">Analysis statistics</h3>
+        </div>
+        <div class="panel-body">
+            <table class="table table-striped">
+                <tr>
+                    <th>Info</th>
+                    <th>Count</th>
+                </tr>
+                <tr>
+                    <td>number of variants in the VCF file</td>
+                    <td th:text="${stats.getAllVariants()}">100</td>
+                </tr>
+                <tr>
+                    <td>number of <em>ALT</em> alleles in the VCF file</td>
+                    <td th:text="${stats.alleleCount}">120</td>
+                </tr>
+                <tr>
+                    <td>number of alleles with &gt;1 functional annotation</td>
+                    <td th:text="${stats.annotatedAlleleCount}">110</td>
+                </tr>
+                <tr>
+                    <td>number of alleles with predicted splicing pathogenicity above
+                        <span th:text="${settings.threshold}">0.2</span></td>
+                    <td th:text="${stats.pathogenicAlleleCount}">5</td>
+                </tr>
+            </table>
+        </div>
+    </div>
+
+    <!--    PRIORITISED VARIANTS     -->
+    <div class="panel panel-default" id="prioritisation">
+        <div class="panel-heading">
+            <h3 class="panel-title">Prioritised Variants</h3>
+        </div>
+        <div class="panel panel-info" th:each="variant, variant_is: ${variants}">
+            <div class="panel-heading">
+                <div class="panel-title row" th:with="ann=${variant.getAnnotations().getHighestImpactAnnotation()}">
+                    <div class="col-md-4">
+                        <b th:text="${variant.getRepresentation()}">chr9:136224690A>G</b>
+                    </div>
+                    <div class="col-md-4">
+                        <b th:text="${ann.getGeneSymbol()}">SURF2</b>
+                    </div>
+                    <div class="col-md-4">
+                        Pathogenicity:
+                        <b th:text="${#numbers.formatDecimal(variant.getMaxScore(), 1, 3)}">0.89</b>
+                    </div>
+                </div>
+            </div>
+            <div class="panel-body">
+                <!-- This is an HTML fragment that presents results/scores per transcript in a table -->
+                <!--                <div class="row">-->
+                <!--                    <div class="col-md-6">-->
+                <!--                        <table class="table table-striped"-->
+                <!--                               th:with="annotations=${variant.getAnnotations().getAnnotations()}">-->
+                <!--                            <tr>-->
+                <!--                                <th>Tx accession ID</th>-->
+                <!--                                <th>Effects</th>-->
+                <!--                                <th>HGVS</th>-->
+                <!--                                <th>Score</th>-->
+                <!--                            </tr>-->
+                <!--                            <tr th:each="ann, ann_is: ${annotations}"-->
+                <!--                                th:with="txAccession=${ann.getTranscript().getAccession()}">-->
+                <!--                                <td th:text="${txAccession}">NM_123456.3</td>-->
+                <!--                                <td th:text="${ann.getMostPathogenicVarType()}">MISSENSE</td>-->
+                <!--                                <td th:text="${ann.getCDSNTChangeStr()}">c.123A>G</td>-->
+                <!--                                <td th:with="pathogenicity=${variant.getPredictionForTranscript(txAccession).getMaxPathogenicity()}">-->
+                <!--                                    <span th:text="${#numbers.formatDecimal(pathogenicity, 1,3)}">0.89</span>-->
+                <!--                                </td>-->
+                <!--                            </tr>-->
+                <!--                        </table>-->
+                <!--                    </div>-->
+                <!--                </div>-->
+                <div class="row">
+                    <div class="col-md-6">
+                        Variant effects on overlapping transcripts:
+                        <ul>
+                            <li th:each="entry, entry_is: ${variant.getAnnotationsByEffect()}">
+                                <b><span th:text="${entry.getKey()}">MISSENSE_VARIANT</span></b>
+                                <ul>
+                                    <li th:each="ann, ann_is: ${entry.getValue()}">
+                                        <span th:text="${ann.getTranscript().getAccession()}">NM_0012234.5</span>: <span th:text="${ann.getCDSNTChangeStr()}">c.123A>G</span>
+                                        <span th:text="${#numbers.formatDecimal(pathogenicity, 1, 3)}"
+                                              th:with="pathogenicity=${variant.getPredictionForTranscript(ann.getTranscript().getAccession()).getMaxPathogenicity()}">0.89</span>
+                                    </li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        The space for figures.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!--    FOOTER    -->
+    <div class="panel panel-default" id="about">
+        <div class="panel-heading">
+            <h3 class="panel-title">About</h3>
+        </div>
+        <div class="panel-body">
+            This is it! Let us know how you absolutely love us at our <a href="https://robinsongroup.github.io/">
+            website</a>.
+        </div>
+    </div>
+
+</div>
+</body>
+</html>
