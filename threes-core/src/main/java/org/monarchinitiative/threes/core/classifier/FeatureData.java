@@ -6,7 +6,7 @@ import java.util.Objects;
 import java.util.Set;
 
 /**
- * This class represents a single instance of training data.
+ * This class represents a single instance of data used for prediction in {@link OverlordClassifier}.
  */
 public class FeatureData {
 
