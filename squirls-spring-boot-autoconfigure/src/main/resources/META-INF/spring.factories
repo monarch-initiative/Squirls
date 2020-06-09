@@ -1,0 +1,4 @@
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+org.monarchinitiative.squirls.autoconfigure.SquirlsAutoConfiguration
+org.springframework.boot.diagnostics.FailureAnalyzer=org.monarchinitiative.squirls.autoconfigure.UndefinedSquirlsResourceFailureAnalyzer,\
+  org.monarchinitiative.squirls.autoconfigure.InvalidSquirlsResourceFailureAnalyzer
