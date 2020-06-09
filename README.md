@@ -1,5 +1,5 @@
 # Squirls
-Code for splicing calculations.
+Super-quick Information Content and Random Forest Learning for Splice Variants
 
 ## Build JAR files from sources
 
