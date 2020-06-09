@@ -5,7 +5,7 @@ import com.zaxxer.hikari.HikariDataSource;
 import de.charite.compbio.jannovar.data.ReferenceDictionary;
 import de.charite.compbio.jannovar.reference.TranscriptModel;
 import org.flywaydb.core.Flyway;
-import org.monarchinitiative.squirls.core.ThreeSException;
+import org.monarchinitiative.squirls.core.SquirlsException;
 import org.monarchinitiative.squirls.core.classifier.io.Deserializer;
 import org.monarchinitiative.squirls.core.classifier.io.OverallModelData;
 import org.monarchinitiative.squirls.core.classifier.transform.prediction.LogisticRegressionPredictionTransformer;
@@ -158,12 +158,12 @@ public class SquirlsDataBuilder {
      * @param jannovarDbDir     path to directory with Jannovar serialized files
      * @param yamlPath          path to file with splice site definitions
      * @param versionedAssembly a string like `1710_hg19`, etc.
-     * @throws ThreeSException if anything goes wrong
+     * @throws SquirlsException if anything goes wrong
      */
     public static void buildDatabase(Path buildDir, URL genomeUrl, Path jannovarDbDir, Path yamlPath,
                                      Path hexamerPath, Path septamerPath,
                                      Map<String, byte[]> classifiers,
-                                     String versionedAssembly) throws ThreeSException {
+                                     String versionedAssembly) throws SquirlsException {
 
         // 0 - deserialize Jannovar transcript databases
         JannovarDataManager manager = JannovarDataManager.fromDirectory(jannovarDbDir);
@@ -174,7 +174,7 @@ public class SquirlsDataBuilder {
             SplicingPositionalWeightMatrixParser parser = new InputStreamBasedPositionalWeightMatrixParser(is);
             splicingPwmData = parser.getSplicingPwmData();
         } catch (IOException e) {
-            throw new ThreeSException(e);
+            throw new SquirlsException(e);
         }
 
         // 1b - parse k-mer maps
@@ -184,7 +184,7 @@ public class SquirlsDataBuilder {
             hexamerMap = new FileKMerParser(hexamerPath).getKmerMap();
             septamerMap = new FileKMerParser(septamerPath).getKmerMap();
         } catch (IOException e) {
-            throw new ThreeSException(e);
+            throw new SquirlsException(e);
         }
 
         // 2 - download reference genome FASTA file
@@ -229,7 +229,7 @@ public class SquirlsDataBuilder {
             LOGGER.info("Inserting transcripts");
             ingestTranscripts(dataSource, rd, accessor, manager.getAllTranscriptModels(), calculator);
         } catch (IOException e) {
-            throw new ThreeSException(e);
+            throw new SquirlsException(e);
         }
 
         // 3f - store classifier

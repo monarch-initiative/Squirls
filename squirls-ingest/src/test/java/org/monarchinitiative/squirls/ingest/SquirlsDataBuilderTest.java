@@ -4,7 +4,7 @@ import de.charite.compbio.jannovar.reference.TranscriptModel;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.monarchinitiative.squirls.core.ThreeSException;
+import org.monarchinitiative.squirls.core.SquirlsException;
 import org.monarchinitiative.squirls.core.scoring.calculators.ic.SplicingInformationContentCalculator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -63,7 +63,7 @@ class SquirlsDataBuilderTest {
     }
 
     @Test
-    void downloadReferenceGenome() throws ThreeSException {
+    void downloadReferenceGenome() throws SquirlsException {
         // arrange - nothing to be done
 
         // act - download a small reference genome

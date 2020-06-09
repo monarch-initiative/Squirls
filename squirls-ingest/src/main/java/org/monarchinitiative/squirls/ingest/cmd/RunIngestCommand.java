@@ -3,7 +3,7 @@ package org.monarchinitiative.squirls.ingest.cmd;
 import net.sourceforge.argparse4j.inf.Namespace;
 import net.sourceforge.argparse4j.inf.Subparser;
 import net.sourceforge.argparse4j.inf.Subparsers;
-import org.monarchinitiative.squirls.core.ThreeSException;
+import org.monarchinitiative.squirls.core.SquirlsException;
 import org.monarchinitiative.squirls.ingest.SquirlsDataBuilder;
 import org.monarchinitiative.squirls.ingest.config.IngestProperties;
 import org.slf4j.Logger;
@@ -51,7 +51,7 @@ public class RunIngestCommand extends IngestCommand {
                 .help("which genome assembly to use");
     }
 
-    private static String normalizeAssemblyString(String assembly) throws ThreeSException {
+    private static String normalizeAssemblyString(String assembly) throws SquirlsException {
         switch (assembly.toLowerCase()) {
             case "hg19":
             case "grch37":
@@ -60,11 +60,11 @@ public class RunIngestCommand extends IngestCommand {
             case "grch38":
                 return "hg38";
             default:
-                throw new ThreeSException(String.format("Unknown assembly string '%s'", assembly));
+                throw new SquirlsException(String.format("Unknown assembly string '%s'", assembly));
         }
     }
 
-    private static String getVersionedAssembly(String assembly, String version) throws ThreeSException {
+    private static String getVersionedAssembly(String assembly, String version) throws SquirlsException {
         assembly = normalizeAssemblyString(assembly);
         // a string like `1902_hg19`
         return version + "_" + assembly;

@@ -22,7 +22,7 @@ class DbSplicingPositionalWeightMatrixParserTest {
 
 
     @Test
-    void donorAcceptorAndSplicingParametersAreParsed() {
+    void donorAcceptorAndSplicingParametersAreParsed() throws Exception {
         DbSplicingPositionalWeightMatrixParser parser = new DbSplicingPositionalWeightMatrixParser(dataSource);
 
         SplicingPwmData data = parser.getSplicingPwmData();

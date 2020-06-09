@@ -12,6 +12,7 @@ import org.monarchinitiative.squirls.core.data.ClassifierDataManager;
 import org.monarchinitiative.squirls.core.data.DbClassifierDataManager;
 import org.monarchinitiative.squirls.core.data.DbSplicingTranscriptSource;
 import org.monarchinitiative.squirls.core.data.SplicingTranscriptSource;
+import org.monarchinitiative.squirls.core.data.ic.CorruptedPwmException;
 import org.monarchinitiative.squirls.core.data.ic.DbSplicingPositionalWeightMatrixParser;
 import org.monarchinitiative.squirls.core.data.ic.SplicingPwmData;
 import org.monarchinitiative.squirls.core.data.kmer.DbKMerDao;
@@ -196,8 +197,12 @@ public class SquirlsAutoConfiguration {
     }
 
     @Bean
-    public SplicingPwmData splicingPwmData(DataSource squirlsDatasource) {
-        return new DbSplicingPositionalWeightMatrixParser(squirlsDatasource).getSplicingPwmData();
+    public SplicingPwmData splicingPwmData(DataSource squirlsDatasource) throws InvalidSquirlsResourceException {
+        try {
+            return new DbSplicingPositionalWeightMatrixParser(squirlsDatasource).getSplicingPwmData();
+        } catch (CorruptedPwmException e) {
+            throw new InvalidSquirlsResourceException(e);
+        }
     }
 
     @Bean

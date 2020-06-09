@@ -1,12 +1,12 @@
 package org.monarchinitiative.squirls.core.data.ic;
 
 
-import org.monarchinitiative.squirls.core.ThreeSRuntimeException;
+import org.monarchinitiative.squirls.core.SquirlsException;
 
 /**
  *
  */
-public class CorruptedPwmException extends ThreeSRuntimeException {
+public class CorruptedPwmException extends SquirlsException {
 
     public CorruptedPwmException() {
         super();
