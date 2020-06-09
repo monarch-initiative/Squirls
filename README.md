@@ -1,21 +1,21 @@
-# 3S
-Code for splicing calculations.
+# Squirls
+Super-quick Information Content and Random Forest Learning for Splice Variants
 
 ## Build JAR files from sources
 
 After cloning this repository, run the following commands to build the JAR files.
 ```bash
-cd 3S
+cd Squirls
 mvn clean package
 ```
 
 This command will compile & test Java code, and package classes as well as resource files into JAR files. The JAR files 
-are located in the build directory, which is `<module>/target` by default (e.g. `threes-cli/target/threes-cli-1.3.0.jar`.
+are located in the build directory, which is `<module>/target` by default (e.g. `squirls-cli/target/squirls-cli-1.3.0.jar`.
 
 After successful packaging, you should be able to see the CLI help message by running:
 
 ```bash
-java -jar threes-cli/target/threes-cli-1.3.0-SNAPSHOT.jar --help
+java -jar squirls-cli/target/squirls-cli-1.3.0-SNAPSHOT.jar --help
 ```
 
 ## Command-line interface
@@ -29,11 +29,11 @@ The command-line interface defines 2 command groups:
 In order to be able to do anything useful with this app, you must download/prepare resources. Run the following to generate the config file:
 
 ```bash
-java -jar threes-cli/target/threes-cli-1.3.0-SNAPSHOT.jar generate-config config.yml
+java -jar squirls-cli/target/squirls-cli-1.3.0-SNAPSHOT.jar generate-config config.yml
 ``` 
 
 The command generates an empty configuration file in YAML format. Open the file and provide paths to required resources:
-- `data-directory` - path to directory with 3S databases & genome FASTA file, either downloaded or built by `threes-ingest` module. Download ZIP files with pre-built databases from AWS:
+- `data-directory` - path to directory with 3S databases & genome FASTA file, either downloaded or built by `squirls-ingest` module. Download ZIP files with pre-built databases from AWS:
   - [1902_hg19](https://exomiser-threes.s3.amazonaws.com/1902_hg19.zip)
   - [1902_hg38](https://exomiser-threes.s3.amazonaws.com/1902_hg38.zip)
 - `genome-assembly` - genome assembly - choose from {`hg19`, `hg38`}   
@@ -47,21 +47,22 @@ The command generates an empty configuration file in YAML format. Open the file 
 Annotate VCF file by running:
 
 ```bash
-java -jar threes-cli/target/threes-cli-1.3.0-SNAPSHOT.jar run -c config.yml annotate-vcf 
+java -jar squirls-cli/target/squirls-cli-1.3.0-SNAPSHOT.jar run -c config.yml annotate-vcf 
 --threshold 0.5
 example.vcf example.annotated.vcf
 ```
 
 At the moment, the annotation adds 2 INFO fields:
-- `3S` - variant is pathogenic if the flag is present. The flag is added if pathogenicity is above the given `--threshold` (`0.2` by default) 
-- `3S_SCORE` - pathogenicity score for alternate allele with respect to transcript, e.g. `T|NM_123456=0.9|NM_987654=0.1`   
+- `SQUIRLS` - variant is pathogenic if the flag is present. The flag is added if pathogenicity is above the given `--threshold` (`0.2` by default) 
+- `SQUIRLS_SCORE` - pathogenicity score for alternate allele with respect to transcript, e.g. `T|NM_123456=0.9|NM_987654=0.1`   
 
 
 ## Build resource files for supported genome assemblies
 
-Resource file building is handled by the `threes-ingest` module. Please refer to module-specific `README` file that is located
-in `threes-ingest` module directory.
+Resource file building is handled by the `squirls-ingest` module. Please refer to module-specific `README` file that is located
+in `squirls-ingest` module directory.
 
+------------------------------------------------------------------------------------------------------------------------
 
 # Everything below this line is not up-to-date anymore
 

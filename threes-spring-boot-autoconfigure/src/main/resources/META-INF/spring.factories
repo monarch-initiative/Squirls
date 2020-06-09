@@ -1,4 +1,0 @@
-org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
-org.monarchinitiative.threes.autoconfigure.ThreesAutoConfiguration
-org.springframework.boot.diagnostics.FailureAnalyzer=org.monarchinitiative.threes.autoconfigure.UndefinedThreesResourceFailureAnalyzer,\
-  org.monarchinitiative.threes.autoconfigure.InvalidThreesResourceFailureAnalyzer
