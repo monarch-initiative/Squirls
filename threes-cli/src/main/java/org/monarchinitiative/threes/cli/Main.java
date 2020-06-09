@@ -6,6 +6,7 @@ import net.sourceforge.argparse4j.inf.*;
 import org.monarchinitiative.threes.cli.cmd.Command;
 import org.monarchinitiative.threes.cli.cmd.GenerateConfigCommand;
 import org.monarchinitiative.threes.cli.cmd.analyze_vcf.AnalyzeVcfCommand;
+import org.monarchinitiative.threes.cli.cmd.analyze_vcf.SvgGraphicsGenerator;
 import org.monarchinitiative.threes.cli.cmd.annotate_csv.AnnotateCsvCommand;
 import org.monarchinitiative.threes.cli.cmd.annotate_pos.AnnotatePosCommand;
 import org.monarchinitiative.threes.cli.cmd.annotate_vcf.AnnotateVcfCommand;
@@ -14,6 +15,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.context.annotation.Bean;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -142,6 +144,10 @@ public class Main {
         }
     }
 
+    @Bean
+    public SvgGraphicsGenerator graphicsGenerator() {
+        return new SvgGraphicsGenerator();
+    }
 
 }
 

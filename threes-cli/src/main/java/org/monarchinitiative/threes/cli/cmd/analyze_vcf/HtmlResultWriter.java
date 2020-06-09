@@ -38,8 +38,6 @@ public class HtmlResultWriter {
     public void writeResults(OutputStream os, AnalysisResults results) throws IOException {
         try (Writer writer = new OutputStreamWriter(os)) {
 
-            // TODO - add SVGs
-
             final Context context = new Context();
             context.setVariable("sampleName", String.join(", ", results.getSampleNames()));
             context.setVariable("settings", results.getSettingsData());

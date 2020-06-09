@@ -1,15 +1,135 @@
 package org.monarchinitiative.threes.cli;
 
+import de.charite.compbio.jannovar.annotation.VariantAnnotations;
+import de.charite.compbio.jannovar.annotation.VariantAnnotator;
 import de.charite.compbio.jannovar.data.ReferenceDictionary;
-import de.charite.compbio.jannovar.reference.GenomeInterval;
-import de.charite.compbio.jannovar.reference.Strand;
+import de.charite.compbio.jannovar.reference.*;
+import htsjdk.variant.variantcontext.Allele;
+import htsjdk.variant.variantcontext.VariantContext;
+import htsjdk.variant.variantcontext.VariantContextBuilder;
+import org.monarchinitiative.threes.cli.cmd.analyze_vcf.SplicingVariantAlleleEvaluation;
+import org.monarchinitiative.threes.core.Metadata;
+import org.monarchinitiative.threes.core.SplicingPredictionData;
+import org.monarchinitiative.threes.core.classifier.StandardPrediction;
 import org.monarchinitiative.threes.core.model.SplicingExon;
 import org.monarchinitiative.threes.core.model.SplicingIntron;
 import org.monarchinitiative.threes.core.model.SplicingTranscript;
+import xyz.ielis.hyperutil.reference.fasta.SequenceInterval;
 
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
 import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
+/**
+ * Class with static methods for construction of POJOs designed to be used for testing.
+ */
 public class PojosForTesting {
+
+    public static final Random RANDOM = new Random(43);
+
+    public static final double FAKE_THRESHOLD = .45;
+    /**
+     * A real sequence from interval `>chr9:136224501-136224800` (1-based coordinates) on hg19.
+     */
+    public static final String SEQUENCE = "TGTCCAGGGATGAGTCCAAGACACAGCCACCAGTCTGAATCCTTGCTGTGAACTGTCCCT" +
+            "ACAAATTTGGTCTCTCTGCTCTGTAGGCACCAGTTGTTCTGCAAACTCACCCTGCGGCAC" +
+            "ATCAACAAGTGCCCAGAACACGTGCTGAGGCACACCCAGGGCCGGCGGTACCAGCGAGCT" +
+            "CTGTGTAAATGTAAGTCCCAGTGGACCCCCATCAGTGCATCGCCATCTGAGTGCATGCCC" +
+            "GCCTTGCCCCAGATGGAGCGTGCTTGAAGGCAGGTCGTCCTTCAGCGATCCGTGTTGATG";
+
+    private PojosForTesting() {
+        // private no-op
+    }
+
+    public static SequenceInterval getSequence(ReferenceDictionary rd) {
+        return SequenceInterval.builder()
+                .sequence(SEQUENCE)
+                .interval(new GenomeInterval(rd, Strand.FWD, rd.getContigNameToID().get("chr9"), 136224501, 136224800, PositionType.ONE_BASED))
+                .build();
+    }
+
+    public static SplicingVariantAlleleEvaluation getDonorPlusFiveEvaluation(ReferenceDictionary rd, VariantAnnotator annotator) throws Exception {
+        /*
+        Prepare POJOs
+         */
+        Allele referenceAllele = Allele.create("A", true);
+        Allele altAlleleOne = Allele.create("G", false);
+        Allele altAlleleTwo = Allele.create("AG", false);
+        final VariantContext vc = new VariantContextBuilder()
+                .chr("chr9")
+                .start(136_224_690)
+                .stop(136_224_690)
+                .id("rs993")
+                .alleles(List.of(referenceAllele, altAlleleOne, altAlleleTwo))
+                .make();
+
+        final SplicingVariantAlleleEvaluation evaluation = new SplicingVariantAlleleEvaluation(vc, altAlleleOne);
+        final GenomePosition position = new GenomePosition(rd, Strand.FWD, rd.getContigNameToID().get("chr9"), 136_224_690, PositionType.ONE_BASED);
+        final GenomeVariant variant = new GenomeVariant(position, "A", "G");
+
+        /*
+        Make annotations map
+         */
+        final VariantAnnotations ann = annotator.buildAnnotations(variant);
+        evaluation.setAnnotations(ann);
+
+        /*
+        Make predictions map
+         */
+        final Map<String, SplicingPredictionData> predictions = PojosForTesting.surf2Transcripts(rd).stream()
+                .map(transcript -> new SimpleSplicingPredictionData(variant, transcript, getSequence(rd)))
+                .peek(data -> data.setPrediction(StandardPrediction.builder()
+                        .addProbaThresholdPair(RANDOM.nextDouble(), FAKE_THRESHOLD)
+                        .build()))
+                .peek(data -> data.setMetadata(Metadata.empty())) // TODO - add metadata
+                .collect(Collectors.toMap(k -> k.getTranscript().getAccessionId(), Function.identity()));
+        evaluation.putAllPredictionData(predictions);
+
+        return evaluation;
+    }
+
+    public static SplicingVariantAlleleEvaluation getAcceptorMinusOneEvaluation(ReferenceDictionary rd, VariantAnnotator annotator) throws Exception {
+        /*
+        Prepare POJOs
+         */
+        Allele referenceAllele = Allele.create("G", true);
+        Allele alternateAllele = Allele.create("GA", false);
+        final VariantContext vc = new VariantContextBuilder()
+                .chr("chr9")
+                .start(136_224_586)
+                .stop(136_224_586)
+                .id("rs993")
+                .alleles(List.of(referenceAllele, alternateAllele))
+                .make();
+
+        final SplicingVariantAlleleEvaluation evaluation = new SplicingVariantAlleleEvaluation(vc, alternateAllele);
+
+        final GenomePosition position = new GenomePosition(rd, Strand.FWD, rd.getContigNameToID().get("chr9"), 136_224_586, PositionType.ONE_BASED);
+        final GenomeVariant variant = new GenomeVariant(position, "G", "GA");
+
+        /*
+        Make annotations map
+         */
+        final VariantAnnotations ann = annotator.buildAnnotations(variant);
+        evaluation.setAnnotations(ann);
+
+        /*
+        Make predictions map
+         */
+        final Map<String, SplicingPredictionData> predictions = PojosForTesting.surf2Transcripts(rd).stream()
+                .map(transcript -> new SimpleSplicingPredictionData(variant, transcript, getSequence(rd)))
+                .peek(data -> data.setPrediction(StandardPrediction.builder()
+                        .addProbaThresholdPair(RANDOM.nextDouble(), FAKE_THRESHOLD)
+                        .build()))
+                .peek(data -> data.setMetadata(Metadata.empty())) // TODO - add metadata
+                .collect(Collectors.toMap(k -> k.getTranscript().getAccessionId(), Function.identity()));
+        evaluation.putAllPredictionData(predictions);
+
+        return evaluation;
+    }
 
     public static Set<SplicingTranscript> surf2Transcripts(ReferenceDictionary rd) {
         return Set.of(surf2_NM_017503_4(rd), surf2_NM_001278928_1(rd));

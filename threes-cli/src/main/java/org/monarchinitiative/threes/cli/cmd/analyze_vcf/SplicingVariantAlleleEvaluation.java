@@ -11,7 +11,7 @@ import org.monarchinitiative.threes.core.SplicingPredictionData;
 import java.util.*;
 
 /**
- * This class is a POJO for a single ALT allele of the variant.
+ * This class is a POJO for a single ALT allele of the variant and all the associated data.
  */
 public class SplicingVariantAlleleEvaluation {
 
@@ -32,10 +32,19 @@ public class SplicingVariantAlleleEvaluation {
      * Results of Jannovar's functional annotation with respect to transcripts this variant overlaps with.
      */
     private VariantAnnotations annotations;
+    private String graphics;
 
     public SplicingVariantAlleleEvaluation(VariantContext base, Allele altAllele) {
         this.base = base;
         this.altAllele = altAllele;
+    }
+
+    public String getGraphics() {
+        return graphics;
+    }
+
+    public void setGraphics(String graphics) {
+        this.graphics = graphics;
     }
 
     public Map<String, SplicingPredictionData> getPredictionData() {
