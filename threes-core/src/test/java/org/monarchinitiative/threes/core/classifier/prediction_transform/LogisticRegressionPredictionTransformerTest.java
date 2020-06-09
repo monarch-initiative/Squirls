@@ -3,9 +3,10 @@ package org.monarchinitiative.threes.core.classifier.prediction_transform;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
-import org.monarchinitiative.threes.core.classifier.Prediction;
+import org.monarchinitiative.threes.core.Prediction;
 import org.monarchinitiative.threes.core.classifier.StandardPrediction;
 import org.monarchinitiative.threes.core.classifier.transform.prediction.LogisticRegressionPredictionTransformer;
+import org.monarchinitiative.threes.core.classifier.transform.prediction.MutablePrediction;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
@@ -30,11 +31,12 @@ class LogisticRegressionPredictionTransformerTest {
         double threshold = .5;
         double expectedThreshold = 0.871527;
 
-        Prediction prediction = StandardPrediction.builder()
+        MutablePrediction mp = new SimpleMutablePrediction();
+        mp.setPrediction(StandardPrediction.builder()
                 .addProbaThresholdPair(proba, threshold)
-                .build();
+                .build());
 
-        final Prediction transformed = transformer.transform(prediction);
+        Prediction transformed = transformer.transform(mp).getPrediction();
         assertThat(transformed.getPartialPredictions(), hasSize(1));
 
         @SuppressWarnings("OptionalGetWithoutIsPresent") final Prediction.PartialPrediction partial = transformed.getPartialPredictions().stream().findFirst().get();

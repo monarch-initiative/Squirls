@@ -2,7 +2,7 @@ package org.monarchinitiative.threes.core.classifier.prediction_transform;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.monarchinitiative.threes.core.classifier.Prediction;
+import org.monarchinitiative.threes.core.Prediction;
 import org.monarchinitiative.threes.core.classifier.StandardPrediction;
 import org.monarchinitiative.threes.core.classifier.transform.prediction.IdentityTransformer;
 
@@ -25,9 +25,13 @@ class IdentityTransformerTest {
                 .addProbaThresholdPair(.500000000, .123456)
                 .build();
 
-        final Prediction transformed = transformer.transform(prediction);
+        SimpleMutablePrediction prd = new SimpleMutablePrediction();
+        prd.setPrediction(prediction);
 
-        assertThat(transformed.getPartialPredictions(), hasSize(1));
-        assertThat(transformed.getPartialPredictions(), hasItems(Prediction.PartialPrediction.of(.500000000, .123456)));
+        SimpleMutablePrediction transPrd = transformer.transform(prd);
+
+        assertThat(transPrd.getPrediction().getPartialPredictions(), hasSize(1));
+        assertThat(transPrd.getPrediction().getPartialPredictions(), hasItems(Prediction.PartialPrediction.of(.500000000, .123456)));
     }
+
 }

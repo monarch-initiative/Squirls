@@ -5,7 +5,7 @@ import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import org.monarchinitiative.threes.core.StandardVariantSplicingEvaluator;
 import org.monarchinitiative.threes.core.VariantSplicingEvaluator;
-import org.monarchinitiative.threes.core.classifier.OverlordClassifier;
+import org.monarchinitiative.threes.core.classifier.SquirlsClassifier;
 import org.monarchinitiative.threes.core.classifier.transform.prediction.IdentityTransformer;
 import org.monarchinitiative.threes.core.classifier.transform.prediction.PredictionTransformer;
 import org.monarchinitiative.threes.core.data.ClassifierDataManager;
@@ -136,8 +136,8 @@ public class ThreesAutoConfiguration {
         }
 
         // get classifier
-        final Optional<OverlordClassifier> clfOpt = classifierDataManager.readClassifier(clfVersion);
-        final OverlordClassifier clf;
+        final Optional<SquirlsClassifier> clfOpt = classifierDataManager.readClassifier(clfVersion);
+        final SquirlsClassifier clf;
         if (clfOpt.isPresent()) {
             LOGGER.debug("Using classifier `{}`", clfVersion);
             clf = clfOpt.get();

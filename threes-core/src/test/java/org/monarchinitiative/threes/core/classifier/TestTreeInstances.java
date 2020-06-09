@@ -24,7 +24,7 @@ public class TestTreeInstances {
      *
      * @return tree
      */
-    public static AbstractBinaryDecisionTree<FeatureData> getTreeOne() {
+    public static AbstractBinaryDecisionTree<Classifiable> getTreeOne() {
         // dtc = DecisionTreeClassifier(random_state=50, max_depth=3).fit(Xbin, ybin)
         return IrisDecisionTree.builder()
                 .nNodes(13)
@@ -66,7 +66,7 @@ public class TestTreeInstances {
      *
      * @return tree <code>one</code>
      */
-    public static AbstractBinaryDecisionTree<FeatureData> getRandomForestTreeOne() {
+    public static AbstractBinaryDecisionTree<Classifiable> getRandomForestTreeOne() {
         return IrisDecisionTree.builder()
                 .nNodes(7)
                 .classes(List.of(1, 2))
@@ -101,7 +101,7 @@ public class TestTreeInstances {
      *
      * @return tree <code>two</code>
      */
-    public static AbstractBinaryDecisionTree<FeatureData> getRandomForestTreeTwo() {
+    public static AbstractBinaryDecisionTree<Classifiable> getRandomForestTreeTwo() {
         return IrisDecisionTree.builder()
                 .nNodes(7)
                 .classes(List.of(1, 2))

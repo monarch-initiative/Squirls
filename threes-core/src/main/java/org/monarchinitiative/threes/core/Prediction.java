@@ -1,4 +1,7 @@
-package org.monarchinitiative.threes.core.classifier;
+package org.monarchinitiative.threes.core;
+
+import org.monarchinitiative.threes.core.classifier.BinaryClassifier;
+import org.monarchinitiative.threes.core.classifier.EmptyPrediction;
 
 import java.util.Collection;
 import java.util.Objects;
@@ -37,8 +40,8 @@ public interface Prediction {
     }
 
     /**
-     * This class represents a fragment of information from the decision function of the underlying model which
-     * calculated pathogenicity probability.
+     * This class represents a fragment of information from the decision function, a single prediction of an ensemble
+     * which calculated pathogenicity probability.
      */
     class PartialPrediction {
         private final double pathoProba;

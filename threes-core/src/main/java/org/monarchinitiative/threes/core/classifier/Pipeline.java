@@ -9,7 +9,7 @@ import java.util.stream.Stream;
 /**
  * Pipeline class inspired by scikit-learn. This pipeline consists of an imputer followed by a classifier.
  */
-public class Pipeline<T extends FeatureData> implements BinaryClassifier<T> {
+public class Pipeline<T extends Classifiable> implements BinaryClassifier<T> {
 
     private final FeatureTransformer<T> transformer;
 
@@ -20,7 +20,7 @@ public class Pipeline<T extends FeatureData> implements BinaryClassifier<T> {
         classifier = builder.randomForest;
     }
 
-    public static <T extends FeatureData> Builder<T> builder() {
+    public static <T extends Classifiable> Builder<T> builder() {
         return new Builder<>();
     }
 
@@ -37,7 +37,7 @@ public class Pipeline<T extends FeatureData> implements BinaryClassifier<T> {
         return classifier.predictProba(transformed);
     }
 
-    public static final class Builder<T extends FeatureData> {
+    public static final class Builder<T extends Classifiable> {
         private FeatureTransformer<T> transformer;
         private BinaryClassifier<T> randomForest;
 

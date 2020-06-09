@@ -113,13 +113,13 @@ public class AnalyzeVcfCommand extends Command {
                     .map(Annotation::getTranscript)
                     .collect(Collectors.toMap(TranscriptModel::getAccession, Function.identity()));
 
-            final SplicingPredictionData predictionData = evaluator.evaluate(variant.getBase().getContig(),
+            final Map<String, SplicingPredictionData> predictionData = evaluator.evaluate(variant.getBase().getContig(),
                     variant.getBase().getStart(),
                     variant.getBase().getReference().getBaseString(),
                     variant.getAltAllele().getBaseString(),
                     txByAccession.keySet());
 
-            variant.setPredictionData(predictionData);
+            variant.putAllPredictionData(predictionData);
             return variant;
         };
 

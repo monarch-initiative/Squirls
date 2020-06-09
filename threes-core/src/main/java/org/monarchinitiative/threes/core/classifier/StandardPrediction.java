@@ -1,5 +1,7 @@
 package org.monarchinitiative.threes.core.classifier;
 
+import org.monarchinitiative.threes.core.Prediction;
+
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Objects;

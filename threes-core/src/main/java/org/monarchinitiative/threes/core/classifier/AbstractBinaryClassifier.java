@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public abstract class AbstractBinaryClassifier<T extends FeatureData> implements BinaryClassifier<T> {
+public abstract class AbstractBinaryClassifier<T extends Classifiable> implements BinaryClassifier<T> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractBinaryClassifier.class);
 

@@ -13,15 +13,16 @@ import net.sourceforge.argparse4j.inf.Subparser;
 import net.sourceforge.argparse4j.inf.Subparsers;
 import org.monarchinitiative.threes.cli.cmd.Command;
 import org.monarchinitiative.threes.cli.cmd.CommandException;
+import org.monarchinitiative.threes.core.Prediction;
 import org.monarchinitiative.threes.core.SplicingPredictionData;
 import org.monarchinitiative.threes.core.VariantSplicingEvaluator;
-import org.monarchinitiative.threes.core.classifier.Prediction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Map;
 import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -95,15 +96,16 @@ public class AnnotateVcfCommand extends Command {
             boolean isPathogenic = false;
             String annotation = null;
             for (Allele allele : vc.getAlternateAlleles()) {
-                final SplicingPredictionData predictionData = evaluator.evaluate(vc.getContig(), vc.getStart(), vc.getReference().getBaseString(), allele.getBaseString());
+                final Map<String, SplicingPredictionData> predictionData = evaluator.evaluate(vc.getContig(), vc.getStart(), vc.getReference().getBaseString(), allele.getBaseString());
                 if (predictionData.isEmpty()) {
                     continue;
                 }
-                isPathogenic = predictionData.getPredictions().values().stream()
+                isPathogenic = predictionData.values().stream()
+                        .map(SplicingPredictionData::getPrediction)
                         .mapToDouble(Prediction::getMaxPathogenicity)
                         .anyMatch(pathogenicity -> pathogenicity > threshold);
-                annotation = predictionData.getPredictions().entrySet().stream()
-                        .map(entry -> String.format("%s=%f", entry.getKey(), entry.getValue().getMaxPathogenicity()))
+                annotation = predictionData.entrySet().stream()
+                        .map(entry -> String.format("%s=%f", entry.getKey(), entry.getValue().getPrediction().getMaxPathogenicity()))
                         .collect(Collectors.joining("|", String.format("%s|", allele.getBaseString()), ""));
             }
 

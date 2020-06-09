@@ -1,7 +1,7 @@
 package org.monarchinitiative.threes.core.classifier.tree;
 
 import org.monarchinitiative.threes.core.classifier.AbstractBinaryClassifier;
-import org.monarchinitiative.threes.core.classifier.FeatureData;
+import org.monarchinitiative.threes.core.classifier.Classifiable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -15,7 +15,7 @@ import java.util.stream.IntStream;
  *
  * @param <T>
  */
-public abstract class AbstractBinaryDecisionTree<T extends FeatureData> extends AbstractBinaryClassifier<T> {
+public abstract class AbstractBinaryDecisionTree<T extends Classifiable> extends AbstractBinaryClassifier<T> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractBinaryDecisionTree.class);
 

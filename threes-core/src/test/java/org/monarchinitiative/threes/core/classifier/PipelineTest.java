@@ -22,7 +22,7 @@ class PipelineTest {
 
     private static PipelineTransferModel donorPipeModel;
 
-    private Pipeline<FeatureData> pipeline;
+    private Pipeline<Classifiable> pipeline;
 
     @BeforeAll
     static void beforeAll() throws Exception {
@@ -36,7 +36,7 @@ class PipelineTest {
     @BeforeEach
     void setUp() throws Exception {
         pipeline = Pipeline.builder()
-                .transformer(new SplicingDataImputer(donorPipeModel.getFeatureNames(), donorPipeModel.getFeatureStatistics()))
+                .transformer(new SplicingDataImputer<>(donorPipeModel.getFeatureNames(), donorPipeModel.getFeatureStatistics()))
                 .classifier(Deserializer.deserializeDonorClassifier(donorPipeModel.getRf()))
                 .build();
     }

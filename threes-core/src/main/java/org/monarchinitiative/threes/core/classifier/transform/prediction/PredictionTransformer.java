@@ -1,8 +1,11 @@
 package org.monarchinitiative.threes.core.classifier.transform.prediction;
 
-import org.monarchinitiative.threes.core.classifier.Prediction;
-
+/**
+ * The implementors perform some transformation (e.g. rescaling probabilities using logistic regression) with the
+ * {@link MutablePrediction}.
+ */
 public interface PredictionTransformer {
 
-    Prediction transform(Prediction prediction);
+    <T extends MutablePrediction> T transform(T data);
+
 }

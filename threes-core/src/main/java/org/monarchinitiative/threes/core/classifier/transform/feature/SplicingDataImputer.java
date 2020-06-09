@@ -1,6 +1,5 @@
 package org.monarchinitiative.threes.core.classifier.transform.feature;
 
-import org.monarchinitiative.threes.core.classifier.FeatureData;
 import org.monarchinitiative.threes.core.classifier.PredictionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,7 +10,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public class SplicingDataImputer implements FeatureTransformer<FeatureData> {
+public class SplicingDataImputer<T extends MutableFeature> implements FeatureTransformer<T> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SplicingDataImputer.class);
 
@@ -38,7 +37,7 @@ public class SplicingDataImputer implements FeatureTransformer<FeatureData> {
     }
 
     @Override
-    public FeatureData transform(FeatureData fd) throws PredictionException {
+    public T transform(T fd) throws PredictionException {
         if (!fd.getFeatureNames().containsAll(usedFeatureNames())) {
             // instance does not contain all the required features
             String msg = String.format("Missing at least one required feature. Required: `%s`, Provided: `%s`",
@@ -47,13 +46,12 @@ public class SplicingDataImputer implements FeatureTransformer<FeatureData> {
             LOGGER.warn(msg);
             throw new PredictionException(msg);
         }
-        final FeatureData.Builder builder = fd.toBuilder();
 
         for (String featureName : usedFeatureNames()) { // we only impute the features we know about
-            final Double value = fd.getFeature(featureName, Double.class);
-            builder.addFeature(featureName, value.isNaN() ? medianMap.get(featureName) : value);
+            final double value = fd.getFeature(featureName, Double.class);
+            fd.putFeature(featureName, Double.isNaN(value) ? medianMap.get(featureName) : value);
         }
 
-        return builder.build();
+        return fd;
     }
 }

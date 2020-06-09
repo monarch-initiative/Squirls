@@ -1,11 +1,11 @@
 package org.monarchinitiative.threes.core.classifier.tree;
 
-import org.monarchinitiative.threes.core.classifier.FeatureData;
+import org.monarchinitiative.threes.core.classifier.Classifiable;
 
 import java.util.Map;
 import java.util.Set;
 
-public class AcceptorSplicingDecisionTree extends AbstractBinaryDecisionTree<FeatureData> {
+public class AcceptorSplicingDecisionTree<T extends Classifiable> extends AbstractBinaryDecisionTree<T> {
 
     /*
      * This is the order of features for acceptor classifier:
@@ -19,12 +19,12 @@ public class AcceptorSplicingDecisionTree extends AbstractBinaryDecisionTree<Fea
             4, "hexamer",
             5, "septamer");
 
-    private AcceptorSplicingDecisionTree(Builder builder) {
+    private AcceptorSplicingDecisionTree(Builder<T> builder) {
         super(builder);
     }
 
-    public static Builder builder() {
-        return new Builder();
+    public static <T extends Classifiable> Builder<T> builder() {
+        return new Builder<>();
     }
 
     @Override
@@ -37,19 +37,19 @@ public class AcceptorSplicingDecisionTree extends AbstractBinaryDecisionTree<Fea
         return Set.copyOf(featureNames.values());
     }
 
-    public static class Builder extends AbstractBinaryDecisionTree.Builder<Builder> {
+    public static class Builder<T extends Classifiable> extends AbstractBinaryDecisionTree.Builder<Builder<T>> {
 
         private Builder() {
             // private no-op
         }
 
         @Override
-        public AcceptorSplicingDecisionTree build() {
-            return new AcceptorSplicingDecisionTree(this);
+        public AcceptorSplicingDecisionTree<T> build() {
+            return new AcceptorSplicingDecisionTree<>(this);
         }
 
         @Override
-        protected Builder self() {
+        protected Builder<T> self() {
             return this;
         }
     }
