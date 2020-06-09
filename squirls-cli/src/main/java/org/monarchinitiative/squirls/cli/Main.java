@@ -27,10 +27,7 @@ import java.util.Map;
 @SpringBootApplication
 public class Main {
 
-    private static final String EPILOG =
-            "            ____\n" +
-                    "      _,.-'`_ o `;__,\n" +
-                    "       _.-'` '---'  '\n";
+    private static final String EPILOG = "";
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Main.class);
 
@@ -38,8 +35,8 @@ public class Main {
         /*
          1. define CLI interface
          */
-        ArgumentParser parser = ArgumentParsers.newFor("java -jar threes-cli.jar").build();
-        parser.description("Code for splicing calculations:");
+        ArgumentParser parser = ArgumentParsers.newFor("java -jar squirls-cli.jar").build();
+        parser.description("Super-quick Information Content and Random Forest Learning for Splice Variants");
         parser.defaultHelp(true);
         parser.epilog(EPILOG);
 
