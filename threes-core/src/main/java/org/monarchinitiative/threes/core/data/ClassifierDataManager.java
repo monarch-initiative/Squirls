@@ -1,6 +1,6 @@
 package org.monarchinitiative.threes.core.data;
 
-import org.monarchinitiative.threes.core.classifier.OverlordClassifier;
+import org.monarchinitiative.threes.core.classifier.SquirlsClassifier;
 import org.monarchinitiative.threes.core.classifier.transform.prediction.PredictionTransformer;
 
 import java.util.Collection;
@@ -24,7 +24,7 @@ public interface ClassifierDataManager {
      * @param version of classifier to read
      * @return classifier data or <code>null</code> of the particular version is not available
      */
-    Optional<OverlordClassifier> readClassifier(String version);
+    Optional<SquirlsClassifier> readClassifier(String version);
 
     /**
      * Store <code>transformer</code> under given <code>version</code>.

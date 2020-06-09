@@ -1,7 +1,7 @@
 package org.monarchinitiative.threes.core.classifier.forest;
 
 import org.monarchinitiative.threes.core.classifier.AbstractBinaryClassifier;
-import org.monarchinitiative.threes.core.classifier.FeatureData;
+import org.monarchinitiative.threes.core.classifier.Classifiable;
 import org.monarchinitiative.threes.core.classifier.tree.AbstractBinaryDecisionTree;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,7 +25,7 @@ import java.util.stream.Collectors;
  *
  * @param <T> type of the data point
  */
-public class RandomForest<T extends FeatureData> extends AbstractBinaryClassifier<T> {
+public class RandomForest<T extends Classifiable> extends AbstractBinaryClassifier<T> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RandomForest.class);
 
@@ -37,7 +37,7 @@ public class RandomForest<T extends FeatureData> extends AbstractBinaryClassifie
         check();
     }
 
-    public static <A extends FeatureData> Builder<A> builder() {
+    public static <A extends Classifiable> Builder<A> builder() {
         return new Builder<>();
     }
 
@@ -74,7 +74,7 @@ public class RandomForest<T extends FeatureData> extends AbstractBinaryClassifie
                 .orElseThrow(() -> new RuntimeException("Hoops, there is no tree in the forest!"));
     }
 
-    public static class Builder<A extends FeatureData> extends AbstractBinaryClassifier.Builder<Builder<A>> {
+    public static class Builder<A extends Classifiable> extends AbstractBinaryClassifier.Builder<Builder<A>> {
 
         private final Collection<AbstractBinaryDecisionTree<A>> trees = new ArrayList<>();
 

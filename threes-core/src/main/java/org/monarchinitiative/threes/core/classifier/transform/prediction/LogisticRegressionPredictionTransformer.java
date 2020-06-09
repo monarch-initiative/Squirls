@@ -1,6 +1,6 @@
 package org.monarchinitiative.threes.core.classifier.transform.prediction;
 
-import org.monarchinitiative.threes.core.classifier.Prediction;
+import org.monarchinitiative.threes.core.Prediction;
 import org.monarchinitiative.threes.core.classifier.StandardPrediction;
 
 /**
@@ -44,15 +44,18 @@ public class LogisticRegressionPredictionTransformer implements PredictionTransf
         return intercept;
     }
 
+
     @Override
-    public Prediction transform(Prediction prediction) {
+    public <T extends MutablePrediction> T transform(T data) {
         final StandardPrediction.Builder builder = StandardPrediction.builder();
-        for (Prediction.PartialPrediction partialPrediction : prediction.getPartialPredictions()) {
+        for (Prediction.PartialPrediction partialPrediction : data.getPrediction().getPartialPredictions()) {
             final double pathoProba = transform(partialPrediction.getPathoProba(), slope, intercept);
             final double threshold = transform(partialPrediction.getThreshold(), slope, intercept);
             builder.addProbaThresholdPair(pathoProba, threshold);
         }
 
-        return builder.build();
+        data.setPrediction(builder.build());
+
+        return data;
     }
 }

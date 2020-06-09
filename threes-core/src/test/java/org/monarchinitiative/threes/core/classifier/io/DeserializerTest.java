@@ -1,9 +1,9 @@
 package org.monarchinitiative.threes.core.classifier.io;
 
 import org.junit.jupiter.api.Test;
-import org.monarchinitiative.threes.core.classifier.FeatureData;
-import org.monarchinitiative.threes.core.classifier.OverlordClassifier;
-import org.monarchinitiative.threes.core.classifier.Prediction;
+import org.monarchinitiative.threes.core.SimpleClassifiable;
+import org.monarchinitiative.threes.core.classifier.Classifiable;
+import org.monarchinitiative.threes.core.classifier.SquirlsClassifier;
 import org.monarchinitiative.threes.core.classifier.TestBasedOnIrisInstances;
 
 import java.io.InputStream;
@@ -26,12 +26,11 @@ class DeserializerTest extends TestBasedOnIrisInstances {
 
     @Test
     void deserialize() throws Exception {
-        final OverlordClassifier clf;
+        final SquirlsClassifier clf;
         try (InputStream inputStream = Files.newInputStream(TOY_MODEL_v1)) {
             clf = Deserializer.deserialize(inputStream);
         }
-
-        FeatureData instance = FeatureData.builder().addFeatures(Map.of(
+        Classifiable classifiable = new SimpleClassifiable(Map.of(
                 "donor_offset", 6.,
                 "canonical_donor", 1.652939,
                 "cryptic_donor", 0.,
@@ -40,12 +39,13 @@ class DeserializerTest extends TestBasedOnIrisInstances {
                 "cryptic_acceptor", -9.765767,
                 "phylop", 0.922,
                 "hexamer", 1.696948,
-                "septamer", 1.5778)).build();
+                "septamer", 1.5778));
         assertThat(clf, is(notNullValue()));
 
-        final Prediction prediction = clf.predict(instance);
-        assertTrue(prediction.isPositive());
-        assertThat(prediction.getMaxPathogenicity(), is(closeTo(0.162997, 1E-5)));
+        classifiable = clf.predict(classifiable);
+
+        assertTrue(classifiable.getPrediction().isPositive());
+        assertThat(classifiable.getPrediction().getMaxPathogenicity(), is(closeTo(0.162997, 1E-5)));
     }
 
     @Test

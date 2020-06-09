@@ -8,7 +8,7 @@ import java.util.Set;
 /**
  * The simplest implementation of the decision tree for using with the Iris dataset.
  */
-public class IrisDecisionTree extends AbstractBinaryDecisionTree<FeatureData> {
+public class IrisDecisionTree extends AbstractBinaryDecisionTree<Classifiable> {
 
     private static final Map<Integer, String> featureIndices = Map.of(0, "sepal_length",
             1, "sepal_width",

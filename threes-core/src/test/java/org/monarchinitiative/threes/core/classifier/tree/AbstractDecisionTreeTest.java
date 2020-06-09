@@ -2,7 +2,7 @@ package org.monarchinitiative.threes.core.classifier.tree;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.monarchinitiative.threes.core.classifier.FeatureData;
+import org.monarchinitiative.threes.core.classifier.Classifiable;
 import org.monarchinitiative.threes.core.classifier.TestBasedOnIrisInstances;
 import org.monarchinitiative.threes.core.classifier.TestTreeInstances;
 
@@ -30,7 +30,7 @@ import static org.hamcrest.number.IsCloseTo.closeTo;
  */
 class AbstractDecisionTreeTest extends TestBasedOnIrisInstances {
 
-    private AbstractBinaryDecisionTree<FeatureData> tree;
+    private AbstractBinaryDecisionTree<Classifiable> tree;
 
     @BeforeEach
     void setUp() {

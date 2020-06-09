@@ -1,5 +1,6 @@
 package org.monarchinitiative.threes.core;
 
+import java.util.Map;
 import java.util.Set;
 
 public interface VariantSplicingEvaluator {
@@ -15,7 +16,7 @@ public interface VariantSplicingEvaluator {
      * @param txIds  set of transcript accession IDs with respect to which the variant should be evaluated
      * @return splicing prediction data
      */
-    SplicingPredictionData evaluate(String contig, int pos, String ref, String alt, Set<String> txIds);
+    Map<String, SplicingPredictionData> evaluate(String contig, int pos, String ref, String alt, Set<String> txIds);
 
     /**
      * Calculate splicing scores for given variant with respect to all transcripts the variant overlaps with.
@@ -26,8 +27,7 @@ public interface VariantSplicingEvaluator {
      * @param alt    alternate allele, e.g. `T`, `AA`
      * @return map with splicing pathogenicity data mapped to transcript accession id
      */
-    default SplicingPredictionData evaluate(String contig, int pos, String ref, String alt) {
+    default Map<String, SplicingPredictionData> evaluate(String contig, int pos, String ref, String alt) {
         return evaluate(contig, pos, ref, alt, Set.of());
     }
-
 }

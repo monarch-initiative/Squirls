@@ -1,6 +1,5 @@
 package org.monarchinitiative.threes.core.classifier.transform.feature;
 
-import org.monarchinitiative.threes.core.classifier.FeatureData;
 import org.monarchinitiative.threes.core.classifier.PredictionException;
 
 import java.util.Set;
@@ -10,7 +9,7 @@ import java.util.Set;
  *
  * @param <T>
  */
-public interface FeatureTransformer<T extends FeatureData> {
+public interface FeatureTransformer<T extends MutableFeature> {
 
     Set<String> usedFeatureNames();
 

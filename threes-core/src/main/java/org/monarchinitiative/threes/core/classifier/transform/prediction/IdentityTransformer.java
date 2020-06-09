@@ -1,6 +1,5 @@
 package org.monarchinitiative.threes.core.classifier.transform.prediction;
 
-import org.monarchinitiative.threes.core.classifier.Prediction;
 
 /**
  * This prediction transformer has the purpose of an identity function. It does not perform any transformation but
@@ -8,16 +7,18 @@ import org.monarchinitiative.threes.core.classifier.Prediction;
  */
 public class IdentityTransformer implements PredictionTransformer {
 
+    private static final IdentityTransformer INSTANCE = new IdentityTransformer();
+
     private IdentityTransformer() {
         // private no-op
     }
 
     public static IdentityTransformer getInstance() {
-        return new IdentityTransformer();
+        return INSTANCE;
     }
 
     @Override
-    public Prediction transform(Prediction prediction) {
-        return prediction;
+    public <T extends MutablePrediction> T transform(T data) {
+        return data;
     }
 }

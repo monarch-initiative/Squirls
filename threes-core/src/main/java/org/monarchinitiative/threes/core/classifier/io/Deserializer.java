@@ -15,7 +15,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
- * This class deserializes {@link OverlordClassifier} from a YAML file.
+ * This class deserializes {@link SquirlsClassifier} from a YAML file.
  */
 public class Deserializer {
 
@@ -23,12 +23,12 @@ public class Deserializer {
         // private no-op
     }
 
-    public static OverlordClassifier deserialize(InputStream is) {
+    public static SquirlsClassifier deserialize(InputStream is) {
         return deserialize(deserializeOverallModelData(is));
     }
 
-    public static OverlordClassifier deserialize(OverallModelData data) {
-        return StandardOverlordClassifier.builder()
+    public static SquirlsClassifier deserialize(OverallModelData data) {
+        return StandardSquirlsClassifier.builder()
                 .donorClf(deserializeDonorPipeline(data.getDonorClf()))
                 .donorThreshold(data.getDonorThreshold())
                 .acceptorClf(deserializeAcceptorPipeline(data.getAcceptorClf()))
@@ -41,28 +41,28 @@ public class Deserializer {
         return yaml.load(is);
     }
 
-    static BinaryClassifier<FeatureData> deserializeDonorPipeline(PipelineTransferModel ptm) {
-        return Pipeline.builder()
+    static <T extends Classifiable> BinaryClassifier<T> deserializeDonorPipeline(PipelineTransferModel ptm) {
+        return Pipeline.<T>builder()
                 .transformer(deserializeImputer(ptm.getFeatureNames(), ptm.getFeatureStatistics()))
                 .classifier(deserializeDonorClassifier(ptm.getRf()))
                 .build();
     }
 
-    private static FeatureTransformer<FeatureData> deserializeImputer(List<String> featureNames, List<Double> featureStatistics) {
-        return new SplicingDataImputer(featureNames, featureStatistics);
+    private static <T extends Classifiable> FeatureTransformer<T> deserializeImputer(List<String> featureNames, List<Double> featureStatistics) {
+        return new SplicingDataImputer<>(featureNames, featureStatistics);
     }
 
-    public static RandomForest<FeatureData> deserializeDonorClassifier(RandomForestTransferModel rfModel) {
-        return RandomForest.builder()
+    public static <T extends Classifiable> RandomForest<T> deserializeDonorClassifier(RandomForestTransferModel rfModel) {
+        return RandomForest.<T>builder()
                 .classes(rfModel.getClasses())
                 .addTrees(rfModel.getTrees().values().stream()
-                        .map(toDonorClassifierTree(rfModel.getClasses()))
+                        .map(Deserializer.<T>toDonorClassifierTree(rfModel.getClasses()))
                         .collect(Collectors.toList()))
                 .build();
     }
 
-    public static Function<DecisionTreeTransferModel, DonorSplicingDecisionTree> toDonorClassifierTree(List<Integer> classes) {
-        return md -> DonorSplicingDecisionTree.builder()
+    public static <T extends Classifiable> Function<DecisionTreeTransferModel, DonorSplicingDecisionTree<T>> toDonorClassifierTree(List<Integer> classes) {
+        return md -> DonorSplicingDecisionTree.<T>builder()
                 .classes(classes)
                 .nNodes(md.getNodeCount())
                 .features(md.getFeature())
@@ -73,24 +73,24 @@ public class Deserializer {
                 .build();
     }
 
-    static BinaryClassifier<FeatureData> deserializeAcceptorPipeline(PipelineTransferModel ptm) {
-        return Pipeline.builder()
+    static <T extends Classifiable> BinaryClassifier<T> deserializeAcceptorPipeline(PipelineTransferModel ptm) {
+        return Pipeline.<T>builder()
                 .transformer(deserializeImputer(ptm.getFeatureNames(), ptm.getFeatureStatistics()))
                 .classifier(deserializeAcceptorClassifier(ptm.getRf()))
                 .build();
     }
 
-    public static RandomForest<FeatureData> deserializeAcceptorClassifier(RandomForestTransferModel rfModel) {
-        return RandomForest.builder()
+    public static <T extends Classifiable> RandomForest<T> deserializeAcceptorClassifier(RandomForestTransferModel rfModel) {
+        return RandomForest.<T>builder()
                 .classes(rfModel.getClasses())
                 .addTrees(rfModel.getTrees().values().stream()
-                        .map(toAcceptorClassifierTree(rfModel.getClasses()))
+                        .map(Deserializer.<T>toAcceptorClassifierTree(rfModel.getClasses()))
                         .collect(Collectors.toList()))
                 .build();
     }
 
-    public static Function<DecisionTreeTransferModel, AcceptorSplicingDecisionTree> toAcceptorClassifierTree(List<Integer> classes) {
-        return md -> AcceptorSplicingDecisionTree.builder()
+    public static <T extends Classifiable> Function<DecisionTreeTransferModel, AcceptorSplicingDecisionTree<T>> toAcceptorClassifierTree(List<Integer> classes) {
+        return md -> AcceptorSplicingDecisionTree.<T>builder()
                 .classes(classes)
                 .nNodes(md.getNodeCount())
                 .features(md.getFeature())

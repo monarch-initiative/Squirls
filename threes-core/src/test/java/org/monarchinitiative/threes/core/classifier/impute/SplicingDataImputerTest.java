@@ -2,43 +2,62 @@ package org.monarchinitiative.threes.core.classifier.impute;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.monarchinitiative.threes.core.classifier.FeatureData;
+import org.monarchinitiative.threes.core.classifier.transform.feature.MutableFeature;
 import org.monarchinitiative.threes.core.classifier.transform.feature.SplicingDataImputer;
 
+import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.hasItems;
-import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.*;
 
 class SplicingDataImputerTest {
 
-    private SplicingDataImputer splicingDataImputer;
+    private SplicingDataImputer<MutableFeature> splicingDataImputer;
 
     @BeforeEach
     void setUp() {
-        splicingDataImputer = new SplicingDataImputer(Map.of("a", .5, "b", 1.5));
+        splicingDataImputer = new SplicingDataImputer<>(Map.of("a", .5, "b", 1.5));
     }
 
     @Test
     void transform() throws Exception {
-        FeatureData imputed = splicingDataImputer.transform(FeatureData.builder()
-                .addFeature("a", 1.)
-                .addFeature("b", Double.NaN)
-                .build());
-        FeatureData expected = FeatureData.builder().addFeature("a", 1.).addFeature("b", 1.5).build();
-        assertThat(imputed, is(expected));
-
-        imputed = splicingDataImputer.transform(FeatureData.builder()
-                .addFeature("a", 1.)
-                .addFeature("b", Double.NaN)
-                .build());
-        expected = FeatureData.builder().addFeature("a", 1.).addFeature("b", 1.5).build();
-        assertThat(imputed, is(expected));
+        MutableFeature feature = new SimpleMutableFeature(new HashMap<>(Map.of(
+                "a", 1.,
+                "b", Double.NaN,
+                "c", Double.NaN)));
+        MutableFeature imputed = splicingDataImputer.transform(feature);
+        assertThat(imputed.getFeature("b", Double.class), is(closeTo(1.5, .005)));
+        assertThat(imputed.getFeature("c", Double.class), is(notANumber())); // unknown feature is not imputed
     }
 
     @Test
     void getSupportedFeatureNames() {
         assertThat(splicingDataImputer.usedFeatureNames(), hasItems("a", "b"));
+    }
+
+    private static class SimpleMutableFeature implements MutableFeature {
+
+        private final Map<String, Object> featureMap;
+
+        private SimpleMutableFeature(Map<String, Object> featureMap) {
+            this.featureMap = featureMap;
+        }
+
+        @Override
+        public Set<String> getFeatureNames() {
+            return featureMap.keySet();
+        }
+
+        @Override
+        public <T> T getFeature(String featureName, Class<T> clz) {
+            return clz.cast(featureMap.get(featureName));
+        }
+
+        @Override
+        public void putFeature(String name, Object value) {
+            featureMap.put(name, value);
+        }
     }
 }

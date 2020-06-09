@@ -5,13 +5,13 @@ import de.charite.compbio.jannovar.annotation.VariantAnnotations;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 import htsjdk.variant.variantcontext.Allele;
 import htsjdk.variant.variantcontext.VariantContext;
+import org.monarchinitiative.threes.core.Prediction;
 import org.monarchinitiative.threes.core.SplicingPredictionData;
-import org.monarchinitiative.threes.core.classifier.Prediction;
 
 import java.util.*;
 
 /**
- * This class is a POJO for a single ALT allele of the variant.
+ * This class is a POJO for a single ALT allele of the variant and all the associated data.
  */
 public class SplicingVariantAlleleEvaluation {
 
@@ -24,28 +24,39 @@ public class SplicingVariantAlleleEvaluation {
      * The ALT allele of the variant context that is being analyzed.
      */
     private final Allele altAllele;
-
     /**
      * Results of the splicing analysis.
      */
-    private SplicingPredictionData predictionData;
-
+    private final Map<String, SplicingPredictionData> predictionData = new HashMap<>();
     /**
      * Results of Jannovar's functional annotation with respect to transcripts this variant overlaps with.
      */
     private VariantAnnotations annotations;
+    private String graphics;
 
     public SplicingVariantAlleleEvaluation(VariantContext base, Allele altAllele) {
         this.base = base;
         this.altAllele = altAllele;
     }
 
-    public SplicingPredictionData getPredictionData() {
+    public String getGraphics() {
+        return graphics;
+    }
+
+    public void setGraphics(String graphics) {
+        this.graphics = graphics;
+    }
+
+    public Map<String, SplicingPredictionData> getPredictionData() {
         return predictionData;
     }
 
-    public void setPredictionData(SplicingPredictionData predictionData) {
-        this.predictionData = predictionData;
+    public void putPredictionData(String transcriptAccession, SplicingPredictionData predictionData) {
+        this.predictionData.put(transcriptAccession, predictionData);
+    }
+
+    public void putAllPredictionData(Map<String, SplicingPredictionData> predictionData) {
+        this.predictionData.putAll(predictionData);
     }
 
     public VariantAnnotations getAnnotations() {
@@ -65,7 +76,7 @@ public class SplicingVariantAlleleEvaluation {
     }
 
     public Prediction getPredictionForTranscript(String accessionId) {
-        return predictionData.getPredictions().get(accessionId);
+        return predictionData.get(accessionId).getPrediction();
     }
 
     public Map<VariantEffect, Collection<Annotation>> getAnnotationsByEffect() {
@@ -80,7 +91,8 @@ public class SplicingVariantAlleleEvaluation {
     }
 
     public Double getMaxScore() {
-        return predictionData.getPredictions().values().stream()
+        return predictionData.values().stream()
+                .map(SplicingPredictionData::getPrediction)
                 .mapToDouble(Prediction::getMaxPathogenicity)
                 .max()
                 .orElse(Double.NaN);

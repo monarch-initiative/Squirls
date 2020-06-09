@@ -2,13 +2,10 @@ package org.monarchinitiative.threes.core;
 
 import de.charite.compbio.jannovar.data.ReferenceDictionary;
 import de.charite.compbio.jannovar.reference.*;
-import org.monarchinitiative.threes.core.classifier.OverlordClassifier;
-import org.monarchinitiative.threes.core.classifier.Prediction;
-import org.monarchinitiative.threes.core.classifier.PredictionException;
+import org.monarchinitiative.threes.core.classifier.SquirlsClassifier;
 import org.monarchinitiative.threes.core.classifier.transform.prediction.PredictionTransformer;
 import org.monarchinitiative.threes.core.data.SplicingTranscriptSource;
 import org.monarchinitiative.threes.core.model.SplicingTranscript;
-import org.monarchinitiative.threes.core.scoring.SplicingAnnotationData;
 import org.monarchinitiative.threes.core.scoring.SplicingAnnotator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,17 +30,17 @@ public class StandardVariantSplicingEvaluator implements VariantSplicingEvaluato
 
     private final SplicingAnnotator annotator;
 
-    private final OverlordClassifier classifier;
+    private final SquirlsClassifier classifier;
 
     private final PredictionTransformer transformer;
 
     private final int maxVariantLength;
 
+
     /**
      * Amount of neighboring FASTA sequence fetched for each variant.
      */
     private final int padding;
-
 
     private StandardVariantSplicingEvaluator(Builder builder) {
         accessor = Objects.requireNonNull(builder.accessor, "Accessor cannot be null");
@@ -66,22 +63,34 @@ public class StandardVariantSplicingEvaluator implements VariantSplicingEvaluato
         return new Builder();
     }
 
+    /**
+     * Evaluate given variant with respect to transcripts in <code>txIds</code>. The method <em>attempts</em> to evaluate
+     * the variant with respect to given <code>txIds</code>, but does not guarantee that results will be provided for
+     * each transcript.
+     *
+     * @param contig string with name of the chromosome
+     * @param pos    1-based (included) variant position on FWD strand
+     * @param ref    reference allele, e.g. `C`, `CCT`
+     * @param alt    alternate allele, e.g. `T`, `AA`
+     * @param txIds  set of transcript accession IDs with respect to which the variant should be evaluated
+     * @return possibly empty map with {@link SplicingPredictionData} for transcript ID
+     */
     @Override
-    public SplicingPredictionData evaluate(String contig, int pos, String ref, String alt, Set<String> txIds) {
+    public Map<String, SplicingPredictionData> evaluate(String contig, int pos, String ref, String alt, Set<String> txIds) {
         /*
          0 - perform some sanity checks at the beginning.
          */
         if (!rd.getContigNameToID().containsKey(contig)) {
             // unknown contig, nothing to be done here
             LOGGER.info("Unknown contig for variant {}:{}{}>{}", contig, pos, ref, alt);
-            return SplicingPredictionData.EMPTY;
+            return Map.of();
         }
 
         // do not process variants that are longer than preset value
         if (ref.length() > maxVariantLength) {
             LOGGER.debug("Not evaluating variant longer than maximum variant length: `{}` > `{}` for `{}:{}{}>{}`",
                     ref.length(), maxVariantLength, contig, pos, ref, alt);
-            return SplicingPredictionData.EMPTY;
+            return Map.of();
         }
 
         /*
@@ -92,8 +101,8 @@ public class StandardVariantSplicingEvaluator implements VariantSplicingEvaluato
         final Map<String, SplicingTranscript> txMap = fetchTranscripts(variant, txIds);
 
         if (txMap.isEmpty()) {
-            // no transcript to evaluate
-            return SplicingPredictionData.EMPTY;
+            // shortcut, no transcripts to evaluate
+            return Map.of();
         }
 
         /*
@@ -114,52 +123,19 @@ public class StandardVariantSplicingEvaluator implements VariantSplicingEvaluato
         final GenomeInterval toFetch = new GenomeInterval(bp.shifted(-padding), ep.differenceTo(bp) + 2 * padding);
         final Optional<SequenceInterval> sio = accessor.fetchSequence(toFetch);
         if (sio.isEmpty()) {
-            LOGGER.warn("Unable to get reference sequence for `{}`", toFetch);
-            return SplicingPredictionData.EMPTY;
+            LOGGER.debug("Unable to get reference sequence for `{}` when evaluating variant `{}`", toFetch, variant);
+            return Map.of();
         }
-        final SequenceInterval si = sio.get();
 
         /*
-         3 - for each transcript:
-             - calculate features
-             - calculate probabilities & predictions
-             - return results
+         3 - let's evaluate the variant with respect to all transcripts
          */
-        final Metadata.Builder metadata = Metadata.newBuilder()
-                .variant(variant)
-                .sequence(si);
-        final Map<String, Prediction> predictionMap = new HashMap<>(txMap.size());
-
-        Double phyloPScore = null;
-        for (String txId : txMap.keySet()) {
-            final SplicingTranscript tx = txMap.get(txId);
-            final SplicingAnnotationData annotationData = annotator.evaluate(variant, tx, si);
-            try {
-                final Prediction prediction = classifier.predict(annotationData.getFeatureData());
-                final Prediction transformed = transformer.transform(prediction);
-                predictionMap.put(txId, transformed);
-            } catch (PredictionException e) {
-                LOGGER.debug("Error while computing scores for `{}` with respect to `{}`: {}", variant, txId, e.getMessage());
-            }
-
-            if (phyloPScore == null) {
-                // this is the same number for all the transcripts we're looping through
-                phyloPScore = annotationData.getMeanPhyloPScore();
-            }
-            if (annotationData.getDonorCoordinates().isPresent()) {
-                metadata.putDonorCoordinate(txId, annotationData.getDonorCoordinates().get());
-            }
-
-            if (annotationData.getAcceptorCoordinates().isPresent()) {
-                metadata.putAcceptorCoordinate(txId, annotationData.getAcceptorCoordinates().get());
-            }
-        }
-        metadata.meanPhyloPScore(phyloPScore == null ? Double.NaN : phyloPScore);
-
-        return StandardSplicingPredictionData.newBuilder()
-                .predictionMap(predictionMap)
-                .metadata(metadata.build())
-                .build();
+        return txMap.keySet().stream()
+                .map(tx -> StandardSplicingPredictionData.of(variant, txMap.get(tx), sio.get()))
+                .map(annotator::annotate)
+                .map(classifier::predict)
+                .map(transformer::transform)
+                .collect(Collectors.toUnmodifiableMap(k -> k.getTranscript().getAccessionId(), Function.identity()));
     }
 
     /**
@@ -204,7 +180,7 @@ public class StandardVariantSplicingEvaluator implements VariantSplicingEvaluato
         private GenomeSequenceAccessor accessor;
         private SplicingTranscriptSource txSource;
         private SplicingAnnotator annotator;
-        private OverlordClassifier classifier;
+        private SquirlsClassifier classifier;
         private PredictionTransformer transformer;
 
         private int maxVariantLength = 100;
@@ -227,7 +203,7 @@ public class StandardVariantSplicingEvaluator implements VariantSplicingEvaluato
             return this;
         }
 
-        public Builder classifier(OverlordClassifier classifier) {
+        public Builder classifier(SquirlsClassifier classifier) {
             this.classifier = classifier;
             return this;
         }
@@ -246,4 +222,5 @@ public class StandardVariantSplicingEvaluator implements VariantSplicingEvaluato
             return new StandardVariantSplicingEvaluator(this);
         }
     }
+
 }

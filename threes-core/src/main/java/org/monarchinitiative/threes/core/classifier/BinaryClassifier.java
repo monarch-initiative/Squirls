@@ -7,7 +7,7 @@ import java.util.Set;
  *
  * @param <T> <code>instance</code> type
  */
-public interface BinaryClassifier<T extends FeatureData> {
+public interface BinaryClassifier<T extends Classifiable> {
 
     /**
      * @return set with expected feature names

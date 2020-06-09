@@ -2,6 +2,7 @@ package org.monarchinitiative.threes.core.classifier;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.monarchinitiative.threes.core.Prediction;
 import org.monarchinitiative.threes.core.classifier.forest.RandomForest;
 import org.monarchinitiative.threes.core.classifier.io.DecisionTreeTransferModel;
 import org.monarchinitiative.threes.core.classifier.io.Deserializer;
@@ -49,7 +50,7 @@ public class IntegrationTests {
         // get transfer format
         final DecisionTreeTransferModel treeOne = overallModelData.getDonorClf().getRf().getTrees().get(0);
         // make classifier
-        final DonorSplicingDecisionTree tree = Deserializer.toDonorClassifierTree(List.of(0, 1)).apply(treeOne);
+        final DonorSplicingDecisionTree<Classifiable> tree = Deserializer.toDonorClassifierTree(List.of(0, 1)).apply(treeOne);
 
         // perform classification & assert
         double pathoProba = tree.predictProba(TestVariantInstances.pathogenicDonor());
@@ -64,7 +65,7 @@ public class IntegrationTests {
         // get transfer format
         final DecisionTreeTransferModel treeOne = overallModelData.getDonorClf().getRf().getTrees().get(50);
         // make classifier
-        final DonorSplicingDecisionTree tree = Deserializer.toDonorClassifierTree(List.of(0, 1)).apply(treeOne);
+        final DonorSplicingDecisionTree<Classifiable> tree = Deserializer.toDonorClassifierTree(List.of(0, 1)).apply(treeOne);
 
         // perform classification & assert
         double pathoProba = tree.predictProba(TestVariantInstances.pathogenicDonor());
@@ -79,7 +80,7 @@ public class IntegrationTests {
         // get transfer format
         final DecisionTreeTransferModel treeOne = overallModelData.getAcceptorClf().getRf().getTrees().get(0);
         // make classifier
-        final AcceptorSplicingDecisionTree tree = Deserializer.toAcceptorClassifierTree(List.of(0, 1)).apply(treeOne);
+        final AcceptorSplicingDecisionTree<Classifiable> tree = Deserializer.toAcceptorClassifierTree(List.of(0, 1)).apply(treeOne);
 
         // perform classification & assert
         double pathoProba = tree.predictProba(TestVariantInstances.pathogenicAcceptor());
@@ -94,7 +95,7 @@ public class IntegrationTests {
         // get transfer format
         final DecisionTreeTransferModel treeOne = overallModelData.getAcceptorClf().getRf().getTrees().get(50);
         // make classifier
-        final AcceptorSplicingDecisionTree tree = Deserializer.toAcceptorClassifierTree(List.of(0, 1)).apply(treeOne);
+        final AcceptorSplicingDecisionTree<Classifiable> tree = Deserializer.toAcceptorClassifierTree(List.of(0, 1)).apply(treeOne);
 
         // perform classification & assert
         double pathoProba = tree.predictProba(TestVariantInstances.pathogenicAcceptor());
@@ -113,7 +114,7 @@ public class IntegrationTests {
         // get transfer format
         final RandomForestTransferModel rftm = overallModelData.getDonorClf().getRf();
         // make classifier
-        final RandomForest<FeatureData> forest = Deserializer.deserializeDonorClassifier(rftm);
+        final RandomForest<Classifiable> forest = Deserializer.deserializeDonorClassifier(rftm);
 
         double pathoProba = forest.predictProba(TestVariantInstances.pathogenicDonor());
         assertThat(pathoProba, is(closeTo(.7873663663768643, EPSILON)));
@@ -127,7 +128,7 @@ public class IntegrationTests {
         // get transfer format
         final RandomForestTransferModel rftm = overallModelData.getAcceptorClf().getRf();
         // make classifier
-        final RandomForest<FeatureData> forest = Deserializer.deserializeAcceptorClassifier(rftm);
+        final RandomForest<Classifiable> forest = Deserializer.deserializeAcceptorClassifier(rftm);
 
         double pathoProba = forest.predictProba(TestVariantInstances.pathogenicAcceptor());
         assertThat(pathoProba, is(closeTo(.3726891708713847, EPSILON)));
@@ -139,29 +140,25 @@ public class IntegrationTests {
     /*
     Tests at level of classifier
      */
+
     @Test
     void ensembleClfPredictProba() throws Exception {
-        final OverlordClassifier overlord = Deserializer.deserialize(overallModelData);
+        final SquirlsClassifier overlord = Deserializer.deserialize(overallModelData);
 
-        Prediction prediction = overlord.predict(TestVariantInstances.pathogenicDonor());
+        Prediction prediction = overlord.predict(TestVariantInstances.pathogenicDonor()).getPrediction();
         assertTrue(prediction.isPositive());
         assertThat(prediction.getMaxPathogenicity(), is(closeTo(.7873663663768643, EPSILON)));
-//        DoubleMatrix doubleMatrix = overlord.predictProba(TestVariantInstances.pathogenicDonor()).transpose();
-//        assertThat(doubleMatrix.toArray(), is(new double[]{.2126336336231357, .7873663663768643}));
 
-        prediction = overlord.predict(TestVariantInstances.donorCryptic());
+        prediction = overlord.predict(TestVariantInstances.donorCryptic()).getPrediction();
         assertTrue(prediction.isPositive());
         assertThat(prediction.getMaxPathogenicity(), is(closeTo(.22439633436158474, EPSILON)));
-//        assertThat(doubleMatrix.toArray(), is(new double[]{.7756036656384153, .22439633436158474}));
 
-        prediction = overlord.predict(TestVariantInstances.pathogenicAcceptor());
+        prediction = overlord.predict(TestVariantInstances.pathogenicAcceptor()).getPrediction();
         assertTrue(prediction.isPositive());
         assertThat(prediction.getMaxPathogenicity(), is(closeTo(.3726891708713847, EPSILON)));
-//        assertThat(doubleMatrix.toArray(), is(new double[]{.6273108291286154, .3726891708713847}));
 
-        prediction = overlord.predict(TestVariantInstances.acceptorCryptic());
+        prediction = overlord.predict(TestVariantInstances.acceptorCryptic()).getPrediction();
         assertTrue(prediction.isPositive());
         assertThat(prediction.getMaxPathogenicity(), is(closeTo(.022480121825609604, EPSILON)));
-//        assertThat(doubleMatrix.toArray(), is(new double[]{.9775198781743903, .022480121825609604}));
     }
 }

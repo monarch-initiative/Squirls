@@ -1,6 +1,9 @@
-package org.monarchinitiative.threes.core;
+package org.monarchinitiative.threes.cli;
 
 import de.charite.compbio.jannovar.reference.GenomeVariant;
+import org.monarchinitiative.threes.core.Metadata;
+import org.monarchinitiative.threes.core.Prediction;
+import org.monarchinitiative.threes.core.SplicingPredictionData;
 import org.monarchinitiative.threes.core.model.SplicingTranscript;
 import xyz.ielis.hyperutil.reference.fasta.SequenceInterval;
 
@@ -9,26 +12,25 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
-class StandardSplicingPredictionData implements SplicingPredictionData {
+/**
+ * Simple implementation of {@link SplicingPredictionData} for test purposes only.
+ */
+public class SimpleSplicingPredictionData implements SplicingPredictionData {
 
     private final GenomeVariant variant;
-
     private final SplicingTranscript transcript;
-
     private final SequenceInterval sequence;
     private final Map<String, Object> featureMap = new HashMap<>();
+
     private Prediction prediction;
     private Metadata metadata;
 
-    private StandardSplicingPredictionData(GenomeVariant variant, SplicingTranscript transcript, SequenceInterval sequence) {
+    public SimpleSplicingPredictionData(GenomeVariant variant, SplicingTranscript transcript, SequenceInterval sequence) {
         this.variant = variant;
         this.transcript = transcript;
         this.sequence = sequence;
     }
 
-    public static StandardSplicingPredictionData of(GenomeVariant variant, SplicingTranscript transcript, SequenceInterval sequence) {
-        return new StandardSplicingPredictionData(variant, transcript, sequence);
-    }
 
     @Override
     public Prediction getPrediction() {
@@ -84,7 +86,7 @@ class StandardSplicingPredictionData implements SplicingPredictionData {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        StandardSplicingPredictionData that = (StandardSplicingPredictionData) o;
+        SimpleSplicingPredictionData that = (SimpleSplicingPredictionData) o;
         return Objects.equals(variant, that.variant) &&
                 Objects.equals(transcript, that.transcript) &&
                 Objects.equals(sequence, that.sequence) &&

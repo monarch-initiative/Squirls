@@ -1,7 +1,7 @@
 package org.monarchinitiative.threes.core.data;
 
 import org.apache.commons.io.IOUtils;
-import org.monarchinitiative.threes.core.classifier.OverlordClassifier;
+import org.monarchinitiative.threes.core.classifier.SquirlsClassifier;
 import org.monarchinitiative.threes.core.classifier.io.Deserializer;
 import org.monarchinitiative.threes.core.classifier.transform.prediction.IdentityTransformer;
 import org.monarchinitiative.threes.core.classifier.transform.prediction.LogisticRegressionPredictionTransformer;
@@ -123,7 +123,8 @@ public class DbClassifierDataManager implements ClassifierDataManager {
      * @param version version string, e.g. `v1.0.0`
      * @return classifier optional
      */
-    public Optional<OverlordClassifier> readClassifier(String version) {
+    @Override
+    public Optional<SquirlsClassifier> readClassifier(String version) {
         return readClassifierBytes(version).map(bytes -> Deserializer.deserialize(new ByteArrayInputStream(bytes)));
     }
 

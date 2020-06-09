@@ -4,7 +4,7 @@ import com.google.common.collect.ComparisonChain;
 import de.charite.compbio.jannovar.reference.GenomeInterval;
 import de.charite.compbio.jannovar.reference.GenomePosition;
 import de.charite.compbio.jannovar.reference.GenomeVariant;
-import org.monarchinitiative.threes.core.classifier.FeatureData;
+import org.monarchinitiative.threes.core.Metadata;
 import org.monarchinitiative.threes.core.data.ic.SplicingPwmData;
 import org.monarchinitiative.threes.core.model.SplicingTranscript;
 import org.monarchinitiative.threes.core.reference.SplicingLocationData;
@@ -92,7 +92,10 @@ public class DenseSplicingAnnotator implements SplicingAnnotator {
     }
 
     @Override
-    public SplicingAnnotationData evaluate(GenomeVariant variant, SplicingTranscript transcript, SequenceInterval sequenceInterval) {
+    public <T extends Annotatable> T annotate(T data) {
+        final GenomeVariant variant = data.getVariant();
+        final SplicingTranscript transcript = data.getTranscript();
+        final SequenceInterval sequence = data.getSequence();
 
         final GenomeVariant variantOnStrand = variant.withStrand(transcript.getStrand());
         final SplicingLocationData locationData = transcriptLocator.locate(variant, transcript);
@@ -100,58 +103,54 @@ public class DenseSplicingAnnotator implements SplicingAnnotator {
         final Optional<GenomePosition> donorBoundary = locationData.getDonorBoundary();
         final Optional<GenomePosition> acceptorBoundary = locationData.getAcceptorBoundary();
 
-        final FeatureData.Builder featureData = FeatureData.builder();
 
         if (donorBoundary.isPresent()) {
             // `canonical_donor` feature
-            final double canonicalDonor = canonicalDonorFeatureCalculator.score(donorBoundary.get(), variantOnStrand, sequenceInterval);
-            featureData.addFeature("canonical_donor", canonicalDonor);
+            final double canonicalDonor = canonicalDonorFeatureCalculator.score(donorBoundary.get(), variantOnStrand, sequence);
+            data.putFeature("canonical_donor", canonicalDonor);
 
             // `cryptic_donor` feature
-            final double crypticDonor = crypticDonorScorer.score(donorBoundary.get(), variantOnStrand, sequenceInterval);
-            featureData.addFeature("cryptic_donor", crypticDonor);
+            final double crypticDonor = crypticDonorScorer.score(donorBoundary.get(), variantOnStrand, sequence);
+            data.putFeature("cryptic_donor", crypticDonor);
         } else {
-            featureData.addFeature("canonical_donor", 0.);
-            featureData.addFeature("cryptic_donor", 0.);
+            data.putFeature("canonical_donor", 0.);
+            data.putFeature("cryptic_donor", 0.);
         }
 
         if (acceptorBoundary.isPresent()) {
             // `canonical_acceptor` feature
-            final double canonicalAcceptor = canonicalAcceptorScorer.score(acceptorBoundary.get(), variantOnStrand, sequenceInterval);
-            featureData.addFeature("canonical_acceptor", canonicalAcceptor);
+            final double canonicalAcceptor = canonicalAcceptorScorer.score(acceptorBoundary.get(), variantOnStrand, sequence);
+            data.putFeature("canonical_acceptor", canonicalAcceptor);
 
             // `cryptic_acceptor` feature
-            final double crypticAcceptor = crypticAcceptorScorer.score(acceptorBoundary.get(), variantOnStrand, sequenceInterval);
-            featureData.addFeature("cryptic_acceptor", crypticAcceptor);
+            final double crypticAcceptor = crypticAcceptorScorer.score(acceptorBoundary.get(), variantOnStrand, sequence);
+            data.putFeature("cryptic_acceptor", crypticAcceptor);
         } else {
-            featureData.addFeature("canonical_acceptor", 0.);
-            featureData.addFeature("cryptic_acceptor", 0.);
+            data.putFeature("canonical_acceptor", 0.);
+            data.putFeature("cryptic_acceptor", 0.);
         }
 
-        final double hexamerScore = hexamerFeatureCalculator.score(null, variant, sequenceInterval);
-        featureData.addFeature("hexamer", hexamerScore);
-        final double septamerScore = septamerFeatureCalculator.score(null, variant, sequenceInterval);
-        featureData.addFeature("septamer", septamerScore);
+        final double hexamerScore = hexamerFeatureCalculator.score(null, variant, sequence);
+        data.putFeature("hexamer", hexamerScore);
+        final double septamerScore = septamerFeatureCalculator.score(null, variant, sequence);
+        data.putFeature("septamer", septamerScore);
 
-        final double phylopScore = phyloPFeatureCalculator.score(null, variant, sequenceInterval);
-        featureData.addFeature("phylop", phylopScore);
+        final double phylopScore = phyloPFeatureCalculator.score(null, variant, sequence);
+        data.putFeature("phylop", phylopScore);
 
         final int donorOffset = getOffset(transcript.getExons().stream()
                         .map(e -> e.getInterval().getGenomeEndPos()),
                 variantOnStrand.getGenomeInterval());
-        featureData.addFeature("donor_offset", donorOffset);
+        data.putFeature("donor_offset", (double) donorOffset);
 
         final int acceptorOffset = getOffset(transcript.getExons().stream()
                         .map(e -> e.getInterval().getGenomeBeginPos()),
                 variantOnStrand.getGenomeInterval());
-        featureData.addFeature("acceptor_offset", acceptorOffset);
+        data.putFeature("acceptor_offset", (double) acceptorOffset);
 
-        return SplicingAnnotationData.newBuilder()
-                .featureData(featureData.build())
-                .meanPhyloPScore(phylopScore)
-                // this sucks a bit, but we'll live
-                .putDonorCoordinates(locationData.getDonorRegion().orElse(null))
-                .putAcceptorCoordinates(locationData.getAcceptorRegion().orElse(null))
-                .build();
+        // TODO - add metadata
+        data.setMetadata(Metadata.empty());
+
+        return data;
     }
 }
