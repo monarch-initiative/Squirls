@@ -22,8 +22,8 @@ squirls:
   phylop-bigwig-path:
 
   classifier:
-  # Which classifier to use
-  #version: v1
-  # Variant with longer REF allele will not be evaluated
-  #max-variant-length: 100
+    # Which classifier to use
+    #version: v1
+    # Variant with longer REF allele will not be evaluated
+    #max-variant-length: 100
 
