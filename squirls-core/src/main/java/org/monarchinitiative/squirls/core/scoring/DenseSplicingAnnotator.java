@@ -148,8 +148,13 @@ public class DenseSplicingAnnotator implements SplicingAnnotator {
                 variantOnStrand.getGenomeInterval());
         data.putFeature("acceptor_offset", (double) acceptorOffset);
 
-        // TODO - add metadata
-        data.setMetadata(Metadata.empty());
+        final Metadata.Builder metadataBuilder = Metadata.builder()
+                .meanPhyloPScore(phylopScore);
+
+        locationData.getDonorBoundary().ifPresent(boundary -> metadataBuilder.putDonorCoordinate(transcript.getAccessionId(), boundary));
+        locationData.getAcceptorBoundary().ifPresent(boundary -> metadataBuilder.putAcceptorCoordinate(transcript.getAccessionId(), boundary));
+
+        data.setMetadata(metadataBuilder.build());
 
         return data;
     }

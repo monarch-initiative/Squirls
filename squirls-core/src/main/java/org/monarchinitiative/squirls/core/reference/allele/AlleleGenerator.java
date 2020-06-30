@@ -78,68 +78,81 @@ public class AlleleGenerator {
      * @return nucleotide snippet for splice donor site or <code>null</code> if wrong input is provided
      */
     public String getDonorSiteWithAltAllele(GenomePosition anchor, GenomeVariant variant, SequenceInterval sequenceInterval) {
-        String result; // this method creates the result String in 5' --> 3' direction
+        try {
+            String result; // this method creates the result String in 5' --> 3' direction
 
-        if (anchor.getChr() != variant.getChr() || anchor.getChr() != sequenceInterval.getInterval().getChr()) {
-            // sanity check
-            LOGGER.warn("Chromosome mismatch - anchor: `{}`, variant: `{}`, sequence: `{}`",
-                    anchor.getChr(), variant.getChr(), sequenceInterval.getInterval().getChr());
-            return null;
-        }
+            if (anchor.getChr() != variant.getChr() || anchor.getChr() != sequenceInterval.getInterval().getChr()) {
+                // sanity check
+                LOGGER.warn("Chromosome mismatch - anchor: `{}`, variant: `{}`, sequence: `{}`",
+                        anchor.getChr(), variant.getChr(), sequenceInterval.getInterval().getChr());
+                return null;
+            }
 
-        final GenomeInterval donor = splicingParameters.makeDonorRegion(anchor);
+            // adjust variant to transcript's strand
+            if (!anchor.getStrand().equals(variant.getGenomePos().getStrand())) {
+                variant = variant.withStrand(anchor.getStrand());
+            }
 
-        final GenomeInterval variantInterval = variant.getGenomeInterval();
-        if (variantInterval.contains(donor)) {
-            // whole donor site is deleted, nothing more to be done here
-            return null;
-        }
+            final GenomeInterval donor = splicingParameters.makeDonorRegion(anchor);
 
-        String alt = variant.getAlt();
-        if (variantInterval.contains(donor.getGenomeBeginPos())) {
-            // there will be no upstream region, even some nucleotides from before the variantRegion region will be added,
-            // if the first positions of donor site are deleted
-            int idx = variantInterval.getEndPos() - donor.getBeginPos();
-            result = alt.substring(alt.length() - Math.min(idx, alt.length()));
-            // there should be already 'idx' nucleotides in 'result' string but there are only 'missing' nucleotides there. Perhaps because the variantRegion is a deletion
-            // therefore, we need to add some nucleotides from region before the variantRegion
-            int missing = idx - result.length();
-            if (missing > 0) {
-                final GenomeInterval interval = new GenomeInterval(variantInterval.getGenomeBeginPos().shifted(-missing), missing);
+            final GenomeInterval variantInterval = variant.getGenomeInterval();
+            if (variantInterval.contains(donor)) {
+                // whole donor site is deleted, nothing more to be done here
+                return null;
+            }
+
+            String alt = variant.getAlt();
+            if (variantInterval.contains(donor.getGenomeBeginPos())) {
+                // there will be no upstream region, even some nucleotides from before the variantRegion region will be added,
+                // if the first positions of donor site are deleted
+                int idx = variantInterval.getEndPos() - donor.getBeginPos();
+                result = alt.substring(alt.length() - Math.min(idx, alt.length()));
+                // there should be already 'idx' nucleotides in 'result' string but there are only 'missing' nucleotides there. Perhaps because the variantRegion is a deletion
+                // therefore, we need to add some nucleotides from region before the variantRegion
+                int missing = idx - result.length();
+                if (missing > 0) {
+                    final GenomeInterval interval = new GenomeInterval(variantInterval.getGenomeBeginPos().shifted(-missing), missing);
+                    final Optional<String> opSeq = sequenceInterval.getSubsequence(interval);
+                    if (opSeq.isEmpty()) {
+                        LOGGER.info("Not enough of fasta sequence provided for variant `{}` - sequence: `{}`, required: `{}`",
+                                variant, sequenceInterval.getInterval(), interval);
+                        return null;
+                    }
+                    result = opSeq.get() + result;
+                }
+            } else {
+                // simple scenario when we just add bases between donor beginning and variant beginning
+                final GenomeInterval interval = new GenomeInterval(donor.getGenomeBeginPos(), variantInterval.getGenomeBeginPos().differenceTo(donor.getGenomeBeginPos()));
+
                 final Optional<String> opSeq = sequenceInterval.getSubsequence(interval);
+
                 if (opSeq.isEmpty()) {
                     LOGGER.info("Not enough of fasta sequence provided for variant `{}` - sequence: `{}`, required: `{}`",
                             variant, sequenceInterval.getInterval(), interval);
                     return null;
                 }
-                result = opSeq.get() + result;
+                result = opSeq.get() + alt;
+
             }
-        } else {
-            // simple scenario when we just add bases between donor beginning and variant beginning
-            final GenomeInterval interval = new GenomeInterval(donor.getGenomeBeginPos(), variantInterval.getGenomeBeginPos().differenceTo(donor.getGenomeBeginPos()));
+            // add nothing if the sequence is already longer than the SPLICE_DONOR_SITE_LENGTH
+            GenomePosition dwnsBegin = variantInterval.getGenomeEndPos();
+            GenomePosition dwnsEnd = variantInterval.getGenomeEndPos().shifted(Math.max(splicingParameters.getDonorLength() - result.length(), 0));
+            final GenomeInterval interval = new GenomeInterval(dwnsBegin, dwnsEnd.differenceTo(dwnsBegin));
+
             final Optional<String> opSeq = sequenceInterval.getSubsequence(interval);
             if (opSeq.isEmpty()) {
                 LOGGER.info("Not enough of fasta sequence provided for variant `{}` - sequence: `{}`, required: `{}`",
                         variant, sequenceInterval.getInterval(), interval);
                 return null;
             }
-            result = opSeq.get() + alt;
-        }
-        // add nothing if the sequence is already longer than the SPLICE_DONOR_SITE_LENGTH
-        GenomePosition dwnsBegin = variantInterval.getGenomeEndPos();
-        GenomePosition dwnsEnd = variantInterval.getGenomeEndPos().shifted(Math.max(splicingParameters.getDonorLength() - result.length(), 0));
-        final GenomeInterval interval = new GenomeInterval(dwnsBegin, dwnsEnd.differenceTo(dwnsBegin));
-
-        final Optional<String> opSeq = sequenceInterval.getSubsequence(interval);
-        if (opSeq.isEmpty()) {
-            LOGGER.info("Not enough of fasta sequence provided for variant `{}` - sequence: `{}`, required: `{}`",
-                    variant, sequenceInterval.getInterval(), interval);
-            return null;
-        }
-        result += opSeq.get();
+            result += opSeq.get();
                 /* if the variantRegion is a larger insertion, result.length() might be greater than SPLICE_DONOR_SITE_LENGTH after
                    appending 'alt' sequence. We need to make sure only 'SPLICE_DONOR_SITE_LENGTH' nucleotides are returned */
-        return result.substring(0, splicingParameters.getDonorLength());
+            return result.substring(0, splicingParameters.getDonorLength());
+        } catch (StringIndexOutOfBoundsException e) {
+            LOGGER.error("Error: ", e);
+        }
+        return null;
     }
 
     /**
@@ -158,6 +171,11 @@ public class AlleleGenerator {
             LOGGER.warn("Chromosome mismatch - anchor: `{}`, variant: `{}`, sequence: `{}`",
                     anchor.getChr(), variant.getChr(), sequenceInterval.getInterval().getChr());
             return null;
+        }
+
+        // adjust variant to transcript's strand
+        if (!anchor.getStrand().equals(variant.getGenomePos().getStrand())) {
+            variant = variant.withStrand(anchor.getStrand());
         }
 
         final GenomeInterval acceptor = splicingParameters.makeAcceptorRegion(anchor);

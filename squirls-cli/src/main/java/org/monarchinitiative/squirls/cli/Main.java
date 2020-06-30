@@ -6,10 +6,13 @@ import net.sourceforge.argparse4j.inf.*;
 import org.monarchinitiative.squirls.cli.cmd.Command;
 import org.monarchinitiative.squirls.cli.cmd.GenerateConfigCommand;
 import org.monarchinitiative.squirls.cli.cmd.analyze_vcf.AnalyzeVcfCommand;
-import org.monarchinitiative.squirls.cli.cmd.analyze_vcf.SvgGraphicsGenerator;
+import org.monarchinitiative.squirls.cli.cmd.analyze_vcf.visualization.SimpleSplicingVariantGraphicsGenerator;
+import org.monarchinitiative.squirls.cli.cmd.analyze_vcf.visualization.SplicingVariantGraphicsGenerator;
 import org.monarchinitiative.squirls.cli.cmd.annotate_csv.AnnotateCsvCommand;
 import org.monarchinitiative.squirls.cli.cmd.annotate_pos.AnnotatePosCommand;
 import org.monarchinitiative.squirls.cli.cmd.annotate_vcf.AnnotateVcfCommand;
+import org.monarchinitiative.squirls.core.data.ic.SplicingPwmData;
+import org.monarchinitiative.squirls.core.reference.allele.AlleleGenerator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -129,8 +132,13 @@ public class Main {
     }
 
     @Bean
-    public SvgGraphicsGenerator graphicsGenerator() {
-        return new SvgGraphicsGenerator();
+    public SplicingVariantGraphicsGenerator graphicsGenerator(AlleleGenerator alleleGenerator) {
+        return new SimpleSplicingVariantGraphicsGenerator(alleleGenerator);
+    }
+
+    @Bean
+    public AlleleGenerator alleleGenerator(SplicingPwmData splicingPwmData) {
+        return new AlleleGenerator(splicingPwmData.getParameters());
     }
 
     /**

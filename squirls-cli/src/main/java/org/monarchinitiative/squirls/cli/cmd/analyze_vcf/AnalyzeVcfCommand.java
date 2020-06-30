@@ -18,6 +18,7 @@ import net.sourceforge.argparse4j.inf.Subparser;
 import net.sourceforge.argparse4j.inf.Subparsers;
 import org.monarchinitiative.squirls.cli.cmd.Command;
 import org.monarchinitiative.squirls.cli.cmd.CommandException;
+import org.monarchinitiative.squirls.cli.cmd.analyze_vcf.visualization.SplicingVariantGraphicsGenerator;
 import org.monarchinitiative.squirls.core.SplicingPredictionData;
 import org.monarchinitiative.squirls.core.VariantSplicingEvaluator;
 import org.slf4j.Logger;
@@ -49,11 +50,11 @@ public class AnalyzeVcfCommand extends Command {
 
     private final VariantSplicingEvaluator evaluator;
 
-    private final SvgGraphicsGenerator svgGraphicsGenerator;
+    private final SplicingVariantGraphicsGenerator graphicsGenerator;
 
-    public AnalyzeVcfCommand(VariantSplicingEvaluator evaluator, SvgGraphicsGenerator svgGraphicsGenerator) {
+    public AnalyzeVcfCommand(VariantSplicingEvaluator evaluator, SplicingVariantGraphicsGenerator graphicsGenerator) {
         this.evaluator = evaluator;
-        this.svgGraphicsGenerator = svgGraphicsGenerator;
+        this.graphicsGenerator = graphicsGenerator;
     }
 
     /**
@@ -167,10 +168,10 @@ public class AnalyzeVcfCommand extends Command {
     /**
      * Generate the appropriate SVG graphics for the given <code>evaluation</code>.
      *
-     * @param generator {@link SvgGraphicsGenerator} to use for generation
+     * @param generator {@link SplicingVariantGraphicsGenerator} to use for generation
      * @return function for generating the SVG graphics
      */
-    private static UnaryOperator<SplicingVariantAlleleEvaluation> generateGraphics(SvgGraphicsGenerator generator) {
+    private static UnaryOperator<SplicingVariantAlleleEvaluation> generateGraphics(SplicingVariantGraphicsGenerator generator) {
         return evaluation -> {
             final String graphics = generator.generateGraphics(evaluation);
             evaluation.setGraphics(graphics);
@@ -208,7 +209,7 @@ public class AnalyzeVcfCommand extends Command {
         final Collection<SplicingVariantAlleleEvaluation> annotated = Collections.synchronizedList(new LinkedList<>());
 
         try (final VCFFileReader reader = new VCFFileReader(inputPath, false);
-             final Stream<VariantContext> stream = StreamSupport.stream(reader.spliterator(), true)) {
+             final Stream<VariantContext> stream = StreamSupport.stream(reader.spliterator(), false)) { // TODO - make true
             sampleNames = new ArrayList<>(reader.getFileHeader().getSampleNamesInOrder());
             stream.peek(progressReporter::logVariant)
                     .flatMap(meltToAltAlleles())
@@ -223,7 +224,7 @@ public class AnalyzeVcfCommand extends Command {
                     .filter(variant -> !variant.getMaxScore().isNaN() && variant.getMaxScore() > threshold)
                     .peek(progressReporter::logEligibleAllele)
 
-                    .map(generateGraphics(svgGraphicsGenerator))
+                    .map(generateGraphics(graphicsGenerator))
 
                     .onClose(progressReporter.summarize())
                     .forEach(annotated::add);

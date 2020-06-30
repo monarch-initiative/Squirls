@@ -52,23 +52,27 @@ public class PojosForTesting {
     }
 
     public static SplicingVariantAlleleEvaluation getDonorPlusFiveEvaluation(ReferenceDictionary rd, VariantAnnotator annotator) throws Exception {
+        final String chrom = "chr9";
+        final int chr = 9;
+        final int pos = 136_224_694;
+
         /*
         Prepare POJOs
          */
         Allele referenceAllele = Allele.create("A", true);
-        Allele altAlleleOne = Allele.create("G", false);
-        Allele altAlleleTwo = Allele.create("AG", false);
+        Allele altAlleleOne = Allele.create("T", false);
+        Allele altAlleleTwo = Allele.create("TC", false);
         final VariantContext vc = new VariantContextBuilder()
-                .chr("chr9")
-                .start(136_224_690)
-                .stop(136_224_690)
+                .chr(chrom) // on hg19
+                .start(pos)
+                .stop(pos)
                 .id("rs993")
                 .alleles(List.of(referenceAllele, altAlleleOne, altAlleleTwo))
                 .make();
 
         final SplicingVariantAlleleEvaluation evaluation = new SplicingVariantAlleleEvaluation(vc, altAlleleOne);
-        final GenomePosition position = new GenomePosition(rd, Strand.FWD, rd.getContigNameToID().get("chr9"), 136_224_690, PositionType.ONE_BASED);
-        final GenomeVariant variant = new GenomeVariant(position, "A", "G");
+        final GenomePosition position = new GenomePosition(rd, Strand.FWD, rd.getContigNameToID().get(chrom), pos, PositionType.ONE_BASED);
+        final GenomeVariant variant = new GenomeVariant(position, "A", "T");
 
         /*
         Make annotations map
@@ -84,7 +88,13 @@ public class PojosForTesting {
                 .peek(data -> data.setPrediction(StandardPrediction.builder()
                         .addProbaThresholdPair(RANDOM.nextDouble(), FAKE_THRESHOLD)
                         .build()))
-                .peek(data -> data.setMetadata(Metadata.empty())) // TODO - add metadata
+                .peek(data -> data.setMetadata(Metadata.builder()
+                        .putDonorCoordinate("NM_017503.4", new GenomePosition(rd, Strand.FWD, chr, 136_224_691, PositionType.ONE_BASED))
+                        .putAcceptorCoordinate("NM_017503.4", new GenomePosition(rd, Strand.FWD, chr, 136_224_587, PositionType.ONE_BASED))
+                        .putDonorCoordinate("NM_001278928.1", new GenomePosition(rd, Strand.FWD, chr, 136_224_691, PositionType.ONE_BASED))
+                        .putAcceptorCoordinate("NM_001278928.1", new GenomePosition(rd, Strand.FWD, chr, 136_224_587, PositionType.ONE_BASED))
+                        .meanPhyloPScore(4.321)
+                        .build()))
                 .collect(Collectors.toMap(k -> k.getTranscript().getAccessionId(), Function.identity()));
         evaluation.putAllPredictionData(predictions);
 
@@ -96,7 +106,7 @@ public class PojosForTesting {
         Prepare POJOs
          */
         Allele referenceAllele = Allele.create("G", true);
-        Allele alternateAllele = Allele.create("GA", false);
+        Allele alternateAllele = Allele.create("A", false);
         final VariantContext vc = new VariantContextBuilder()
                 .chr("chr9")
                 .start(136_224_586)
@@ -108,7 +118,7 @@ public class PojosForTesting {
         final SplicingVariantAlleleEvaluation evaluation = new SplicingVariantAlleleEvaluation(vc, alternateAllele);
 
         final GenomePosition position = new GenomePosition(rd, Strand.FWD, rd.getContigNameToID().get("chr9"), 136_224_586, PositionType.ONE_BASED);
-        final GenomeVariant variant = new GenomeVariant(position, "G", "GA");
+        final GenomeVariant variant = new GenomeVariant(position, "G", "A");
 
         /*
         Make annotations map
@@ -124,7 +134,13 @@ public class PojosForTesting {
                 .peek(data -> data.setPrediction(StandardPrediction.builder()
                         .addProbaThresholdPair(RANDOM.nextDouble(), FAKE_THRESHOLD)
                         .build()))
-                .peek(data -> data.setMetadata(Metadata.empty())) // TODO - add metadata
+                .peek(data -> data.setMetadata(Metadata.builder()
+                        .putDonorCoordinate("NM_017503.4", new GenomePosition(rd, Strand.FWD, 9, 136_224_691, PositionType.ONE_BASED))
+                        .putAcceptorCoordinate("NM_017503.4", new GenomePosition(rd, Strand.FWD, 9, 136_224_587, PositionType.ONE_BASED))
+                        .putDonorCoordinate("NM_001278928.1", new GenomePosition(rd, Strand.FWD, 9, 136_224_691, PositionType.ONE_BASED))
+                        .putAcceptorCoordinate("NM_001278928.1", new GenomePosition(rd, Strand.FWD, 9, 136_224_587, PositionType.ONE_BASED))
+                        .meanPhyloPScore(1.234)
+                        .build()))
                 .collect(Collectors.toMap(k -> k.getTranscript().getAccessionId(), Function.identity()));
         evaluation.putAllPredictionData(predictions);
 

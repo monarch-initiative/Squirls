@@ -12,6 +12,15 @@ import java.util.*;
 
 /**
  * This class is a POJO for a single ALT allele of the variant and all the associated data.
+ * <p>
+ * <b>BEWARE</b> - This class contains variant data that uses 2 separate and possibly different
+ * {@link de.charite.compbio.jannovar.data.ReferenceDictionary} objects!
+ * <p>
+ * The first dictionary comes from Jannovar and is within
+ * {@link VariantAnnotations} object.
+ * <p>
+ * The second dictionary comes from SQUIRLS database and is used by all objects present within
+ * {@link SplicingPredictionData}.
  */
 public class SplicingVariantAlleleEvaluation {
 
@@ -24,8 +33,9 @@ public class SplicingVariantAlleleEvaluation {
      * The ALT allele of the variant context that is being analyzed.
      */
     private final Allele altAllele;
+
     /**
-     * Results of the splicing analysis.
+     * Results of the splicing analysis - map of {@link SplicingPredictionData} with respect to transcript ID.
      */
     private final Map<String, SplicingPredictionData> predictionData = new HashMap<>();
     /**
