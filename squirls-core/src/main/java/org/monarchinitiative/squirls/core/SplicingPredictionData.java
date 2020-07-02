@@ -9,5 +9,23 @@ import org.monarchinitiative.squirls.core.scoring.Annotatable;
  */
 public interface SplicingPredictionData extends Annotatable, Classifiable {
 
+    /**
+     * Get the feature value after casting the value to double.
+     *
+     * @param featureName name of the feature
+     * @return feature casted to double
+     */
+    default double getFeatureAsDouble(String featureName) {
+        return getFeature(featureName, Double.class);
+    }
 
+    /**
+     * Get the feature value after rounding up the value to integer.
+     *
+     * @param featureName name of the feature
+     * @return feature casted to integer
+     */
+    default int getFeatureAsInt(String featureName) {
+        return getFeature(featureName, Double.class).intValue();
+    }
 }

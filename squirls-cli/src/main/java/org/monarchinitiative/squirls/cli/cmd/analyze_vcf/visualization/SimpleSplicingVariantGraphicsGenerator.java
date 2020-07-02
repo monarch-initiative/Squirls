@@ -12,10 +12,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import xyz.ielis.hyperutil.reference.fasta.SequenceInterval;
 
-import java.util.Comparator;
-import java.util.Map;
-import java.util.Optional;
-
 /**
  * The first approach for generating SVG graphics. The class applies a set of rules to generate the best SVG graphics
  * for given variant.
@@ -28,7 +24,7 @@ public class SimpleSplicingVariantGraphicsGenerator implements SplicingVariantGr
     /**
      * The image returned if unable to generate the normal SVG.
      */
-    private static final String EMPTY_SVG_IMAGE = "<svg width=\"20\" height=\"20\" xmlns=\"http://www.w3.org/2000/svg\"></svg>";
+    private static final String EMPTY_SVG_IMAGE = "<svg width=\"20\" height=\"20\" style=\"border:1px solid black\" xmlns=\"http://www.w3.org/2000/svg\"></svg>";
 
     private final VmvtGenerator vmvtGenerator = new VmvtGenerator();
 
@@ -43,24 +39,25 @@ public class SimpleSplicingVariantGraphicsGenerator implements SplicingVariantGr
      * @return String with SVG image or the default/empty SVG if any required information is missing
      */
     @Override
-    public String generateGraphics(SplicingVariantAlleleEvaluation variant) {
+    public SplicingVariantAlleleEvaluation generateGraphics(SplicingVariantAlleleEvaluation variant) {
+        String primaryGraphics = EMPTY_SVG_IMAGE;
+        String secondaryGraphics = EMPTY_SVG_IMAGE;
+        String logo = EMPTY_SVG_IMAGE;
         /*
         Select the prediction data that we use to create the SVG. This is the data that corresponds to transcript with
         respect to which the variant has the maximum predicted pathogenicity.
          */
-        final Optional<SplicingPredictionData> optPredictionData = variant.getPredictionData().entrySet().stream()
-                .max(Comparator.comparingDouble(e -> e.getValue().getPrediction().getMaxPathogenicity()))
-                .map(Map.Entry::getValue);
-        if (optPredictionData.isEmpty()) {
+        final SplicingPredictionData predictionData = variant.getPrimaryPrediction();
+        if (predictionData == null) {
             LOGGER.debug("Unable to find transcript with maximum pathogenicity score for variant `{}`",
                     variant.getRepresentation());
-            return EMPTY_SVG_IMAGE;
+            variant.setPrimaryGraphics(primaryGraphics);
+            variant.setSecondaryGraphics(secondaryGraphics);
         }
 
         /*
         This is the set of data we shall use for generation of the SVG graphics.
          */
-        final SplicingPredictionData predictionData = optPredictionData.get();
         final SplicingTranscript transcript = predictionData.getTranscript();
         final GenomeVariant genomeVariant = predictionData.getVariant();
         final SequenceInterval sequence = predictionData.getSequence();
@@ -69,18 +66,20 @@ public class SimpleSplicingVariantGraphicsGenerator implements SplicingVariantGr
         Overlaps with canonical donor site?
          */
         final GenomePosition donorAnchor = predictionData.getMetadata().getDonorCoordinateMap().get(transcript.getAccessionId());
+        canonical_donor:
         if (donorAnchor != null) {
             final GenomeInterval canonicalDonorInterval = alleleGenerator.makeDonorInterval(donorAnchor);
             if (genomeVariant.getGenomeInterval().overlapsWith(canonicalDonorInterval)) {
                 final String refAllele = alleleGenerator.getDonorSiteSnippet(donorAnchor, sequence);
                 if (refAllele == null) {
+                    // we cannot set the primary graphics here
                     LOGGER.debug("Unable to get sequence for the canonical donor site `{}` for variant `{}`",
                             canonicalDonorInterval, variant.getRepresentation());
-                    return EMPTY_SVG_IMAGE;
+                    break canonical_donor;
                 }
-
                 final String altAllele = alleleGenerator.getDonorSiteWithAltAllele(donorAnchor, genomeVariant, sequence);
-                return vmvtGenerator.getDonorVmvtSvg(refAllele, altAllele);
+                logo = vmvtGenerator.getDonorLogoSvg(refAllele, altAllele);
+                primaryGraphics = vmvtGenerator.getDonorVmvtSvg(refAllele, altAllele);
             }
         }
 
@@ -88,18 +87,21 @@ public class SimpleSplicingVariantGraphicsGenerator implements SplicingVariantGr
         Overlaps with canonical acceptor site?
          */
         final GenomePosition acceptorAnchor = predictionData.getMetadata().getAcceptorCoordinateMap().get(transcript.getAccessionId());
+        canonical_acceptor:
         if (acceptorAnchor != null) {
             final GenomeInterval canonicalAcceptorInterval = alleleGenerator.makeAcceptorInterval(acceptorAnchor);
             if (genomeVariant.getGenomeInterval().overlapsWith(canonicalAcceptorInterval)) {
                 final String refAllele = alleleGenerator.getAcceptorSiteSnippet(acceptorAnchor, sequence);
                 if (refAllele == null) {
+                    // we cannot set the primary graphics here
                     LOGGER.debug("Unable to get sequence for the canonical acceptor site `{}` for variant `{}`",
                             canonicalAcceptorInterval, variant.getRepresentation());
-                    return EMPTY_SVG_IMAGE;
+                    break canonical_acceptor;
                 }
 
                 final String altAllele = alleleGenerator.getAcceptorSiteWithAltAllele(acceptorAnchor, genomeVariant, sequence);
-                return vmvtGenerator.getAcceptorVmvtSvg(refAllele, altAllele);
+                logo = vmvtGenerator.getAcceptorLogoSvg(refAllele, altAllele);
+                primaryGraphics = vmvtGenerator.getAcceptorVmvtSvg(refAllele, altAllele);
             }
         }
 
@@ -108,9 +110,11 @@ public class SimpleSplicingVariantGraphicsGenerator implements SplicingVariantGr
          Is the variant in exon? Then we show
          -
          */
-
         // TODO: 29. 6. 2020 implement!
 
-        return "";
+        variant.setLogo(logo);
+        variant.setPrimaryGraphics(primaryGraphics);
+        variant.setSecondaryGraphics(secondaryGraphics);
+        return variant;
     }
 }

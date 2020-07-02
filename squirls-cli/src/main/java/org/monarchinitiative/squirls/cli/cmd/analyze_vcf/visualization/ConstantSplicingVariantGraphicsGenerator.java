@@ -156,7 +156,8 @@ public class ConstantSplicingVariantGraphicsGenerator implements SplicingVariant
             "</svg>\n";
 
     @Override
-    public String generateGraphics(SplicingVariantAlleleEvaluation variant) {
-        return CONSTANT_SVG_STRING;
+    public SplicingVariantAlleleEvaluation generateGraphics(SplicingVariantAlleleEvaluation variant) {
+        variant.setPrimaryGraphics(CONSTANT_SVG_STRING);
+        return variant;
     }
 }

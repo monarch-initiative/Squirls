@@ -165,20 +165,6 @@ public class AnalyzeVcfCommand extends Command {
         };
     }
 
-    /**
-     * Generate the appropriate SVG graphics for the given <code>evaluation</code>.
-     *
-     * @param generator {@link SplicingVariantGraphicsGenerator} to use for generation
-     * @return function for generating the SVG graphics
-     */
-    private static UnaryOperator<SplicingVariantAlleleEvaluation> generateGraphics(SplicingVariantGraphicsGenerator generator) {
-        return evaluation -> {
-            final String graphics = generator.generateGraphics(evaluation);
-            evaluation.setGraphics(graphics);
-            return evaluation;
-        };
-    }
-
     @Override
     public void run(Namespace namespace) throws CommandException {
         final Path inputPath = Paths.get(namespace.getString("input"));
@@ -224,7 +210,7 @@ public class AnalyzeVcfCommand extends Command {
                     .filter(variant -> !variant.getMaxScore().isNaN() && variant.getMaxScore() > threshold)
                     .peek(progressReporter::logEligibleAllele)
 
-                    .map(generateGraphics(graphicsGenerator))
+                    .map(graphicsGenerator::generateGraphics)
 
                     .onClose(progressReporter.summarize())
                     .forEach(annotated::add);

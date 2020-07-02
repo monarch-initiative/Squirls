@@ -9,10 +9,10 @@ import org.monarchinitiative.squirls.cli.cmd.analyze_vcf.SplicingVariantAlleleEv
 public interface SplicingVariantGraphicsGenerator {
 
     /**
-     * Generate SVG image for given <code>variant</code>.
+     * Generate SVG image for given {@link SplicingVariantAlleleEvaluation}.
      *
      * @param variant {@link SplicingVariantAlleleEvaluation} to be visualized
-     * @return String with SVG image
+     * @return variant with present graphics
      */
-    String generateGraphics(SplicingVariantAlleleEvaluation variant);
+    SplicingVariantAlleleEvaluation generateGraphics(SplicingVariantAlleleEvaluation variant);
 }

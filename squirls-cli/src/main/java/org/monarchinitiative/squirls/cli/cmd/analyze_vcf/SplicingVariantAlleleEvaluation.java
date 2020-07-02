@@ -42,19 +42,47 @@ public class SplicingVariantAlleleEvaluation {
      * Results of Jannovar's functional annotation with respect to transcripts this variant overlaps with.
      */
     private VariantAnnotations annotations;
-    private String graphics;
+    /**
+     * Logo of either donor or acceptor site.
+     */
+    private String logo;
+    /**
+     * The primary graphics presented to the user for this variant.
+     */
+    private String primaryGraphics;
+    /**
+     * The secondary graphics presented to the user for this variant
+     */
+    private String secondaryGraphics;
+    private SplicingPredictionData primaryPrediction;
 
     public SplicingVariantAlleleEvaluation(VariantContext base, Allele altAllele) {
         this.base = base;
         this.altAllele = altAllele;
     }
 
-    public String getGraphics() {
-        return graphics;
+    public String getLogo() {
+        return logo;
     }
 
-    public void setGraphics(String graphics) {
-        this.graphics = graphics;
+    public void setLogo(String logo) {
+        this.logo = logo;
+    }
+
+    public String getSecondaryGraphics() {
+        return secondaryGraphics;
+    }
+
+    public void setSecondaryGraphics(String secondaryGraphics) {
+        this.secondaryGraphics = secondaryGraphics;
+    }
+
+    public String getPrimaryGraphics() {
+        return primaryGraphics;
+    }
+
+    public void setPrimaryGraphics(String primaryGraphics) {
+        this.primaryGraphics = primaryGraphics;
     }
 
     public Map<String, SplicingPredictionData> getPredictionData() {
@@ -62,11 +90,17 @@ public class SplicingVariantAlleleEvaluation {
     }
 
     public void putPredictionData(String transcriptAccession, SplicingPredictionData predictionData) {
+        // TODO: 1. 7. 2020 this is the place where we effectively decide about the transcript that is affected by variant the most
+        //  Revise if necessary.
+
         this.predictionData.put(transcriptAccession, predictionData);
+        primaryPrediction = this.predictionData.values().stream()
+                .max(Comparator.comparing(spd -> spd.getPrediction().getMaxPathogenicity()))
+                .orElse(null);
     }
 
     public void putAllPredictionData(Map<String, SplicingPredictionData> predictionData) {
-        this.predictionData.putAll(predictionData);
+        predictionData.forEach(this::putPredictionData);
     }
 
     public VariantAnnotations getAnnotations() {
@@ -101,11 +135,25 @@ public class SplicingVariantAlleleEvaluation {
     }
 
     public Double getMaxScore() {
-        return predictionData.values().stream()
-                .map(SplicingPredictionData::getPrediction)
-                .mapToDouble(Prediction::getMaxPathogenicity)
-                .max()
-                .orElse(Double.NaN);
+        return primaryPrediction == null
+                ? Double.NaN
+                : primaryPrediction.getPrediction().getMaxPathogenicity();
+    }
+
+    public SplicingPredictionData getPrimaryPrediction() {
+        return primaryPrediction;
+    }
+
+    /**
+     * Get accession ID of the <em>primary</em> transcript - the transcript with the highest reported pathogenicity.
+     * We create the graphics with respect to this transcript.
+     *
+     * @return String with transcript accession ID or <code>null</code>
+     */
+    public String getPrimaryTxId() {
+        return primaryPrediction == null
+                ? null
+                : primaryPrediction.getTranscript().getAccessionId();
     }
 
     public String getRepresentation() {

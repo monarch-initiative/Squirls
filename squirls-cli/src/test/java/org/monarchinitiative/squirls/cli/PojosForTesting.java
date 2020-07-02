@@ -95,6 +95,17 @@ public class PojosForTesting {
                         .putAcceptorCoordinate("NM_001278928.1", new GenomePosition(rd, Strand.FWD, chr, 136_224_587, PositionType.ONE_BASED))
                         .meanPhyloPScore(4.321)
                         .build()))
+                .peek(data -> {
+                    data.putFeature("donor_offset", -2);
+                    data.putFeature("canonical_donor", 2.44704789418146);
+                    data.putFeature("cryptic_donor", 0.);
+                    data.putFeature("acceptor_offset", 143);
+                    data.putFeature("canonical_acceptor", 0.);
+                    data.putFeature("cryptic_acceptor", -12.4905210874462);
+                    data.putFeature("phylop", 3.5);
+                    data.putFeature("hexamer", -1.4957907);
+                    data.putFeature("septamer", -0.8844);
+                })
                 .collect(Collectors.toMap(k -> k.getTranscript().getAccessionId(), Function.identity()));
         evaluation.putAllPredictionData(predictions);
 
@@ -141,6 +152,17 @@ public class PojosForTesting {
                         .putAcceptorCoordinate("NM_001278928.1", new GenomePosition(rd, Strand.FWD, 9, 136_224_587, PositionType.ONE_BASED))
                         .meanPhyloPScore(1.234)
                         .build()))
+                .peek(data -> {
+                    data.putFeature("donor_offset", -2);
+                    data.putFeature("canonical_donor", 2.44704789418146);
+                    data.putFeature("cryptic_donor", 0.);
+                    data.putFeature("acceptor_offset", 143);
+                    data.putFeature("canonical_acceptor", 0.);
+                    data.putFeature("cryptic_acceptor", -12.4905210874462);
+                    data.putFeature("phylop", 3.5);
+                    data.putFeature("hexamer", -1.4957907);
+                    data.putFeature("septamer", -0.8844);
+                })
                 .collect(Collectors.toMap(k -> k.getTranscript().getAccessionId(), Function.identity()));
         evaluation.putAllPredictionData(predictions);
 

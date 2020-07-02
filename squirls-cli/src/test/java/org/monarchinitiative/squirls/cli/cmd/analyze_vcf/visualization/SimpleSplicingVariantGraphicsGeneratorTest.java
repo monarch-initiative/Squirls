@@ -36,7 +36,7 @@ class SimpleSplicingVariantGraphicsGeneratorTest {
     void generateGraphics_donorPlusFive() throws Exception {
         final SplicingVariantAlleleEvaluation evaluation = PojosForTesting.getDonorPlusFiveEvaluation(jannovarData.getRefDict(), annotator);
 
-        final String graphics = generator.generateGraphics(evaluation);
+        final String graphics = generator.generateGraphics(evaluation).getPrimaryGraphics();
 
         // TODO: 9. 6. 2020 add tests
         System.out.println(graphics);
@@ -46,7 +46,7 @@ class SimpleSplicingVariantGraphicsGeneratorTest {
     void generateGraphics_acceptorMinusOne() throws Exception {
         final SplicingVariantAlleleEvaluation evaluation = PojosForTesting.getAcceptorMinusOneEvaluation(jannovarData.getRefDict(), annotator);
 
-        final String graphics = generator.generateGraphics(evaluation);
+        final String graphics = generator.generateGraphics(evaluation).getPrimaryGraphics();
 
         // TODO: 9. 6. 2020 add tests
         System.out.println(graphics);
