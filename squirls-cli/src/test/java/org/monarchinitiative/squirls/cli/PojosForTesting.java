@@ -96,10 +96,10 @@ public class PojosForTesting {
                         .meanPhyloPScore(4.321)
                         .build()))
                 .peek(data -> {
-                    data.putFeature("donor_offset", -2);
+                    data.putFeature("donor_offset", -2.);
                     data.putFeature("canonical_donor", 2.44704789418146);
                     data.putFeature("cryptic_donor", 0.);
-                    data.putFeature("acceptor_offset", 143);
+                    data.putFeature("acceptor_offset", 143.);
                     data.putFeature("canonical_acceptor", 0.);
                     data.putFeature("cryptic_acceptor", -12.4905210874462);
                     data.putFeature("phylop", 3.5);
@@ -153,10 +153,10 @@ public class PojosForTesting {
                         .meanPhyloPScore(1.234)
                         .build()))
                 .peek(data -> {
-                    data.putFeature("donor_offset", -2);
+                    data.putFeature("donor_offset", -2.);
                     data.putFeature("canonical_donor", 2.44704789418146);
                     data.putFeature("cryptic_donor", 0.);
-                    data.putFeature("acceptor_offset", 143);
+                    data.putFeature("acceptor_offset", 143.);
                     data.putFeature("canonical_acceptor", 0.);
                     data.putFeature("cryptic_acceptor", -12.4905210874462);
                     data.putFeature("phylop", 3.5);

@@ -26,6 +26,6 @@ public interface SplicingPredictionData extends Annotatable, Classifiable {
      * @return feature casted to integer
      */
     default int getFeatureAsInt(String featureName) {
-        return getFeature(featureName, Double.class).intValue();
+        return (int) Math.round(getFeature(featureName, Double.class));
     }
 }

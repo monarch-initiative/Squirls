@@ -7,7 +7,7 @@ import org.monarchinitiative.squirls.cli.cmd.analyze_vcf.SplicingVariantAlleleEv
 import org.monarchinitiative.squirls.core.SplicingPredictionData;
 import org.monarchinitiative.squirls.core.model.SplicingTranscript;
 import org.monarchinitiative.squirls.core.reference.allele.AlleleGenerator;
-import org.monarchinitiative.vmvt.VmvtGenerator;
+import org.monarchinitiative.vmvt.core.VmvtGenerator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import xyz.ielis.hyperutil.reference.fasta.SequenceInterval;
@@ -78,8 +78,8 @@ public class SimpleSplicingVariantGraphicsGenerator implements SplicingVariantGr
                     break canonical_donor;
                 }
                 final String altAllele = alleleGenerator.getDonorSiteWithAltAllele(donorAnchor, genomeVariant, sequence);
-                logo = vmvtGenerator.getDonorLogoSvg(refAllele, altAllele);
-                primaryGraphics = vmvtGenerator.getDonorVmvtSvg(refAllele, altAllele);
+                logo = vmvtGenerator.getDonorLogoSvg();
+                primaryGraphics = vmvtGenerator.getDonorTrekkerSvg(refAllele, altAllele);
             }
         }
 
@@ -100,8 +100,8 @@ public class SimpleSplicingVariantGraphicsGenerator implements SplicingVariantGr
                 }
 
                 final String altAllele = alleleGenerator.getAcceptorSiteWithAltAllele(acceptorAnchor, genomeVariant, sequence);
-                logo = vmvtGenerator.getAcceptorLogoSvg(refAllele, altAllele);
-                primaryGraphics = vmvtGenerator.getAcceptorVmvtSvg(refAllele, altAllele);
+                logo = vmvtGenerator.getAcceptorLogoSvg();
+                primaryGraphics = vmvtGenerator.getAcceptorTrekkerSvg(refAllele, altAllele);
             }
         }
 

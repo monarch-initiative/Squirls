@@ -63,8 +63,8 @@
         SVG images. -->
         <dependency>
             <groupId>org.monarchinitiative.vmvt</groupId>
-            <artifactId>vmvt</artifactId>
-            <version>0.6.1</version>
+            <artifactId>vmvt-core</artifactId>
+            <version>0.8.1</version>
         </dependency>
 
         <!--  TEST DEPENDENCIES  -->
