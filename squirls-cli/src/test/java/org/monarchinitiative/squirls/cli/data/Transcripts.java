@@ -106,6 +106,50 @@ class Transcripts {
     }
 
     /**
+     * Get the following transcripts of the <em>NF1</em> gene:
+     * <ul>
+     *      <li>NM_000267.3</li> - the transcript only contains the first, the 9th, and the last exon of the
+     *      real transcript
+     *  </ul>
+     */
+    static Set<SplicingTranscript> nf1Transcripts(ReferenceDictionary rd) {
+        return Set.of(reduced_nf1_NM_000267_3(rd));
+    }
+
+    /**
+     * Get a transcript that contains the first, the last and the 9th exon of the <em>NF1</em> <em>NM_000267.3</em>
+     * transcript.
+     *
+     * @param rd {@link ReferenceDictionary} to use
+     * @return transcript
+     */
+    private static SplicingTranscript reduced_nf1_NM_000267_3(ReferenceDictionary rd) {
+        return SplicingTranscript.builder()
+                .setAccessionId("NM_000267.3")
+                .setCoordinates(new GenomeInterval(rd, Strand.FWD, 17, 29_421_945, 29_704_695, PositionType.ONE_BASED))
+                // first
+                .addExon(SplicingExon.builder()
+                        .setInterval(new GenomeInterval(rd, Strand.FWD, 17, 29_421_945, 29422387, PositionType.ONE_BASED))
+                        .build())
+                .addIntron(SplicingIntron.builder()
+                        .setInterval(new GenomeInterval(rd, Strand.FWD, 17, 29422387, 29_527_439))
+                        .build())
+                // 9th
+                .addExon(SplicingExon.builder()
+                        .setInterval(new GenomeInterval(rd, Strand.FWD, 17, 29_527_440, 29_527_613, PositionType.ONE_BASED))
+                        .build())
+                .addIntron(SplicingIntron.builder()
+                        .setInterval(new GenomeInterval(rd, Strand.FWD, 17, 29_527_613, 29_701_030))
+                        .build())
+
+                // last
+                .addExon(SplicingExon.builder()
+                        .setInterval(new GenomeInterval(rd, Strand.FWD, 17, 29_701_031, 29_704_695, PositionType.ONE_BASED))
+                        .build())
+                .build();
+    }
+
+    /**
      * Get a real transcript corresponding to <em>SURF2</em> <em>NM_017503.4</em>.
      *
      * @param rd {@link ReferenceDictionary} to use

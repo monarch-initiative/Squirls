@@ -644,4 +644,65 @@ public class VariantsForTesting {
     }
 
 
+    /**
+     * Get data for variant <code>chr17:29527461C>T</code>. The variant is located at 22bp downstream from the canonical
+     * acceptor site of the exon 9 of the <em>NF1</em> gene and leads to exon skipping due to SRE.
+     *
+     * @param rd        {@link ReferenceDictionary} to use
+     * @param annotator {@link VariantAnnotator} to use to perform functional annotation with respect to genes & transcripts
+     * @return evaluation object with all the data
+     * @throws Exception bla
+     */
+    public static SplicingVariantAlleleEvaluation NF1codingExon9coding_SRE(ReferenceDictionary rd, VariantAnnotator annotator) throws Exception {
+
+        // *********************************** PARAMETRIZE *************************************************************
+
+        /*
+        Prepare data
+         */
+        final String chrom = "chr17";
+        final int chr = 17;
+        final int pos = 29_527_461;
+        final String variantId = "NF1_coding_22bp_downstream_from_acceptor_exon9";
+        final String ref = "C", alt = "T";
+        final Set<String> seqIds = Set.of("NM_000267.3");
+        final double pathogenicity = 0.88;
+
+        final SequenceInterval si = Sequences.getNf1Exon9Sequence(rd);
+        final Collection<SplicingTranscript> transcripts = Transcripts.nf1Transcripts(rd);
+        final Metadata metadata = Metadata.builder()
+                .putDonorCoordinate("NM_000267.3", new GenomePosition(rd, Strand.FWD, chr, 29_527_614, PositionType.ONE_BASED))
+                .putAcceptorCoordinate("NM_000267.3", new GenomePosition(rd, Strand.FWD, chr, 29_527_440, PositionType.ONE_BASED))
+                .meanPhyloPScore(1.65199995040894)
+                .build();
+        final Map<String, Double> featureMap = Map.of(
+                "donor_offset", -153.,
+                "canonical_donor", 0.,
+                "cryptic_donor", -10.4378653224383,
+                "acceptor_offset", 22.,
+                "canonical_acceptor", 0.,
+                "cryptic_acceptor", -8.01047083607081,
+                "phylop", 1.65199995040894,
+                "hexamer", -1.2524385,
+                "septamer", -1.619
+        );
+
+        // generate graphics using Vmvt
+//        final String ruler = GENERATOR.getAcceptorLogoSvg();
+        final String ruler = "";// TODO - add ruler here?
+
+        // hexamers
+        final String primary = GENERATOR.getHexamerSvg(
+                "GTCTA" + "C" + "GAAAA",
+                "GTCTA" + "T" + "GAAAA");
+        // heptamers
+        final String secondary = GENERATOR.getHeptamerSvg(
+                "AGTCTA" + "C" + "GAAAAG",
+                "AGTCTA" + "T" + "GAAAAG");
+
+        // *************************************************************************************************************
+
+        return makeEvaluation(rd, chrom, pos, variantId, ref, alt, annotator, seqIds, transcripts, si, pathogenicity, metadata, featureMap, ruler, primary, secondary);
+    }
+
 }

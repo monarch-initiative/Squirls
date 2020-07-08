@@ -118,6 +118,22 @@ class Sequences {
             "GCAAAGCCTCCAGGACTGCAGACCCATGTGGTGATGGCCTGCGCCATCTGGAGATAATGT" +
             "TGGGGAACTAGGGGACTATGGGCGTCACCAATATTAGAGA";
 
+
+    /**
+     * A real sequence from interval `>chr17:29527201-29527800` (1-based coordinates) on hg19. The interval contains
+     * exon 9 of <em>NF1</em>.
+     */
+    private static final String NF1_EXON9 = "ACTGTTTTTTGTATTCCTTTAATAATTCAATAAAGAAAATAGAAAAAGGATTTTTTTTAA" +
+            "ATTTGAGAAACATTTAAATGATGACCACTACTTAAATTATGAAATTGAAAACCACAAATA" +
+            "TAAATTATGCATTCTTTATAGTATGAGTTTTAGAGGCTGTTAATTTGCTATAATATTAGC" +
+            "TACATCTGGAATAGAAGAAACTTCATATATTATCTTATCGCTATATTTGAATTCTGTAGA" +
+            "AGTTATTTCTGGACAGTCTACGAAAAGCTCTTGCTGGCCATGGAGGAAGTAGGCAGCTGA" +
+            "CAGAAAGTGCTGCAATTGCCTGTGTCAAACTGTGTAAAGCAAGTACTTACATCAATTGGG" +
+            "AAGATAACTCTGTCATTTTCCTACTTGTTCAGTCCATGGTGGTTGATCTTAAGGTAACAT" +
+            "GCTTATTCTTTCTCTACTACAAACTTTAAGAAAATTAAATGAATTTTCTAGCATAAGTAT" +
+            "TATGTCAAAGATAATTGCTAACATTAAAGTTCTGACTCTTCGTTGATAAGTTCATAGGAC" +
+            "TTGCTTTTGTTGTTACTGTGTTCATCAGCCTAAATGGACTGAGAATATGAAGAAAACACC";
+
     private Sequences() {
         // no-op
     }
@@ -239,6 +255,21 @@ class Sequences {
                 .sequence(VWF_EXON26)
                 .interval(new GenomeInterval(rd, Strand.FWD,
                         rd.getContigNameToID().get("chr12"), 6131801, 6132200, PositionType.ONE_BASED))
+                .build();
+    }
+
+    /**
+     * A real sequence from interval `>chr17:29527201-29527800` (1-based coordinates) on hg19. The interval contains
+     * exon 9 of <em>NF1</em>.
+     *
+     * @param rd {@link ReferenceDictionary} to use
+     * @return the sequence interval
+     */
+    static SequenceInterval getNf1Exon9Sequence(ReferenceDictionary rd) {
+        return SequenceInterval.builder()
+                .sequence(NF1_EXON9)
+                .interval(new GenomeInterval(rd, Strand.FWD,
+                        rd.getContigNameToID().get("chr17"), 29527201, 29527800, PositionType.ONE_BASED))
                 .build();
     }
 

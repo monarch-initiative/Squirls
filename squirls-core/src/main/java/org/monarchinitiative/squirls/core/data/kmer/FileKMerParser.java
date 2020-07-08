@@ -46,7 +46,6 @@ public class FileKMerParser {
                         }
                         kmerMap.put(seq, score);
                     });
-
         }
         return kmerMap;
     }
