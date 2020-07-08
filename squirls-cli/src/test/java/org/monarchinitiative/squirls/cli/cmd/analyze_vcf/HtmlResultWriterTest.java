@@ -44,13 +44,15 @@ class HtmlResultWriterTest {
                 // TODO: 7. 7. 2020 consider removing
 //                VariantsForTesting.SURF2DonorExon3Plus4Evaluation(rd, annotator),
 //                VariantsForTesting.SURF2Exon3AcceptorMinus2Evaluation(rd, annotator),
+                // donor
+                VariantsForTesting.BRCA2DonorExon15plus2QUID(rd, annotator),
                 VariantsForTesting.ALPLDonorExon7Minus2(rd, annotator),
                 VariantsForTesting.HBBcodingExon1UpstreamCryptic(rd, annotator),
+                // acceptor
+                VariantsForTesting.VWFAcceptorExon26minus2QUID(rd, annotator),
                 VariantsForTesting.TSC2AcceptorExon11Minus3(rd, annotator),
                 VariantsForTesting.COL4A5AcceptorExon11Minus8(rd, annotator),
-                VariantsForTesting.RYR1codingExon102crypticAcceptor(rd, annotator),
-                VariantsForTesting.BRCA2DonorExon15plus2QUID(rd, annotator),
-                VariantsForTesting.VWFAcceptorExon26minus2QUID(rd, annotator));
+                VariantsForTesting.RYR1codingExon102crypticAcceptor(rd, annotator));
 
         AnalysisResults results = AnalysisResults.builder()
                 .addAllSampleNames(List.of("Sample_192"))

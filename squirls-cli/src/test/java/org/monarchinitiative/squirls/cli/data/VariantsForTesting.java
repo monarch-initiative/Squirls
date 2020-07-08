@@ -260,7 +260,7 @@ public class VariantsForTesting {
         final String variantId = "ALPL_donor_exon7_minus2";
         final String ref = "A", alt = "G";
         final Set<String> seqIds = Set.of("NM_000478.4");
-        final double pathogenicity = 0.95;
+        final double pathogenicity = 0.94;
 
         final SequenceInterval si = Sequences.getAlplExon7Sequence(rd);
         final Collection<SplicingTranscript> transcripts = Transcripts.alplTranscripts(rd);
@@ -313,7 +313,7 @@ public class VariantsForTesting {
         final String variantId = "TSC2_acceptor-3_exon11";
         final String ref = "C", alt = "G";
         final Set<String> seqIds = Set.of("NM_000548.3");
-        final double pathogenicity = 0.94;
+        final double pathogenicity = 0.91;
 
         final SequenceInterval si = Sequences.getTsc2Exon11Sequence(rd);
         final Collection<SplicingTranscript> transcripts = Transcripts.tsc2Transcripts(rd);
@@ -367,7 +367,7 @@ public class VariantsForTesting {
         final String variantId = "COL4A5_acceptor-8_exon29";
         final String ref = "T", alt = "A";
         final Set<String> seqIds = Set.of("NM_000495.4");
-        final double pathogenicity = 0.93;
+        final double pathogenicity = 0.90;
 
         final SequenceInterval si = Sequences.getCol4a5Exon29Sequence(rd);
         final Collection<SplicingTranscript> transcripts = Transcripts.col4a5Transcripts(rd);
@@ -425,7 +425,7 @@ public class VariantsForTesting {
         final String variantId = "RYR1_coding_21bp_downstream_exon102";
         final String ref = "C", alt = "G";
         final Set<String> seqIds = Set.of("NM_000540.2");
-        final double pathogenicity = 0.92;
+        final double pathogenicity = 0.89;
 
         final SequenceInterval si = Sequences.getRyr1Exon102Sequence(rd);
         final Collection<SplicingTranscript> transcripts = Transcripts.ryr1Transcripts(rd);
@@ -484,7 +484,7 @@ public class VariantsForTesting {
         final String variantId = "HBB_donor_3bp_upstream_exon1";
         final String ref = "G", alt = "A";
         final Set<String> seqIds = Set.of("NM_000518.4");
-        final double pathogenicity = 0.91;
+        final double pathogenicity = 0.93;
 
         final SequenceInterval si = Sequences.getHbbExon1Sequence(rd);
         final Collection<SplicingTranscript> transcripts = Transcripts.hbbTranscripts(rd);
@@ -543,7 +543,7 @@ public class VariantsForTesting {
         final String variantId = "BRCA2_donor_2bp_downstream_exon15_quid";
         final String ref = "T", alt = "G";
         final Set<String> seqIds = Set.of("NM_000059.3");
-        final double pathogenicity = 0.90;
+        final double pathogenicity = 0.95;
 
         final SequenceInterval si = Sequences.getBrca2Exon15Sequence(rd);
         final Collection<SplicingTranscript> transcripts = Transcripts.brca2Transcripts(rd);
@@ -601,7 +601,7 @@ public class VariantsForTesting {
         final String variantId = "VWF_acceptor_2bp_upstream_exon26_quid";
         final String ref = "T", alt = "C";
         final Set<String> seqIds = Set.of("NM_000552.3");
-        final double pathogenicity = 0.89;
+        final double pathogenicity = 0.92;
 
         final SequenceInterval si = Sequences.getVwfExon26Sequence(rd);
         final Collection<SplicingTranscript> transcripts = Transcripts.vwfTranscripts(rd);
