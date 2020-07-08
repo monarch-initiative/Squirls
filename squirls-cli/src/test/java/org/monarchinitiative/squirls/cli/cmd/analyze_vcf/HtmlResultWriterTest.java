@@ -45,6 +45,7 @@ class HtmlResultWriterTest {
 //                VariantsForTesting.SURF2DonorExon3Plus4Evaluation(rd, annotator),
 //                VariantsForTesting.SURF2Exon3AcceptorMinus2Evaluation(rd, annotator),
                 VariantsForTesting.ALPLDonorExon7Minus2(rd, annotator),
+                VariantsForTesting.HBBcodingExon1UpstreamCryptic(rd, annotator),
                 VariantsForTesting.TSC2AcceptorExon11Minus3(rd, annotator),
                 VariantsForTesting.COL4A5AcceptorExon11Minus8(rd, annotator),
                 VariantsForTesting.RYR1codingExon102crypticAcceptor(rd, annotator));

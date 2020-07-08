@@ -462,4 +462,63 @@ public class VariantsForTesting {
         return makeEvaluation(rd, chrom, pos, variantId, ref, alt, annotator, seqIds, transcripts, si, pathogenicity, metadata, featureMap, logo, primary, secondary);
     }
 
+    /**
+     * Get data for variant <code>chr11:5,248,162G>A</code>. The variant is located 3bp upstream from the canonical
+     * donor site of the exon 1 of the <em>HBB</em> gene and creates a new cryptic donor site.
+     *
+     * @param rd        {@link ReferenceDictionary} to use
+     * @param annotator {@link VariantAnnotator} to use to perform functional annotation with respect to genes & transcripts
+     * @return evaluation object with all the data
+     * @throws Exception bla
+     */
+    public static SplicingVariantAlleleEvaluation HBBcodingExon1UpstreamCryptic(ReferenceDictionary rd, VariantAnnotator annotator) throws Exception {
+
+        // *********************************** PARAMETRIZE *************************************************************
+
+        /*
+        Prepare data
+         */
+        final String chrom = "chr11";
+        final int chr = 11;
+        final int pos = 5_248_162;
+        final String variantId = "HBB_donor_3bp_upstream_exon1";
+        final String ref = "G", alt = "A";
+        final Set<String> seqIds = Set.of("NM_000518.4");
+        final double pathogenicity = 0.91;
+
+        final SequenceInterval si = Sequences.getHbbExon1Sequence(rd);
+        final Collection<SplicingTranscript> transcripts = Transcripts.hbbTranscripts(rd);
+        final Metadata metadata = Metadata.builder()
+                .putDonorCoordinate("NM_000518.4", new GenomePosition(rd, Strand.FWD, chr, 5_248_159, PositionType.ONE_BASED))
+                .putAcceptorCoordinate("NM_000518.4", new GenomePosition(rd, Strand.FWD, chr, 5_248_029, PositionType.ONE_BASED))
+                .meanPhyloPScore(3.1489999294281)
+                .build();
+        final Map<String, Double> featureMap = Map.of(
+                "donor_offset", -3.,
+                "canonical_donor", 1.54532552848381,
+                "cryptic_donor", 1.77453922708334,
+                "acceptor_offset", -133.,
+                "canonical_acceptor", Double.NaN, // the first exon, thus N/A
+                "cryptic_acceptor", Double.NaN, // the first exon, thus N/A
+                "phylop", 3.1489999294281,
+                "hexamer", -2.1175716,
+                "septamer", -1.8121
+        );
+
+        // generate graphics using Vmvt
+        final String logo = GENERATOR.getDonorLogoSvg();
+        final String primary = GENERATOR.getDonorTrekkerSvg(
+                "TGGg" + "c" + "aggt",  // ref best window snippet
+                "TGGg" + "t" + "aggt");  // alt best window snippet
+
+        // TODO this might need to be adjusted in future, the whole secondary graphics here. We'd like to compare the alt canonical site snippet with alt best window snippet
+        final String secondary = GENERATOR.getDonorTrekkerSvg(
+                "T" + "AG" + "gttggt",  // alt canonical site snippet
+                "TGGg" + "t" + "aggt");  // alt best window snippet
+
+        // *************************************************************************************************************
+
+        return makeEvaluation(rd, chrom, pos, variantId, ref, alt, annotator, seqIds, transcripts, si, pathogenicity, metadata, featureMap, logo, primary, secondary);
+    }
+
 }

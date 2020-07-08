@@ -80,6 +80,18 @@ class Sequences {
             "ctgcattcataccccatctctacctctcgctactgtgagaccttgggcaagtcacctctc" +
             "ggggcctccgtttctccatc";
 
+    /**
+     * A real sequence from interval `>chr11:5248001-5248400` (1-based coordinates) on hg19. The interval contains
+     * exon 1 of <em>HBB</em>.
+     */
+    private static final String HBB_EXON1 = "TCTGGGTCCAAGGGTAGACCACCAGCAGCCTAAGGGTGGGAAAATAGACCAATAGGCAGA" +
+            "GAGAGTCAGTGCCTATCAGAAACCCAAGAGTCTTCTCTGTCTCCACATGCCCAGTTTCTA" +
+            "TTGGTCTCCTTAAACCTGTCTTGTAACCTTGATACCAACCTGCCCAGGGCCTCACCACCA" +
+            "ACTTCATCCACGTTCACCTTGCCCCACAGGGCAGTAACGGCAGACTTCTCCTCAGGAGTC" +
+            "AGATGCACCATGGTGTCTGTTTGAGGTTGCTAGTGAACACAGTTGTGTCAGAAGCAAATG" +
+            "TAAGCAATAGATGGCTCTGCCCTGACTTTTATGCCCAGCCCTGGCTCCTGCCCTCCCTGC" +
+            "TCCTGGGAGTAGATTGGCCAACCCTAGGGTGTGGCTCCAC";
+
     private Sequences() {
         // no-op
     }
@@ -156,6 +168,21 @@ class Sequences {
                 .sequence(RYR1_EXON102)
                 .interval(new GenomeInterval(rd, Strand.FWD,
                         rd.getContigNameToID().get("chr19"), 39_075_401, 39_075_900, PositionType.ONE_BASED))
+                .build();
+    }
+
+    /**
+     * A real sequence from interval `>chr11:5248001-5248400` (1-based coordinates) on hg19. The interval contains
+     * exon 1 of <em>HBB</em>.
+     *
+     * @param rd {@link ReferenceDictionary} to use
+     * @return the sequence interval
+     */
+    static SequenceInterval getHbbExon1Sequence(ReferenceDictionary rd) {
+        return SequenceInterval.builder()
+                .sequence(HBB_EXON1)
+                .interval(new GenomeInterval(rd, Strand.FWD,
+                        rd.getContigNameToID().get("chr11"), 5_248_001, 5_248_400, PositionType.ONE_BASED))
                 .build();
     }
 

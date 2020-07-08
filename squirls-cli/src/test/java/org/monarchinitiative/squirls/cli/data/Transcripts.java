@@ -69,6 +69,45 @@ class Transcripts {
         return Set.of(reduced_ryr1_NM_000540_2(rd));
     }
 
+
+    /**
+     * Get the following transcripts of the <em>HBB</em> gene:
+     * <ul>
+     *      <li>NM_000518.4</li> - the transcript only contains the first, the 102nd, and the last exon of the
+     *      real transcript
+     *  </ul>
+     */
+    static Set<SplicingTranscript> hbbTranscripts(ReferenceDictionary rd) {
+        return Set.of(hbb_NM_000518_4(rd));
+    }
+
+    private static SplicingTranscript hbb_NM_000518_4(ReferenceDictionary rd) {
+        return SplicingTranscript.builder()
+                .setAccessionId("NM_000518.4")
+                .setCoordinates(new GenomeInterval(rd, Strand.FWD, 11, 5_246_694, 5_248_301, PositionType.ONE_BASED).withStrand(Strand.REV))
+                // first
+                .addExon(SplicingExon.builder()
+                        .setInterval(new GenomeInterval(rd, Strand.FWD, 11, 5_248_160, 5248301, PositionType.ONE_BASED))
+                        .build())
+                .addIntron(SplicingIntron.builder()
+                        .setInterval(new GenomeInterval(rd, Strand.FWD, 11, 5_248_029, 5_248_159).withStrand(Strand.REV))
+                        .build())
+                // second
+                .addExon(SplicingExon.builder()
+                        .setInterval(new GenomeInterval(rd, Strand.FWD, 11, 5_247_807, 5_248_029, PositionType.ONE_BASED).withStrand(Strand.REV))
+                        .build())
+                .addIntron(SplicingIntron.builder()
+                        .setInterval(new GenomeInterval(rd, Strand.FWD, 11, 5_246_956, 5_247_806).withStrand(Strand.REV))
+                        .build())
+
+                // last (third)
+                .addExon(SplicingExon.builder()
+                        .setInterval(new GenomeInterval(rd, Strand.FWD, 11, 5_246_694, 5_246_956, PositionType.ONE_BASED).withStrand(Strand.REV))
+                        .build())
+                .build();
+    }
+
+
     /**
      * Get a real transcript corresponding to <em>SURF2</em> <em>NM_017503.4</em>.
      *
