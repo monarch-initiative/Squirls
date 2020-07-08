@@ -5,9 +5,9 @@ import de.charite.compbio.jannovar.annotation.builders.AnnotationBuilderOptions;
 import de.charite.compbio.jannovar.data.JannovarData;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.monarchinitiative.squirls.cli.PojosForTesting;
 import org.monarchinitiative.squirls.cli.TestDataSourceConfig;
 import org.monarchinitiative.squirls.cli.cmd.analyze_vcf.SplicingVariantAlleleEvaluation;
+import org.monarchinitiative.squirls.cli.data.VariantsForTesting;
 import org.monarchinitiative.squirls.core.model.SplicingParameters;
 import org.monarchinitiative.squirls.core.reference.allele.AlleleGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,7 +34,7 @@ class SimpleSplicingVariantGraphicsGeneratorTest {
 
     @Test
     void generateGraphics_donorPlusFive() throws Exception {
-        final SplicingVariantAlleleEvaluation evaluation = PojosForTesting.getDonorPlusFiveEvaluation(jannovarData.getRefDict(), annotator);
+        final SplicingVariantAlleleEvaluation evaluation = VariantsForTesting.SURF2DonorExon3Plus4Evaluation(jannovarData.getRefDict(), annotator);
 
         final String graphics = generator.generateGraphics(evaluation).getPrimaryGraphics();
 
@@ -44,7 +44,7 @@ class SimpleSplicingVariantGraphicsGeneratorTest {
 
     @Test
     void generateGraphics_acceptorMinusOne() throws Exception {
-        final SplicingVariantAlleleEvaluation evaluation = PojosForTesting.getAcceptorMinusOneEvaluation(jannovarData.getRefDict(), annotator);
+        final SplicingVariantAlleleEvaluation evaluation = VariantsForTesting.SURF2Exon3AcceptorMinus2Evaluation(jannovarData.getRefDict(), annotator);
 
         final String graphics = generator.generateGraphics(evaluation).getPrimaryGraphics();
 

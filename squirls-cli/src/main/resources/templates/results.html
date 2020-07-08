@@ -20,7 +20,7 @@
 <body>
 <div class="container" id="content">
     <!--    TITLE -->
-    <h2>Results for <span th:text="${sampleName}">Mr. Fantastic, Mrs. Fantastic</span></h2>
+    <h2>Results for <span th:text="${sampleName}">Sample ID</span></h2>
 
     <!--    NAV   -->
     <ul class="nav nav-pills" id="tabs">
@@ -118,7 +118,52 @@
                         </ul>
                     </div>
                     <div class="col-md-3">
-                        <div class="row" th:utext="${variant.getLogo()}">
+                        <!-- THE FEATURE TABLE -->
+                        <table class="table table-striped feature-table" th:with="pp = ${variant.getPrimaryPrediction()}">
+                            <tr>
+                                <th>Feature</th>
+                                <th>Value</th>
+                            </tr>
+                            <tr>
+                                <td><i>&Delta;R<sub>i</sub></i> donor</td>
+                                <td th:text="${#numbers.formatDecimal(pp.getFeatureAsDouble('canonical_donor'), 1, 2)}">1.55</td>
+                            </tr>
+                            <tr>
+                                <td><i>&Delta;R<sub>i</sub></i> cryptic donor</td>
+                                <td th:text="${#numbers.formatDecimal(pp.getFeatureAsDouble('cryptic_donor'), 1, 2)}">1.77</td>
+                            </tr>
+                            <tr>
+                                <td>donor offset</td>
+                                <td th:text="${pp.getFeatureAsInt('donor_offset')}">-3</td>
+                            </tr>
+                            <tr>
+                                <td><i>&Delta;R<sub>i</sub></i> acceptor</td>
+                                <td th:text="${#numbers.formatDecimal(pp.getFeatureAsDouble('canonical_acceptor'), 1, 2)}"></td>
+                            </tr>
+                            <tr>
+                                <td><i>&Delta;R<sub>i</sub></i> cryptic acceptor</td>
+                                <td th:text="${#numbers.formatDecimal(pp.getFeatureAsDouble('cryptic_acceptor'), 1, 2)}"></td>
+                            </tr>
+                            <tr>
+                                <td>acceptor offset</td>
+                                <td th:text="${pp.getFeatureAsInt('acceptor_offset')}">-133</td>
+                            </tr>
+                            <tr>
+                                <td>ESRSeq</td>
+                                <td th:text="${#numbers.formatDecimal(pp.getFeatureAsDouble('hexamer'), 1, 2)}">-2.12</td>
+                            </tr>
+                            <tr>
+                                <td>SMS</td>
+                                <td th:text="${#numbers.formatDecimal(pp.getFeatureAsDouble('septamer'), 1, 2)}">-1.81</td>
+                            </tr>
+                            <tr>
+                                <td>PhyloP</td>
+                                <td th:text="${#numbers.formatDecimal(pp.getFeatureAsDouble('phylop'), 1, 2)}">3.15</td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div class="col-md-5">
+                        <div th:utext="${variant.getLogo()}">
                             <!-- SEQUENCE LOGO OF THE SITE -->
                             <svg height="120" style="border:1px solid black" width="200" xmlns="http://www.w3.org/2000/svg">
                                 <style>
@@ -134,53 +179,6 @@
                                 </g>
                             </svg>
                         </div>
-                        <div class="row">
-                            <!-- THE FEATURE TABLE -->
-                            <table class="table table-striped feature-table" th:with="pp = ${variant.getPrimaryPrediction()}">
-                                <tr>
-                                    <th>Feature</th>
-                                    <th>Value</th>
-                                </tr>
-                                <tr>
-                                    <td><i>&Delta;R<sub>i</sub></i> donor</td>
-                                    <td th:text="${#numbers.formatDecimal(pp.getFeatureAsDouble('canonical_donor'), 1, 2)}">1.55</td>
-                                </tr>
-                                <tr>
-                                    <td><i>&Delta;R<sub>i</sub></i> cryptic donor</td>
-                                    <td th:text="${#numbers.formatDecimal(pp.getFeatureAsDouble('cryptic_donor'), 1, 2)}">1.77</td>
-                                </tr>
-                                <tr>
-                                    <td>donor offset</td>
-                                    <td th:text="${pp.getFeatureAsInt('donor_offset')}">-3</td>
-                                </tr>
-                                <tr>
-                                    <td><i>&Delta;R<sub>i</sub></i> acceptor</td>
-                                    <td th:text="${#numbers.formatDecimal(pp.getFeatureAsDouble('canonical_acceptor'), 1, 2)}"></td>
-                                </tr>
-                                <tr>
-                                    <td><i>&Delta;R<sub>i</sub></i> cryptic acceptor</td>
-                                    <td th:text="${#numbers.formatDecimal(pp.getFeatureAsDouble('cryptic_acceptor'), 1, 2)}"></td>
-                                </tr>
-                                <tr>
-                                    <td>acceptor offset</td>
-                                    <td th:text="${pp.getFeatureAsInt('acceptor_offset')}">-133</td>
-                                </tr>
-                                <tr>
-                                    <td>ESRSeq</td>
-                                    <td th:text="${#numbers.formatDecimal(pp.getFeatureAsDouble('hexamer'), 1, 2)}">-2.12</td>
-                                </tr>
-                                <tr>
-                                    <td>SMS</td>
-                                    <td th:text="${#numbers.formatDecimal(pp.getFeatureAsDouble('septamer'), 1, 2)}">-1.81</td>
-                                </tr>
-                                <tr>
-                                    <td>PhyloP</td>
-                                    <td th:text="${#numbers.formatDecimal(pp.getFeatureAsDouble('phylop'), 1, 2)}">3.15</td>
-                                </tr>
-                            </table>
-                        </div>
-                    </div>
-                    <div class="col-md-5">
                         <div th:utext="${variant.getPrimaryGraphics()}">
                             <svg height="200" style="border:1px solid black" width="350" xmlns="http://www.w3.org/2000/svg">
                                 <style>text {

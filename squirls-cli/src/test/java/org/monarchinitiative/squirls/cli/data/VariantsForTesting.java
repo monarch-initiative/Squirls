@@ -1,0 +1,465 @@
+package org.monarchinitiative.squirls.cli.data;
+
+import de.charite.compbio.jannovar.annotation.AnnotationException;
+import de.charite.compbio.jannovar.annotation.VariantAnnotations;
+import de.charite.compbio.jannovar.annotation.VariantAnnotator;
+import de.charite.compbio.jannovar.data.ReferenceDictionary;
+import de.charite.compbio.jannovar.reference.GenomePosition;
+import de.charite.compbio.jannovar.reference.GenomeVariant;
+import de.charite.compbio.jannovar.reference.PositionType;
+import de.charite.compbio.jannovar.reference.Strand;
+import htsjdk.variant.variantcontext.Allele;
+import htsjdk.variant.variantcontext.VariantContext;
+import htsjdk.variant.variantcontext.VariantContextBuilder;
+import org.monarchinitiative.squirls.cli.SimpleSplicingPredictionData;
+import org.monarchinitiative.squirls.cli.cmd.analyze_vcf.SplicingVariantAlleleEvaluation;
+import org.monarchinitiative.squirls.core.Metadata;
+import org.monarchinitiative.squirls.core.SplicingPredictionData;
+import org.monarchinitiative.squirls.core.classifier.StandardPrediction;
+import org.monarchinitiative.squirls.core.model.SplicingTranscript;
+import org.monarchinitiative.vmvt.core.VmvtGenerator;
+import xyz.ielis.hyperutil.reference.fasta.SequenceInterval;
+
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+public class VariantsForTesting {
+
+    public static final double FAKE_THRESHOLD = .45;
+
+    private static final VmvtGenerator GENERATOR = new VmvtGenerator();
+
+    private VariantsForTesting() {
+        // no-op
+    }
+
+
+    /**
+     * Get data for variant <code>chr9:136,224,586G>A</code>. The variant is at -2 position of the canonical acceptor
+     * site of the exon 3.
+     *
+     * @param rd        {@link ReferenceDictionary} to use
+     * @param annotator {@link VariantAnnotator} to use to perform functional annotation with respect to genes & transcripts
+     * @return evaluation object with all the data
+     * @throws Exception bla
+     */
+    public static SplicingVariantAlleleEvaluation SURF2Exon3AcceptorMinus2Evaluation(ReferenceDictionary rd, VariantAnnotator annotator) throws Exception {
+        /*
+        Prepare POJOs
+         */
+        Allele referenceAllele = Allele.create("G", true);
+        Allele alternateAllele = Allele.create("A", false);
+        final VariantContext vc = new VariantContextBuilder()
+                .chr("chr9")
+                .start(136_224_586)
+                .stop(136_224_586)
+                .id("rs993")
+                .alleles(List.of(referenceAllele, alternateAllele))
+                .make();
+
+        final SplicingVariantAlleleEvaluation evaluation = new SplicingVariantAlleleEvaluation(vc, alternateAllele);
+
+        final GenomePosition position = new GenomePosition(rd, Strand.FWD, rd.getContigNameToID().get("chr9"), 136_224_586, PositionType.ONE_BASED);
+        final GenomeVariant variant = new GenomeVariant(position, "G", "A");
+
+        /*
+        Make annotations map
+         */
+        final VariantAnnotations ann = annotator.buildAnnotations(variant);
+        evaluation.setAnnotations(ann);
+
+        /*
+        Make predictions map
+         */
+        final Map<String, SplicingPredictionData> predictions = Transcripts.surf2Transcripts(rd).stream()
+                .map(transcript -> new SimpleSplicingPredictionData(variant, transcript, Sequences.getSurf2Exon3Sequence(rd)))
+                .peek(data -> data.setPrediction(StandardPrediction.builder()
+                        .addProbaThresholdPair(0.93, FAKE_THRESHOLD)
+                        .build()))
+                .peek(data -> data.setMetadata(Metadata.builder()
+                        .putDonorCoordinate("NM_017503.4", new GenomePosition(rd, Strand.FWD, 9, 136_224_691, PositionType.ONE_BASED))
+                        .putAcceptorCoordinate("NM_017503.4", new GenomePosition(rd, Strand.FWD, 9, 136_224_587, PositionType.ONE_BASED))
+                        .putDonorCoordinate("NM_001278928.1", new GenomePosition(rd, Strand.FWD, 9, 136_224_691, PositionType.ONE_BASED))
+                        .putAcceptorCoordinate("NM_001278928.1", new GenomePosition(rd, Strand.FWD, 9, 136_224_587, PositionType.ONE_BASED))
+                        .meanPhyloPScore(1.234)
+                        .build()))
+                .peek(data -> {
+                    data.putFeature("donor_offset", -2.);
+                    data.putFeature("canonical_donor", 2.44704789418146);
+                    data.putFeature("cryptic_donor", 0.);
+                    data.putFeature("acceptor_offset", 143.);
+                    data.putFeature("canonical_acceptor", 0.);
+                    data.putFeature("cryptic_acceptor", -12.4905210874462);
+                    data.putFeature("phylop", 3.5);
+                    data.putFeature("hexamer", -1.4957907);
+                    data.putFeature("septamer", -0.8844);
+                })
+                .collect(Collectors.toMap(k -> k.getTranscript().getAccessionId(), Function.identity()));
+        evaluation.putAllPredictionData(predictions);
+
+        return evaluation;
+    }
+
+
+    /**
+     * Get data for variant <code>chr9:136,224,694A>T</code>. The variant is located at +4 position of the canonical
+     * donor site of the exon 3.
+     *
+     * @param rd        {@link ReferenceDictionary} to use
+     * @param annotator {@link VariantAnnotator} to use to perform functional annotation with respect to genes & transcripts
+     * @return evaluation object with all the data
+     * @throws Exception bla
+     */
+    public static SplicingVariantAlleleEvaluation SURF2DonorExon3Plus4Evaluation(ReferenceDictionary rd, VariantAnnotator annotator) throws Exception {
+        final String chrom = "chr9";
+        final int chr = 9;
+        final int pos = 136_224_694;
+
+        /*
+        Prepare POJOs
+         */
+        Allele referenceAllele = Allele.create("A", true);
+        Allele altAlleleOne = Allele.create("T", false);
+        Allele altAlleleTwo = Allele.create("TC", false);
+        final VariantContext vc = new VariantContextBuilder()
+                .chr(chrom) // on hg19
+                .start(pos)
+                .stop(pos)
+                .id("rs993")
+                .alleles(List.of(referenceAllele, altAlleleOne, altAlleleTwo))
+                .make();
+
+        final SplicingVariantAlleleEvaluation evaluation = new SplicingVariantAlleleEvaluation(vc, altAlleleOne);
+        final GenomePosition position = new GenomePosition(rd, Strand.FWD, rd.getContigNameToID().get(chrom), pos, PositionType.ONE_BASED);
+        final GenomeVariant variant = new GenomeVariant(position, "A", "T");
+
+        /*
+        Make annotations map
+         */
+        final VariantAnnotations ann = annotator.buildAnnotations(variant);
+        evaluation.setAnnotations(ann);
+
+        /*
+        Make predictions map
+         */
+        final Map<String, SplicingPredictionData> predictions = Transcripts.surf2Transcripts(rd).stream()
+                .map(transcript -> new SimpleSplicingPredictionData(variant, transcript, Sequences.getSurf2Exon3Sequence(rd)))
+                .peek(data -> data.setPrediction(StandardPrediction.builder()
+                        .addProbaThresholdPair(0.94, FAKE_THRESHOLD)
+                        .build()))
+                .peek(data -> data.setMetadata(Metadata.builder()
+                        .putDonorCoordinate("NM_017503.4", new GenomePosition(rd, Strand.FWD, chr, 136_224_691, PositionType.ONE_BASED))
+                        .putAcceptorCoordinate("NM_017503.4", new GenomePosition(rd, Strand.FWD, chr, 136_224_587, PositionType.ONE_BASED))
+                        .putDonorCoordinate("NM_001278928.1", new GenomePosition(rd, Strand.FWD, chr, 136_224_691, PositionType.ONE_BASED))
+                        .putAcceptorCoordinate("NM_001278928.1", new GenomePosition(rd, Strand.FWD, chr, 136_224_587, PositionType.ONE_BASED))
+                        .meanPhyloPScore(4.321)
+                        .build()))
+                .peek(data -> {
+                    data.putFeature("donor_offset", -2.);
+                    data.putFeature("canonical_donor", 2.44704789418146);
+                    data.putFeature("cryptic_donor", 0.);
+                    data.putFeature("acceptor_offset", 143.);
+                    data.putFeature("canonical_acceptor", 0.);
+                    data.putFeature("cryptic_acceptor", -12.4905210874462);
+                    data.putFeature("phylop", 3.5);
+                    data.putFeature("hexamer", -1.4957907);
+                    data.putFeature("septamer", -0.8844);
+                })
+                .collect(Collectors.toMap(k -> k.getTranscript().getAccessionId(), Function.identity()));
+        evaluation.putAllPredictionData(predictions);
+
+        return evaluation;
+    }
+
+
+    private static SplicingVariantAlleleEvaluation makeEvaluation(ReferenceDictionary rd,
+                                                                  String chrom, int pos, String variantId,
+                                                                  String ref, String alt,
+                                                                  VariantAnnotator annotator,
+                                                                  Set<String> seqIds,
+                                                                  Collection<SplicingTranscript> transcripts,
+                                                                  SequenceInterval si,
+                                                                  double pathogenicity,
+                                                                  Metadata metadata,
+                                                                  Map<String, Double> featureMap,
+                                                                  String logo,
+                                                                  String primary,
+                                                                  String secondary) throws AnnotationException {
+        /*
+        Assemble data to POJOs
+         */
+        Allele referenceAllele = Allele.create(ref, true);
+        Allele altAlleleOne = Allele.create(alt, false);
+        final VariantContext vc = new VariantContextBuilder()
+                .chr(chrom) // on hg19
+                .start(pos)
+                .stop(pos)
+                .id(variantId)
+                .alleles(List.of(referenceAllele, altAlleleOne))
+                .make();
+
+        final SplicingVariantAlleleEvaluation evaluation = new SplicingVariantAlleleEvaluation(vc, altAlleleOne);
+        final GenomePosition position = new GenomePosition(rd, Strand.FWD, rd.getContigNameToID().get(chrom), pos, PositionType.ONE_BASED);
+        final GenomeVariant variant = new GenomeVariant(position, ref, alt);
+
+        /*
+        Make annotations
+         */
+        final VariantAnnotations fullAnnotations = annotator.buildAnnotations(variant);
+        final VariantAnnotations smallAnnotations = new VariantAnnotations(fullAnnotations.getGenomeVariant(),
+                fullAnnotations.getAnnotations().stream()
+                        .filter(ann -> seqIds.contains(ann.getTranscript().getAccession()))
+                        .collect(Collectors.toList()));
+        evaluation.setAnnotations(smallAnnotations);
+
+        /*
+        Prepare predictions
+         */
+        final Map<String, SplicingPredictionData> predictions = transcripts.stream()
+                .map(transcript -> new SimpleSplicingPredictionData(variant, transcript, si))
+                .peek(data -> data.setPrediction(StandardPrediction.builder()
+                        .addProbaThresholdPair(pathogenicity, FAKE_THRESHOLD)
+                        .build()))
+                .peek(data -> data.setMetadata(metadata))
+                .peek(data -> featureMap.forEach(data::putFeature))
+                .collect(Collectors.toMap(k -> k.getTranscript().getAccessionId(), Function.identity()));
+        evaluation.putAllPredictionData(predictions);
+
+        // add graphics
+        evaluation.setLogo(logo);
+        evaluation.setPrimaryGraphics(primary);
+        // in this case, there is no window that is better that this one
+        evaluation.setSecondaryGraphics(secondary);
+
+        return evaluation;
+    }
+
+    /**
+     * Get data for variant <code>chr1:21,894,739A>G</code>. The variant is located at -2 position of the canonical
+     * donor site of the exon 7.
+     *
+     * @param rd        {@link ReferenceDictionary} to use
+     * @param annotator {@link VariantAnnotator} to use to perform functional annotation with respect to genes & transcripts
+     * @return evaluation object with all the data
+     * @throws Exception bla
+     */
+    public static SplicingVariantAlleleEvaluation ALPLDonorExon7Minus2(ReferenceDictionary rd, VariantAnnotator annotator) throws Exception {
+
+        // *********************************** PARAMETRIZE *************************************************************
+
+        /*
+        Prepare data
+         */
+        final String chrom = "chr1";
+        final int chr = 1;
+        final int pos = 21_894_739;
+        final String variantId = "ALPL_donor_exon7_minus2";
+        final String ref = "A", alt = "G";
+        final Set<String> seqIds = Set.of("NM_000478.4");
+        final double pathogenicity = 0.95;
+
+        final SequenceInterval si = Sequences.getAlplExon7Sequence(rd);
+        final Collection<SplicingTranscript> transcripts = Transcripts.alplTranscripts(rd);
+        final Metadata metadata = Metadata.builder()
+                .putDonorCoordinate("NM_000478.4", new GenomePosition(rd, Strand.FWD, chr, 21_894_741, PositionType.ONE_BASED))
+                .putAcceptorCoordinate("NM_000478.4", new GenomePosition(rd, Strand.FWD, chr, 21_894_597, PositionType.ONE_BASED))
+                .meanPhyloPScore(3.5)
+                .build();
+        final Map<String, Double> featureMap = Map.of(
+                "donor_offset", -2.,
+                "canonical_donor", 2.44704789418146,
+                "cryptic_donor", 0.,
+                "acceptor_offset", 143.,
+                "canonical_acceptor", 0.,
+                "cryptic_acceptor", -12.4905210874462,
+                "phylop", 3.5,
+                "hexamer", -1.4957907,
+                "septamer", -0.8844
+        );
+
+        // generate graphics using Vmvt
+        final String logo = GENERATOR.getDonorLogoSvg();
+        final String primary = GENERATOR.getDonorTrekkerSvg("AAGgtagcc", "AGGgtagcc");
+        final String secondary = GENERATOR.getDonorDistributionSvg("AAGgtagcc", "AGGgtagcc");
+
+        // *************************************************************************************************************
+
+        return makeEvaluation(rd, chrom, pos, variantId, ref, alt, annotator, seqIds, transcripts, si, pathogenicity, metadata, featureMap, logo, primary, secondary);
+    }
+
+    /**
+     * Get data for variant <code>chr1:2,110,668C>G</code>. The variant is located at -3 position of the canonical
+     * acceptor site of the exon 11 of the <em>TSC2</em> gene.
+     *
+     * @param rd        {@link ReferenceDictionary} to use
+     * @param annotator {@link VariantAnnotator} to use to perform functional annotation with respect to genes & transcripts
+     * @return evaluation object with all the data
+     * @throws Exception bla
+     */
+    public static SplicingVariantAlleleEvaluation TSC2AcceptorExon11Minus3(ReferenceDictionary rd, VariantAnnotator annotator) throws Exception {
+
+        // *********************************** PARAMETRIZE *************************************************************
+
+        /*
+        Prepare data
+         */
+        final String chrom = "chr16";
+        final int chr = 16;
+        final int pos = 2_110_668;
+        final String variantId = "TSC2_acceptor-3_exon11";
+        final String ref = "C", alt = "G";
+        final Set<String> seqIds = Set.of("NM_000548.3");
+        final double pathogenicity = 0.94;
+
+        final SequenceInterval si = Sequences.getTsc2Exon11Sequence(rd);
+        final Collection<SplicingTranscript> transcripts = Transcripts.tsc2Transcripts(rd);
+        final Metadata metadata = Metadata.builder()
+                .putDonorCoordinate("NM_000548.3", new GenomePosition(rd, Strand.FWD, chr, 2_110_815, PositionType.ONE_BASED))
+                .putAcceptorCoordinate("NM_000548.3", new GenomePosition(rd, Strand.FWD, chr, 2_110_671, PositionType.ONE_BASED))
+                .meanPhyloPScore(1.12600004673004)
+                .build();
+        final Map<String, Double> featureMap = Map.of(
+                "donor_offset", -147.,
+                "canonical_donor", 0.,
+                "cryptic_donor", -10.1188705692249,
+                "acceptor_offset", -3.,
+                "canonical_acceptor", 6.74595437739346,
+                "cryptic_acceptor", 0.,
+                "phylop", 1.12600004673004,
+                "hexamer", 2.10609255,
+                "septamer", 1.6312
+        );
+
+        // generate graphics using Vmvt
+        final String logo = GENERATOR.getAcceptorLogoSvg();
+        final String primary = GENERATOR.getAcceptorTrekkerSvg("tgtgctggccgggctcgtgttccagGC", "tgtgctggccgggctcgtgttcgagGC");
+        final String secondary = GENERATOR.getAcceptorDistributionSvg("tgtgctggccgggctcgtgttcCagGC", "tgtgctggccgggctcgtgttcGagGC");
+
+        // *************************************************************************************************************
+
+        return makeEvaluation(rd, chrom, pos, variantId, ref, alt, annotator, seqIds, transcripts, si, pathogenicity, metadata, featureMap, logo, primary, secondary);
+    }
+
+
+    /**
+     * Get data for variant <code>chrX:107,849,964T>A</code>. The variant is located at -8 position of the canonical
+     * acceptor site of the exon 29 of the <em>COL4A5</em> gene.
+     *
+     * @param rd        {@link ReferenceDictionary} to use
+     * @param annotator {@link VariantAnnotator} to use to perform functional annotation with respect to genes & transcripts
+     * @return evaluation object with all the data
+     * @throws Exception bla
+     */
+    public static SplicingVariantAlleleEvaluation COL4A5AcceptorExon11Minus8(ReferenceDictionary rd, VariantAnnotator annotator) throws Exception {
+
+        // *********************************** PARAMETRIZE *************************************************************
+
+        /*
+        Prepare data
+         */
+        final String chrom = "chrX";
+        final int chr = 23;
+        final int pos = 107_849_964;
+        final String variantId = "COL4A5_acceptor-8_exon29";
+        final String ref = "T", alt = "A";
+        final Set<String> seqIds = Set.of("NM_000495.4");
+        final double pathogenicity = 0.93;
+
+        final SequenceInterval si = Sequences.getCol4a5Exon29Sequence(rd);
+        final Collection<SplicingTranscript> transcripts = Transcripts.col4a5Transcripts(rd);
+        final Metadata metadata = Metadata.builder()
+                .putDonorCoordinate("NM_000495.4", new GenomePosition(rd, Strand.FWD, chr, 107_850_122, PositionType.ONE_BASED))
+                .putAcceptorCoordinate("NM_000495.4", new GenomePosition(rd, Strand.FWD, chr, 107_849_971, PositionType.ONE_BASED))
+                .meanPhyloPScore(3.81599998474121)
+                .build();
+        final Map<String, Double> featureMap = Map.of(
+                "donor_offset", -159.,
+                "canonical_donor", 0.,
+                "cryptic_donor", -5.19742493336859,
+                "acceptor_offset", -8.,
+                "canonical_acceptor", 2.06667103964529,
+                "cryptic_acceptor", 2.35570268707377,
+                "phylop", 3.81599998474121,
+                "hexamer", -0.4040078,
+                "septamer", -0.9911);
+
+        // generate graphics using Vmvt
+        final String logo = GENERATOR.getAcceptorLogoSvg();
+        final String primary = GENERATOR.getAcceptorTrekkerSvg(
+                "tttgttgtgttttgtcatgtgta" + "t" + "gct", // ref best window
+                "tttgttgtgttttgtcatgtgta" + "a" + "gct"); // alt best window
+
+        // TODO this might need to be adjusted in future, the whole secondary graphics here. We'd like to compare the alt canonical site snippet with alt best window snippet
+        final String secondary = GENERATOR.getAcceptorTrekkerSvg(
+                "tttgttgtgttttgtcatgtgta" + "a" + "gct", // alt canonical site snippet
+                "gtgttttgtcatgtgta" + "t" + "gctcaagGG"); // alt best window snippet
+
+        // *************************************************************************************************************
+
+        return makeEvaluation(rd, chrom, pos, variantId, ref, alt, annotator, seqIds, transcripts, si, pathogenicity, metadata, featureMap, logo, primary, secondary);
+    }
+
+    /**
+     * Get data for variant <code>chr19:39,075,603C>G</code>. The variant is located at 21bp downstream from the canonical
+     * acceptor site of the exon 102 of the <em>RYR1</em> gene and creates a new cryptic acceptor site.
+     *
+     * @param rd        {@link ReferenceDictionary} to use
+     * @param annotator {@link VariantAnnotator} to use to perform functional annotation with respect to genes & transcripts
+     * @return evaluation object with all the data
+     * @throws Exception bla
+     */
+    public static SplicingVariantAlleleEvaluation RYR1codingExon102crypticAcceptor(ReferenceDictionary rd, VariantAnnotator annotator) throws Exception {
+
+        // *********************************** PARAMETRIZE *************************************************************
+
+        /*
+        Prepare data
+         */
+        final String chrom = "chr19";
+        final int chr = 19;
+        final int pos = 39_075_603;
+        final String variantId = "RYR1_coding_21bp_downstream_exon102";
+        final String ref = "C", alt = "G";
+        final Set<String> seqIds = Set.of("NM_000540.2");
+        final double pathogenicity = 0.92;
+
+        final SequenceInterval si = Sequences.getRyr1Exon102Sequence(rd);
+        final Collection<SplicingTranscript> transcripts = Transcripts.ryr1Transcripts(rd);
+        final Metadata metadata = Metadata.builder()
+                .putDonorCoordinate("NM_000540.2", new GenomePosition(rd, Strand.FWD, chr, 39_075_583, PositionType.ONE_BASED))
+                .putAcceptorCoordinate("NM_000540.2", new GenomePosition(rd, Strand.FWD, chr, 39_075_740, PositionType.ONE_BASED))
+                .meanPhyloPScore(-1.72699999809265)
+                .build();
+        final Map<String, Double> featureMap = Map.of(
+                "donor_offset", -137.,
+                "canonical_donor", 0.,
+                "cryptic_donor", 1.98046369019604,
+                "acceptor_offset", 21.,
+                "canonical_acceptor", 0.,
+                "cryptic_acceptor", 1.92197740139571,
+                "phylop", -1.72699999809265,
+                "hexamer", -4.2242608,
+                "septamer", -3.4074
+        );
+
+        // generate graphics using Vmvt
+        final String logo = GENERATOR.getAcceptorLogoSvg();
+        final String primary = GENERATOR.getAcceptorTrekkerSvg(
+                "tcagtgttacctgtttcacatgta" + "c" + "GT",  // ref best window
+                "tcagtgttacctgtttcacatgta" + "g" + "GT");  // alt best window
+
+        // TODO this might need to be adjusted in future, the whole secondary graphics here. We'd like to compare the alt canonical site snippet with alt best window snippet
+        final String secondary = GENERATOR.getAcceptorTrekkerSvg(
+                "tgaccagtgtgctcccctccctcagTG",  // alt canonical site snippet
+                "tcagtgttacctgtttcacatgta" + "g" + "GT");  // alt best window snippet
+
+        // *************************************************************************************************************
+
+        return makeEvaluation(rd, chrom, pos, variantId, ref, alt, annotator, seqIds, transcripts, si, pathogenicity, metadata, featureMap, logo, primary, secondary);
+    }
+
+}

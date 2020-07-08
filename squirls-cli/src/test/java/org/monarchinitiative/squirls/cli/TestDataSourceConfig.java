@@ -13,13 +13,31 @@ public class TestDataSourceConfig {
 
 
     /**
-     * Small Jannovar cache containing RefSeq transcripts of 2 genes only: SURF1 and SURF2.
+     * Small Jannovar cache containing RefSeq transcripts of several genes only:
+     * <ul>
+     *     <li>SURF1</li>
+     *     <li>SURF2</li>
+     *     <li>ALPL</li>
+     *     <li>TSC2</li>
+     *     <li>COL4A5</li>
+     *     <li>CYP17A1</li>
+     *     <li>HBB</li>
+     *     <li>NF1</li>
+     *     <li>CFTR</li>
+     *     <li>BRCA2</li>
+     *     <li>VWF</li>
+     *     <li>RYR1</li>
+     * </ul>
+     *
+     * <p>
+     *     The small cache was created from Jannovar v0.29 refseq cache using Jannovar Sieve app.
+     * </p>
      *
      * @return {@link JannovarData} cache
      */
     @Bean
     public JannovarData jannovarData() throws SerializationException {
-        return new JannovarDataSerializer(TestDataSourceConfig.class.getResource("surf_refseq.ser").getFile()).load();
+        return new JannovarDataSerializer(TestDataSourceConfig.class.getResource("small_refseq.ser").getFile()).load();
     }
 
     @Bean
