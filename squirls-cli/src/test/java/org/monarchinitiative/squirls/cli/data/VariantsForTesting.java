@@ -578,4 +578,62 @@ public class VariantsForTesting {
         return makeEvaluation(rd, chrom, pos, variantId, ref, alt, annotator, seqIds, transcripts, si, pathogenicity, metadata, featureMap, logo, primary, secondary);
     }
 
+
+    /**
+     * Get data for variant <code>chr12:6132066T>C</code>. The variant is located 2bp upstream from the canonical
+     * acceptor site of the exon 26 of the <em>VWF</em> gene and disrupts the site, leading to exon skipping.
+     *
+     * @param rd        {@link ReferenceDictionary} to use
+     * @param annotator {@link VariantAnnotator} to use to perform functional annotation with respect to genes & transcripts
+     * @return evaluation object with all the data
+     * @throws Exception bla
+     */
+    public static SplicingVariantAlleleEvaluation VWFAcceptorExon26minus2QUID(ReferenceDictionary rd, VariantAnnotator annotator) throws Exception {
+
+        // *********************************** PARAMETRIZE *************************************************************
+
+        /*
+        Prepare data
+         */
+        final String chrom = "chr12";
+        final int chr = 12;
+        final int pos = 6_132_066;
+        final String variantId = "VWF_acceptor_2bp_upstream_exon26_quid";
+        final String ref = "T", alt = "C";
+        final Set<String> seqIds = Set.of("NM_000552.3");
+        final double pathogenicity = 0.89;
+
+        final SequenceInterval si = Sequences.getVwfExon26Sequence(rd);
+        final Collection<SplicingTranscript> transcripts = Transcripts.vwfTranscripts(rd);
+        final Metadata metadata = Metadata.builder()
+                .putDonorCoordinate("NM_000552.3", new GenomePosition(rd, Strand.FWD, chr, 6_131_905, PositionType.ONE_BASED).withStrand(Strand.REV))
+                .putAcceptorCoordinate("NM_000552.3", new GenomePosition(rd, Strand.FWD, chr, 6_132_064, PositionType.ONE_BASED).withStrand(Strand.REV))
+                .meanPhyloPScore(7.60500001907349)
+                .build();
+        final Map<String, Double> featureMap = Map.of(
+                "donor_offset", 161.,
+                "canonical_donor", 0.,
+                "cryptic_donor", -18.6949261480754,
+                "acceptor_offset", -2.,
+                "canonical_acceptor", 9.96144969439819,
+                "cryptic_acceptor", 6.44688781842892,
+                "phylop", 7.60500001907349,
+                "hexamer", 1.7675138,
+                "septamer", 0.6934);
+
+        // generate graphics using Vmvt
+        final String logo = GENERATOR.getAcceptorLogoSvg();
+        final String primary = GENERATOR.getAcceptorTrekkerSvg(
+                "acagccttgtctcctgtctacac" + "a" + "gCC",
+                "acagccttgtctcctgtctacac" + "g" + "gCC");
+
+        final String secondary = GENERATOR.getAcceptorDistributionSvg(
+                "acagccttgtctcctgtctacac" + "a" + "gCC",
+                "acagccttgtctcctgtctacac" + "g" + "gCC");
+
+        // *************************************************************************************************************
+
+        return makeEvaluation(rd, chrom, pos, variantId, ref, alt, annotator, seqIds, transcripts, si, pathogenicity, metadata, featureMap, logo, primary, secondary);
+    }
+
 }

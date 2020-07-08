@@ -49,7 +49,8 @@ class HtmlResultWriterTest {
                 VariantsForTesting.TSC2AcceptorExon11Minus3(rd, annotator),
                 VariantsForTesting.COL4A5AcceptorExon11Minus8(rd, annotator),
                 VariantsForTesting.RYR1codingExon102crypticAcceptor(rd, annotator),
-                VariantsForTesting.BRCA2DonorExon15plus2QUID(rd, annotator));
+                VariantsForTesting.BRCA2DonorExon15plus2QUID(rd, annotator),
+                VariantsForTesting.VWFAcceptorExon26minus2QUID(rd, annotator));
 
         AnalysisResults results = AnalysisResults.builder()
                 .addAllSampleNames(List.of("Sample_192"))

@@ -106,6 +106,18 @@ class Sequences {
             "TGGCTTTGTTTAAAGAATGAACACATTAGTGCAGGAATGGATGAATGAAATCATCATATT" +
             "TTCTAATTAGCCTGCAGTGG";
 
+    /**
+     * A real sequence from interval `>chr12:6131801-6132200` (1-based coordinates) on hg19. The interval contains
+     * exon 26 of <em>VWF</em>.
+     */
+    private static final String VWF_EXON26 = "TAGGACGTGGCAGGTGGAGGCTGAGATGAAGCAAGACCTAGAAGCACCTTTCCATCCATC" +
+            "CCTATCCCATCCCACCAGCCTGACCCCCAGGGATAGAGGCCTCACCTGGAGGGCAGTGGG" +
+            "CATGGCAGCCCTCCACACACTGCACAGGGCAGGCCAGTGGCTCAGGGTGCTGACACGTGA" +
+            "CTTGACAGGCAGGTGCACAGCTGTTATAGCGCCACTCACACTCATACCCGTTCTCCCGGA" +
+            "GATTCCTCTCCTCGCAGCTCTGGGCTGTGTAGACAGGAGACAAGGCTGTGGCCACAACAG" +
+            "GCAAAGCCTCCAGGACTGCAGACCCATGTGGTGATGGCCTGCGCCATCTGGAGATAATGT" +
+            "TGGGGAACTAGGGGACTATGGGCGTCACCAATATTAGAGA";
+
     private Sequences() {
         // no-op
     }
@@ -212,6 +224,21 @@ class Sequences {
                 .sequence(BRCA2_EXON15)
                 .interval(new GenomeInterval(rd, Strand.FWD,
                         rd.getContigNameToID().get("chr13"), 32_930_401, 32_930_900, PositionType.ONE_BASED))
+                .build();
+    }
+
+    /**
+     * A real sequence from interval `>chr12:6131801-6132200` (1-based coordinates) on hg19. The interval contains
+     * exon 26 of <em>VWF</em>.
+     *
+     * @param rd {@link ReferenceDictionary} to use
+     * @return the sequence interval
+     */
+    static SequenceInterval getVwfExon26Sequence(ReferenceDictionary rd) {
+        return SequenceInterval.builder()
+                .sequence(VWF_EXON26)
+                .interval(new GenomeInterval(rd, Strand.FWD,
+                        rd.getContigNameToID().get("chr12"), 6131801, 6132200, PositionType.ONE_BASED))
                 .build();
     }
 

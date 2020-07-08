@@ -93,6 +93,18 @@ class Transcripts {
         return Set.of(reduced_brca2_NM_000059_3(rd));
     }
 
+
+    /**
+     * Get the following transcripts of the <em>VWF</em> gene:
+     * <ul>
+     *      <li>NM_000552.3</li> - the transcript only contains the first, the 26th, and the last exon of the
+     *      real transcript
+     *  </ul>
+     */
+    static Set<SplicingTranscript> vwfTranscripts(ReferenceDictionary rd) {
+        return Set.of(reduced_vwf_NM_000552_3(rd));
+    }
+
     /**
      * Get a real transcript corresponding to <em>SURF2</em> <em>NM_017503.4</em>.
      *
@@ -479,6 +491,40 @@ class Transcripts {
                 // last
                 .addExon(SplicingExon.builder()
                         .setInterval(new GenomeInterval(rd, Strand.FWD, 13, 32_972_299, 32_973_809, PositionType.ONE_BASED))
+                        .build())
+                .build();
+    }
+
+
+    /**
+     * Get a transcript that contains the first, the 26th, and the last exon of the <em>VWF</em> <em>NM_000552.3</em>
+     * transcript.
+     *
+     * @param rd {@link ReferenceDictionary} to use
+     * @return transcript
+     */
+    private static SplicingTranscript reduced_vwf_NM_000552_3(ReferenceDictionary rd) {
+        return SplicingTranscript.builder()
+                .setAccessionId("NM_000552.3")
+                .setCoordinates(new GenomeInterval(rd, Strand.FWD, 12, 6_058_040, 6_233_841, PositionType.ONE_BASED).withStrand(Strand.REV))
+                // first
+                .addExon(SplicingExon.builder()
+                        .setInterval(new GenomeInterval(rd, Strand.FWD, 12, 6_233_587, 6_233_841, PositionType.ONE_BASED).withStrand(Strand.REV))
+                        .build())
+                .addIntron(SplicingIntron.builder()
+                        .setInterval(new GenomeInterval(rd, Strand.FWD, 12, 6_132_064, 6_233_586).withStrand(Strand.REV))
+                        .build())
+                // 26
+                .addExon(SplicingExon.builder()
+                        .setInterval(new GenomeInterval(rd, Strand.FWD, 12, 6_131_906, 6_132_064, PositionType.ONE_BASED).withStrand(Strand.REV))
+                        .build())
+                .addIntron(SplicingIntron.builder()
+                        .setInterval(new GenomeInterval(rd, Strand.FWD, 12, 6_058_369, 6_131_905).withStrand(Strand.REV))
+                        .build())
+
+                // last (52nd)
+                .addExon(SplicingExon.builder()
+                        .setInterval(new GenomeInterval(rd, Strand.FWD, 12, 6_058_040, 6_058_369, PositionType.ONE_BASED).withStrand(Strand.REV))
                         .build())
                 .build();
     }
