@@ -521,4 +521,61 @@ public class VariantsForTesting {
         return makeEvaluation(rd, chrom, pos, variantId, ref, alt, annotator, seqIds, transcripts, si, pathogenicity, metadata, featureMap, logo, primary, secondary);
     }
 
+    /**
+     * Get data for variant <code>chr13:32930748T>G</code>. The variant is located 2bp downstream from the canonical
+     * donor site of the exon 15 of the <em>BRCA2</em> gene and disrupts the site, leading to exon skipping.
+     *
+     * @param rd        {@link ReferenceDictionary} to use
+     * @param annotator {@link VariantAnnotator} to use to perform functional annotation with respect to genes & transcripts
+     * @return evaluation object with all the data
+     * @throws Exception bla
+     */
+    public static SplicingVariantAlleleEvaluation BRCA2DonorExon15plus2QUID(ReferenceDictionary rd, VariantAnnotator annotator) throws Exception {
+
+        // *********************************** PARAMETRIZE *************************************************************
+
+        /*
+        Prepare data
+         */
+        final String chrom = "chr13";
+        final int chr = 13;
+        final int pos = 32_930_748;
+        final String variantId = "BRCA2_donor_2bp_downstream_exon15_quid";
+        final String ref = "T", alt = "G";
+        final Set<String> seqIds = Set.of("NM_000059.3");
+        final double pathogenicity = 0.90;
+
+        final SequenceInterval si = Sequences.getBrca2Exon15Sequence(rd);
+        final Collection<SplicingTranscript> transcripts = Transcripts.brca2Transcripts(rd);
+        final Metadata metadata = Metadata.builder()
+                .putDonorCoordinate("NM_000059.3", new GenomePosition(rd, Strand.FWD, chr, 32_930_747, PositionType.ONE_BASED))
+                .putAcceptorCoordinate("NM_000059.3", new GenomePosition(rd, Strand.FWD, chr, 32_930_565, PositionType.ONE_BASED))
+                .meanPhyloPScore(4.01000022888184)
+                .build();
+        final Map<String, Double> featureMap = Map.of(
+                "donor_offset", 2.,
+                "canonical_donor", 9.94544383637791,
+                "cryptic_donor", 1.3473990820467,
+                "acceptor_offset", 184.,
+                "canonical_acceptor", 0.,
+                "cryptic_acceptor", -2.52195449384599,
+                "phylop", 4.01000022888184,
+                "hexamer", 1.8216685,
+                "septamer", 2.1036);
+
+        // generate graphics using Vmvt
+        final String logo = GENERATOR.getDonorLogoSvg();
+        final String primary = GENERATOR.getDonorTrekkerSvg(
+                "CAGg" + "t" + "atgt",
+                "CAGg" + "g" + "atgt");
+
+        final String secondary = GENERATOR.getDonorDistributionSvg(
+                "CAGg" + "t" + "atgt",
+                "CAGg" + "g" + "atgt");
+
+        // *************************************************************************************************************
+
+        return makeEvaluation(rd, chrom, pos, variantId, ref, alt, annotator, seqIds, transcripts, si, pathogenicity, metadata, featureMap, logo, primary, secondary);
+    }
+
 }

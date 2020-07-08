@@ -92,6 +92,20 @@ class Sequences {
             "TAAGCAATAGATGGCTCTGCCCTGACTTTTATGCCCAGCCCTGGCTCCTGCCCTCCCTGC" +
             "TCCTGGGAGTAGATTGGCCAACCCTAGGGTGTGGCTCCAC";
 
+    /**
+     * A real sequence from interval `>chr13:32930401-32930900` (1-based coordinates) on hg19. The interval contains
+     * exon 15 of <em>BRCA2</em>.
+     */
+    private static final String BRCA2_EXON15 = "ttctccattttggtcaggctggtcttgaactcccgacctcagatgatctgcccgcctcag" +
+            "cctcccaaagtgctgggattacaggcgtgagccactgtgcctggccAGGGGTTGTGCTTT" +
+            "TTAAATTTCAATTTTATTTTTGCTAAGTATTTATTCTTTGATAGATTTAATTACAAGTCT" +
+            "TCAGAATGCCAGAGATATACAGGATATGCGAATTAAGAAGAAACAAAGGCAACGCGTCTT" +
+            "TCCACAGCCAGGCAGTCTGTATCTTGCAAAAACATCCACTCTGCCTCGAATCTCTCTGAA" +
+            "AGCAGCAGTAGGAGGCCAAGTTCCCTCTGCGTGTTCTCATAAACAGGTATGTGTTTGTCT" +
+            "ACAATACTGATGGCTTTTATGACAGAGTGTAATTTTATTTCATTAACTAGTATCTACAAA" +
+            "TGGCTTTGTTTAAAGAATGAACACATTAGTGCAGGAATGGATGAATGAAATCATCATATT" +
+            "TTCTAATTAGCCTGCAGTGG";
+
     private Sequences() {
         // no-op
     }
@@ -183,6 +197,21 @@ class Sequences {
                 .sequence(HBB_EXON1)
                 .interval(new GenomeInterval(rd, Strand.FWD,
                         rd.getContigNameToID().get("chr11"), 5_248_001, 5_248_400, PositionType.ONE_BASED))
+                .build();
+    }
+
+    /**
+     * A real sequence from interval `>chr13:32930401-32930900` (1-based coordinates) on hg19. The interval contains
+     * exon 15 of <em>BRCA2</em>.
+     *
+     * @param rd {@link ReferenceDictionary} to use
+     * @return the sequence interval
+     */
+    static SequenceInterval getBrca2Exon15Sequence(ReferenceDictionary rd) {
+        return SequenceInterval.builder()
+                .sequence(BRCA2_EXON15)
+                .interval(new GenomeInterval(rd, Strand.FWD,
+                        rd.getContigNameToID().get("chr13"), 32_930_401, 32_930_900, PositionType.ONE_BASED))
                 .build();
     }
 

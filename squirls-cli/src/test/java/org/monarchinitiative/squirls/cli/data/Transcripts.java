@@ -81,32 +81,17 @@ class Transcripts {
         return Set.of(hbb_NM_000518_4(rd));
     }
 
-    private static SplicingTranscript hbb_NM_000518_4(ReferenceDictionary rd) {
-        return SplicingTranscript.builder()
-                .setAccessionId("NM_000518.4")
-                .setCoordinates(new GenomeInterval(rd, Strand.FWD, 11, 5_246_694, 5_248_301, PositionType.ONE_BASED).withStrand(Strand.REV))
-                // first
-                .addExon(SplicingExon.builder()
-                        .setInterval(new GenomeInterval(rd, Strand.FWD, 11, 5_248_160, 5248301, PositionType.ONE_BASED))
-                        .build())
-                .addIntron(SplicingIntron.builder()
-                        .setInterval(new GenomeInterval(rd, Strand.FWD, 11, 5_248_029, 5_248_159).withStrand(Strand.REV))
-                        .build())
-                // second
-                .addExon(SplicingExon.builder()
-                        .setInterval(new GenomeInterval(rd, Strand.FWD, 11, 5_247_807, 5_248_029, PositionType.ONE_BASED).withStrand(Strand.REV))
-                        .build())
-                .addIntron(SplicingIntron.builder()
-                        .setInterval(new GenomeInterval(rd, Strand.FWD, 11, 5_246_956, 5_247_806).withStrand(Strand.REV))
-                        .build())
 
-                // last (third)
-                .addExon(SplicingExon.builder()
-                        .setInterval(new GenomeInterval(rd, Strand.FWD, 11, 5_246_694, 5_246_956, PositionType.ONE_BASED).withStrand(Strand.REV))
-                        .build())
-                .build();
+    /**
+     * Get the following transcripts of the <em>BRCA2</em> gene:
+     * <ul>
+     *      <li>NM_000059.3</li> - the transcript only contains the first, the 15th, and the last exon of the
+     *      real transcript
+     *  </ul>
+     */
+    static Set<SplicingTranscript> brca2Transcripts(ReferenceDictionary rd) {
+        return Set.of(reduced_brca2_NM_000059_3(rd));
     }
-
 
     /**
      * Get a real transcript corresponding to <em>SURF2</em> <em>NM_017503.4</em>.
@@ -432,4 +417,69 @@ class Transcripts {
                 .build();
     }
 
+    /**
+     * Get a transcript that contains the first, the second, and the last (third) exon of the <em>HBB</em> <em>NM_000518.4</em>
+     * transcript.
+     *
+     * @param rd {@link ReferenceDictionary} to use
+     * @return transcript
+     */
+    private static SplicingTranscript hbb_NM_000518_4(ReferenceDictionary rd) {
+        return SplicingTranscript.builder()
+                .setAccessionId("NM_000518.4")
+                .setCoordinates(new GenomeInterval(rd, Strand.FWD, 11, 5_246_694, 5_248_301, PositionType.ONE_BASED).withStrand(Strand.REV))
+                // first
+                .addExon(SplicingExon.builder()
+                        .setInterval(new GenomeInterval(rd, Strand.FWD, 11, 5_248_160, 5248301, PositionType.ONE_BASED))
+                        .build())
+                .addIntron(SplicingIntron.builder()
+                        .setInterval(new GenomeInterval(rd, Strand.FWD, 11, 5_248_029, 5_248_159).withStrand(Strand.REV))
+                        .build())
+                // second
+                .addExon(SplicingExon.builder()
+                        .setInterval(new GenomeInterval(rd, Strand.FWD, 11, 5_247_807, 5_248_029, PositionType.ONE_BASED).withStrand(Strand.REV))
+                        .build())
+                .addIntron(SplicingIntron.builder()
+                        .setInterval(new GenomeInterval(rd, Strand.FWD, 11, 5_246_956, 5_247_806).withStrand(Strand.REV))
+                        .build())
+
+                // last (third)
+                .addExon(SplicingExon.builder()
+                        .setInterval(new GenomeInterval(rd, Strand.FWD, 11, 5_246_694, 5_246_956, PositionType.ONE_BASED).withStrand(Strand.REV))
+                        .build())
+                .build();
+    }
+
+    /**
+     * Get a transcript that contains the first, the second, and the last (third) exon of the <em>BRCA2</em> <em>NM_000059.3</em>
+     * transcript.
+     *
+     * @param rd {@link ReferenceDictionary} to use
+     * @return transcript
+     */
+    private static SplicingTranscript reduced_brca2_NM_000059_3(ReferenceDictionary rd) {
+        return SplicingTranscript.builder()
+                .setAccessionId("NM_000059.3")
+                .setCoordinates(new GenomeInterval(rd, Strand.FWD, 13, 32_889_617, 32_973_809, PositionType.ONE_BASED))
+                // first
+                .addExon(SplicingExon.builder()
+                        .setInterval(new GenomeInterval(rd, Strand.FWD, 13, 32_889_617, 32_889_804, PositionType.ONE_BASED))
+                        .build())
+                .addIntron(SplicingIntron.builder()
+                        .setInterval(new GenomeInterval(rd, Strand.FWD, 13, 32_889_804, 32_930_564))
+                        .build())
+                // 15
+                .addExon(SplicingExon.builder()
+                        .setInterval(new GenomeInterval(rd, Strand.FWD, 13, 32_930_565, 32_930_746, PositionType.ONE_BASED))
+                        .build())
+                .addIntron(SplicingIntron.builder()
+                        .setInterval(new GenomeInterval(rd, Strand.FWD, 13, 32_930_746, 32_972_298))
+                        .build())
+
+                // last
+                .addExon(SplicingExon.builder()
+                        .setInterval(new GenomeInterval(rd, Strand.FWD, 13, 32_972_299, 32_973_809, PositionType.ONE_BASED))
+                        .build())
+                .build();
+    }
 }
