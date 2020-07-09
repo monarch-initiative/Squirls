@@ -401,7 +401,7 @@ public class VariantsForTesting {
                 "TGGg" + "t" + "aggt");  // alt best window snippet
 
         // TODO this might need to be adjusted in future, the whole secondary graphics here. We'd like to compare the alt canonical site snippet with alt best window snippet
-        final String secondary = GENERATOR.getDonorTrekkerSvg(
+        final String secondary = GENERATOR.getDonorCanonicalCryptic(
                 "T" + "A" + "Ggttggt",  // alt canonical site snippet
                 "TGGg" + "t" + "aggt");  // alt best window snippet
 
@@ -572,8 +572,7 @@ public class VariantsForTesting {
                 "tttgttgtgttttgtcatgtgta" + "t" + "gct", // ref best window
                 "tttgttgtgttttgtcatgtgta" + "a" + "gct"); // alt best window
 
-        // TODO this might need to be adjusted in future, the whole secondary graphics here. We'd like to compare the alt canonical site snippet with alt best window snippet
-        final String secondary = GENERATOR.getAcceptorTrekkerSvg(
+        final String secondary = GENERATOR.getAcceptorCanonicalCryptic(
                 "tttgttgtgttttgtcatgtgta" + "a" + "gct", // alt canonical site snippet
                 "gtgttttgtcatgtgta" + "t" + "gctcaagGG"); // alt best window snippet
 
@@ -633,8 +632,7 @@ public class VariantsForTesting {
                 "tcagtgttacctgtttcacatgta" + "c" + "GT",  // ref best window
                 "tcagtgttacctgtttcacatgta" + "g" + "GT");  // alt best window
 
-        // TODO this might need to be adjusted in future, the whole secondary graphics here. We'd like to compare the alt canonical site snippet with alt best window snippet
-        final String secondary = GENERATOR.getAcceptorTrekkerSvg(
+        final String secondary = GENERATOR.getAcceptorCanonicalCryptic(
                 "tgaccagtgtgctcccctccctcagTG",  // alt canonical site snippet
                 "tcagtgttacctgtttcacatgta" + "g" + "GT");  // alt best window snippet
 
