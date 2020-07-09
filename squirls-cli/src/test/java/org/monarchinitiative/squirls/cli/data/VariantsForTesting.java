@@ -688,17 +688,24 @@ public class VariantsForTesting {
         );
 
         // generate graphics using Vmvt
-//        final String ruler = GENERATOR.getAcceptorLogoSvg();
-        final String ruler = "";// TODO - add ruler here?
-
+        final String ruler = "";
+        final int kmerWidth = 450, kmerHeight = 220;
         // hexamers
-        final String primary = GENERATOR.getHexamerSvg(
+        final String hexamer = GENERATOR.getHexamerSvg(
                 "GTCTA" + "C" + "GAAAA",
                 "GTCTA" + "T" + "GAAAA");
+        final String primary = String.format(
+                "<svg width=\"%d\" height=\"%d\" viewBox=\"0 0 900 400\">" +
+                        "%s" +
+                        "</svg>", kmerWidth, kmerHeight, hexamer);
         // heptamers
-        final String secondary = GENERATOR.getHeptamerSvg(
+        final String heptamerSvg = GENERATOR.getHeptamerSvg(
                 "AGTCTA" + "C" + "GAAAAG",
                 "AGTCTA" + "T" + "GAAAAG");
+        final String secondary = String.format(
+                "<svg width=\"%d\" height=\"%d\" viewBox=\"0 0 900 400\">" +
+                        "%s" +
+                        "</svg>", kmerWidth, kmerHeight, heptamerSvg);
 
         // *************************************************************************************************************
 
