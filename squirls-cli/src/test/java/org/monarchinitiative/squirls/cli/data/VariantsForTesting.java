@@ -573,8 +573,8 @@ public class VariantsForTesting {
                 "tttgttgtgttttgtcatgtgta" + "a" + "gct"); // alt best window
 
         final String secondary = GENERATOR.getAcceptorCanonicalCryptic(
-                "tttgttgtgttttgtcatgtgta" + "a" + "gct", // alt canonical site snippet
-                "gtgttttgtcatgtgta" + "t" + "gctcaagGG"); // alt best window snippet
+                "gtgttttgtcatgtgta" + "t" + "gctcaagGG", // alt canonical site snippet
+                "tttgttgtgttttgtcatgtgta" + "a" + "gct"); // alt best window snippet
 
         // *************************************************************************************************************
 
