@@ -59,12 +59,12 @@ class CrypticAcceptorFeatureCalculator extends BaseFeatureCalculator {
         final String slidingWindowSnippet = upstreamOpt.get() + variant.getAlt() + downstreamOpt.get();
 
         // calculate scores and return result
-        final double wtAcceptorScore = calculator.getSpliceAcceptorScore(donorSnippet);
-        final Double altMaxScore = Utils.slidingWindow(slidingWindowSnippet, calculator.getSplicingParameters().getAcceptorLength())
+        final double canonicalAcceptorScore = calculator.getSpliceAcceptorScore(donorSnippet);
+        final Double crypticMaxScore = Utils.slidingWindow(slidingWindowSnippet, calculator.getSplicingParameters().getAcceptorLength())
                 .map(calculator::getSpliceAcceptorScore)
                 .reduce(Double::max)
                 .orElse(0D);
 
-        return altMaxScore - wtAcceptorScore;
+        return crypticMaxScore - canonicalAcceptorScore;
     }
 }

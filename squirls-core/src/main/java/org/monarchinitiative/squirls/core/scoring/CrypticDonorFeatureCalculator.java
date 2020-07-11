@@ -59,12 +59,12 @@ class CrypticDonorFeatureCalculator extends BaseFeatureCalculator {
         final String slidingWindowSnippet = upstreamOpt.get() + variant.getAlt() + downstreamOpt.get();
 
         // calculate scores and return result
-        final double wtDonorScore = calculator.getSpliceDonorScore(donorSnippet);
-        final Double altMaxScore = Utils.slidingWindow(slidingWindowSnippet, calculator.getSplicingParameters().getDonorLength())
+        final double canonicalDonorScore = calculator.getSpliceDonorScore(donorSnippet);
+        final Double crypticMaxScore = Utils.slidingWindow(slidingWindowSnippet, calculator.getSplicingParameters().getDonorLength())
                 .map(calculator::getSpliceDonorScore)
                 .reduce(Double::max)
                 .orElse(0D);
 
-        return altMaxScore - wtDonorScore;
+        return crypticMaxScore - canonicalDonorScore;
     }
 }

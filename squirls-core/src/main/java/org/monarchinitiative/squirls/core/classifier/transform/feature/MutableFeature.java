@@ -1,6 +1,9 @@
 package org.monarchinitiative.squirls.core.classifier.transform.feature;
 
+import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public interface MutableFeature {
 
@@ -27,5 +30,15 @@ public interface MutableFeature {
      * @param value feature value
      */
     void putFeature(String name, Object value);
+
+    /**
+     * Get map with all available features.
+     *
+     * @return {@link Map} with all available features
+     */
+    default Map<String, Object> getFeatureMap() {
+        return getFeatureNames().stream()
+                .collect(Collectors.toMap(Function.identity(), name -> getFeature(name, Object.class)));
+    }
 
 }
