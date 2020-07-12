@@ -359,7 +359,7 @@ public class VariantsForTesting {
      * @return evaluation object with all the data
      * @throws Exception bla
      */
-    public static SplicingVariantAlleleEvaluation HBBcodingExon1UpstreamCryptic(ReferenceDictionary rd, VariantAnnotator annotator) throws Exception {
+    public static SplicingVariantAlleleEvaluation HBBcodingExon1UpstreamCrypticInCanonical(ReferenceDictionary rd, VariantAnnotator annotator) throws Exception {
 
         // *********************************** PARAMETRIZE *************************************************************
 
@@ -400,10 +400,68 @@ public class VariantsForTesting {
                 "TGGg" + "c" + "aggt",  // ref best window snippet
                 "TGGg" + "t" + "aggt");  // alt best window snippet
 
-        // TODO this might need to be adjusted in future, the whole secondary graphics here. We'd like to compare the alt canonical site snippet with alt best window snippet
         final String secondary = GENERATOR.getDonorCanonicalCryptic(
                 "T" + "A" + "Ggttggt",  // alt canonical site snippet
                 "TGGg" + "t" + "aggt");  // alt best window snippet
+
+        // *************************************************************************************************************
+
+        return makeEvaluation(rd, chrom, pos, variantId, ref, alt, annotator, seqIds, transcripts, si, pathogenicity, metadata, featureMap, ruler, primary, secondary);
+    }
+
+    /**
+     * Get data for variant <code>chr11:5,248,173C>T</code>. The variant is located 14bp upstream from the canonical
+     * donor site of the exon 1 of the <em>HBB</em> gene and creates a new cryptic donor site.
+     *
+     * @param rd        {@link ReferenceDictionary} to use
+     * @param annotator {@link VariantAnnotator} to use to perform functional annotation with respect to genes & transcripts
+     * @return evaluation object with all the data
+     * @throws Exception bla
+     */
+    public static SplicingVariantAlleleEvaluation HBBcodingExon1UpstreamCryptic(ReferenceDictionary rd, VariantAnnotator annotator) throws Exception {
+
+        // *********************************** PARAMETRIZE *************************************************************
+
+        /*
+        Prepare data
+         */
+        final String chrom = "chr11";
+        final int chr = 11;
+        final int pos = 5_248_173;
+        final String variantId = "HBB_donor_14bp_upstream_exon1";
+        final String ref = "C", alt = "T";
+        final Set<String> seqIds = Set.of("NM_000518.4");
+        final double pathogenicity = 0.92;
+
+        final SequenceInterval si = Sequences.getHbbExon1Sequence(rd);
+        final Collection<SplicingTranscript> transcripts = Transcripts.hbbTranscripts(rd);
+        final Metadata metadata = Metadata.builder()
+                .putDonorCoordinate("NM_000518.4", new GenomePosition(rd, Strand.FWD, chr, 5_248_159, PositionType.ONE_BASED))
+                .putAcceptorCoordinate("NM_000518.4", new GenomePosition(rd, Strand.FWD, chr, 5_248_029, PositionType.ONE_BASED))
+                .meanPhyloPScore(1.30299997329712)
+                .build();
+        final Map<String, Double> featureMap = Map.of(
+                "donor_offset", -14.,
+                "canonical_donor", 0.,
+                "cryptic_donor", 2.23600080829063,
+                "acceptor_offset", 129.,
+                "canonical_acceptor", 0.,
+                "cryptic_acceptor", 17.559654824986,
+                "phylop", 1.30299997329712,
+                "hexamer", -2.4162754,
+                "septamer", -1.5387
+        );
+
+        // generate graphics using Vmvt
+//        final String ruler = GENERATOR.getDonorSequenceRuler();
+        final String ruler = ""; // TODO - add ruler here?
+        final String primary = GENERATOR.getDonorTrekkerSvg(
+                "GTGgt" + "g" + "agg",  // ref best window snippet
+                "GTGgt" + "a" + "agg");  // alt best window snippet
+
+        final String secondary = GENERATOR.getDonorCanonicalCryptic(
+                "CAGgttggt",  // alt canonical site snippet
+                "GTGgt" + "a" + "agg");  // alt best window snippet
 
         // *************************************************************************************************************
 
@@ -432,7 +490,7 @@ public class VariantsForTesting {
         final String variantId = "VWF_acceptor_2bp_upstream_exon26_quid";
         final String ref = "T", alt = "C";
         final Set<String> seqIds = Set.of("NM_000552.3");
-        final double pathogenicity = 0.92;
+        final double pathogenicity = 0.91;
 
         final SequenceInterval si = Sequences.getVwfExon26Sequence(rd);
         final Collection<SplicingTranscript> transcripts = Transcripts.vwfTranscripts(rd);
@@ -491,7 +549,7 @@ public class VariantsForTesting {
         final String variantId = "TSC2_acceptor-3_exon11";
         final String ref = "C", alt = "G";
         final Set<String> seqIds = Set.of("NM_000548.3");
-        final double pathogenicity = 0.91;
+        final double pathogenicity = 0.90;
 
         final SequenceInterval si = Sequences.getTsc2Exon11Sequence(rd);
         final Collection<SplicingTranscript> transcripts = Transcripts.tsc2Transcripts(rd);
@@ -545,7 +603,7 @@ public class VariantsForTesting {
         final String variantId = "COL4A5_acceptor-8_exon29";
         final String ref = "T", alt = "A";
         final Set<String> seqIds = Set.of("NM_000495.4");
-        final double pathogenicity = 0.90;
+        final double pathogenicity = 0.89;
 
         final SequenceInterval si = Sequences.getCol4a5Exon29Sequence(rd);
         final Collection<SplicingTranscript> transcripts = Transcripts.col4a5Transcripts(rd);
@@ -603,7 +661,7 @@ public class VariantsForTesting {
         final String variantId = "RYR1_coding_21bp_downstream_exon102";
         final String ref = "C", alt = "G";
         final Set<String> seqIds = Set.of("NM_000540.2");
-        final double pathogenicity = 0.89;
+        final double pathogenicity = 0.88;
 
         final SequenceInterval si = Sequences.getRyr1Exon102Sequence(rd);
         final Collection<SplicingTranscript> transcripts = Transcripts.ryr1Transcripts(rd);
@@ -664,7 +722,7 @@ public class VariantsForTesting {
         final String variantId = "NF1_coding_22bp_downstream_from_acceptor_exon9";
         final String ref = "C", alt = "T";
         final Set<String> seqIds = Set.of("NM_000267.3");
-        final double pathogenicity = 0.88;
+        final double pathogenicity = 0.87;
 
         final SequenceInterval si = Sequences.getNf1Exon9Sequence(rd);
         final Collection<SplicingTranscript> transcripts = Transcripts.nf1Transcripts(rd);

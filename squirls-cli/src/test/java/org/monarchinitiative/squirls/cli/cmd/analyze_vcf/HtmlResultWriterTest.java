@@ -47,6 +47,7 @@ class HtmlResultWriterTest {
                 // donor
                 VariantsForTesting.BRCA2DonorExon15plus2QUID(rd, annotator),
                 VariantsForTesting.ALPLDonorExon7Minus2(rd, annotator),
+                VariantsForTesting.HBBcodingExon1UpstreamCrypticInCanonical(rd, annotator),
                 VariantsForTesting.HBBcodingExon1UpstreamCryptic(rd, annotator),
                 // acceptor
                 VariantsForTesting.VWFAcceptorExon26minus2QUID(rd, annotator),
