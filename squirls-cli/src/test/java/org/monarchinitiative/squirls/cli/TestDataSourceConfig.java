@@ -4,9 +4,15 @@ import de.charite.compbio.jannovar.data.JannovarData;
 import de.charite.compbio.jannovar.data.JannovarDataSerializer;
 import de.charite.compbio.jannovar.data.ReferenceDictionary;
 import de.charite.compbio.jannovar.data.SerializationException;
-import org.monarchinitiative.squirls.core.model.SplicingParameters;
+import org.monarchinitiative.squirls.core.data.ic.InputStreamBasedPositionalWeightMatrixParser;
+import org.monarchinitiative.squirls.core.data.ic.SplicingPwmData;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
 @Configuration
 public class TestDataSourceConfig {
@@ -28,7 +34,6 @@ public class TestDataSourceConfig {
      *     <li>VWF</li>
      *     <li>RYR1</li>
      * </ul>
-     *
      * <p>
      *     The small cache was created from Jannovar v0.29 refseq cache using Jannovar Sieve app.
      * </p>
@@ -46,12 +51,10 @@ public class TestDataSourceConfig {
     }
 
     @Bean
-    public SplicingParameters splicingParameters() {
-        return SplicingParameters.builder()
-                .setDonorExonic(3)
-                .setDonorIntronic(6)
-                .setAcceptorExonic(2)
-                .setAcceptorIntronic(25)
-                .build();
+    public SplicingPwmData splicingPwmData() throws IOException {
+        try (InputStream is = Files.newInputStream(Paths.get(TestDataSourceConfig.class.getResource("spliceSites.yaml").getPath()))) {
+            final InputStreamBasedPositionalWeightMatrixParser parser = new InputStreamBasedPositionalWeightMatrixParser(is);
+            return parser.getSplicingPwmData();
+        }
     }
 }

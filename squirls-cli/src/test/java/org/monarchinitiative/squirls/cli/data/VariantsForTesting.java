@@ -39,7 +39,7 @@ public class VariantsForTesting {
 
 
     /**
-     * Get data for variant <code>chr9:136,224,586G>A</code>. The variant is at -2 position of the canonical acceptor
+     * Get data for variant <code>chr9:136,224,586G>A</code>. The variant is at -1 position of the canonical acceptor
      * site of the exon 3.
      *
      * @param rd        {@link ReferenceDictionary} to use
@@ -398,11 +398,11 @@ public class VariantsForTesting {
         final String ruler = ""; // TODO - add ruler here?
         final String primary = GENERATOR.getDonorTrekkerSvg(
                 "TGGg" + "c" + "aggt",  // ref best window snippet
-                "TGGg" + "t" + "aggt");  // alt best window snippet
+                "TGGg" + "t" + "aggt"); // alt best window snippet
 
         final String secondary = GENERATOR.getDonorCanonicalCryptic(
-                "T" + "A" + "Ggttggt",  // alt canonical site snippet
-                "TGGg" + "t" + "aggt");  // alt best window snippet
+                "T" + "AGgttggt",     // alt canonical site snippet
+                "TGGg" + "t" + "aggt"); // alt best window snippet
 
         // *************************************************************************************************************
 
@@ -446,7 +446,7 @@ public class VariantsForTesting {
                 "cryptic_donor", 2.23600080829063,
                 "acceptor_offset", 129.,
                 "canonical_acceptor", 0.,
-                "cryptic_acceptor", 17.559654824986,
+                "cryptic_acceptor", 1.559654824986,
                 "phylop", 1.30299997329712,
                 "hexamer", -2.4162754,
                 "septamer", -1.5387
@@ -673,7 +673,7 @@ public class VariantsForTesting {
         final Map<String, Double> featureMap = Map.of(
                 "donor_offset", -137.,
                 "canonical_donor", 0.,
-                "cryptic_donor", 1.98046369019604,
+                "cryptic_donor", 1.68046369019604,
                 "acceptor_offset", 21.,
                 "canonical_acceptor", 0.,
                 "cryptic_acceptor", 1.92197740139571,

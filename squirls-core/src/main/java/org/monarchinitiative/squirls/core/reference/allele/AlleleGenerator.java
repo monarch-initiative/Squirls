@@ -29,6 +29,26 @@ public class AlleleGenerator {
     }
 
     /**
+     * Get snippet of neighboring sequence for <code>allele</code> located at given <code>interval</code>. The
+     * neighboring sequence includes <code>+-padding</code> bases upstream and downstream.
+     *
+     * @param interval spanned by the variant
+     * @param sequence reference FASTA sequence
+     * @param allele   string with allele
+     * @param padding  number of padded bases
+     * @return snippet or <code>null</code> if <code>sequence</code> is on different chromosome that the
+     * <code>interval</code>, or if not enough sequence is provided
+     */
+    private static String getPaddedAllele(GenomeInterval interval, SequenceInterval sequence, String allele, int padding) {
+        final Optional<String> upstream = sequence.getSubsequence(new GenomeInterval(interval.getGenomeEndPos(), padding));
+        final Optional<String> downstream = sequence.getSubsequence(new GenomeInterval(interval.getGenomeBeginPos().shifted(-padding), padding));
+
+        return upstream.isPresent() && downstream.isPresent()
+                ? upstream.get() + allele + downstream.get()
+                : null;
+    }
+
+    /**
      * Create nucleotide snippet for splice donor site.
      *
      * @param anchor           position of `exon|intron` boundary
@@ -59,7 +79,6 @@ public class AlleleGenerator {
     public String getAcceptorSiteSnippet(GenomePosition anchor, SequenceInterval sequenceInterval) {
         return sequenceInterval.getSubsequence(splicingParameters.makeAcceptorRegion(anchor)).orElse(null);
     }
-
 
     /**
      * @param anchor position of `intron|exon` boundary
@@ -229,5 +248,81 @@ public class AlleleGenerator {
                 /* if the variantRegion is a larger insertion, result.length() might be greater than SPLICE_ACCEPTOR_SITE_LENGTH after
                    appending 'alt' sequence. We need to make sure only last 'SPLICE_ACCEPTOR_SITE_LENGTH' nucleotides are returned */
         return result.substring(result.length() - splicingParameters.getAcceptorLength()); // last 'SPLICE_ACCEPTOR_SITE_LENGTH' nucleotides
+    }
+
+    /**
+     * Get snippet of neighboring sequence for <code>allele</code> located at given <code>interval</code>. The
+     * neighboring sequence includes <code>+-donor_length-1</code> bases upstream and downstream.
+     *
+     * @param interval spanned by the variant
+     * @param sequence reference FASTA sequence
+     * @param allele   string with allele
+     * @return snippet or <code>null</code> if <code>sequence</code> is on different chromosome that the
+     * <code>interval</code>, or if not enough sequence is provided
+     */
+    public String getDonorNeighborSnippet(GenomeInterval interval, SequenceInterval sequence, String allele) {
+        return getPaddedAllele(interval, sequence, allele, splicingParameters.getDonorLength() - 1);
+    }
+
+    /**
+     * Get snippet of neighboring sequence for <code>allele</code> located at given <code>interval</code>. The
+     * neighboring sequence includes <code>+-acceptor_length-1</code> bases upstream and downstream.
+     *
+     * @param interval spanned by the variant
+     * @param sequence reference FASTA sequence
+     * @param allele   string with allele
+     * @return snippet or <code>null</code> if <code>sequence</code> is on different chromosome that the
+     * <code>interval</code>, or if not enough sequence is provided
+     */
+    public String getAcceptorNeighborSnippet(GenomeInterval interval, SequenceInterval sequence, String allele) {
+        return getPaddedAllele(interval, sequence, allele, splicingParameters.getAcceptorLength() - 1);
+    }
+
+    /*
+                                                  K-MERS
+     */
+
+    /**
+     * Generate snippet with REF allele and the appropriate amount of neighboring sequence, to use for sliding
+     * window to use with k-mer scorers.
+     *
+     * @param variant  to make the snippet for
+     * @param sequence reference fasta sequence
+     * @param k        length of the k-mer
+     * @return snippet or <code>null</code> if there is not enough sequence available, or sequence and variant are in fact on different chromosomes, etc.
+     */
+    public String getKmerRefSnippet(GenomeVariant variant, SequenceInterval sequence, int k) {
+        final int padding = k - 1;
+        final GenomeInterval vi = variant.getGenomeInterval();
+        final Optional<String> optUpstream = sequence.getSubsequence(new GenomeInterval(vi.getGenomeBeginPos().shifted(-(padding)), padding));
+        final Optional<String> optDownstream = sequence.getSubsequence(new GenomeInterval(vi.getGenomeEndPos(), padding));
+
+        if (optUpstream.isPresent() && optDownstream.isPresent()) {
+            return optUpstream.get() + variant.getRef() + optDownstream.get();
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * Generate snippet with ALT allele and the appropriate amount of neighboring sequence, to use for sliding
+     * window to use with k-mer scorers.
+     *
+     * @param variant  to make the snippet for
+     * @param sequence reference fasta sequence
+     * @param k        length of the k-mer
+     * @return snippet or <code>null</code> if there is not enough sequence available, or sequence and variant are in fact on different chromosomes, etc.
+     */
+    public String getKmerAltSnippet(GenomeVariant variant, SequenceInterval sequence, int k) {
+        final int padding = k - 1;
+        final GenomeInterval vi = variant.getGenomeInterval();
+        final Optional<String> optUpstream = sequence.getSubsequence(new GenomeInterval(vi.getGenomeBeginPos().shifted(-(padding)), padding));
+        final Optional<String> optDownstream = sequence.getSubsequence(new GenomeInterval(vi.getGenomeEndPos(), padding));
+
+        if (optUpstream.isPresent() && optDownstream.isPresent()) {
+            return optUpstream.get() + variant.getAlt() + optDownstream.get();
+        } else {
+            return null;
+        }
     }
 }
