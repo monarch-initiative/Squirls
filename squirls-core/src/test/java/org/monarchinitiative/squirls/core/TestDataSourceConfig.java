@@ -12,8 +12,8 @@ import org.monarchinitiative.squirls.core.model.SplicingParameters;
 import org.monarchinitiative.squirls.core.reference.allele.AlleleGenerator;
 import org.monarchinitiative.squirls.core.scoring.DenseSplicingAnnotator;
 import org.monarchinitiative.squirls.core.scoring.SplicingAnnotator;
+import org.monarchinitiative.squirls.core.scoring.calculators.conservation.BigWigAccessor;
 import org.monarchinitiative.squirls.core.scoring.calculators.ic.SplicingInformationContentCalculator;
-import org.monarchinitiative.squirls.core.scoring.conservation.BigWigAccessor;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -113,7 +113,7 @@ public class TestDataSourceConfig {
 
     @Bean
     public BigWigAccessor phylopAccessor() throws IOException {
-        Path path = Paths.get(TestDataSourceConfig.class.getResource("scoring/conservation/small.bw").getPath());
+        Path path = Paths.get(TestDataSourceConfig.class.getResource("scoring/calculators/conservation/small.bw").getPath());
         return new BigWigAccessor(path);
     }
 }
