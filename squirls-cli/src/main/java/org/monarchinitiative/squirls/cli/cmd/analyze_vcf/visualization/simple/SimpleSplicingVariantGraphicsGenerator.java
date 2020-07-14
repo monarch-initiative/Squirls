@@ -132,8 +132,9 @@ public class SimpleSplicingVariantGraphicsGenerator implements SplicingVariantGr
                 final String refAllele = alleleGenerator.getDonorSiteSnippet(donorAnchor, sequence);
                 if (refAllele != null) {
                     final String altAllele = alleleGenerator.getDonorSiteWithAltAllele(donorAnchor, variant, sequence);
-                    builder.logo(vmvtGenerator.getDonorLogoSvg());
+                    builder.logo(vmvtGenerator.getDonorSequenceRuler(refAllele, altAllele));
                     builder.primary(vmvtGenerator.getDonorTrekkerSvg(refAllele, altAllele));
+                    builder.secondary(vmvtGenerator.getDonorDistributionSvg(refAllele, altAllele));
                 } else {
                     // we cannot set the primary graphics here
                     LOGGER.debug("Unable to get sequence for the canonical donor site `{}` for variant `{}`",
@@ -159,8 +160,9 @@ public class SimpleSplicingVariantGraphicsGenerator implements SplicingVariantGr
                 final String refAllele = alleleGenerator.getAcceptorSiteSnippet(acceptorAnchor, sequence);
                 if (refAllele != null) {
                     final String altAllele = alleleGenerator.getAcceptorSiteWithAltAllele(acceptorAnchor, variant, sequence);
-                    builder.logo(vmvtGenerator.getAcceptorLogoSvg());
+                    builder.logo(vmvtGenerator.getAcceptorSequenceRuler(refAllele, altAllele));
                     builder.primary(vmvtGenerator.getAcceptorTrekkerSvg(refAllele, altAllele));
+                    builder.secondary(vmvtGenerator.getAcceptorDistributionSvg(refAllele, altAllele));
                 } else {
                     // we cannot set the primary graphics here
                     LOGGER.debug("Unable to get sequence for the canonical acceptor site `{}` for variant `{}`",
@@ -172,9 +174,6 @@ public class SimpleSplicingVariantGraphicsGenerator implements SplicingVariantGr
     }
 
     private GraphicsData makeCrypticDonorContextGraphics(SplicingPredictionData predictionData) {
-        /*
-         * Find the position of the best ALT window site
-         */
         final GraphicsData.Builder builder = GraphicsData.builder();
 
         final SequenceInterval sequence = predictionData.getSequence();
@@ -203,16 +202,23 @@ public class SimpleSplicingVariantGraphicsGenerator implements SplicingVariantGr
 
         // secondary - sequence walkers comparing the best ALT window with the canonical donor snippet
         final GenomePosition donorAnchor = predictionData.getMetadata().getDonorCoordinateMap().get(predictionData.getTranscript().getAccessionId());
-        final String canonicalDonorSnippet = alleleGenerator.getDonorSiteWithAltAllele(donorAnchor, variant, sequence);
-        builder.secondary(vmvtGenerator.getDonorCanonicalCryptic(canonicalDonorSnippet, altBestWindow));
+        if (donorAnchor != null) {
+            // we have the anchor, thus let's make the graphics
+            final String canonicalDonorSnippet = alleleGenerator.getDonorSiteWithAltAllele(donorAnchor, variant, sequence);
+            builder.secondary(vmvtGenerator.getDonorCanonicalCryptic(canonicalDonorSnippet, altBestWindow));
+        } else {
+            // there is no anchor, this happens in single-exon transcripts
+            if (!predictionData.getTranscript().getIntrons().isEmpty()) {
+                // however, complain if this is not single-exon transcript!
+                LOGGER.warn("Did not find donor site in metadata while but the transcript has {} intron(s)",
+                        predictionData.getTranscript().getIntrons().size());
+            }
+        }
 
         return builder.build();
     }
 
     private GraphicsData makeCrypticAcceptorContextGraphics(SplicingPredictionData predictionData) {
-        /*
-         * Find the position of the best ALT window site
-         */
         final GraphicsData.Builder builder = GraphicsData.builder();
 
         final SequenceInterval sequence = predictionData.getSequence();
@@ -241,8 +247,18 @@ public class SimpleSplicingVariantGraphicsGenerator implements SplicingVariantGr
 
         // secondary - sequence walkers comparing the best ALT window with the canonical acceptor snippet
         final GenomePosition acceptorAnchor = predictionData.getMetadata().getAcceptorCoordinateMap().get(predictionData.getTranscript().getAccessionId());
-        final String canonicalAcceptorSnippet = alleleGenerator.getDonorSiteWithAltAllele(acceptorAnchor, variant, sequence);
-        builder.secondary(vmvtGenerator.getAcceptorCanonicalCryptic(canonicalAcceptorSnippet, altBestWindow));
+        if (acceptorAnchor != null) {
+            // we have the anchor, thus let's make the graphics
+            final String canonicalAcceptorSnippet = alleleGenerator.getAcceptorSiteWithAltAllele(acceptorAnchor, variant, sequence);
+            builder.secondary(vmvtGenerator.getAcceptorCanonicalCryptic(canonicalAcceptorSnippet, altBestWindow));
+        } else {
+            // there is no anchor, this happens in single-exon transcripts
+            if (!predictionData.getTranscript().getIntrons().isEmpty()) {
+                // however, complain if this is not single-exon transcript!
+                LOGGER.warn("Did not find acceptor site in metadata while but the transcript has {} intron(s)",
+                        predictionData.getTranscript().getIntrons().size());
+            }
+        }
 
         return builder.build();
     }
@@ -253,15 +269,16 @@ public class SimpleSplicingVariantGraphicsGenerator implements SplicingVariantGr
         final SequenceInterval sequence = predictionData.getSequence();
 
         // primary - hexamer
-        final String hexamerRefSnippet = alleleGenerator.getKmerRefSnippet(variant, sequence, 6);  // hexamer = 6
-        final String hexamerAltSnippet = alleleGenerator.getKmerAltSnippet(variant, sequence, 6);
+        final String hexamerRefSnippet = AlleleGenerator.getPaddedAllele(variant.getGenomeInterval(), sequence, variant.getRef(), 5);  // 5 because at least one base is REF/ALT
+        final String hexamerAltSnippet = AlleleGenerator.getPaddedAllele(variant.getGenomeInterval(), sequence, variant.getAlt(), 5);
+
         if (hexamerRefSnippet != null && hexamerAltSnippet != null) {
             builder.primary(vmvtGenerator.getHexamerSvg(hexamerRefSnippet, hexamerAltSnippet));
         }
 
         // secondary - heptamer
-        final String heptamerRefSnippet = alleleGenerator.getKmerRefSnippet(variant, sequence, 7); // heptamer = 7
-        final String heptamerAltSnippet = alleleGenerator.getKmerAltSnippet(variant, sequence, 7);
+        final String heptamerRefSnippet = AlleleGenerator.getPaddedAllele(variant.getGenomeInterval(), sequence, variant.getRef(), 6); // 6 because at least one base is REF/ALT
+        final String heptamerAltSnippet = AlleleGenerator.getPaddedAllele(variant.getGenomeInterval(), sequence, variant.getAlt(), 6);
         if (heptamerRefSnippet != null && heptamerAltSnippet != null) {
             builder.secondary(vmvtGenerator.getHeptamerSvg(heptamerRefSnippet, heptamerAltSnippet));
         }
@@ -274,7 +291,7 @@ public class SimpleSplicingVariantGraphicsGenerator implements SplicingVariantGr
         /**
          * The image returned if unable to generate the normal SVG.
          */
-        private static final String EMPTY_SVG_IMAGE = "<svg width=\"20\" height=\"20\" style=\"border:1px solid black\" xmlns=\"http://www.w3.org/2000/svg\"></svg>";
+        private static final String EMPTY_SVG_IMAGE = "<svg width=\"100\" height=\"5\" xmlns=\"http://www.w3.org/2000/svg\"></svg>";
 
         private static final GraphicsData EMPTY = GraphicsData.builder().build();
 

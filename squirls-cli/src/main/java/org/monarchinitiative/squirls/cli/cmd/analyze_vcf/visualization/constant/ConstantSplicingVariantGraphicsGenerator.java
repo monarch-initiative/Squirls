@@ -1,6 +1,7 @@
-package org.monarchinitiative.squirls.cli.cmd.analyze_vcf.visualization;
+package org.monarchinitiative.squirls.cli.cmd.analyze_vcf.visualization.constant;
 
 import org.monarchinitiative.squirls.cli.cmd.analyze_vcf.SplicingVariantAlleleEvaluation;
+import org.monarchinitiative.squirls.cli.cmd.analyze_vcf.visualization.SplicingVariantGraphicsGenerator;
 
 /**
  * This class returns the same SVG for each variant. Not really useful for anything except for testing.
