@@ -39,30 +39,30 @@ class VisualizationContextSelectorTest {
     @Test
     void donorQuidVariant() throws Exception {
         final SplicingVariantAlleleEvaluation ve = VariantsForTesting.BRCA2DonorExon15plus2QUID(rd, annotator);
-        final VisualizationContextSelector.VisualizationContext ctx = selector.selectContext(ve.getPrimaryPrediction());
-        assertThat(ctx, is(VisualizationContextSelector.VisualizationContext.CANONICAL_DONOR));
+        final VisualizationContext ctx = selector.selectContext(ve.getPrimaryPrediction());
+        assertThat(ctx, is(VisualizationContext.CANONICAL_DONOR));
     }
 
     @Test
     void donorNonQuidVariantThatDisruptsTheSite() throws Exception {
         final SplicingVariantAlleleEvaluation ve = VariantsForTesting.ALPLDonorExon7Minus2(rd, annotator);
-        final VisualizationContextSelector.VisualizationContext ctx = selector.selectContext(ve.getPrimaryPrediction());
-        assertThat(ctx, is(VisualizationContextSelector.VisualizationContext.CANONICAL_DONOR));
+        final VisualizationContext ctx = selector.selectContext(ve.getPrimaryPrediction());
+        assertThat(ctx, is(VisualizationContext.CANONICAL_DONOR));
     }
 
     @Test
     void donorNonQuidVariantThatCreatesACrypticDonor() throws Exception {
         final SplicingVariantAlleleEvaluation ve = VariantsForTesting.HBBcodingExon1UpstreamCrypticInCanonical(rd, annotator);
-        final VisualizationContextSelector.VisualizationContext ctx = selector.selectContext(ve.getPrimaryPrediction());
-        assertThat(ctx, is(VisualizationContextSelector.VisualizationContext.CRYPTIC_DONOR));
+        final VisualizationContext ctx = selector.selectContext(ve.getPrimaryPrediction());
+        assertThat(ctx, is(VisualizationContext.CRYPTIC_DONOR));
     }
 
 
     @Test
     void codingNonQuidVariantThatCreatesACrypticDonor() throws Exception {
         final SplicingVariantAlleleEvaluation ve = VariantsForTesting.HBBcodingExon1UpstreamCryptic(rd, annotator);
-        final VisualizationContextSelector.VisualizationContext ctx = selector.selectContext(ve.getPrimaryPrediction());
-        assertThat(ctx, is(VisualizationContextSelector.VisualizationContext.CRYPTIC_DONOR));
+        final VisualizationContext ctx = selector.selectContext(ve.getPrimaryPrediction());
+        assertThat(ctx, is(VisualizationContext.CRYPTIC_DONOR));
     }
 
     // ****************************************** ACCEPTOR *************************************************************
@@ -70,29 +70,29 @@ class VisualizationContextSelectorTest {
     @Test
     void acceptorQuidVariant() throws Exception {
         final SplicingVariantAlleleEvaluation ve = VariantsForTesting.VWFAcceptorExon26minus2QUID(rd, annotator);
-        final VisualizationContextSelector.VisualizationContext ctx = selector.selectContext(ve.getPrimaryPrediction());
-        assertThat(ctx, is(VisualizationContextSelector.VisualizationContext.CANONICAL_ACCEPTOR));
+        final VisualizationContext ctx = selector.selectContext(ve.getPrimaryPrediction());
+        assertThat(ctx, is(VisualizationContext.CANONICAL_ACCEPTOR));
     }
 
     @Test
     void acceptorNonQuidVariantThatDisruptsTheSite() throws Exception {
         final SplicingVariantAlleleEvaluation ve = VariantsForTesting.TSC2AcceptorExon11Minus3(rd, annotator);
-        final VisualizationContextSelector.VisualizationContext ctx = selector.selectContext(ve.getPrimaryPrediction());
-        assertThat(ctx, is(VisualizationContextSelector.VisualizationContext.CANONICAL_ACCEPTOR));
+        final VisualizationContext ctx = selector.selectContext(ve.getPrimaryPrediction());
+        assertThat(ctx, is(VisualizationContext.CANONICAL_ACCEPTOR));
     }
 
     @Test
     void acceptorNonQuidVariantThatCreatesACrypticAcceptor() throws Exception {
         final SplicingVariantAlleleEvaluation ve = VariantsForTesting.COL4A5AcceptorExon11Minus8(rd, annotator);
-        final VisualizationContextSelector.VisualizationContext ctx = selector.selectContext(ve.getPrimaryPrediction());
-        assertThat(ctx, is(VisualizationContextSelector.VisualizationContext.CRYPTIC_ACCEPTOR));
+        final VisualizationContext ctx = selector.selectContext(ve.getPrimaryPrediction());
+        assertThat(ctx, is(VisualizationContext.CRYPTIC_ACCEPTOR));
     }
 
     @Test
     void codingNonQuidVariantThatCreatesACrypticAcceptor() throws Exception {
         final SplicingVariantAlleleEvaluation ve = VariantsForTesting.RYR1codingExon102crypticAcceptor(rd, annotator);
-        final VisualizationContextSelector.VisualizationContext ctx = selector.selectContext(ve.getPrimaryPrediction());
-        assertThat(ctx, is(VisualizationContextSelector.VisualizationContext.CRYPTIC_ACCEPTOR));
+        final VisualizationContext ctx = selector.selectContext(ve.getPrimaryPrediction());
+        assertThat(ctx, is(VisualizationContext.CRYPTIC_ACCEPTOR));
     }
 
     // ****************************************** ESE ******************************************************************
@@ -100,7 +100,7 @@ class VisualizationContextSelectorTest {
     @Test
     void sreVariant() throws Exception {
         final SplicingVariantAlleleEvaluation ve = VariantsForTesting.NF1codingExon9coding_SRE(rd, annotator);
-        final VisualizationContextSelector.VisualizationContext ctx = selector.selectContext(ve.getPrimaryPrediction());
-        assertThat(ctx, is(VisualizationContextSelector.VisualizationContext.SRE));
+        final VisualizationContext ctx = selector.selectContext(ve.getPrimaryPrediction());
+        assertThat(ctx, is(VisualizationContext.SRE));
     }
 }

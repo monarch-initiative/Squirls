@@ -83,7 +83,7 @@ public class SimpleSplicingVariantGraphicsGenerator implements SplicingVariantGr
         }
 
         try {
-            final VisualizationContextSelector.VisualizationContext ctx = selector.selectContext(predictionData);
+            final VisualizationContext ctx = selector.selectContext(predictionData);
             switch (ctx) {
                 case CANONICAL_DONOR:
                     data = makeCanonicalDonorContextGraphics(predictionData);
