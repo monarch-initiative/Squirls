@@ -4,6 +4,7 @@ import com.google.common.collect.ComparisonChain;
 import de.charite.compbio.jannovar.reference.GenomeInterval;
 import de.charite.compbio.jannovar.reference.GenomePosition;
 import de.charite.compbio.jannovar.reference.GenomeVariant;
+import org.monarchinitiative.squirls.core.Metadata;
 import org.monarchinitiative.squirls.core.data.ic.SplicingPwmData;
 import org.monarchinitiative.squirls.core.model.SplicingTranscript;
 import org.monarchinitiative.squirls.core.reference.SplicingLocationData;
@@ -170,8 +171,13 @@ public class DenseSplicingAnnotator implements SplicingAnnotator {
                 variantOnStrand.getGenomeInterval());
         data.putFeature("acceptor_offset", (double) acceptorOffset);
 
-        // TODO - add metadata
-//        data.setMetadata(Metadata.empty());
+        final Metadata.Builder metadataBuilder = Metadata.builder()
+                .meanPhyloPScore(phylopScore);
+
+        locationData.getDonorBoundary().ifPresent(boundary -> metadataBuilder.putDonorCoordinate(transcript.getAccessionId(), boundary));
+        locationData.getAcceptorBoundary().ifPresent(boundary -> metadataBuilder.putAcceptorCoordinate(transcript.getAccessionId(), boundary));
+
+        data.setMetadata(metadataBuilder.build());
 
         return data;
     }

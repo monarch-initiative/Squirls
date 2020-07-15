@@ -1,12 +1,17 @@
-package org.monarchinitiative.squirls.cli.cmd.analyze_vcf;
+package org.monarchinitiative.squirls.cli.cmd.analyze_vcf.visualization.constant;
+
+import org.monarchinitiative.squirls.cli.cmd.analyze_vcf.SplicingVariantAlleleEvaluation;
+import org.monarchinitiative.squirls.cli.cmd.analyze_vcf.visualization.SplicingVariantGraphicsGenerator;
 
 /**
- * Using a set of rules, this class generates an appropriate SVG graphics for any given {@link SplicingVariantAlleleEvaluation}.
- * The generated graphics is returned as string.
+ * This class returns the same SVG for each variant. Not really useful for anything except for testing.
  */
-public class SvgGraphicsGenerator {
+public class ConstantSplicingVariantGraphicsGenerator implements SplicingVariantGraphicsGenerator {
 
-    private static final String HARDCODED_SOMETHING = "<svg width=\"400\" height=\"400\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:svg=\"http://www.w3.org/2000/svg\">\n" +
+    /**
+     * This is the SVG image that is returned for each variant
+     */
+    private static final String CONSTANT_SVG_STRING = "<svg width=\"400\" height=\"400\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:svg=\"http://www.w3.org/2000/svg\">\n" +
             "<!-- Created by vmvt -->\n" +
             "<style>\n" +
             "  text { font: 24px monospace; }\n" +
@@ -151,16 +156,9 @@ public class SvgGraphicsGenerator {
             "</g>\n" +
             "</svg>\n";
 
-    /**
-     * Generate SVG graphics for given variant represented by <code>evaluation</code>.
-     *
-     * @param evaluation with variant data
-     * @return string with SVG graphics
-     */
-    public String generateGraphics(SplicingVariantAlleleEvaluation evaluation) {
-
-        // TODO: 9. 6. 2020 implement
-        return HARDCODED_SOMETHING;
+    @Override
+    public SplicingVariantAlleleEvaluation generateGraphics(SplicingVariantAlleleEvaluation variant) {
+        variant.setPrimaryGraphics(CONSTANT_SVG_STRING);
+        return variant;
     }
-
 }

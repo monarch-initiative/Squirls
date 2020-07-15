@@ -1,12 +1,11 @@
 package org.monarchinitiative.squirls.core.scoring.calculators;
 
-import de.charite.compbio.jannovar.reference.GenomePosition;
-import de.charite.compbio.jannovar.reference.GenomeVariant;
-import de.charite.compbio.jannovar.reference.Strand;
+import de.charite.compbio.jannovar.reference.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import xyz.ielis.hyperutil.reference.fasta.SequenceInterval;
 
 import java.util.Map;
 
@@ -34,5 +33,38 @@ class HexamerTest extends CalculatorTestBase {
         GenomeVariant variant = new GenomeVariant(new GenomePosition(referenceDictionary, Strand.FWD, 1, 1201), "t", "g");
         final double score = calculator.score(null, variant, sequenceInterval);
         assertThat(score, is(closeTo(.837930, EPSILON)));
+    }
+
+    /**
+     * Test variant from <i>DiGiacomo et al. 2013 - Functional Analysis of a Large set of BRCA2 exon 7 Variants
+     * Highlights the Predictive Value of Hexamer Scores in Detecting Alterations of Exonic Splicing Regulatory
+     * Elements</i>
+     */
+    @Test
+    void realVariant() {
+        final SequenceInterval si = SequenceInterval.builder()
+                .interval(new GenomeInterval(referenceDictionary, Strand.FWD, 1, 0, 125))
+                .sequence("cccagGGT" +
+                        "C" + // c.520C>T
+                        "GTCAGACACCAAAACATATTTCTGAAAGTCTAGGAGCTGAGGTGGATCCTGATATGTCTT" +
+                        "G" + // c.581G>A
+                        "GTCAAGTTCTTTAGCTACACCACCCACCCTTAGTT" +
+                        "C" + // c.617C>G
+                        "TACTGTGCTCATAGgtaat")
+                .build();
+        // representing the c.520C>T variant from Figure 3
+        final GenomeVariant first = new GenomeVariant(new GenomePosition(referenceDictionary, Strand.FWD, 1, 9, PositionType.ONE_BASED), "C", "T");
+        double score = calculator.score(null, first, si);
+        assertThat(score, is(closeTo(2.811, EPSILON)));
+
+        // representing the c.581G>A variant from Figure 3
+        final GenomeVariant second = new GenomeVariant(new GenomePosition(referenceDictionary, Strand.FWD, 1, 70, PositionType.ONE_BASED), "G", "A");
+        score = calculator.score(null, second, si);
+        assertThat(score, is(closeTo(3.006, EPSILON)));
+
+        // representing the c.617C>G variant from Figure 3
+        final GenomeVariant third = new GenomeVariant(new GenomePosition(referenceDictionary, Strand.FWD, 1, 106, PositionType.ONE_BASED), "C", "G");
+        score = calculator.score(null, third, si);
+        assertThat(score, is(closeTo(1.115, EPSILON)));
     }
 }

@@ -3,10 +3,11 @@ package org.monarchinitiative.squirls.cli.cmd.analyze_vcf;
 import de.charite.compbio.jannovar.annotation.VariantAnnotator;
 import de.charite.compbio.jannovar.annotation.builders.AnnotationBuilderOptions;
 import de.charite.compbio.jannovar.data.JannovarData;
+import de.charite.compbio.jannovar.data.ReferenceDictionary;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.monarchinitiative.squirls.cli.PojosForTesting;
 import org.monarchinitiative.squirls.cli.TestDataSourceConfig;
+import org.monarchinitiative.squirls.cli.data.VariantsForTesting;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
@@ -15,12 +16,13 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.Set;
 
 @SpringBootTest(classes = TestDataSourceConfig.class)
 class HtmlResultWriterTest {
 
     // TODO: 3. 6. 2020 remove
-    private static final Path OUTPATH = Paths.get("/home/ielis/tmp/SQUIRLS.html");
+    private static final Path OUTPATH = Paths.get("SQUIRLS.html");
 
     @Autowired
     private JannovarData jannovarData;
@@ -37,11 +39,27 @@ class HtmlResultWriterTest {
 
     @Test
     void writeResults() throws Exception {
-        final SplicingVariantAlleleEvaluation first = PojosForTesting.getDonorPlusFiveEvaluation(jannovarData.getRefDict(), annotator);
-        final SplicingVariantAlleleEvaluation second = PojosForTesting.getAcceptorMinusOneEvaluation(jannovarData.getRefDict(), annotator);
+        final ReferenceDictionary rd = jannovarData.getRefDict();
+        Set<SplicingVariantAlleleEvaluation> variantData = Set.of(
+                // TODO: 7. 7. 2020 consider removing
+//                VariantsForTesting.SURF2DonorExon3Plus4Evaluation(rd, annotator),
+//                VariantsForTesting.SURF2Exon3AcceptorMinus2Evaluation(rd, annotator),
+                // donor
+                VariantsForTesting.BRCA2DonorExon15plus2QUID(rd, annotator),
+                VariantsForTesting.ALPLDonorExon7Minus2(rd, annotator),
+                VariantsForTesting.HBBcodingExon1UpstreamCrypticInCanonical(rd, annotator),
+                VariantsForTesting.HBBcodingExon1UpstreamCryptic(rd, annotator),
+                // acceptor
+                VariantsForTesting.VWFAcceptorExon26minus2QUID(rd, annotator),
+                VariantsForTesting.TSC2AcceptorExon11Minus3(rd, annotator),
+                VariantsForTesting.COL4A5AcceptorExon11Minus8(rd, annotator),
+                VariantsForTesting.RYR1codingExon102crypticAcceptor(rd, annotator),
+                // SRE
+                VariantsForTesting.NF1codingExon9coding_SRE(rd, annotator)
+        );
 
         AnalysisResults results = AnalysisResults.builder()
-                .addAllSampleNames(List.of("FAKE SAMPLE"))
+                .addAllSampleNames(List.of("Sample_192"))
                 .analysisStats(AnalysisStats.builder()
                         .allVariants(100)
                         .alleleCount(120)
@@ -49,10 +67,11 @@ class HtmlResultWriterTest {
                         .pathogenicAlleleCount(2)
                         .build())
                 .settingsData(SettingsData.builder()
-                        .inputPath("path to VCF").threshold(PojosForTesting.FAKE_THRESHOLD)
-                        .transcriptDb("ENSEMBLah")
+                        .inputPath("path/to/Sample_192.vcf")
+                        .threshold(VariantsForTesting.FAKE_THRESHOLD)
+                        .transcriptDb("refseq")
                         .build())
-                .variantData(List.of(first, second))
+                .variantData(variantData)
                 .build();
         try (OutputStream os = Files.newOutputStream(OUTPATH)) {
             writer.writeResults(os, results);
