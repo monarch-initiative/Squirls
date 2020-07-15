@@ -1,8 +1,5 @@
 package org.monarchinitiative.squirls.core.scoring;
 
-import com.google.common.collect.ComparisonChain;
-import de.charite.compbio.jannovar.reference.GenomeInterval;
-import de.charite.compbio.jannovar.reference.GenomePosition;
 import de.charite.compbio.jannovar.reference.GenomeVariant;
 import org.monarchinitiative.squirls.core.Metadata;
 import org.monarchinitiative.squirls.core.data.ic.SplicingPwmData;
@@ -16,9 +13,7 @@ import org.monarchinitiative.squirls.core.scoring.calculators.conservation.BigWi
 import org.monarchinitiative.squirls.core.scoring.calculators.ic.SplicingInformationContentCalculator;
 import xyz.ielis.hyperutil.reference.fasta.SequenceInterval;
 
-import java.util.Comparator;
 import java.util.Map;
-import java.util.stream.Stream;
 
 /**
  * This annotator calculates the following splicing features for each {@link Annotatable}:
@@ -60,7 +55,7 @@ public class DenseSplicingAnnotator implements SplicingAnnotator {
         locator = new NaiveSplicingTranscriptLocator(splicingPwmData.getParameters());
 
         SplicingInformationContentCalculator calculator = new SplicingInformationContentCalculator(splicingPwmData);
-        AlleleGenerator generator = new AlleleGenerator(calculator.getSplicingParameters());
+        AlleleGenerator generator = new AlleleGenerator(splicingPwmData.getParameters());
 
         calculatorMap = Map.of(
                 "canonical_donor", new CanonicalDonor(calculator, generator, locator),
@@ -69,39 +64,9 @@ public class DenseSplicingAnnotator implements SplicingAnnotator {
                 "cryptic_acceptor", new CrypticAcceptor(calculator, generator, locator),
                 "hexamer", new Hexamer(hexamerMap),
                 "septamer", new Septamer(septamerMap),
-                "phylop", new BigWig(bigWigAccessor));
-    }
-
-    static int getOffset(Stream<GenomePosition> positions, GenomeInterval variant) {
-        final Comparator<GenomePosition> findClosestExonIntronBorder = (left, right) -> ComparisonChain.start()
-                .compare(Math.abs(left.differenceTo(variant)), Math.abs(right.differenceTo(variant)))
-                .result();
-
-        final GenomePosition closestPosition = positions.min(findClosestExonIntronBorder).orElseThrow();
-        final int diff = closestPosition.differenceTo(variant);
-        if (diff > 0) {
-            // variant is upstream from the border position
-            return -diff;
-        } else if (diff < 0) {
-            // variant is downstream from the border position
-            return -diff + 1;
-        } else {
-            /*
-            Due to representation of exon|Intron / intron|Exon boundary as a GenomePosition that represents position of
-            the capital E/I character above, we need to distinguish when variant interval denotes
-              - a deletion of the boundary, or
-              - SNP at +1 position.
-
-            The code below handles these situations.
-            */
-            if (variant.contains(closestPosition) && variant.length() > 1) {
-                // deletion of the boundary
-                return 0;
-            } else {
-                // SNP at +1 position
-                return 1;
-            }
-        }
+                "phylop", new BigWig(bigWigAccessor),
+                "donor_offset", new ClosestDonorDistance(),
+                "acceptor_offset", new ClosestAcceptorDistance());
     }
 
     @Override
@@ -110,52 +75,11 @@ public class DenseSplicingAnnotator implements SplicingAnnotator {
         final SplicingTranscript transcript = data.getTranscript();
         final SequenceInterval sequence = data.getSequence();
 
-        final GenomeVariant variantOnStrand = variant.withStrand(transcript.getStrand());
         final SplicingLocationData locationData = locator.locate(variant, transcript);
+        final GenomeVariant variantOnStrand = variant.withStrand(transcript.getStrand());
 
-        // all features except offsets
+        // all features except for the offsets
         calculatorMap.forEach((name, calculator) -> data.putFeature(name, calculator.score(variantOnStrand, transcript, sequence)));
-
-        /*
-        // `canonical_donor` feature
-        final double canonicalDonor = canonicalDonorFeatureCalculator.score(variantOnStrand, transcript, sequence);
-        data.putFeature("canonical_donor", canonicalDonor);
-
-        // `cryptic_donor` feature
-        final double crypticDonor = crypticDonorScorer.score(variantOnStrand, transcript, sequence);
-        data.putFeature("cryptic_donor", crypticDonor);
-
-        // `canonical_acceptor` feature
-        final double canonicalAcceptor = canonicalAcceptorScorer.score(variantOnStrand, transcript, sequence);
-        data.putFeature("canonical_acceptor", canonicalAcceptor);
-
-        // `cryptic_acceptor` feature
-        final double crypticAcceptor = crypticAcceptorScorer.score(variantOnStrand, transcript, sequence);
-        data.putFeature("cryptic_acceptor", crypticAcceptor);
-
-        // `hexamer` feature
-        final double hexamerScore = hexamer.score(variant, null, sequence);
-        data.putFeature("hexamer", hexamerScore);
-        // `septamer` feature
-        final double septamerScore = septamer.score(variant, null, sequence);
-        data.putFeature("septamer", septamerScore);
-
-        // `phylop` feature
-        final double phylopScore = phyloPFeatureCalculator.score(variant, null, sequence);
-        data.putFeature("phylop", phylopScore);
-
-        */
-        // `donor_offset` feature
-        final int donorOffset = getOffset(transcript.getExons().stream()
-                        .map(e -> e.getInterval().getGenomeEndPos()),
-                variantOnStrand.getGenomeInterval());
-        data.putFeature("donor_offset", (double) donorOffset);
-
-        // `acceptor_offset` feature
-        final int acceptorOffset = getOffset(transcript.getExons().stream()
-                        .map(e -> e.getInterval().getGenomeBeginPos()),
-                variantOnStrand.getGenomeInterval());
-        data.putFeature("acceptor_offset", (double) acceptorOffset);
 
         final Metadata.Builder metadataBuilder = Metadata.builder();
 
