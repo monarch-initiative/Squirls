@@ -20,7 +20,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.number.IsCloseTo.closeTo;
 import static org.mockito.Mockito.when;
 
-class BigWigFeatureCalculatorTest extends CalculatorTestBase {
+class BigWigTest extends CalculatorTestBase {
 
 
     @Autowired
@@ -30,12 +30,12 @@ class BigWigFeatureCalculatorTest extends CalculatorTestBase {
     @Mock
     private BigWigAccessor accessor;
 
-    private BigWigFeatureCalculator annotator;
+    private BigWig annotator;
 
     @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
-        annotator = new BigWigFeatureCalculator(accessor);
+        annotator = new BigWig(accessor);
     }
 
     @AfterEach

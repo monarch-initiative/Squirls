@@ -8,7 +8,7 @@ abstract class BaseFeatureCalculator implements FeatureCalculator {
     protected final SplicingInformationContentCalculator calculator;
     protected final AlleleGenerator generator;
 
-    BaseFeatureCalculator(SplicingInformationContentCalculator calculator, AlleleGenerator generator) {
+    protected BaseFeatureCalculator(SplicingInformationContentCalculator calculator, AlleleGenerator generator) {
         this.calculator = calculator;
         this.generator = generator;
     }

@@ -10,15 +10,15 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.closeTo;
 
-class CanonicalDonorFeatureCalculatorTest extends CalculatorTestBase {
+class CanonicalDonorTest extends CalculatorTestBase {
 
-    private CanonicalDonorFeatureCalculator scorer;
+    private CanonicalDonor scorer;
 
 
     @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
-        scorer = new CanonicalDonorFeatureCalculator(calculator, generator);
+        scorer = new CanonicalDonor(calculator, generator);
     }
 
     @Test

@@ -16,19 +16,19 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.closeTo;
 
-class SeptamerFeatureCalculatorTest extends CalculatorTestBase {
+class SeptamerTest extends CalculatorTestBase {
 
     @Qualifier("septamerMap")
     @Autowired
     private Map<String, Double> septamerMap;
 
 
-    private SeptamerFeatureCalculator calculator;
+    private Septamer calculator;
 
     @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
-        calculator = new SeptamerFeatureCalculator(septamerMap);
+        calculator = new Septamer(septamerMap);
     }
 
     @Test

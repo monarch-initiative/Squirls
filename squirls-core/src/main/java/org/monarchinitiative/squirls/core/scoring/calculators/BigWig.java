@@ -13,13 +13,13 @@ import java.util.List;
 /**
  * This class operates on a bigWig file and gets score for a given {@link GenomeVariant} from a bigWig file.
  */
-public class BigWigFeatureCalculator implements FeatureCalculator {
+public class BigWig implements FeatureCalculator {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(BigWigFeatureCalculator.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(BigWig.class);
 
     private final BigWigAccessor accessor;
 
-    public BigWigFeatureCalculator(BigWigAccessor accessor) {
+    public BigWig(BigWigAccessor accessor) {
         this.accessor = accessor;
     }
 

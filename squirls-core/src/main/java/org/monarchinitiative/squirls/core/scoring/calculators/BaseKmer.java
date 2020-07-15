@@ -10,11 +10,11 @@ import xyz.ielis.hyperutil.reference.fasta.SequenceInterval;
 import java.util.Map;
 import java.util.Optional;
 
-public abstract class KmerFeatureCalculator implements FeatureCalculator {
+public abstract class BaseKmer implements FeatureCalculator {
 
     protected final ImmutableMap<String, Double> kmerMap;
 
-    protected KmerFeatureCalculator(Map<String, Double> kmerMap) {
+    protected BaseKmer(Map<String, Double> kmerMap) {
         this.kmerMap = ImmutableMap.copyOf(kmerMap);
     }
 

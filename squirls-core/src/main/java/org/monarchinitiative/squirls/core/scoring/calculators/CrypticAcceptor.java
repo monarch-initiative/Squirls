@@ -12,16 +12,16 @@ import xyz.ielis.hyperutil.reference.fasta.SequenceInterval;
 
 import java.util.Optional;
 
-public class CrypticAcceptorFeatureCalculator extends BaseFeatureCalculator {
+public class CrypticAcceptor extends BaseFeatureCalculator {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(CanonicalAcceptorFeatureCalculator.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(CanonicalAcceptor.class);
 
     /**
      * How many bases we add upstream and downstream when creating snippet for sliding window.
      */
     private final int padding;
 
-    public CrypticAcceptorFeatureCalculator(SplicingInformationContentCalculator calculator, AlleleGenerator generator) {
+    public CrypticAcceptor(SplicingInformationContentCalculator calculator, AlleleGenerator generator) {
         super(calculator, generator);
         this.padding = calculator.getSplicingParameters().getAcceptorLength() - 1;
     }

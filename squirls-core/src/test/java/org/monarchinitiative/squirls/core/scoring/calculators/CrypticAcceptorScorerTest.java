@@ -12,13 +12,13 @@ import static org.hamcrest.Matchers.closeTo;
 
 class CrypticAcceptorScorerTest extends CalculatorTestBase {
 
-    private CrypticAcceptorFeatureCalculator scorer;
+    private CrypticAcceptor scorer;
 
 
     @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
-        scorer = new CrypticAcceptorFeatureCalculator(calculator, generator);
+        scorer = new CrypticAcceptor(calculator, generator);
     }
 
     @Test

@@ -13,12 +13,12 @@ import static org.hamcrest.Matchers.closeTo;
 class CanonicalAcceptorScorerTest extends CalculatorTestBase {
 
 
-    private CanonicalAcceptorFeatureCalculator scorer;
+    private CanonicalAcceptor scorer;
 
     @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
-        scorer = new CanonicalAcceptorFeatureCalculator(calculator, generator);
+        scorer = new CanonicalAcceptor(calculator, generator);
     }
 
     @Test

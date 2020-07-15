@@ -14,19 +14,19 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.closeTo;
 
-class HexamerFeatureCalculatorTest extends CalculatorTestBase {
+class HexamerTest extends CalculatorTestBase {
 
 
     @Autowired
     @Qualifier("hexamerMap")
     private Map<String, Double> hexamerMap;
 
-    private HexamerFeatureCalculator calculator;
+    private Hexamer calculator;
 
     @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
-        calculator = new HexamerFeatureCalculator(hexamerMap);
+        calculator = new Hexamer(hexamerMap);
     }
 
     @Test

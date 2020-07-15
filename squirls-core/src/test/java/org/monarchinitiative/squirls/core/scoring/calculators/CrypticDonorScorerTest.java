@@ -12,12 +12,12 @@ import static org.hamcrest.Matchers.closeTo;
 
 class CrypticDonorScorerTest extends CalculatorTestBase {
 
-    private CrypticDonorFeatureCalculator scorer;
+    private CrypticDonor scorer;
 
     @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
-        scorer = new CrypticDonorFeatureCalculator(calculator, generator);
+        scorer = new CrypticDonor(calculator, generator);
     }
 
     @Test

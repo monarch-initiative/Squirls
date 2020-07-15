@@ -3,14 +3,14 @@ package org.monarchinitiative.squirls.core.scoring.calculators;
 
 import java.util.Map;
 
-public class HexamerFeatureCalculator extends KmerFeatureCalculator {
+public class Hexamer extends BaseKmer {
 
     /**
      * Since we are working with hexamers, the padding is 5bp. The remaining bp is coming from REF/ALT alleles.
      */
     private static final int PADDING = 5;
 
-    public HexamerFeatureCalculator(Map<String, Double> kmerMap) {
+    public Hexamer(Map<String, Double> kmerMap) {
         super(kmerMap);
     }
 

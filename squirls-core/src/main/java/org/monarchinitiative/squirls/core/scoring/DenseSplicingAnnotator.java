@@ -39,19 +39,19 @@ public class DenseSplicingAnnotator implements SplicingAnnotator {
 
     private final SplicingTranscriptLocator transcriptLocator;
 
-    private final CanonicalDonorFeatureCalculator canonicalDonorFeatureCalculator;
+    private final CanonicalDonor canonicalDonorFeatureCalculator;
 
-    private final CanonicalAcceptorFeatureCalculator canonicalAcceptorScorer;
+    private final CanonicalAcceptor canonicalAcceptorScorer;
 
-    private final CrypticDonorFeatureCalculator crypticDonorScorer;
+    private final CrypticDonor crypticDonorScorer;
 
-    private final CrypticAcceptorFeatureCalculator crypticAcceptorScorer;
+    private final CrypticAcceptor crypticAcceptorScorer;
 
-    private final HexamerFeatureCalculator hexamerFeatureCalculator;
+    private final Hexamer hexamer;
 
-    private final SeptamerFeatureCalculator septamerFeatureCalculator;
+    private final Septamer septamer;
 
-    private final BigWigFeatureCalculator phyloPFeatureCalculator;
+    private final BigWig phyloPFeatureCalculator;
 
     /**
      * Create the annotator.
@@ -70,15 +70,15 @@ public class DenseSplicingAnnotator implements SplicingAnnotator {
 
         transcriptLocator = new NaiveSplicingTranscriptLocator(calculator.getSplicingParameters());
 
-        canonicalDonorFeatureCalculator = new CanonicalDonorFeatureCalculator(calculator, generator);
-        canonicalAcceptorScorer = new CanonicalAcceptorFeatureCalculator(calculator, generator);
-        crypticDonorScorer = new CrypticDonorFeatureCalculator(calculator, generator);
-        crypticAcceptorScorer = new CrypticAcceptorFeatureCalculator(calculator, generator);
+        canonicalDonorFeatureCalculator = new CanonicalDonor(calculator, generator);
+        canonicalAcceptorScorer = new CanonicalAcceptor(calculator, generator);
+        crypticDonorScorer = new CrypticDonor(calculator, generator);
+        crypticAcceptorScorer = new CrypticAcceptor(calculator, generator);
 
-        hexamerFeatureCalculator = new HexamerFeatureCalculator(hexamerMap);
-        septamerFeatureCalculator = new SeptamerFeatureCalculator(septamerMap);
+        hexamer = new Hexamer(hexamerMap);
+        septamer = new Septamer(septamerMap);
 
-        phyloPFeatureCalculator = new BigWigFeatureCalculator(bigWigAccessor);
+        phyloPFeatureCalculator = new BigWig(bigWigAccessor);
     }
 
     static int getOffset(Stream<GenomePosition> positions, GenomeInterval variant) {
@@ -152,9 +152,9 @@ public class DenseSplicingAnnotator implements SplicingAnnotator {
             data.putFeature("cryptic_acceptor", 0.);
         }
 
-        final double hexamerScore = hexamerFeatureCalculator.score(null, variant, sequence);
+        final double hexamerScore = hexamer.score(null, variant, sequence);
         data.putFeature("hexamer", hexamerScore);
-        final double septamerScore = septamerFeatureCalculator.score(null, variant, sequence);
+        final double septamerScore = septamer.score(null, variant, sequence);
         data.putFeature("septamer", septamerScore);
 
         final double phylopScore = phyloPFeatureCalculator.score(null, variant, sequence);

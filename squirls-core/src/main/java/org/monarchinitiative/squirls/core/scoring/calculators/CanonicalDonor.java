@@ -9,34 +9,33 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import xyz.ielis.hyperutil.reference.fasta.SequenceInterval;
 
-public class CanonicalAcceptorFeatureCalculator extends BaseFeatureCalculator {
+public class CanonicalDonor extends BaseFeatureCalculator {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(CanonicalAcceptorFeatureCalculator.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(CanonicalDonor.class);
 
-
-    public CanonicalAcceptorFeatureCalculator(SplicingInformationContentCalculator annotator, AlleleGenerator generator) {
+    public CanonicalDonor(SplicingInformationContentCalculator annotator, AlleleGenerator generator) {
         super(annotator, generator);
     }
 
     @Override
     public double score(GenomePosition anchor, GenomeVariant variant, SequenceInterval interval) {
-        final GenomeInterval acceptorRegion = generator.makeAcceptorInterval(anchor);
+        final GenomeInterval donorRegion = generator.makeDonorInterval(anchor);
 
-        if (!acceptorRegion.overlapsWith(variant.getGenomeInterval())) {
+        if (!donorRegion.overlapsWith(variant.getGenomeInterval())) {
             // shortcut - if variant does not affect the donor site
             return 0;
         }
 
-        final String acceptorSiteSnippet = generator.getAcceptorSiteSnippet(anchor, interval);
-        final String acceptorSiteWithAltAllele = generator.getAcceptorSiteWithAltAllele(anchor, variant, interval);
+        final String donorSiteSnippet = generator.getDonorSiteSnippet(anchor, interval);
+        final String donorSiteWithAltAllele = generator.getDonorSiteWithAltAllele(anchor, variant, interval);
 
-        if (acceptorSiteSnippet == null || acceptorSiteWithAltAllele == null) {
+        if (donorSiteSnippet == null || donorSiteWithAltAllele == null) {
             LOGGER.debug("Unable to create wt/alt snippets for variant `{}` using interval `{}`", variant, interval.getInterval());
             return Double.NaN;
         }
 
-        final double refScore = calculator.getSpliceAcceptorScore(acceptorSiteSnippet);
-        final double altScore = calculator.getSpliceAcceptorScore(acceptorSiteWithAltAllele);
+        final double refScore = calculator.getSpliceDonorScore(donorSiteSnippet);
+        final double altScore = calculator.getSpliceDonorScore(donorSiteWithAltAllele);
 
         return refScore - altScore;
     }
