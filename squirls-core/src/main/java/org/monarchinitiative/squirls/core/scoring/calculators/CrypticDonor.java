@@ -10,8 +10,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import xyz.ielis.hyperutil.reference.fasta.SequenceInterval;
 
-import java.util.Optional;
-
 public class CrypticDonor extends BaseFeatureCalculator {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CrypticDonor.class);
@@ -45,22 +43,16 @@ public class CrypticDonor extends BaseFeatureCalculator {
         }
 
         // prepare snippet for sliding window with alt allele
-        final GenomeInterval upstreamPaddingInterval = new GenomeInterval(variantInterval.getGenomeBeginPos().shifted(-padding), padding);
-        final Optional<String> upstreamOpt = sequence.getSubsequence(upstreamPaddingInterval);
-
-        final GenomeInterval downstreamPaddingInterval = new GenomeInterval(variantInterval.getGenomeEndPos(), padding);
-        final Optional<String> downstreamOpt = sequence.getSubsequence(downstreamPaddingInterval);
-
-        if (upstreamOpt.isEmpty() || downstreamOpt.isEmpty()) {
+        final String donorNeighborSnippet = generator.getDonorNeighborSnippet(variantInterval, sequence, variant.getAlt());
+        if (donorNeighborSnippet == null) {
             LOGGER.debug("Unable to create sliding window snippet +- {}bp for variant `{}` using sequence `{}`",
                     padding, variant, sequence.getInterval());
             return Double.NaN;
         }
-        final String slidingWindowSnippet = upstreamOpt.get() + variant.getAlt() + downstreamOpt.get();
 
         // calculate scores and return result
         final double canonicalDonorScore = calculator.getSpliceDonorScore(donorSnippet);
-        final Double crypticMaxScore = Utils.slidingWindow(slidingWindowSnippet, calculator.getSplicingParameters().getDonorLength())
+        final Double crypticMaxScore = Utils.slidingWindow(donorNeighborSnippet, calculator.getSplicingParameters().getDonorLength())
                 .map(calculator::getSpliceDonorScore)
                 .reduce(Double::max)
                 .orElse(0D);

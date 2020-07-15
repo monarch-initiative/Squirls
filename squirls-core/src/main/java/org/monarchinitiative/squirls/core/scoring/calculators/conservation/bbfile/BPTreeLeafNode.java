@@ -90,7 +90,6 @@ public class BPTreeLeafNode implements BPTreeNode {
     public boolean insertItem(BPTreeNodeItem item) {
 
         // Quick implementation: assumes all keys are inserted in rank order
-        // todo: verify if need to compare key and insert at rank location
         leafItems.add((BPTreeLeafNodeItem) item);
 
         // Note: assumes rank order insertions

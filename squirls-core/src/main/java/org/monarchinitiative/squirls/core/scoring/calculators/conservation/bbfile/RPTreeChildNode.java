@@ -83,7 +83,6 @@ public class RPTreeChildNode implements RPTreeNode {
         RPTreeChildNodeItem newItem = (RPTreeChildNodeItem) item;
 
         // Quick implementation: assumes all keys are inserted in rank order
-        // todo: or compare key and insert at rank location
         childItems.add(newItem);
 
         // Update node bounds or start node chromosome bounds with first entry

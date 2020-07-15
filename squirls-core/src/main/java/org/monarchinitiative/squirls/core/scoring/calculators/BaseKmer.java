@@ -5,12 +5,16 @@ import de.charite.compbio.jannovar.reference.GenomeInterval;
 import de.charite.compbio.jannovar.reference.GenomePosition;
 import de.charite.compbio.jannovar.reference.GenomeVariant;
 import org.monarchinitiative.squirls.core.Utils;
+import org.monarchinitiative.squirls.core.reference.allele.AlleleGenerator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import xyz.ielis.hyperutil.reference.fasta.SequenceInterval;
 
 import java.util.Map;
-import java.util.Optional;
 
 public abstract class BaseKmer implements FeatureCalculator {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(BaseKmer.class);
 
     protected final ImmutableMap<String, Double> kmerMap;
 
@@ -36,13 +40,14 @@ public abstract class BaseKmer implements FeatureCalculator {
 
     @Override
     public double score(GenomePosition anchor, GenomeVariant variant, SequenceInterval sequence) {
-        GenomeInterval upstream = new GenomeInterval(variant.getGenomeInterval().getGenomeBeginPos().shifted(-getPadding()), getPadding());
-        GenomeInterval downstream = new GenomeInterval(variant.getGenomeInterval().getGenomeEndPos(), getPadding());
-        // todo - replace with allele generator code
-        Optional<String> upstreamSequence = sequence.getSubsequence(upstream);
-        Optional<String> downstreamSequence = sequence.getSubsequence(downstream);
-        String paddedRefAllele = upstreamSequence.get() + variant.getRef() + downstreamSequence.get();
-        String paddedAltAllele = upstreamSequence.get() + variant.getAlt() + downstreamSequence.get();
+        final GenomeInterval variantInterval = variant.getGenomeInterval();
+
+        final String paddedRefAllele = AlleleGenerator.getPaddedAllele(variantInterval, sequence, variant.getRef(), getPadding());
+        final String paddedAltAllele = AlleleGenerator.getPaddedAllele(variantInterval, sequence, variant.getAlt(), getPadding());
+        if (paddedRefAllele == null || paddedAltAllele == null) {
+            LOGGER.debug("Unable to create neighborhood snippet for variant `{}` using sequence `{}`", variant, sequence.getInterval());
+            return Double.NaN;
+        }
 
         double ref = scoreSequence(paddedRefAllele);
         double alt = scoreSequence(paddedAltAllele);

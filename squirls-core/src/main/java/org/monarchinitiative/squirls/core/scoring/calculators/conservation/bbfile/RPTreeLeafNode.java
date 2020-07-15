@@ -77,9 +77,6 @@ public class RPTreeLeafNode implements RPTreeNode {
         // Note: assumes all keys are inserted in rank order
         leafItems.add(newItem);
 
-        // todo: compare region and insert at appropriate indexed rank location
-        //   leafHitItem.add( index, (RPTreeLeafNodeItem)item );
-
         // update leaf node chromosome bounds - use extremes
         // Update node bounds or start node chromosome bounds with first entry
         if (chromosomeBounds == null)

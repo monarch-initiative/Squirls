@@ -91,7 +91,6 @@ public class BPTreeChildNode implements BPTreeNode {
     public boolean insertItem(BPTreeNodeItem item) {
 
         // Quick implementation: assumes all keys are inserted in rank order
-        // todo: verify if need to compare key and insert at rank location
         childItems.add((BPTreeChildNodeItem) item);
 
         BPTreeNode childNode = ((BPTreeChildNodeItem) item).getChildNode();

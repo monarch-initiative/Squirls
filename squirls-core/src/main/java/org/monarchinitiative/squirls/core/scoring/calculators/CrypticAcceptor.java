@@ -10,8 +10,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import xyz.ielis.hyperutil.reference.fasta.SequenceInterval;
 
-import java.util.Optional;
-
 public class CrypticAcceptor extends BaseFeatureCalculator {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CanonicalAcceptor.class);
@@ -31,37 +29,30 @@ public class CrypticAcceptor extends BaseFeatureCalculator {
         final GenomeInterval acceptorInterval = generator.makeAcceptorInterval(anchor);
         final GenomeInterval variantInterval = variant.getGenomeInterval();
 
-        // prepare wt donor snippet
-        final String donorSnippet;
+        // prepare wt acceptor snippet
+        final String acceptorSnippet;
         if (variantInterval.overlapsWith(acceptorInterval)) {
-            donorSnippet = generator.getAcceptorSiteWithAltAllele(anchor, variant, sequence);
+            acceptorSnippet = generator.getAcceptorSiteWithAltAllele(anchor, variant, sequence);
         } else {
-            donorSnippet = generator.getAcceptorSiteSnippet(anchor, sequence);
+            acceptorSnippet = generator.getAcceptorSiteSnippet(anchor, sequence);
         }
-        if (donorSnippet == null) {
+        if (acceptorSnippet == null) {
             LOGGER.debug("Unable to create acceptor snippet at `{}` for variant `{}` using sequence `{}`",
                     anchor, variant, sequence.getInterval());
             return Double.NaN;
         }
 
         // prepare snippet for sliding window with alt allele
-        // TODO: 15. 7. 2020 use generator code
-        final GenomeInterval upstreamPaddingInterval = new GenomeInterval(variantInterval.getGenomeBeginPos().shifted(-padding), padding);
-        final Optional<String> upstreamOpt = sequence.getSubsequence(upstreamPaddingInterval);
-
-        final GenomeInterval downstreamPaddingInterval = new GenomeInterval(variantInterval.getGenomeEndPos(), padding);
-        final Optional<String> downstreamOpt = sequence.getSubsequence(downstreamPaddingInterval);
-
-        if (upstreamOpt.isEmpty() || downstreamOpt.isEmpty()) {
+        final String acceptorNeighborSnippet = generator.getAcceptorNeighborSnippet(variantInterval, sequence, variant.getAlt());
+        if (acceptorNeighborSnippet == null) {
             LOGGER.debug("Unable to create sliding window snippet +- {}bp for variant `{}` using sequence `{}`",
                     padding, variant, sequence.getInterval());
             return Double.NaN;
         }
-        final String slidingWindowSnippet = upstreamOpt.get() + variant.getAlt() + downstreamOpt.get();
 
         // calculate scores and return result
-        final double canonicalAcceptorScore = calculator.getSpliceAcceptorScore(donorSnippet);
-        final Double crypticMaxScore = Utils.slidingWindow(slidingWindowSnippet, calculator.getSplicingParameters().getAcceptorLength())
+        final double canonicalAcceptorScore = calculator.getSpliceAcceptorScore(acceptorSnippet);
+        final Double crypticMaxScore = Utils.slidingWindow(acceptorNeighborSnippet, calculator.getSplicingParameters().getAcceptorLength())
                 .map(calculator::getSpliceAcceptorScore)
                 .reduce(Double::max)
                 .orElse(0D);
