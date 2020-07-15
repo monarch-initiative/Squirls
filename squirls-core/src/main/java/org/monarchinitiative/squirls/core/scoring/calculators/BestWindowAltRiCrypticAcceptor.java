@@ -1,7 +1,9 @@
 package org.monarchinitiative.squirls.core.scoring.calculators;
 
+import de.charite.compbio.jannovar.reference.GenomeInterval;
 import de.charite.compbio.jannovar.reference.GenomePosition;
 import de.charite.compbio.jannovar.reference.GenomeVariant;
+import org.monarchinitiative.squirls.core.Utils;
 import org.monarchinitiative.squirls.core.reference.allele.AlleleGenerator;
 import org.monarchinitiative.squirls.core.scoring.calculators.ic.SplicingInformationContentCalculator;
 import xyz.ielis.hyperutil.reference.fasta.SequenceInterval;
@@ -18,7 +20,12 @@ public class BestWindowAltRiCrypticAcceptor extends BaseFeatureCalculator {
 
     @Override
     public double score(GenomePosition anchor, GenomeVariant variant, SequenceInterval sequenceInterval) {
-        // TODO: 14. 7. 2020 implement
-        return 0;
+        final GenomeInterval variantInterval = variant.getGenomeInterval();
+        final String acceptorNeighborSnippet = generator.getAcceptorNeighborSnippet(variantInterval, sequenceInterval, variant.getAlt());
+
+        return Utils.slidingWindow(acceptorNeighborSnippet, calculator.getSplicingParameters().getAcceptorLength())
+                .map(calculator::getSpliceAcceptorScore)
+                .max(Double::compareTo)
+                .orElse(Double.NaN);
     }
 }
