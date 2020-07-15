@@ -1,5 +1,10 @@
 # Changelog
 
+## v1.3.0
+✈ re-brand to Squirls, restructure code
+✈ implement prototype SVG graphics generation using VMVT
+✈ add splicing features 
+
 ## v1.2.0
 ✈ rename API class `SplicingEvaluator` to `SplicingAnnotator`
 
