@@ -33,7 +33,7 @@ class SeptamerTest extends CalculatorTestBase {
 
     @Test
     void score() {
-        GenomeVariant variant = new GenomeVariant(new GenomePosition(referenceDictionary, Strand.FWD, 1, 1201), "t", "g");
+        GenomeVariant variant = new GenomeVariant(new GenomePosition(rd, Strand.FWD, 1, 1201), "t", "g");
         final double score = calculator.score(null, variant, sequenceInterval);
         assertThat(score, is(closeTo(.317399, EPSILON)));
     }

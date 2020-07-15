@@ -35,11 +35,12 @@ public abstract class BaseKmer implements FeatureCalculator {
     protected abstract int getPadding();
 
     @Override
-    public double score(GenomePosition anchor, GenomeVariant variant, SequenceInterval sequenceInterval) {
+    public double score(GenomePosition anchor, GenomeVariant variant, SequenceInterval sequence) {
         GenomeInterval upstream = new GenomeInterval(variant.getGenomeInterval().getGenomeBeginPos().shifted(-getPadding()), getPadding());
         GenomeInterval downstream = new GenomeInterval(variant.getGenomeInterval().getGenomeEndPos(), getPadding());
-        Optional<String> upstreamSequence = sequenceInterval.getSubsequence(upstream);
-        Optional<String> downstreamSequence = sequenceInterval.getSubsequence(downstream);
+        // todo - replace with allele generator code
+        Optional<String> upstreamSequence = sequence.getSubsequence(upstream);
+        Optional<String> downstreamSequence = sequence.getSubsequence(downstream);
         String paddedRefAllele = upstreamSequence.get() + variant.getRef() + downstreamSequence.get();
         String paddedAltAllele = upstreamSequence.get() + variant.getAlt() + downstreamSequence.get();
 

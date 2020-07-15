@@ -6,5 +6,5 @@ import xyz.ielis.hyperutil.reference.fasta.SequenceInterval;
 
 interface FeatureCalculator {
 
-    double score(GenomePosition anchor, GenomeVariant variant, SequenceInterval sequenceInterval);
+    double score(GenomePosition anchor, GenomeVariant variant, SequenceInterval sequence);
 }

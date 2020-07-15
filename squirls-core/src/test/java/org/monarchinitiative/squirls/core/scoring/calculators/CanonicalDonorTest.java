@@ -23,7 +23,7 @@ class CanonicalDonorTest extends CalculatorTestBase {
 
     @Test
     void snpInDonor() {
-        GenomeVariant variant = new GenomeVariant(new GenomePosition(referenceDictionary, Strand.FWD, 1, 1200), "g", "a");
+        GenomeVariant variant = new GenomeVariant(new GenomePosition(rd, Strand.FWD, 1, 1200), "g", "a");
         final GenomePosition anchor = st.getExons().get(0).getInterval().getGenomeEndPos();
         final double score = scorer.score(anchor, variant, sequenceInterval);
         assertThat(score, is(closeTo(8.9600, EPSILON)));
@@ -31,7 +31,7 @@ class CanonicalDonorTest extends CalculatorTestBase {
 
     @Test
     void deletionInDonor() {
-        GenomeVariant variant = new GenomeVariant(new GenomePosition(referenceDictionary, Strand.FWD, 1, 1199), "Ggt", "G");
+        GenomeVariant variant = new GenomeVariant(new GenomePosition(rd, Strand.FWD, 1, 1199), "Ggt", "G");
         final GenomePosition anchor = st.getExons().get(0).getInterval().getGenomeEndPos();
         final double score = scorer.score(anchor, variant, sequenceInterval);
         assertThat(score, is(closeTo(15.6686, EPSILON)));
@@ -39,7 +39,7 @@ class CanonicalDonorTest extends CalculatorTestBase {
 
     @Test
     void insertionInDonor() {
-        GenomeVariant variant = new GenomeVariant(new GenomePosition(referenceDictionary, Strand.FWD, 1, 1200), "gt", "gtgt");
+        GenomeVariant variant = new GenomeVariant(new GenomePosition(rd, Strand.FWD, 1, 1200), "gt", "gtgt");
         final GenomePosition anchor = st.getExons().get(0).getInterval().getGenomeEndPos();
         final double score = scorer.score(anchor, variant, sequenceInterval);
         assertThat(score, is(closeTo(-0.6725, EPSILON)));
@@ -47,7 +47,7 @@ class CanonicalDonorTest extends CalculatorTestBase {
 
     @Test
     void snpJustUpstreamFromDonor() {
-        GenomeVariant variant = new GenomeVariant(new GenomePosition(referenceDictionary, Strand.FWD, 1, 1196), "G", "A");
+        GenomeVariant variant = new GenomeVariant(new GenomePosition(rd, Strand.FWD, 1, 1196), "G", "A");
         final GenomePosition anchor = st.getExons().get(0).getInterval().getGenomeEndPos();
         final double score = scorer.score(anchor, variant, sequenceInterval);
         assertThat(score, is(closeTo(0.0000, EPSILON)));
@@ -55,7 +55,7 @@ class CanonicalDonorTest extends CalculatorTestBase {
 
     @Test
     void snpJustDownstreamFromDonor() {
-        GenomeVariant variant = new GenomeVariant(new GenomePosition(referenceDictionary, Strand.FWD, 1, 1206), "a", "c");
+        GenomeVariant variant = new GenomeVariant(new GenomePosition(rd, Strand.FWD, 1, 1206), "a", "c");
         final GenomePosition anchor = st.getExons().get(0).getInterval().getGenomeEndPos();
         final double score = scorer.score(anchor, variant, sequenceInterval);
         assertThat(score, is(closeTo(0.0000, EPSILON)));

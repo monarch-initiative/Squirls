@@ -18,7 +18,7 @@ public class CanonicalDonor extends BaseFeatureCalculator {
     }
 
     @Override
-    public double score(GenomePosition anchor, GenomeVariant variant, SequenceInterval interval) {
+    public double score(GenomePosition anchor, GenomeVariant variant, SequenceInterval sequence) {
         final GenomeInterval donorRegion = generator.makeDonorInterval(anchor);
 
         if (!donorRegion.overlapsWith(variant.getGenomeInterval())) {
@@ -26,11 +26,11 @@ public class CanonicalDonor extends BaseFeatureCalculator {
             return 0;
         }
 
-        final String donorSiteSnippet = generator.getDonorSiteSnippet(anchor, interval);
-        final String donorSiteWithAltAllele = generator.getDonorSiteWithAltAllele(anchor, variant, interval);
+        final String donorSiteSnippet = generator.getDonorSiteSnippet(anchor, sequence);
+        final String donorSiteWithAltAllele = generator.getDonorSiteWithAltAllele(anchor, variant, sequence);
 
         if (donorSiteSnippet == null || donorSiteWithAltAllele == null) {
-            LOGGER.debug("Unable to create wt/alt snippets for variant `{}` using interval `{}`", variant, interval.getInterval());
+            LOGGER.debug("Unable to create wt/alt snippets for variant `{}` using interval `{}`", variant, sequence.getInterval());
             return Double.NaN;
         }
 

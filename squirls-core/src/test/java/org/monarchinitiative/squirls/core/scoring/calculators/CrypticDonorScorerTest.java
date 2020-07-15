@@ -22,7 +22,7 @@ class CrypticDonorScorerTest extends CalculatorTestBase {
 
     @Test
     void snpInDonor() {
-        GenomeVariant variant = new GenomeVariant(new GenomePosition(referenceDictionary, Strand.FWD, 1, 1201), "t", "g");
+        GenomeVariant variant = new GenomeVariant(new GenomePosition(rd, Strand.FWD, 1, 1201), "t", "g");
         final GenomePosition anchor = st.getExons().get(0).getInterval().getGenomeEndPos();
 
         final double score = scorer.score(anchor, variant, sequenceInterval);
@@ -32,7 +32,7 @@ class CrypticDonorScorerTest extends CalculatorTestBase {
 
     @Test
     void snpUpstreamFromDonor() {
-        GenomeVariant variant = new GenomeVariant(new GenomePosition(referenceDictionary, Strand.FWD, 1, 1196), "C", "T");
+        GenomeVariant variant = new GenomeVariant(new GenomePosition(rd, Strand.FWD, 1, 1196), "C", "T");
         final GenomePosition anchor = st.getExons().get(0).getInterval().getGenomeEndPos();
 
         final double score = scorer.score(anchor, variant, sequenceInterval);

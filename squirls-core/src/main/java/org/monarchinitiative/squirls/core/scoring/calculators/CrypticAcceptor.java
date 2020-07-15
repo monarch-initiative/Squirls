@@ -27,33 +27,34 @@ public class CrypticAcceptor extends BaseFeatureCalculator {
     }
 
     @Override
-    public double score(GenomePosition anchor, GenomeVariant variant, SequenceInterval sequenceInterval) {
+    public double score(GenomePosition anchor, GenomeVariant variant, SequenceInterval sequence) {
         final GenomeInterval acceptorInterval = generator.makeAcceptorInterval(anchor);
         final GenomeInterval variantInterval = variant.getGenomeInterval();
 
         // prepare wt donor snippet
         final String donorSnippet;
         if (variantInterval.overlapsWith(acceptorInterval)) {
-            donorSnippet = generator.getAcceptorSiteWithAltAllele(anchor, variant, sequenceInterval);
+            donorSnippet = generator.getAcceptorSiteWithAltAllele(anchor, variant, sequence);
         } else {
-            donorSnippet = generator.getAcceptorSiteSnippet(anchor, sequenceInterval);
+            donorSnippet = generator.getAcceptorSiteSnippet(anchor, sequence);
         }
         if (donorSnippet == null) {
             LOGGER.debug("Unable to create acceptor snippet at `{}` for variant `{}` using sequence `{}`",
-                    anchor, variant, sequenceInterval.getInterval());
+                    anchor, variant, sequence.getInterval());
             return Double.NaN;
         }
 
         // prepare snippet for sliding window with alt allele
+        // TODO: 15. 7. 2020 use generator code
         final GenomeInterval upstreamPaddingInterval = new GenomeInterval(variantInterval.getGenomeBeginPos().shifted(-padding), padding);
-        final Optional<String> upstreamOpt = sequenceInterval.getSubsequence(upstreamPaddingInterval);
+        final Optional<String> upstreamOpt = sequence.getSubsequence(upstreamPaddingInterval);
 
         final GenomeInterval downstreamPaddingInterval = new GenomeInterval(variantInterval.getGenomeEndPos(), padding);
-        final Optional<String> downstreamOpt = sequenceInterval.getSubsequence(downstreamPaddingInterval);
+        final Optional<String> downstreamOpt = sequence.getSubsequence(downstreamPaddingInterval);
 
         if (upstreamOpt.isEmpty() || downstreamOpt.isEmpty()) {
             LOGGER.debug("Unable to create sliding window snippet +- {}bp for variant `{}` using sequence `{}`",
-                    padding, variant, sequenceInterval.getInterval());
+                    padding, variant, sequence.getInterval());
             return Double.NaN;
         }
         final String slidingWindowSnippet = upstreamOpt.get() + variant.getAlt() + downstreamOpt.get();

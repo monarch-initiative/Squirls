@@ -27,13 +27,13 @@ public class BigWig implements FeatureCalculator {
      * Get score for <code>variant</code>'s position from the bigWig file. If the <code>variant</code> is a deletion,
      * then return the mean score. If the score is not available, {@link Double#NaN} is returned.
      *
-     * @param anchor           - ignored
-     * @param variant          to be annotated
-     * @param sequenceInterval - ignored
+     * @param anchor   - ignored
+     * @param variant  to be annotated
+     * @param sequence - ignored
      * @return score for given <code>variant</code> as described above
      */
     @Override
-    public double score(GenomePosition anchor, GenomeVariant variant, SequenceInterval sequenceInterval) {
+    public double score(GenomePosition anchor, GenomeVariant variant, SequenceInterval sequence) {
         try {
             final List<Float> scores = accessor.getScores(variant.getGenomeInterval());
             final double sum = scores.stream()

@@ -23,7 +23,7 @@ class CrypticAcceptorScorerTest extends CalculatorTestBase {
 
     @Test
     void snpInAcceptor() {
-        GenomeVariant variant = new GenomeVariant(new GenomePosition(referenceDictionary, Strand.FWD, 1, 1395), "c", "a");
+        GenomeVariant variant = new GenomeVariant(new GenomePosition(rd, Strand.FWD, 1, 1395), "c", "a");
         final GenomePosition anchor = st.getExons().get(1).getInterval().getGenomeBeginPos();
 
         final double score = scorer.score(anchor, variant, sequenceInterval);
@@ -33,7 +33,7 @@ class CrypticAcceptorScorerTest extends CalculatorTestBase {
 
     @Test
     void snpDownstreamFromAcceptor() {
-        GenomeVariant variant = new GenomeVariant(new GenomePosition(referenceDictionary, Strand.FWD, 1, 1404), "G", "A");
+        GenomeVariant variant = new GenomeVariant(new GenomePosition(rd, Strand.FWD, 1, 1404), "G", "A");
         final GenomePosition anchor = st.getExons().get(1).getInterval().getGenomeBeginPos();
 
         final double score = scorer.score(anchor, variant, sequenceInterval);
@@ -43,7 +43,7 @@ class CrypticAcceptorScorerTest extends CalculatorTestBase {
 
     @Test
     void snpUpstreamFromAcceptor() {
-        GenomeVariant variant = new GenomeVariant(new GenomePosition(referenceDictionary, Strand.FWD, 1, 1374), "c", "g");
+        GenomeVariant variant = new GenomeVariant(new GenomePosition(rd, Strand.FWD, 1, 1374), "c", "g");
         final GenomePosition anchor = st.getExons().get(1).getInterval().getGenomeBeginPos();
 
         final double score = scorer.score(anchor, variant, sequenceInterval);

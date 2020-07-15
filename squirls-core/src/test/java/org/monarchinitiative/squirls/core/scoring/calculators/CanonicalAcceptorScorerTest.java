@@ -23,7 +23,7 @@ class CanonicalAcceptorScorerTest extends CalculatorTestBase {
 
     @Test
     void snpInAcceptor() {
-        GenomeVariant variant = new GenomeVariant(new GenomePosition(referenceDictionary, Strand.FWD, 1, 1399), "g", "a");
+        GenomeVariant variant = new GenomeVariant(new GenomePosition(rd, Strand.FWD, 1, 1399), "g", "a");
         final GenomePosition anchor = st.getExons().get(1).getInterval().getGenomeBeginPos();
 
         final double score = scorer.score(anchor, variant, sequenceInterval);
@@ -33,7 +33,7 @@ class CanonicalAcceptorScorerTest extends CalculatorTestBase {
 
     @Test
     void deletionInAcceptor() {
-        GenomeVariant variant = new GenomeVariant(new GenomePosition(referenceDictionary, Strand.FWD, 1, 1397), "cag", "c");
+        GenomeVariant variant = new GenomeVariant(new GenomePosition(rd, Strand.FWD, 1, 1397), "cag", "c");
         final GenomePosition anchor = st.getExons().get(1).getInterval().getGenomeBeginPos();
 
         final double score = scorer.score(anchor, variant, sequenceInterval);
@@ -43,7 +43,7 @@ class CanonicalAcceptorScorerTest extends CalculatorTestBase {
 
     @Test
     void insertionInAcceptor() {
-        GenomeVariant variant = new GenomeVariant(new GenomePosition(referenceDictionary, Strand.FWD, 1, 1399), "g", "gag");
+        GenomeVariant variant = new GenomeVariant(new GenomePosition(rd, Strand.FWD, 1, 1399), "g", "gag");
         final GenomePosition anchor = st.getExons().get(1).getInterval().getGenomeBeginPos();
 
         final double score = scorer.score(anchor, variant, sequenceInterval);
@@ -53,7 +53,7 @@ class CanonicalAcceptorScorerTest extends CalculatorTestBase {
 
     @Test
     void snpJustUpstreamFromAcceptor() {
-        GenomeVariant variant = new GenomeVariant(new GenomePosition(referenceDictionary, Strand.FWD, 1, 1374), "c", "t");
+        GenomeVariant variant = new GenomeVariant(new GenomePosition(rd, Strand.FWD, 1, 1374), "c", "t");
         final GenomePosition anchor = st.getExons().get(1).getInterval().getGenomeBeginPos();
 
         final double score = scorer.score(anchor, variant, sequenceInterval);
@@ -63,7 +63,7 @@ class CanonicalAcceptorScorerTest extends CalculatorTestBase {
 
     @Test
     void snpJustDownstreamFromAcceptor() {
-        GenomeVariant variant = new GenomeVariant(new GenomePosition(referenceDictionary, Strand.FWD, 1, 1402), "G", "T");
+        GenomeVariant variant = new GenomeVariant(new GenomePosition(rd, Strand.FWD, 1, 1402), "G", "T");
         final GenomePosition anchor = st.getExons().get(1).getInterval().getGenomeBeginPos();
 
         final double score = scorer.score(anchor, variant, sequenceInterval);

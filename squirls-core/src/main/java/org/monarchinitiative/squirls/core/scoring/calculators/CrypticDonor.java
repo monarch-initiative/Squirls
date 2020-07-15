@@ -27,33 +27,33 @@ public class CrypticDonor extends BaseFeatureCalculator {
     }
 
     @Override
-    public double score(GenomePosition anchor, GenomeVariant variant, SequenceInterval sequenceInterval) {
+    public double score(GenomePosition anchor, GenomeVariant variant, SequenceInterval sequence) {
         final GenomeInterval donorInterval = generator.makeDonorInterval(anchor);
         final GenomeInterval variantInterval = variant.getGenomeInterval();
 
         // prepare wt donor snippet
         final String donorSnippet;
         if (variantInterval.overlapsWith(donorInterval)) {
-            donorSnippet = generator.getDonorSiteWithAltAllele(anchor, variant, sequenceInterval);
+            donorSnippet = generator.getDonorSiteWithAltAllele(anchor, variant, sequence);
         } else {
-            donorSnippet = generator.getDonorSiteSnippet(anchor, sequenceInterval);
+            donorSnippet = generator.getDonorSiteSnippet(anchor, sequence);
         }
         if (donorSnippet == null) {
             LOGGER.debug("Unable to create donor snippet at `{}` for variant `{}` using sequence `{}`",
-                    anchor, variant, sequenceInterval.getInterval());
+                    anchor, variant, sequence.getInterval());
             return Double.NaN;
         }
 
         // prepare snippet for sliding window with alt allele
         final GenomeInterval upstreamPaddingInterval = new GenomeInterval(variantInterval.getGenomeBeginPos().shifted(-padding), padding);
-        final Optional<String> upstreamOpt = sequenceInterval.getSubsequence(upstreamPaddingInterval);
+        final Optional<String> upstreamOpt = sequence.getSubsequence(upstreamPaddingInterval);
 
         final GenomeInterval downstreamPaddingInterval = new GenomeInterval(variantInterval.getGenomeEndPos(), padding);
-        final Optional<String> downstreamOpt = sequenceInterval.getSubsequence(downstreamPaddingInterval);
+        final Optional<String> downstreamOpt = sequence.getSubsequence(downstreamPaddingInterval);
 
         if (upstreamOpt.isEmpty() || downstreamOpt.isEmpty()) {
             LOGGER.debug("Unable to create sliding window snippet +- {}bp for variant `{}` using sequence `{}`",
-                    padding, variant, sequenceInterval.getInterval());
+                    padding, variant, sequence.getInterval());
             return Double.NaN;
         }
         final String slidingWindowSnippet = upstreamOpt.get() + variant.getAlt() + downstreamOpt.get();

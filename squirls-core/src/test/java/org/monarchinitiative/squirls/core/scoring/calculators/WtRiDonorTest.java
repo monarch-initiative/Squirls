@@ -11,30 +11,31 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.closeTo;
 import static org.hamcrest.Matchers.notANumber;
 
-class BestWindowAltRiCrypticAcceptorTest extends CalculatorTestBase {
+class WtRiDonorTest extends CalculatorTestBase {
 
-    private BestWindowAltRiCrypticAcceptor scorer;
+    private WtRiDonor scorer;
 
     @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
-        scorer = new BestWindowAltRiCrypticAcceptor(calculator, generator);
+
+        scorer = new WtRiDonor(calculator, generator);
     }
 
     @Test
-    void snpUpstreamFromAcceptorSite() {
-        GenomeVariant variant = new GenomeVariant(new GenomePosition(rd, Strand.FWD, 1, 1374), "c", "g");
-        final GenomePosition anchor = st.getExons().get(1).getInterval().getGenomeBeginPos();
+    void snpInDonor() {
+        GenomeVariant variant = new GenomeVariant(new GenomePosition(rd, Strand.FWD, 1, 1200), "g", "a");
+        final GenomePosition anchor = st.getExons().get(0).getInterval().getGenomeEndPos();
 
         final double score = scorer.score(anchor, variant, sequenceInterval);
 
-        assertThat(score, is(closeTo(2.0423, EPSILON)));
+        assertThat(score, is(closeTo(3.7028, EPSILON)));
     }
 
     @Test
     void notEnoughSequence() {
-        GenomeVariant variant = new GenomeVariant(new GenomePosition(rd, Strand.FWD, 1, 1374), "c", "g");
-        final GenomePosition anchor = st.getExons().get(1).getInterval().getGenomeEndPos();
+        GenomeVariant variant = new GenomeVariant(new GenomePosition(rd, Strand.FWD, 1, 1200), "g", "a");
+        final GenomePosition anchor = st.getExons().get(0).getInterval().getGenomeEndPos();
         final double score = scorer.score(anchor, variant, sequenceOnOtherChrom);
         assertThat(score, is(notANumber()));
     }

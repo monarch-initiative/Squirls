@@ -1,6 +1,8 @@
 package org.monarchinitiative.squirls.core.scoring.calculators;
 
 import de.charite.compbio.jannovar.data.ReferenceDictionary;
+import de.charite.compbio.jannovar.reference.GenomeInterval;
+import de.charite.compbio.jannovar.reference.Strand;
 import org.junit.jupiter.api.BeforeEach;
 import org.monarchinitiative.squirls.core.PojosForTesting;
 import org.monarchinitiative.squirls.core.TestDataSourceConfig;
@@ -24,7 +26,7 @@ public class CalculatorTestBase {
     protected SplicingParameters splicingParameters;
 
     @Autowired
-    protected ReferenceDictionary referenceDictionary;
+    protected ReferenceDictionary rd;
 
     @Autowired
     protected SplicingInformationContentCalculator calculator;
@@ -36,11 +38,17 @@ public class CalculatorTestBase {
 
     protected SequenceInterval sequenceInterval;
 
+    protected SequenceInterval sequenceOnOtherChrom;
+
 
     @BeforeEach
     public void setUp() throws Exception {
-        st = PojosForTesting.getTranscriptWithThreeExons(referenceDictionary);
-        sequenceInterval = PojosForTesting.getSequenceIntervalForTranscriptWithThreeExons(referenceDictionary);
+        st = PojosForTesting.getTranscriptWithThreeExons(rd);
+        sequenceInterval = PojosForTesting.getSequenceIntervalForTranscriptWithThreeExons(rd);
+        sequenceOnOtherChrom = SequenceInterval.builder()
+                .interval(new GenomeInterval(rd, Strand.FWD, 2, 0, 4))
+                .sequence("ACGT")
+                .build();
     }
 
 }
