@@ -3,7 +3,7 @@ package org.monarchinitiative.squirls.core.scoring.calculators;
 import de.charite.compbio.jannovar.reference.GenomeVariant;
 import org.monarchinitiative.squirls.core.model.SplicingTranscript;
 import org.monarchinitiative.squirls.core.scoring.calculators.conservation.BigWigAccessor;
-import org.monarchinitiative.squirls.core.scoring.calculators.conservation.ColesvarWigException;
+import org.monarchinitiative.squirls.core.scoring.calculators.conservation.SquirlsWigException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import xyz.ielis.hyperutil.reference.fasta.SequenceInterval;
@@ -41,7 +41,7 @@ public class BigWig implements FeatureCalculator {
                     .reduce(Double::sum)
                     .orElse(Double.NaN);
             return (sum / scores.size());
-        } catch (ColesvarWigException e) {
+        } catch (SquirlsWigException e) {
             LOGGER.debug("Unable to find scores for variant `{}`", variant);
             return Double.NaN;
         }

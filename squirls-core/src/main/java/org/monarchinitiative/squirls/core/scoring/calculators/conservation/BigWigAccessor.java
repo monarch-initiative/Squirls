@@ -63,9 +63,9 @@ public class BigWigAccessor implements AutoCloseable {
      *
      * @param genomeInterval {@link GenomeInterval} object to extract values from.
      * @return list of values for the interval
-     * @throws ColesvarWigException if there doesn't exist value for every genomic position from within given genomeInterval
+     * @throws SquirlsWigException if there doesn't exist value for every genomic position from within given genomeInterval
      */
-    public List<Float> getScores(GenomeInterval genomeInterval) throws ColesvarWigException {
+    public List<Float> getScores(GenomeInterval genomeInterval) throws SquirlsWigException {
         final List<Float> scores = new ArrayList<>(genomeInterval.length());
         synchronized (this) {
             /*
@@ -76,7 +76,7 @@ public class BigWigAccessor implements AutoCloseable {
         }
         // check completness of data
         if (genomeInterval.length() != scores.size()) {
-            throw new ColesvarWigException(String.format("Could not find bigWig score for each position of query `%s`", genomeInterval));
+            throw new SquirlsWigException(String.format("Could not find bigWig score for each position of query `%s`", genomeInterval));
         }
         return scores;
     }
@@ -88,9 +88,9 @@ public class BigWigAccessor implements AutoCloseable {
      * @param begin 0-based (excluded) begin coordinate on FWD strand
      * @param end   0-based (included) end coordinate on FWD strand
      * @return list of values for the interval
-     * @throws ColesvarWigException if there doesn't exist value for every genomic position from within given genomeInterval
+     * @throws SquirlsWigException if there doesn't exist value for every genomic position from within given genomeInterval
      */
-    public List<Float> getScores(String chrom, int begin, int end) throws ColesvarWigException {
+    public List<Float> getScores(String chrom, int begin, int end) throws SquirlsWigException {
         final List<Float> scores = new ArrayList<>();
         synchronized (this) {
             /*
@@ -101,7 +101,7 @@ public class BigWigAccessor implements AutoCloseable {
         }
         // check completness of data
         if (end - begin != scores.size()) {
-            throw new ColesvarWigException(String.format("Could not find bigWig score for each position of query `%s:%d-%d`", chrom, begin, end));
+            throw new SquirlsWigException(String.format("Could not find bigWig score for each position of query `%s:%d-%d`", chrom, begin, end));
         }
         return scores;
     }

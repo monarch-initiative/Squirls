@@ -50,7 +50,9 @@ public class RichSplicingAnnotator implements SplicingAnnotator {
                 "alt_ri_best_window_donor", new BestWindowAltRiCrypticDonor(calculator, generator),
                 "alt_ri_best_window_acceptor", new BestWindowAltRiCrypticAcceptor(calculator, generator),
                 "s_strength_diff_donor", new SStrengthDiffDonor(calculator, generator, locator),
-                "s_strength_diff_acceptor", new SStrengthDiffAcceptor(calculator, generator, locator));
+                "s_strength_diff_acceptor", new SStrengthDiffAcceptor(calculator, generator, locator),
+                "exon_length", new ExonLength(locator),
+                "intron_length", new IntronLength(locator));
 
         calculatorMap = Stream.concat(denseCalculators.entrySet().stream(), richCalculators.entrySet().stream())
                 .collect(Collectors.toUnmodifiableMap(Map.Entry::getKey, Map.Entry::getValue));

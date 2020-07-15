@@ -58,9 +58,9 @@ class BigWigAccessorTest {
     @Test
     void getScoresNotPresent() throws Exception {
         // score for the position 99_999 is not present in the file
-        assertThrows(ColesvarWigException.class, () -> dao.getScores("chr9", 99_999, 100_005));
+        assertThrows(SquirlsWigException.class, () -> dao.getScores("chr9", 99_999, 100_005));
 
         // again, score for the position 101_101 is not present in the file
-        assertThrows(ColesvarWigException.class, () -> dao.getScores("chr9", 100_995, 101_001));
+        assertThrows(SquirlsWigException.class, () -> dao.getScores("chr9", 100_995, 101_001));
     }
 }
