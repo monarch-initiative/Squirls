@@ -24,9 +24,8 @@ class BestWindowAltRiCrypticAcceptorTest extends CalculatorTestBase {
     @Test
     void snpUpstreamFromAcceptorSite() {
         GenomeVariant variant = new GenomeVariant(new GenomePosition(rd, Strand.FWD, 1, 1374), "c", "g");
-        final GenomePosition anchor = st.getExons().get(1).getInterval().getGenomeBeginPos();
 
-        final double score = scorer.score(anchor, variant, sequenceInterval);
+        final double score = scorer.score(variant, st, sequenceInterval);
 
         assertThat(score, is(closeTo(2.0423, EPSILON)));
     }
@@ -34,8 +33,7 @@ class BestWindowAltRiCrypticAcceptorTest extends CalculatorTestBase {
     @Test
     void notEnoughSequence() {
         GenomeVariant variant = new GenomeVariant(new GenomePosition(rd, Strand.FWD, 1, 1374), "c", "g");
-        final GenomePosition anchor = st.getExons().get(1).getInterval().getGenomeEndPos();
-        final double score = scorer.score(anchor, variant, sequenceOnOtherChrom);
+        final double score = scorer.score(variant, st, sequenceOnOtherChrom);
         assertThat(score, is(notANumber()));
     }
 }

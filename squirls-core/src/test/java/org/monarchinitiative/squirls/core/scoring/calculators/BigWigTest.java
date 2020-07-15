@@ -50,7 +50,7 @@ class BigWigTest extends CalculatorTestBase {
         when(accessor.getScores(variant.getGenomeInterval())).thenReturn(List.of(6.03700F));
 
         // act
-        final double score = annotator.score(null, variant, null);
+        final double score = annotator.score(variant, null, null);
 
         // assert
         assertThat("Expected score 6.037", score, is(closeTo(6.03700, EPSILON)));
@@ -63,7 +63,7 @@ class BigWigTest extends CalculatorTestBase {
         when(accessor.getScores(variant.getGenomeInterval())).thenReturn(List.of(.459F, -1.851F, -1.181F));
 
         // act
-        final double score = annotator.score(null, variant, null);
+        final double score = annotator.score(variant, null, null);
 
         // assert
         //  chr9:136224582 -  0.459
@@ -81,7 +81,7 @@ class BigWigTest extends CalculatorTestBase {
         when(accessor.getScores(variant.getGenomeInterval())).thenReturn(List.of());
 
         // act
-        final double score = annotator.score(null, variant, null);
+        final double score = annotator.score(variant, null, null);
 
         // assert
         assertThat(score, is(Double.NaN));

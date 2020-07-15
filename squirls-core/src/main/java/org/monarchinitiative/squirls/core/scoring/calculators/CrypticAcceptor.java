@@ -4,7 +4,9 @@ import de.charite.compbio.jannovar.reference.GenomeInterval;
 import de.charite.compbio.jannovar.reference.GenomePosition;
 import de.charite.compbio.jannovar.reference.GenomeVariant;
 import org.monarchinitiative.squirls.core.Utils;
+import org.monarchinitiative.squirls.core.reference.SplicingLocationData;
 import org.monarchinitiative.squirls.core.reference.allele.AlleleGenerator;
+import org.monarchinitiative.squirls.core.reference.transcript.SplicingTranscriptLocator;
 import org.monarchinitiative.squirls.core.scoring.calculators.ic.SplicingInformationContentCalculator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,13 +21,22 @@ public class CrypticAcceptor extends BaseFeatureCalculator {
      */
     private final int padding;
 
-    public CrypticAcceptor(SplicingInformationContentCalculator calculator, AlleleGenerator generator) {
-        super(calculator, generator);
+    public CrypticAcceptor(SplicingInformationContentCalculator calculator,
+                           AlleleGenerator generator,
+                           SplicingTranscriptLocator locator) {
+        super(calculator, generator, locator);
         this.padding = calculator.getSplicingParameters().getAcceptorLength() - 1;
     }
 
     @Override
-    public double score(GenomePosition anchor, GenomeVariant variant, SequenceInterval sequence) {
+    protected double score(GenomeVariant variant, SplicingLocationData locationData, SequenceInterval sequence) {
+        return locationData.getAcceptorBoundary()
+                .map(anchor -> score(variant, anchor, sequence))
+                .orElse(0.);
+    }
+
+
+    private double score(GenomeVariant variant, GenomePosition anchor, SequenceInterval sequence) {
         final GenomeInterval acceptorInterval = generator.makeAcceptorInterval(anchor);
         final GenomeInterval variantInterval = variant.getGenomeInterval();
 

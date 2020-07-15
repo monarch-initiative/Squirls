@@ -18,15 +18,14 @@ class WtRiAcceptorTest extends CalculatorTestBase {
     @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
-        scorer = new WtRiAcceptor(calculator, generator);
+        scorer = new WtRiAcceptor(calculator, generator, locator);
     }
 
     @Test
     void snpInAcceptor() {
         GenomeVariant variant = new GenomeVariant(new GenomePosition(rd, Strand.FWD, 1, 1399), "g", "a");
-        final GenomePosition anchor = st.getExons().get(1).getInterval().getGenomeBeginPos();
 
-        final double score = scorer.score(anchor, variant, sequenceInterval);
+        final double score = scorer.score(variant, st, sequenceInterval);
 
         assertThat(score, is(closeTo(4.1148, EPSILON)));
     }
@@ -35,9 +34,8 @@ class WtRiAcceptorTest extends CalculatorTestBase {
     @Test
     void notEnoughSequence() {
         GenomeVariant variant = new GenomeVariant(new GenomePosition(rd, Strand.FWD, 1, 1399), "g", "a");
-        final GenomePosition anchor = st.getExons().get(1).getInterval().getGenomeBeginPos();
 
-        final double score = scorer.score(anchor, variant, sequenceOnOtherChrom);
+        final double score = scorer.score(variant, st, sequenceOnOtherChrom);
 
         assertThat(score, is(notANumber()));
     }

@@ -17,15 +17,14 @@ class CrypticDonorScorerTest extends CalculatorTestBase {
     @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
-        scorer = new CrypticDonor(calculator, generator);
+        scorer = new CrypticDonor(calculator, generator, locator);
     }
 
     @Test
     void snpInDonor() {
         GenomeVariant variant = new GenomeVariant(new GenomePosition(rd, Strand.FWD, 1, 1201), "t", "g");
-        final GenomePosition anchor = st.getExons().get(0).getInterval().getGenomeEndPos();
 
-        final double score = scorer.score(anchor, variant, sequenceInterval);
+        final double score = scorer.score(variant, st, sequenceInterval);
 
         assertThat(score, is(closeTo(4.6317, EPSILON)));
     }
@@ -33,9 +32,8 @@ class CrypticDonorScorerTest extends CalculatorTestBase {
     @Test
     void snpUpstreamFromDonor() {
         GenomeVariant variant = new GenomeVariant(new GenomePosition(rd, Strand.FWD, 1, 1196), "C", "T");
-        final GenomePosition anchor = st.getExons().get(0).getInterval().getGenomeEndPos();
 
-        final double score = scorer.score(anchor, variant, sequenceInterval);
+        final double score = scorer.score(variant, st, sequenceInterval);
 
         assertThat(score, is(closeTo(0.3526, EPSILON)));
     }

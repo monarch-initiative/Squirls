@@ -18,15 +18,14 @@ class CrypticAcceptorScorerTest extends CalculatorTestBase {
     @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
-        scorer = new CrypticAcceptor(calculator, generator);
+        scorer = new CrypticAcceptor(calculator, generator, locator);
     }
 
     @Test
     void snpInAcceptor() {
         GenomeVariant variant = new GenomeVariant(new GenomePosition(rd, Strand.FWD, 1, 1395), "c", "a");
-        final GenomePosition anchor = st.getExons().get(1).getInterval().getGenomeBeginPos();
 
-        final double score = scorer.score(anchor, variant, sequenceInterval);
+        final double score = scorer.score(variant, st, sequenceInterval);
 
         assertThat(score, is(closeTo(0.0000, EPSILON)));
     }
@@ -34,9 +33,8 @@ class CrypticAcceptorScorerTest extends CalculatorTestBase {
     @Test
     void snpDownstreamFromAcceptor() {
         GenomeVariant variant = new GenomeVariant(new GenomePosition(rd, Strand.FWD, 1, 1404), "G", "A");
-        final GenomePosition anchor = st.getExons().get(1).getInterval().getGenomeBeginPos();
 
-        final double score = scorer.score(anchor, variant, sequenceInterval);
+        final double score = scorer.score(variant, st, sequenceInterval);
 
         assertThat(score, is(closeTo(-3.6366, EPSILON)));
     }
@@ -44,9 +42,8 @@ class CrypticAcceptorScorerTest extends CalculatorTestBase {
     @Test
     void snpUpstreamFromAcceptor() {
         GenomeVariant variant = new GenomeVariant(new GenomePosition(rd, Strand.FWD, 1, 1374), "c", "g");
-        final GenomePosition anchor = st.getExons().get(1).getInterval().getGenomeBeginPos();
 
-        final double score = scorer.score(anchor, variant, sequenceInterval);
+        final double score = scorer.score(variant, st, sequenceInterval);
 
         assertThat(score, is(closeTo(-2.0725, EPSILON)));
     }

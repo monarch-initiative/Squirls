@@ -9,6 +9,7 @@ import org.monarchinitiative.squirls.core.TestDataSourceConfig;
 import org.monarchinitiative.squirls.core.model.SplicingParameters;
 import org.monarchinitiative.squirls.core.model.SplicingTranscript;
 import org.monarchinitiative.squirls.core.reference.allele.AlleleGenerator;
+import org.monarchinitiative.squirls.core.reference.transcript.SplicingTranscriptLocator;
 import org.monarchinitiative.squirls.core.scoring.calculators.ic.SplicingInformationContentCalculator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -33,6 +34,9 @@ public class CalculatorTestBase {
 
     @Autowired
     protected AlleleGenerator generator;
+
+    @Autowired
+    protected SplicingTranscriptLocator locator;
 
     protected SplicingTranscript st;
 

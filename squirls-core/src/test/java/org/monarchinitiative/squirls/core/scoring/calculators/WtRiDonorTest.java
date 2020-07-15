@@ -19,15 +19,14 @@ class WtRiDonorTest extends CalculatorTestBase {
     public void setUp() throws Exception {
         super.setUp();
 
-        scorer = new WtRiDonor(calculator, generator);
+        scorer = new WtRiDonor(calculator, generator, locator);
     }
 
     @Test
     void snpInDonor() {
         GenomeVariant variant = new GenomeVariant(new GenomePosition(rd, Strand.FWD, 1, 1200), "g", "a");
-        final GenomePosition anchor = st.getExons().get(0).getInterval().getGenomeEndPos();
 
-        final double score = scorer.score(anchor, variant, sequenceInterval);
+        final double score = scorer.score(variant, st, sequenceInterval);
 
         assertThat(score, is(closeTo(3.7028, EPSILON)));
     }
@@ -35,8 +34,8 @@ class WtRiDonorTest extends CalculatorTestBase {
     @Test
     void notEnoughSequence() {
         GenomeVariant variant = new GenomeVariant(new GenomePosition(rd, Strand.FWD, 1, 1200), "g", "a");
-        final GenomePosition anchor = st.getExons().get(0).getInterval().getGenomeEndPos();
-        final double score = scorer.score(anchor, variant, sequenceOnOtherChrom);
+
+        final double score = scorer.score(variant, st, sequenceOnOtherChrom);
         assertThat(score, is(notANumber()));
     }
 }

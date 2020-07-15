@@ -85,7 +85,6 @@ public class VariantsForTesting {
                         .putAcceptorCoordinate("NM_017503.4", new GenomePosition(rd, Strand.FWD, 9, 136_224_587, PositionType.ONE_BASED))
                         .putDonorCoordinate("NM_001278928.1", new GenomePosition(rd, Strand.FWD, 9, 136_224_691, PositionType.ONE_BASED))
                         .putAcceptorCoordinate("NM_001278928.1", new GenomePosition(rd, Strand.FWD, 9, 136_224_587, PositionType.ONE_BASED))
-                        .meanPhyloPScore(1.234)
                         .build()))
                 .peek(data -> {
                     data.putFeature("donor_offset", -2.);
@@ -156,7 +155,6 @@ public class VariantsForTesting {
                         .putAcceptorCoordinate("NM_017503.4", new GenomePosition(rd, Strand.FWD, chr, 136_224_587, PositionType.ONE_BASED))
                         .putDonorCoordinate("NM_001278928.1", new GenomePosition(rd, Strand.FWD, chr, 136_224_691, PositionType.ONE_BASED))
                         .putAcceptorCoordinate("NM_001278928.1", new GenomePosition(rd, Strand.FWD, chr, 136_224_587, PositionType.ONE_BASED))
-                        .meanPhyloPScore(4.321)
                         .build()))
                 .peek(data -> {
                     data.putFeature("donor_offset", -2.);
@@ -267,7 +265,6 @@ public class VariantsForTesting {
         final Metadata metadata = Metadata.builder()
                 .putDonorCoordinate("NM_000059.3", new GenomePosition(rd, Strand.FWD, chr, 32_930_747, PositionType.ONE_BASED))
                 .putAcceptorCoordinate("NM_000059.3", new GenomePosition(rd, Strand.FWD, chr, 32_930_565, PositionType.ONE_BASED))
-                .meanPhyloPScore(4.01000022888184)
                 .build();
         final Map<String, Double> featureMap = Map.of(
                 "donor_offset", 2.,
@@ -326,7 +323,6 @@ public class VariantsForTesting {
         final Metadata metadata = Metadata.builder()
                 .putDonorCoordinate("NM_000478.4", new GenomePosition(rd, Strand.FWD, chr, 21_894_741, PositionType.ONE_BASED))
                 .putAcceptorCoordinate("NM_000478.4", new GenomePosition(rd, Strand.FWD, chr, 21_894_597, PositionType.ONE_BASED))
-                .meanPhyloPScore(3.5)
                 .build();
         final Map<String, Double> featureMap = Map.of(
                 "donor_offset", -2.,
@@ -379,7 +375,6 @@ public class VariantsForTesting {
         final Metadata metadata = Metadata.builder()
                 .putDonorCoordinate("NM_000518.4", new GenomePosition(rd, Strand.FWD, chr, 5_248_159, PositionType.ONE_BASED))
                 .putAcceptorCoordinate("NM_000518.4", new GenomePosition(rd, Strand.FWD, chr, 5_248_029, PositionType.ONE_BASED))
-                .meanPhyloPScore(3.1489999294281)
                 .build();
         final Map<String, Double> featureMap = Map.of(
                 "donor_offset", -3.,
@@ -438,7 +433,6 @@ public class VariantsForTesting {
         final Metadata metadata = Metadata.builder()
                 .putDonorCoordinate("NM_000518.4", new GenomePosition(rd, Strand.FWD, chr, 5_248_159, PositionType.ONE_BASED))
                 .putAcceptorCoordinate("NM_000518.4", new GenomePosition(rd, Strand.FWD, chr, 5_248_029, PositionType.ONE_BASED))
-                .meanPhyloPScore(1.30299997329712)
                 .build();
         final Map<String, Double> featureMap = Map.of(
                 "donor_offset", -14.,
@@ -497,7 +491,6 @@ public class VariantsForTesting {
         final Metadata metadata = Metadata.builder()
                 .putDonorCoordinate("NM_000552.3", new GenomePosition(rd, Strand.FWD, chr, 6_131_905, PositionType.ONE_BASED).withStrand(Strand.REV))
                 .putAcceptorCoordinate("NM_000552.3", new GenomePosition(rd, Strand.FWD, chr, 6_132_064, PositionType.ONE_BASED).withStrand(Strand.REV))
-                .meanPhyloPScore(7.60500001907349)
                 .build();
         final Map<String, Double> featureMap = Map.of(
                 "donor_offset", 161.,
@@ -556,7 +549,6 @@ public class VariantsForTesting {
         final Metadata metadata = Metadata.builder()
                 .putDonorCoordinate("NM_000548.3", new GenomePosition(rd, Strand.FWD, chr, 2_110_815, PositionType.ONE_BASED))
                 .putAcceptorCoordinate("NM_000548.3", new GenomePosition(rd, Strand.FWD, chr, 2_110_671, PositionType.ONE_BASED))
-                .meanPhyloPScore(1.12600004673004)
                 .build();
         final Map<String, Double> featureMap = Map.of(
                 "donor_offset", -147.,
@@ -610,7 +602,6 @@ public class VariantsForTesting {
         final Metadata metadata = Metadata.builder()
                 .putDonorCoordinate("NM_000495.4", new GenomePosition(rd, Strand.FWD, chr, 107_850_122, PositionType.ONE_BASED))
                 .putAcceptorCoordinate("NM_000495.4", new GenomePosition(rd, Strand.FWD, chr, 107_849_971, PositionType.ONE_BASED))
-                .meanPhyloPScore(3.81599998474121)
                 .build();
         final Map<String, Double> featureMap = Map.of(
                 "donor_offset", -159.,
@@ -668,7 +659,6 @@ public class VariantsForTesting {
         final Metadata metadata = Metadata.builder()
                 .putDonorCoordinate("NM_000540.2", new GenomePosition(rd, Strand.FWD, chr, 39_075_583, PositionType.ONE_BASED))
                 .putAcceptorCoordinate("NM_000540.2", new GenomePosition(rd, Strand.FWD, chr, 39_075_740, PositionType.ONE_BASED))
-                .meanPhyloPScore(-1.72699999809265)
                 .build();
         final Map<String, Double> featureMap = Map.of(
                 "donor_offset", -137.,
@@ -729,7 +719,6 @@ public class VariantsForTesting {
         final Metadata metadata = Metadata.builder()
                 .putDonorCoordinate("NM_000267.3", new GenomePosition(rd, Strand.FWD, chr, 29_527_614, PositionType.ONE_BASED))
                 .putAcceptorCoordinate("NM_000267.3", new GenomePosition(rd, Strand.FWD, chr, 29_527_440, PositionType.ONE_BASED))
-                .meanPhyloPScore(1.65199995040894)
                 .build();
         final Map<String, Double> featureMap = Map.of(
                 "donor_offset", -153.,

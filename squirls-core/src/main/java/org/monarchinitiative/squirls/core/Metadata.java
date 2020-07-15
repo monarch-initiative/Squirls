@@ -42,10 +42,6 @@ public class Metadata {
      */
     private final Map<String, GenomePosition> acceptorCoordinateMap;
 
-    /**
-     * Mean PhyloP score of the region spanned by the <em>REF</em> variant allele.
-     */
-    private final Double meanPhyloPConservation;
 
     /**
      * Special private constructor for creating {@link #EMPTY} singleton instance.
@@ -53,13 +49,11 @@ public class Metadata {
     private Metadata() {
         donorCoordinateMap = Map.of();
         acceptorCoordinateMap = Map.of();
-        meanPhyloPConservation = Double.NaN;
     }
 
     private Metadata(Builder builder) {
         donorCoordinateMap = Map.copyOf(builder.donorCoordinateMap);
         acceptorCoordinateMap = Map.copyOf(builder.acceptorCoordinateMap);
-        meanPhyloPConservation = builder.meanPhyloPScore;
     }
 
     public static Metadata empty() {
@@ -70,10 +64,6 @@ public class Metadata {
         return new Builder();
     }
 
-
-    public Double getMeanPhyloPConservation() {
-        return meanPhyloPConservation;
-    }
 
     public Map<String, GenomePosition> getDonorCoordinateMap() {
         return donorCoordinateMap;
@@ -96,19 +86,17 @@ public class Metadata {
         if (o == null || getClass() != o.getClass()) return false;
         Metadata metadata = (Metadata) o;
         return Objects.equals(donorCoordinateMap, metadata.donorCoordinateMap) &&
-                Objects.equals(acceptorCoordinateMap, metadata.acceptorCoordinateMap) &&
-                Objects.equals(meanPhyloPConservation, metadata.meanPhyloPConservation);
+                Objects.equals(acceptorCoordinateMap, metadata.acceptorCoordinateMap);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(donorCoordinateMap, acceptorCoordinateMap, meanPhyloPConservation);
+        return Objects.hash(donorCoordinateMap, acceptorCoordinateMap);
     }
 
     public static final class Builder {
         private final Map<String, GenomePosition> donorCoordinateMap = new HashMap<>();
         private final Map<String, GenomePosition> acceptorCoordinateMap = new HashMap<>();
-        private Double meanPhyloPScore = Double.NaN;
 
         private Builder() {
         }
@@ -131,11 +119,6 @@ public class Metadata {
 
         public Builder putAllAcceptorCoordinates(Map<String, GenomePosition> acceptorCoordinateMap) {
             this.acceptorCoordinateMap.putAll(acceptorCoordinateMap);
-            return this;
-        }
-
-        public Builder meanPhyloPScore(double score) {
-            this.meanPhyloPScore = score;
             return this;
         }
 

@@ -2,9 +2,9 @@ package org.monarchinitiative.squirls.core.scoring.calculators;
 
 import com.google.common.collect.ImmutableMap;
 import de.charite.compbio.jannovar.reference.GenomeInterval;
-import de.charite.compbio.jannovar.reference.GenomePosition;
 import de.charite.compbio.jannovar.reference.GenomeVariant;
 import org.monarchinitiative.squirls.core.Utils;
+import org.monarchinitiative.squirls.core.model.SplicingTranscript;
 import org.monarchinitiative.squirls.core.reference.allele.AlleleGenerator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,7 +39,7 @@ public abstract class BaseKmer implements FeatureCalculator {
     protected abstract int getPadding();
 
     @Override
-    public double score(GenomePosition anchor, GenomeVariant variant, SequenceInterval sequence) {
+    public double score(GenomeVariant variant, SplicingTranscript transcript, SequenceInterval sequence) {
         final GenomeInterval variantInterval = variant.getGenomeInterval();
 
         final String paddedRefAllele = AlleleGenerator.getPaddedAllele(variantInterval, sequence, variant.getRef(), getPadding());

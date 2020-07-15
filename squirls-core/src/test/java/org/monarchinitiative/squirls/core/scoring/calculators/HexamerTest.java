@@ -31,7 +31,7 @@ class HexamerTest extends CalculatorTestBase {
     @Test
     void score() {
         GenomeVariant variant = new GenomeVariant(new GenomePosition(rd, Strand.FWD, 1, 1201), "t", "g");
-        final double score = calculator.score(null, variant, sequenceInterval);
+        final double score = calculator.score(variant, st, sequenceInterval);
         assertThat(score, is(closeTo(.837930, EPSILON)));
     }
 
@@ -54,17 +54,17 @@ class HexamerTest extends CalculatorTestBase {
                 .build();
         // representing the c.520C>T variant from Figure 3
         final GenomeVariant first = new GenomeVariant(new GenomePosition(rd, Strand.FWD, 1, 9, PositionType.ONE_BASED), "C", "T");
-        double score = calculator.score(null, first, si);
+        double score = calculator.score(first, st, si);
         assertThat(score, is(closeTo(2.811, EPSILON)));
 
         // representing the c.581G>A variant from Figure 3
         final GenomeVariant second = new GenomeVariant(new GenomePosition(rd, Strand.FWD, 1, 70, PositionType.ONE_BASED), "G", "A");
-        score = calculator.score(null, second, si);
+        score = calculator.score(second, st, si);
         assertThat(score, is(closeTo(3.006, EPSILON)));
 
         // representing the c.617C>G variant from Figure 3
         final GenomeVariant third = new GenomeVariant(new GenomePosition(rd, Strand.FWD, 1, 106, PositionType.ONE_BASED), "C", "G");
-        score = calculator.score(null, third, si);
+        score = calculator.score(third, st, si);
         assertThat(score, is(closeTo(1.115, EPSILON)));
     }
 }

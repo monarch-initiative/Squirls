@@ -24,16 +24,16 @@ class BestWindowAltRiCrypticDonorTest extends CalculatorTestBase {
     @Test
     void snpInDonor() {
         GenomeVariant variant = new GenomeVariant(new GenomePosition(rd, Strand.FWD, 1, 1200), "g", "a");
-        final GenomePosition anchor = st.getExons().get(0).getInterval().getGenomeEndPos();
-        final double score = scorer.score(anchor, variant, sequenceInterval);
+
+        final double score = scorer.score(variant, st, sequenceInterval);
         assertThat(score, is(closeTo(-2.3987, EPSILON)));
     }
 
     @Test
     void notEnoughSequence() {
         GenomeVariant variant = new GenomeVariant(new GenomePosition(rd, Strand.FWD, 1, 1200), "g", "a");
-        final GenomePosition anchor = st.getExons().get(0).getInterval().getGenomeEndPos();
-        final double score = scorer.score(anchor, variant, sequenceOnOtherChrom);
+
+        final double score = scorer.score(variant, st, sequenceOnOtherChrom);
         assertThat(score, is(notANumber()));
     }
 }

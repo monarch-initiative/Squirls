@@ -18,7 +18,6 @@ import xyz.ielis.hyperutil.reference.fasta.SequenceInterval;
 
 import java.util.Comparator;
 import java.util.Map;
-import java.util.Optional;
 import java.util.stream.Stream;
 
 /**
@@ -38,21 +37,12 @@ import java.util.stream.Stream;
  */
 public class DenseSplicingAnnotator implements SplicingAnnotator {
 
-    private final SplicingTranscriptLocator transcriptLocator;
+    private final SplicingTranscriptLocator locator;
 
-    private final CanonicalDonor canonicalDonorFeatureCalculator;
-
-    private final CanonicalAcceptor canonicalAcceptorScorer;
-
-    private final CrypticDonor crypticDonorScorer;
-
-    private final CrypticAcceptor crypticAcceptorScorer;
-
-    private final Hexamer hexamer;
-
-    private final Septamer septamer;
-
-    private final BigWig phyloPFeatureCalculator;
+    /**
+     * Mapping from feature name to feature calculator.
+     */
+    private final Map<String, FeatureCalculator> calculatorMap;
 
     /**
      * Create the annotator.
@@ -66,20 +56,20 @@ public class DenseSplicingAnnotator implements SplicingAnnotator {
                                   Map<String, Double> hexamerMap,
                                   Map<String, Double> septamerMap,
                                   BigWigAccessor bigWigAccessor) {
+
+        locator = new NaiveSplicingTranscriptLocator(splicingPwmData.getParameters());
+
         SplicingInformationContentCalculator calculator = new SplicingInformationContentCalculator(splicingPwmData);
         AlleleGenerator generator = new AlleleGenerator(calculator.getSplicingParameters());
 
-        transcriptLocator = new NaiveSplicingTranscriptLocator(calculator.getSplicingParameters());
-
-        canonicalDonorFeatureCalculator = new CanonicalDonor(calculator, generator);
-        canonicalAcceptorScorer = new CanonicalAcceptor(calculator, generator);
-        crypticDonorScorer = new CrypticDonor(calculator, generator);
-        crypticAcceptorScorer = new CrypticAcceptor(calculator, generator);
-
-        hexamer = new Hexamer(hexamerMap);
-        septamer = new Septamer(septamerMap);
-
-        phyloPFeatureCalculator = new BigWig(bigWigAccessor);
+        calculatorMap = Map.of(
+                "canonical_donor", new CanonicalDonor(calculator, generator, locator),
+                "canonical_acceptor", new CanonicalAcceptor(calculator, generator, locator),
+                "cryptic_donor", new CrypticDonor(calculator, generator, locator),
+                "cryptic_acceptor", new CrypticAcceptor(calculator, generator, locator),
+                "hexamer", new Hexamer(hexamerMap),
+                "septamer", new Septamer(septamerMap),
+                "phylop", new BigWig(bigWigAccessor));
     }
 
     static int getOffset(Stream<GenomePosition> positions, GenomeInterval variant) {
@@ -121,58 +111,53 @@ public class DenseSplicingAnnotator implements SplicingAnnotator {
         final SequenceInterval sequence = data.getSequence();
 
         final GenomeVariant variantOnStrand = variant.withStrand(transcript.getStrand());
-        final SplicingLocationData locationData = transcriptLocator.locate(variant, transcript);
+        final SplicingLocationData locationData = locator.locate(variant, transcript);
 
-        final Optional<GenomePosition> donorBoundary = locationData.getDonorBoundary();
-        final Optional<GenomePosition> acceptorBoundary = locationData.getAcceptorBoundary();
+        // all features except offsets
+        calculatorMap.forEach((name, calculator) -> data.putFeature(name, calculator.score(variantOnStrand, transcript, sequence)));
 
+        /*
+        // `canonical_donor` feature
+        final double canonicalDonor = canonicalDonorFeatureCalculator.score(variantOnStrand, transcript, sequence);
+        data.putFeature("canonical_donor", canonicalDonor);
 
-        if (donorBoundary.isPresent()) {
-            // `canonical_donor` feature
-            final double canonicalDonor = canonicalDonorFeatureCalculator.score(donorBoundary.get(), variantOnStrand, sequence);
-            data.putFeature("canonical_donor", canonicalDonor);
+        // `cryptic_donor` feature
+        final double crypticDonor = crypticDonorScorer.score(variantOnStrand, transcript, sequence);
+        data.putFeature("cryptic_donor", crypticDonor);
 
-            // `cryptic_donor` feature
-            final double crypticDonor = crypticDonorScorer.score(donorBoundary.get(), variantOnStrand, sequence);
-            data.putFeature("cryptic_donor", crypticDonor);
-        } else {
-            data.putFeature("canonical_donor", 0.);
-            data.putFeature("cryptic_donor", 0.);
-        }
+        // `canonical_acceptor` feature
+        final double canonicalAcceptor = canonicalAcceptorScorer.score(variantOnStrand, transcript, sequence);
+        data.putFeature("canonical_acceptor", canonicalAcceptor);
 
-        if (acceptorBoundary.isPresent()) {
-            // `canonical_acceptor` feature
-            final double canonicalAcceptor = canonicalAcceptorScorer.score(acceptorBoundary.get(), variantOnStrand, sequence);
-            data.putFeature("canonical_acceptor", canonicalAcceptor);
+        // `cryptic_acceptor` feature
+        final double crypticAcceptor = crypticAcceptorScorer.score(variantOnStrand, transcript, sequence);
+        data.putFeature("cryptic_acceptor", crypticAcceptor);
 
-            // `cryptic_acceptor` feature
-            final double crypticAcceptor = crypticAcceptorScorer.score(acceptorBoundary.get(), variantOnStrand, sequence);
-            data.putFeature("cryptic_acceptor", crypticAcceptor);
-        } else {
-            data.putFeature("canonical_acceptor", 0.);
-            data.putFeature("cryptic_acceptor", 0.);
-        }
-
-        final double hexamerScore = hexamer.score(null, variant, sequence);
+        // `hexamer` feature
+        final double hexamerScore = hexamer.score(variant, null, sequence);
         data.putFeature("hexamer", hexamerScore);
-        final double septamerScore = septamer.score(null, variant, sequence);
+        // `septamer` feature
+        final double septamerScore = septamer.score(variant, null, sequence);
         data.putFeature("septamer", septamerScore);
 
-        final double phylopScore = phyloPFeatureCalculator.score(null, variant, sequence);
+        // `phylop` feature
+        final double phylopScore = phyloPFeatureCalculator.score(variant, null, sequence);
         data.putFeature("phylop", phylopScore);
 
+        */
+        // `donor_offset` feature
         final int donorOffset = getOffset(transcript.getExons().stream()
                         .map(e -> e.getInterval().getGenomeEndPos()),
                 variantOnStrand.getGenomeInterval());
         data.putFeature("donor_offset", (double) donorOffset);
 
+        // `acceptor_offset` feature
         final int acceptorOffset = getOffset(transcript.getExons().stream()
                         .map(e -> e.getInterval().getGenomeBeginPos()),
                 variantOnStrand.getGenomeInterval());
         data.putFeature("acceptor_offset", (double) acceptorOffset);
 
-        final Metadata.Builder metadataBuilder = Metadata.builder()
-                .meanPhyloPScore(phylopScore);
+        final Metadata.Builder metadataBuilder = Metadata.builder();
 
         locationData.getDonorBoundary().ifPresent(boundary -> metadataBuilder.putDonorCoordinate(transcript.getAccessionId(), boundary));
         locationData.getAcceptorBoundary().ifPresent(boundary -> metadataBuilder.putAcceptorCoordinate(transcript.getAccessionId(), boundary));
