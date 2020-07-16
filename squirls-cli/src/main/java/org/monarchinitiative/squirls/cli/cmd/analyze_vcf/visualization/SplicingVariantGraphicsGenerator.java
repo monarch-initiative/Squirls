@@ -12,7 +12,7 @@ public interface SplicingVariantGraphicsGenerator {
      * Generate SVG image for given {@link SplicingVariantAlleleEvaluation}.
      *
      * @param variant {@link SplicingVariantAlleleEvaluation} to be visualized
-     * @return variant with present graphics
+     * @return SVG graphics
      */
-    SplicingVariantAlleleEvaluation generateGraphics(SplicingVariantAlleleEvaluation variant);
+    String generateGraphics(SplicingVariantAlleleEvaluation variant);
 }

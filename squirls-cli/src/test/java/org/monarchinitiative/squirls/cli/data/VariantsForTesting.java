@@ -175,8 +175,11 @@ public class VariantsForTesting {
 
 
     private static SplicingVariantAlleleEvaluation makeEvaluation(ReferenceDictionary rd,
-                                                                  String chrom, int pos, String variantId,
-                                                                  String ref, String alt,
+                                                                  String chrom,
+                                                                  int pos,
+                                                                  String variantId,
+                                                                  String ref,
+                                                                  String alt,
                                                                   VariantAnnotator annotator,
                                                                   Set<String> seqIds,
                                                                   Collection<SplicingTranscript> transcripts,
@@ -186,7 +189,8 @@ public class VariantsForTesting {
                                                                   Map<String, Double> featureMap,
                                                                   String ruler,
                                                                   String primary,
-                                                                  String secondary) throws AnnotationException {
+                                                                  String secondary,
+                                                                  String title) throws AnnotationException {
         /*
         Assemble data to POJOs
          */
@@ -228,12 +232,35 @@ public class VariantsForTesting {
         evaluation.putAllPredictionData(predictions);
 
         // add graphics
-        evaluation.setLogo(ruler);
-        evaluation.setPrimaryGraphics(primary);
-        // in this case, there is no window that is better that this one
-        evaluation.setSecondaryGraphics(secondary);
+        evaluation.setGraphics(assembleFigures(title, ruler, primary, secondary));
 
         return evaluation;
+    }
+
+    /**
+     * Put together the figures into a single titled <code>div</code> element.
+     *
+     * @param title   title for the figures
+     * @param figures SVG strings, <code>null</code>s are ignored
+     * @return string with titled div containing all figures
+     */
+    private static String assembleFigures(String title, String... figures) {
+        final StringBuilder graphics = new StringBuilder();
+        // add title
+        graphics.append("<div class=\"graphics-container\">")
+                .append("<div class=\"graphics-title\">").append(title).append("</div>")
+                .append("<div class=\"graphics-content\">");
+        // add figures
+        for (String figure : figures) {
+            if (figure != null) {
+                graphics.append("<div>").append(figure).append("</div>");
+            }
+        }
+
+        // close tags
+        return graphics.append("</div>") // graphics-content
+                .append("</div>") // graphics-container
+                .toString();
     }
 
     /**
@@ -291,7 +318,7 @@ public class VariantsForTesting {
 
         // *************************************************************************************************************
 
-        return makeEvaluation(rd, chrom, pos, variantId, ref, alt, annotator, seqIds, transcripts, si, pathogenicity, metadata, featureMap, ruler, primary, secondary);
+        return makeEvaluation(rd, chrom, pos, variantId, ref, alt, annotator, seqIds, transcripts, si, pathogenicity, metadata, featureMap, ruler, primary, secondary, "Canonical donor");
     }
 
     /**
@@ -343,7 +370,7 @@ public class VariantsForTesting {
 
         // *************************************************************************************************************
 
-        return makeEvaluation(rd, chrom, pos, variantId, ref, alt, annotator, seqIds, transcripts, si, pathogenicity, metadata, featureMap, ruler, primary, secondary);
+        return makeEvaluation(rd, chrom, pos, variantId, ref, alt, annotator, seqIds, transcripts, si, pathogenicity, metadata, featureMap, ruler, primary, secondary, "Canonical donor");
     }
 
     /**
@@ -401,7 +428,7 @@ public class VariantsForTesting {
 
         // *************************************************************************************************************
 
-        return makeEvaluation(rd, chrom, pos, variantId, ref, alt, annotator, seqIds, transcripts, si, pathogenicity, metadata, featureMap, ruler, primary, secondary);
+        return makeEvaluation(rd, chrom, pos, variantId, ref, alt, annotator, seqIds, transcripts, si, pathogenicity, metadata, featureMap, ruler, primary, secondary, "Cryptic donor");
     }
 
     /**
@@ -459,7 +486,7 @@ public class VariantsForTesting {
 
         // *************************************************************************************************************
 
-        return makeEvaluation(rd, chrom, pos, variantId, ref, alt, annotator, seqIds, transcripts, si, pathogenicity, metadata, featureMap, ruler, primary, secondary);
+        return makeEvaluation(rd, chrom, pos, variantId, ref, alt, annotator, seqIds, transcripts, si, pathogenicity, metadata, featureMap, ruler, primary, secondary, "Cryptic donor");
     }
 
     /**
@@ -517,7 +544,7 @@ public class VariantsForTesting {
 
         // *************************************************************************************************************
 
-        return makeEvaluation(rd, chrom, pos, variantId, ref, alt, annotator, seqIds, transcripts, si, pathogenicity, metadata, featureMap, logo, primary, secondary);
+        return makeEvaluation(rd, chrom, pos, variantId, ref, alt, annotator, seqIds, transcripts, si, pathogenicity, metadata, featureMap, logo, primary, secondary, "Canonical acceptor");
     }
 
     /**
@@ -569,7 +596,7 @@ public class VariantsForTesting {
 
         // *************************************************************************************************************
 
-        return makeEvaluation(rd, chrom, pos, variantId, ref, alt, annotator, seqIds, transcripts, si, pathogenicity, metadata, featureMap, logo, primary, secondary);
+        return makeEvaluation(rd, chrom, pos, variantId, ref, alt, annotator, seqIds, transcripts, si, pathogenicity, metadata, featureMap, logo, primary, secondary, "Cryptic acceptor");
     }
 
 
@@ -627,7 +654,7 @@ public class VariantsForTesting {
 
         // *************************************************************************************************************
 
-        return makeEvaluation(rd, chrom, pos, variantId, ref, alt, annotator, seqIds, transcripts, si, pathogenicity, metadata, featureMap, ruler, primary, secondary);
+        return makeEvaluation(rd, chrom, pos, variantId, ref, alt, annotator, seqIds, transcripts, si, pathogenicity, metadata, featureMap, ruler, primary, secondary, "Cryptic acceptor");
     }
 
     /**
@@ -686,7 +713,7 @@ public class VariantsForTesting {
 
         // *************************************************************************************************************
 
-        return makeEvaluation(rd, chrom, pos, variantId, ref, alt, annotator, seqIds, transcripts, si, pathogenicity, metadata, featureMap, ruler, primary, secondary);
+        return makeEvaluation(rd, chrom, pos, variantId, ref, alt, annotator, seqIds, transcripts, si, pathogenicity, metadata, featureMap, ruler, primary, secondary, "Cryptic acceptor");
     }
 
 
@@ -754,7 +781,7 @@ public class VariantsForTesting {
 
         // *************************************************************************************************************
 
-        return makeEvaluation(rd, chrom, pos, variantId, ref, alt, annotator, seqIds, transcripts, si, pathogenicity, metadata, featureMap, ruler, primary, secondary);
+        return makeEvaluation(rd, chrom, pos, variantId, ref, alt, annotator, seqIds, transcripts, si, pathogenicity, metadata, featureMap, ruler, primary, secondary, "Splicing regulatory elements");
     }
 
 }

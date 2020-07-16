@@ -15,6 +15,29 @@
         .panel > .panel-info {
             margin: 15px;
         }
+
+        .graphics-container {
+            width: 100%;
+            height: 100%;
+            padding-top: 5px;
+        }
+
+        .graphics-title {
+            color: black;
+            text-align: center;
+            top: 5px;
+            width: 200px;
+            left: 35%;
+            position: absolute;
+            background: white;
+        }
+
+        .graphics-content {
+            margin: 10px;
+            text-align: left;
+            padding: 20px 10px 20px 10px;
+            border: 2px dashed lightblue;
+        }
     </style>
 </head>
 <body>
@@ -163,65 +186,37 @@
                         </table>
                     </div>
                     <div class="col-md-6">
-                        <div th:utext="${variant.getLogo()}">
-                            <!-- SEQUENCE LOGO OF THE SITE -->
-                            <svg height="120" style="border:1px solid black" width="200" xmlns="http://www.w3.org/2000/svg">
-                                <style>
-                                    text {
-                                        font: 10px monospace;
-                                    }
-                                </style>
-                                <g transform='translate(5,50) scale(5,5)'>
-                                    <text fill="#000000" x="0" y="0">SEQ</text>
-                                </g>
-                                <g transform='translate(5,100) scale(5,5)'>
-                                    <text fill="#000000" x="0" y="0">LOGO</text>
-                                </g>
-                            </svg>
-                        </div>
-                        <div th:utext="${variant.getPrimaryGraphics()}">
-                            <svg height="200" style="border:1px solid black" width="350" xmlns="http://www.w3.org/2000/svg">
-                                <style>text {
-                                    font: 10px monospace;
-                                }</style>
-                                <g transform='translate(5,50) scale(5,5)'>
-                                    <text fill="#000000" x="00" y="0">PRIMARY</text>
-                                </g>
-                                <g transform='translate(5,100) scale(5,5)'>
-                                    <text fill="#000000" x="0" y="0">FIGURE</text>
-                                </g>
-                            </svg>
-                        </div>
-                        <div th:utext="${variant.getSecondaryGraphics()}">
-                            <svg height="200" style="border:1px solid black" width="350" xmlns="http://www.w3.org/2000/svg">
-                                <style>text {
-                                    font: 10px monospace;
-                                }</style>
-                                <g transform='translate(5,50) scale(5,5)'>
-                                    <text fill="#000000" x="0" y="0">SECONDARY</text>
-                                </g>
-                                <g transform='translate(5,100) scale(5,5)'>
-                                    <text fill="#000000" x="0" y="0">FIGURE</text>
-                                </g>
-                            </svg>
+                        <div th:utext="${variant.getGraphics()}">
+                            <div class="graphics-container">
+                                <div class="graphics-title">Canonical donor</div>
+                                <div class="graphics-content">
+                                    <svg height="200" width="350" xmlns="http://www.w3.org/2000/svg">
+                                        <style>text {
+                                            font: 10px monospace;
+                                        }</style>
+                                        <g transform='translate(5,50) scale(5,5)'>
+                                            <text fill="#000000" x="00" y="0">FIGURES</text>
+                                        </g>
+                                    </svg>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
 
-    <!--    FOOTER    -->
-    <div class="panel panel-default" id="about">
-        <div class="panel-heading">
-            <h3 class="panel-title">About</h3>
+        <!--    FOOTER    -->
+        <div class="panel panel-default" id="about">
+            <div class="panel-heading">
+                <h3 class="panel-title">About</h3>
+            </div>
+            <div class="panel-body">
+                This is it! Let us know how you absolutely love us at our <a href="https://robinsongroup.github.io/">
+                website</a>.
+            </div>
         </div>
-        <div class="panel-body">
-            This is it! Let us know how you absolutely love us at our <a href="https://robinsongroup.github.io/">
-            website</a>.
-        </div>
-    </div>
 
-</div>
+    </div>
 </body>
 </html>

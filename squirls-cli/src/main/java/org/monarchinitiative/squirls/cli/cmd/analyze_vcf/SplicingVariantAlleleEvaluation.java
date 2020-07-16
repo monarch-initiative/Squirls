@@ -43,17 +43,9 @@ public class SplicingVariantAlleleEvaluation {
      */
     private VariantAnnotations annotations;
     /**
-     * Logo of either donor or acceptor site.
-     */
-    private String logo;
-    /**
      * The primary graphics presented to the user for this variant.
      */
-    private String primaryGraphics;
-    /**
-     * The secondary graphics presented to the user for this variant
-     */
-    private String secondaryGraphics;
+    private String graphics;
     private SplicingPredictionData primaryPrediction;
 
     public SplicingVariantAlleleEvaluation(VariantContext base, Allele altAllele) {
@@ -61,28 +53,13 @@ public class SplicingVariantAlleleEvaluation {
         this.altAllele = altAllele;
     }
 
-    public String getLogo() {
-        return logo;
+
+    public String getGraphics() {
+        return graphics;
     }
 
-    public void setLogo(String logo) {
-        this.logo = logo;
-    }
-
-    public String getSecondaryGraphics() {
-        return secondaryGraphics;
-    }
-
-    public void setSecondaryGraphics(String secondaryGraphics) {
-        this.secondaryGraphics = secondaryGraphics;
-    }
-
-    public String getPrimaryGraphics() {
-        return primaryGraphics;
-    }
-
-    public void setPrimaryGraphics(String primaryGraphics) {
-        this.primaryGraphics = primaryGraphics;
+    public void setGraphics(String graphics) {
+        this.graphics = graphics;
     }
 
     public Map<String, SplicingPredictionData> getPredictionData() {

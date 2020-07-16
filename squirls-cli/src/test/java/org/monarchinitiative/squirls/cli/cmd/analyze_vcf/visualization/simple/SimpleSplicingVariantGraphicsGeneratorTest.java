@@ -34,21 +34,20 @@ class SimpleSplicingVariantGraphicsGeneratorTest {
     @Test
     void generateGraphics_donorPlusTwo() throws Exception {
         final SplicingVariantAlleleEvaluation evaluation = VariantsForTesting.BRCA2DonorExon15plus2QUID(jannovarData.getRefDict(), annotator);
-        final String graphics = generator.generateGraphics(evaluation).getPrimaryGraphics();
+        final String graphics = generator.generateGraphics(evaluation);
 
         // TODO: 9. 6. 2020 add tests
-        System.out.println(graphics);
+//        System.out.println(graphics);
     }
 
     @Test
     void generateGraphics_acceptorMinusOne() throws Exception {
         final SplicingVariantAlleleEvaluation evaluation = VariantsForTesting.VWFAcceptorExon26minus2QUID(jannovarData.getRefDict(), annotator);
 
-        final SplicingVariantAlleleEvaluation annotated = generator.generateGraphics(evaluation);
-        final String graphics = annotated.getPrimaryGraphics();
+        final String graphics = generator.generateGraphics(evaluation);
 
         // TODO: 9. 6. 2020 add tests
-        System.out.println(graphics);
+//        System.out.println(graphics);
     }
 
 }

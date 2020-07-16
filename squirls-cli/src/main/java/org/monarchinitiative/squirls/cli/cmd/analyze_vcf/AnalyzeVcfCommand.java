@@ -126,7 +126,20 @@ public class AnalyzeVcfCommand extends Command {
             variant.putAllPredictionData(predictionData);
             return variant;
         };
+    }
 
+    /**
+     * Generate SVG graphics for given variant.
+     *
+     * @param generator use the generator to make the graphics
+     * @return variant with graphics
+     */
+    private static UnaryOperator<SplicingVariantAlleleEvaluation> generateGraphics(SplicingVariantGraphicsGenerator generator) {
+        return variant -> {
+            final String graphics = generator.generateGraphics(variant);
+            variant.setGraphics(graphics);
+            return variant;
+        };
     }
 
     /**
@@ -201,16 +214,19 @@ public class AnalyzeVcfCommand extends Command {
                     .flatMap(meltToAltAlleles())
                     .peek(progressReporter::logAltAllele)
 
+                    // functional annotation with Jannovar
                     .map(functionalAnnotation(jannovarData.getRefDict(), annotator))
                     .filter(Optional::isPresent)
                     .map(Optional::get)
                     .peek(progressReporter::logAnnotatedAllele)
 
+                    // splicing prediction and removing of non-deleterious alleles
                     .map(splicingAnnotation(evaluator))
                     .filter(variant -> !variant.getMaxScore().isNaN() && variant.getMaxScore() > threshold)
                     .peek(progressReporter::logEligibleAllele)
 
-                    .map(graphicsGenerator::generateGraphics)
+                    // graphics generation for predicted deleterious variants
+                    .map(generateGraphics(graphicsGenerator))
 
                     .onClose(progressReporter.summarize())
                     .forEach(annotated::add);

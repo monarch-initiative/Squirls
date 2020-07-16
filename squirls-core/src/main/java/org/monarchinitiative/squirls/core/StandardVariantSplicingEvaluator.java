@@ -67,6 +67,8 @@ public class StandardVariantSplicingEvaluator implements VariantSplicingEvaluato
      * Evaluate given variant with respect to transcripts in <code>txIds</code>. The method <em>attempts</em> to evaluate
      * the variant with respect to given <code>txIds</code>, but does not guarantee that results will be provided for
      * each transcript.
+     * <p>
+     * Note that only transcripts with at least 2 exons are considered.
      *
      * @param contig string with name of the chromosome
      * @param pos    1-based (included) variant position on FWD strand
@@ -94,8 +96,8 @@ public class StandardVariantSplicingEvaluator implements VariantSplicingEvaluato
         }
 
         /*
-         1 - get overlapping splicing transcripts. Query by coordinates if no txIDs are provided. Only transcripts
-         that overlap with the variant interval are considered.
+         1 - get overlapping splicing transcripts. Query by coordinates if no txIDs are provided. Only transcripts with
+         two or more exons that overlap with the variant interval are considered.
          */
         final GenomeVariant variant = new GenomeVariant(new GenomePosition(rd, Strand.FWD, rd.getContigNameToID().get(contig), pos, PositionType.ONE_BASED), ref, alt);
         final Map<String, SplicingTranscript> txMap = fetchTranscripts(variant, txIds);
@@ -142,7 +144,7 @@ public class StandardVariantSplicingEvaluator implements VariantSplicingEvaluato
      * Use provided variant coordinates <em>OR</em> transcript accession IDs to fetch {@link SplicingTranscript}s from
      * the database.
      * <p>
-     * Only transcripts that overlap with the <code>variant</code> are returned.
+     * Only transcripts consisting of 2 or more exons that overlap with the <code>variant</code> are returned.
      * </p>
      *
      * @param variant {@link GenomeVariant} with variant coordinates
@@ -156,6 +158,7 @@ public class StandardVariantSplicingEvaluator implements VariantSplicingEvaluato
         if (txIds.isEmpty()) {
             // querying by coordinates
             return txSource.fetchTranscripts(variant.getChrName(), variantInterval.getBeginPos(), variantInterval.getEndPos(), accessor.getReferenceDictionary()).stream()
+                    .filter(st -> !st.getIntrons().isEmpty())
                     .collect(Collectors.toMap(SplicingTranscript::getAccessionId, Function.identity()));
 
         } else {
@@ -164,8 +167,10 @@ public class StandardVariantSplicingEvaluator implements VariantSplicingEvaluato
                 final Optional<SplicingTranscript> sto = txSource.fetchTranscriptByAccession(txId, accessor.getReferenceDictionary());
                 if (sto.isPresent()) {
                     final SplicingTranscript st = sto.get();
-                    // transcript must overlap with the variant
-                    if (st.getTxRegionCoordinates().overlapsWith(variantInterval)) {
+                    // the transcript
+                    //  - has 2+ exons
+                    //  - overlaps with the variant
+                    if (!st.getIntrons().isEmpty() && st.getTxRegionCoordinates().overlapsWith(variantInterval)) {
                         txMap.put(txId, st);
                     }
                 } else {

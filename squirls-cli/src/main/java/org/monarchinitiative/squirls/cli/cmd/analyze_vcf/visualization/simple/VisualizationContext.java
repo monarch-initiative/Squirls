@@ -14,7 +14,7 @@ enum VisualizationContext {
      *     changes</li>
      * </ul>
      */
-    CANONICAL_DONOR,
+    CANONICAL_DONOR("Canonical donor"),
 
     /**
      * For canonical acceptor variant we show:
@@ -25,7 +25,7 @@ enum VisualizationContext {
      *     changes</li>
      * </ul>
      */
-    CANONICAL_ACCEPTOR,
+    CANONICAL_ACCEPTOR("Canonical acceptor"),
 
     /**
      * For cryptic donor variant we show:
@@ -34,7 +34,7 @@ enum VisualizationContext {
      *     <li>sequence walker comparision of the best window of the cryptic site with ALT allele of the canonical site</li>
      * </ul>
      */
-    CRYPTIC_DONOR,
+    CRYPTIC_DONOR("Cryptic donor"),
 
     /**
      * For cryptic donor variant we show:
@@ -43,7 +43,7 @@ enum VisualizationContext {
      *     <li>sequence walker comparision of the best window of the cryptic site with ALT allele of the canonical site</li>
      * </ul>
      */
-    CRYPTIC_ACCEPTOR,
+    CRYPTIC_ACCEPTOR("Cryptic acceptor"),
 
     /**
      * For variant that affects Splicing Regulatory Element (SRE) we show:
@@ -52,12 +52,20 @@ enum VisualizationContext {
      *     <li>bar plots comparing SMS (heptamer) scores for REF/ALT alleles</li>
      * </ul>
      */
-    SRE,
+    SRE("Splicing regulatory element"),
 
     /**
      * For variant with undefined visualization rules.
      */
-    UNKNOWN
+    UNKNOWN("Unknown");
 
+    private final String title;
 
+    VisualizationContext(String title) {
+        this.title = title;
+    }
+
+    public String getTitle() {
+        return title;
+    }
 }

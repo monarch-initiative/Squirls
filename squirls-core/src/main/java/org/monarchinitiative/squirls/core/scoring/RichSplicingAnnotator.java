@@ -90,11 +90,6 @@ public class RichSplicingAnnotator implements SplicingAnnotator {
         final SplicingTranscript transcript = data.getTranscript();
         final SequenceInterval sequence = data.getSequence();
 
-        if (transcript.getIntrons().isEmpty()) {
-            // no splicing, no annotations
-            return data;
-        }
-
         final SplicingLocationData locationData = locator.locate(variant, transcript);
         final GenomeVariant variantOnStrand = variant.withStrand(transcript.getStrand());
 
