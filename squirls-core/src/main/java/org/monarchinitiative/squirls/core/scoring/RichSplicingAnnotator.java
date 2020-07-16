@@ -17,6 +17,32 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+/**
+ * This annotator calculates the following splicing features for each {@link Annotatable}:
+ * <ul>
+ *     <li><code>canonical_donor</code></li>
+ *     <li><code>cryptic_donor</code></li>
+ *     <li><code>canonical_acceptor</code></li>
+ *     <li><code>cryptic_acceptor</code></li>
+ *     <li><code>cryptic_acceptor</code></li>
+ *     <li><code>hexamer</code></li>
+ *     <li><code>septamer</code></li>
+ *     <li><code>phylop</code></li>
+ *     <li><code>donor_offset</code></li>
+ *     <li><code>acceptor_offset</code></li>
+ *     <li><code>wt_ri_donor</code></li>
+ *     <li><code>wt_ri_acceptor</code></li>
+ *     <li><code>alt_ri_best_window_donor</code></li>
+ *     <li><code>alt_ri_best_window_acceptor</code></li>
+ *     <li><code>s_strength_diff_donor</code></li>
+ *     <li><code>s_strength_diff_acceptor</code></li>
+ *     <li><code>exon_length</code></li>
+ *     <li><code>intron_length</code></li>
+ * </ul>
+ * The {@link de.charite.compbio.jannovar.reference.GenomePosition}s of the closest donor and acceptor sites.
+ * <p>
+ * Note that the features are computed only if the transcript has at least a single intron.
+ */
 public class RichSplicingAnnotator implements SplicingAnnotator {
 
     private final SplicingTranscriptLocator locator;
@@ -63,6 +89,11 @@ public class RichSplicingAnnotator implements SplicingAnnotator {
         final GenomeVariant variant = data.getVariant();
         final SplicingTranscript transcript = data.getTranscript();
         final SequenceInterval sequence = data.getSequence();
+
+        if (transcript.getIntrons().isEmpty()) {
+            // no splicing, no annotations
+            return data;
+        }
 
         final SplicingLocationData locationData = locator.locate(variant, transcript);
         final GenomeVariant variantOnStrand = variant.withStrand(transcript.getStrand());
