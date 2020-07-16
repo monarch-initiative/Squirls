@@ -27,7 +27,7 @@ import static org.hamcrest.Matchers.closeTo;
 import static org.mockito.Mockito.when;
 
 @SpringBootTest(classes = TestDataSourceConfig.class)
-class DenseSplicingAnnotatorTest {
+class RichSplicingAnnotatorTest {
 
     private static final double EPSILON = 0.0005;
 
@@ -52,14 +52,13 @@ class DenseSplicingAnnotatorTest {
 
     private SequenceInterval sequence;
 
-    private DenseSplicingAnnotator annotator;
-
+    private RichSplicingAnnotator annotator;
 
     @BeforeEach
     void setUp() {
         st = PojosForTesting.getTranscriptWithThreeExons(rd);
         sequence = PojosForTesting.getSequenceIntervalForTranscriptWithThreeExons(rd);
-        annotator = new DenseSplicingAnnotator(splicingPwmData, hexamerMap, septamerMap, accessor);
+        annotator = new RichSplicingAnnotator(splicingPwmData, hexamerMap, septamerMap, accessor);
     }
 
     @Test
@@ -73,45 +72,32 @@ class DenseSplicingAnnotatorTest {
         assertThat(ann.getFeature("canonical_donor", Double.class), is(closeTo(3.0547, EPSILON)));
     }
 
+
     @Test
     void secondExonDonor() throws Exception {
         final GenomeVariant variant = new GenomeVariant(new GenomePosition(rd, Strand.FWD, 1, 1599), "C", "A");
         when(accessor.getScores(variant.getGenomeInterval())).thenReturn(List.of(.12345F));
 
-        SimpleAnnotatable ann = new SimpleAnnotatable(variant, st, sequence);
-        ann = annotator.annotate(ann);
+        final Annotatable ann = annotator.annotate(new SimpleAnnotatable(variant, st, sequence));
 
         assertThat(ann.getFeature("cryptic_donor", Double.class), is(closeTo(0., EPSILON)));
         assertThat(ann.getFeature("canonical_donor", Double.class), is(closeTo(-1.7926, EPSILON)));
+        assertThat(ann.getFeature("donor_offset", Double.class), is(closeTo(-1., EPSILON)));
         assertThat(ann.getFeature("cryptic_acceptor", Double.class), is(closeTo(-8.1159, EPSILON)));
         assertThat(ann.getFeature("canonical_acceptor", Double.class), is(closeTo(0., EPSILON)));
+        assertThat(ann.getFeature("acceptor_offset", Double.class), is(closeTo(200., EPSILON)));
 
         assertThat(ann.getFeature("hexamer", Double.class), is(closeTo(1.306309, EPSILON)));
         assertThat(ann.getFeature("septamer", Double.class), is(closeTo(.339600, EPSILON)));
-
         assertThat(ann.getFeature("phylop", Double.class), is(closeTo(.12345, EPSILON)));
+
+        assertThat(ann.getFeature("wt_ri_donor", Double.class), is(closeTo(2.8938, EPSILON)));
+        assertThat(ann.getFeature("wt_ri_acceptor", Double.class), is(closeTo(4.1148, EPSILON)));
+        assertThat(ann.getFeature("alt_ri_best_window_donor", Double.class), is(closeTo(4.6864, EPSILON)));
+        assertThat(ann.getFeature("alt_ri_best_window_acceptor", Double.class), is(closeTo(-4.0011, EPSILON)));
+        assertThat(ann.getFeature("s_strength_diff_donor", Double.class), is(closeTo(0., EPSILON)));
+        assertThat(ann.getFeature("s_strength_diff_acceptor", Double.class), is(closeTo(0., EPSILON)));
+        assertThat(ann.getFeature("exon_length", Double.class), is(closeTo(200., EPSILON)));
+        assertThat(ann.getFeature("intron_length", Double.class), is(closeTo(200., EPSILON)));
     }
-
-    @Test
-    void secondExonAcceptor() {
-        final GenomeVariant variant = new GenomeVariant(new GenomePosition(rd, Strand.FWD, 1, 1399), "g", "a");
-        SimpleAnnotatable ann = new SimpleAnnotatable(variant, st, sequence);
-        ann = annotator.annotate(ann);
-
-        assertThat(ann.getFeature("canonical_acceptor", Double.class), is(closeTo(9.9600, EPSILON)));
-        assertThat(ann.getFeature("canonical_donor", Double.class), is(closeTo(0., EPSILON)));
-        assertThat(ann.getFeature("cryptic_acceptor", Double.class), is(closeTo(6.7992, EPSILON)));
-        assertThat(ann.getFeature("cryptic_donor", Double.class), is(closeTo(4.7136, EPSILON)));
-    }
-
-    @Test
-    void thirdExonAcceptor() {
-        final GenomeVariant variant = new GenomeVariant(new GenomePosition(rd, Strand.FWD, 1, 1804), "C", "T");
-        SimpleAnnotatable ann = new SimpleAnnotatable(variant, st, sequence);
-        ann = annotator.annotate(ann);
-
-        assertThat(ann.getFeature("canonical_acceptor", Double.class), is(closeTo(0., EPSILON)));
-        assertThat(ann.getFeature("cryptic_acceptor", Double.class), is(closeTo(-8.9753, EPSILON)));
-    }
-
 }
