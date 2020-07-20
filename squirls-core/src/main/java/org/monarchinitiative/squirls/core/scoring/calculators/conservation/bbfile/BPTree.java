@@ -26,7 +26,6 @@ import org.slf4j.LoggerFactory;
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -63,16 +62,12 @@ public class BPTree {
     private static final Logger log = LoggerFactory.getLogger(BPTree.class);
     // B+ tree access variables   - for reading in B+ tree nodes from a file
     private final SeekableStream fis;      // file handle - BBFile input stream
-    private final long treeOffset;         // mChromosome B+ tree file offset
     private final BPTreeHeader treeHeader; // B+ tree header (Table E for BBFile)
-    // B+ tree organizational variables  - derived from Table E
-    private final int blockSize;     // number of children per block
     private final int keySize;       // character size of primary key
-    private final int valueSize;     // number of bytes in value being indexed
     private final long itemCount;    //  number of contig/mChromosome items in tree
     // B+ tree nodal variables
     private final BPTreeNode rootNode;   // B+ tree root node
-    Map<String, String> chromosomeKeyCache = new HashMap();
+    Map<String, String> chromosomeKeyCache = new HashMap<>();
     private long nodeCount;        // number of nodes defined in the B+ tree
 
     private long leafCount;        // number of leaves in the B+ tree
@@ -91,10 +86,10 @@ public class BPTree {
         // Save the seekable file handle and B+ Tree file offset
         // Note: the offset is the B+ Tree Header Table E file location
         this.fis = fis;
-        treeOffset = fileOffset;
+        // mChromosome B+ tree file offset
 
         // read in B+ tree header - verify the B+ tree info exits
-        treeHeader = new BPTreeHeader(this.fis, treeOffset, isLowToHigh);
+        treeHeader = new BPTreeHeader(this.fis, fileOffset, isLowToHigh);
 
         // log error if header not found and throw exception
         if (!treeHeader.isHeaderOK()) {
@@ -105,17 +100,17 @@ public class BPTree {
         }
 
         // assign B+ tree specifications from the header
-        blockSize = treeHeader.getBlockSize();
+        // B+ tree organizational variables  - derived from Table E
+        // number of children per block
         keySize = treeHeader.getKeySize();
-        valueSize = treeHeader.getValSize();
+        // number of bytes in value being indexed
         itemCount = treeHeader.getItemCount();
 
         // populate the tree - read in the nodes
-        long nodeOffset = treeOffset + BPTreeHeader.BPTREE_HEADER_SIZE;
-        BPTreeNode parentNode = null;  // parent node of the root is itself, or null
+        long nodeOffset = fileOffset + BPTreeHeader.BPTREE_HEADER_SIZE;
 
         // get the root node - which recursively populates the remaining nodes
-        rootNode = readBPTreeNode(this.fis, nodeOffset, parentNode, isLowToHigh);
+        rootNode = readBPTreeNode(this.fis, nodeOffset, isLowToHigh);
 
     }
 
@@ -129,43 +124,11 @@ public class BPTree {
 
 
     /*
-     *   Method returns the B+ tree file location
-     * */
-    public long getBPTreeOffset() {
-        return treeOffset;
-    }
-
-
-    /*
-     *   Method returns the B+ tree header (Table E).
-     * */
-    public BPTreeHeader getTreeHeader() {
-        return treeHeader;
-    }
-
-
-    /*
-     *   Method returns the node block size (B+ order).
-     * */
-    public int getBlockSize() {
-        return blockSize;
-    }
-
-
-    /*
      *   Method returns the chromosome name key size, which is
      *   the number of valid characters for chromosome name.
      * */
     public int getKeySize() {
         return keySize;
-    }
-
-
-    /*
-     *   Method returns the indexing value size (currently 8).
-     * */
-    public int getValueSize() {
-        return valueSize;
     }
 
 
@@ -182,18 +145,6 @@ public class BPTree {
      * */
     public long getNodeCount() {
         return nodeCount;
-    }
-
-
-    /*
-     *   Method returns the root node, from which all other nodes
-     *   can be extracted.
-     *
-     *   Returns:
-     *       Root node
-     * */
-    public BPTreeNode getRootNode() {
-        return rootNode;
     }
 
 
@@ -232,53 +183,10 @@ public class BPTree {
         int chromosomeID;
 
         // Search the B+ tree to extract the Chromosome ID.
-        BPTreeNode thisNode = rootNode;
 
-        chromosomeID = findChromosomeID(thisNode, chromKey);
+        chromosomeID = findChromosomeID(rootNode, chromKey);
 
         return chromosomeID;
-    }
-
-
-    /*
-     *   Returns a chromosome name which is the B+ key for returning the
-     *   chromosome ID for lookup in the R+ tree for data.
-     *
-     *   Parameters:
-     *       chromID - chromosome ID expected in B+ tree
-     *
-     *   Returns:
-     *       Chromosome name key; a null string means chromosome ID not found.
-     *
-     * */
-    public String getChromosomeName(int chromID) {
-        String chromKey;
-
-        // Search the B+ tree to extract the Chromosome ID.
-        BPTreeNode thisNode = rootNode;
-
-        chromKey = findChromosomeName(thisNode, chromID);
-
-        return chromKey;
-    }
-
-
-    /*
-     *   Method returns all chromosome key names in B+ tree.
-     *
-     *   Returns:
-     *   Collection of all (chromosome ID, chromosome name)entries
-     * */
-    public ArrayList<String> getChromosomeNames() {
-
-        // Search the B+ tree to extract the chromosome ID.
-        BPTreeNode thisNode = rootNode;
-
-        ArrayList<String> chromosomeList = new ArrayList<String>();
-
-        findAllChromosomeNames(thisNode, chromosomeList);
-
-        return chromosomeList;
     }
 
 
@@ -297,11 +205,10 @@ public class BPTree {
     public HashMap<Integer, String> getChromosomeIDMap(int startChromID, int endChromID) {
 
         // Search the B+ tree to extract the chromosome ID.
-        BPTreeNode thisNode = rootNode;
 
-        HashMap<Integer, String> chromosomeIDMap = new HashMap<Integer, String>();
+        HashMap<Integer, String> chromosomeIDMap = new HashMap<>();
 
-        findChromosomeMap(thisNode, startChromID, endChromID, chromosomeIDMap);
+        findChromosomeMap(rootNode, startChromID, endChromID, chromosomeIDMap);
 
         return chromosomeIDMap;
     }
@@ -391,99 +298,6 @@ public class BPTree {
 
 
     /*
-     *   Method finds and returns the chromosome name for the specified chromosome ID.
-     *
-     *   Parameters:
-     *       thisNode - tree node to start search
-     *       chromID - B+ tree chromosome ID supplied for the chromosome key
-     *
-     *   Returns:
-     *       chromosome name if found; else a null string.
-     * */
-    private String findChromosomeName(BPTreeNode thisNode, int chromID) {
-
-        String chromKey = null; // mark unfound condition as an empty string
-
-        // search down the tree recursively starting with the root node
-        if (thisNode.isLeaf()) {
-            int nLeaves = thisNode.getItemCount();
-            for (int index = 0; index < nLeaves; ++index) {
-                BPTreeLeafNodeItem leaf = (BPTreeLeafNodeItem) thisNode.getItem(index);
-
-                if (leaf.getChromID() == chromID) { // mChromosome key match
-                    chromKey = leaf.getChromKey();
-                    break;
-                }
-                // else check next leaf
-            }
-        } else {
-            // check all child nodes
-            int nNodes = thisNode.getItemCount();
-            for (int index = 0; index < nNodes; ++index) {
-
-                BPTreeChildNodeItem childItem = (BPTreeChildNodeItem) thisNode.getItem(index);
-                BPTreeNode childNode = childItem.getChildNode();
-
-                // check if key is in the node range
-                int lowestID = childNode.getLowestChromID();
-                int highestID = childNode.getHighestChromID();
-
-                // test chromosome ID against node ID range
-                if (chromID >= lowestID && chromID <= highestID) {
-
-                    // keep going until leaf items are checked
-                    chromKey = findChromosomeName(childNode, chromID);
-
-                    // check for chromosome ID match
-                    if (chromKey != null)
-                        break;
-                }
-            }
-        }
-
-        return chromKey;
-    }
-
-
-    /*
-     *   Method finds and returns all chromosome names in the B+ tree.
-     *
-     *   Note: This method calls itself recursively until the full B+ tree is traversed.
-     *
-     *   Parameters:
-     *       thisNode - tree node to start search
-     *       chromosomeList - list of all chromosome names found.
-     *
-     *   Returns:
-     *       Chromosome names found are added to the chromosome list passed in.
-     * */
-    public void findAllChromosomeNames(BPTreeNode thisNode, ArrayList<String> chromosomeList) {
-
-        // search down the tree recursively starting with the root node
-        if (thisNode.isLeaf()) {
-            // add all leaf names
-            int nLeaves = thisNode.getItemCount();
-            for (int index = 0; index < nLeaves; ++index) {
-
-                BPTreeLeafNodeItem leaf = (BPTreeLeafNodeItem) thisNode.getItem(index);
-                chromosomeList.add(leaf.getChromKey());
-            }
-        } else {
-            // get all child nodes
-            int nNodes = thisNode.getItemCount();
-            for (int index = 0; index < nNodes; ++index) {
-
-                BPTreeChildNodeItem childItem = (BPTreeChildNodeItem) thisNode.getItem(index);
-                BPTreeNode childNode = childItem.getChildNode();
-
-                // keep going until leaf items are extracted
-                findAllChromosomeNames(childNode, chromosomeList);
-            }
-        }
-    }
-
-
-    /*
      *   Method finds and returns (chromosome ID, chromosome key name) pairs for the specified ID range.
      *
      *   Parameters:
@@ -564,15 +378,15 @@ public class BPTree {
      *       true for success, false for failure to find the header information.
      * */
     private BPTreeNode readBPTreeNode(SeekableStream fis, long fileOffset,
-                                      BPTreeNode parent, boolean isLowToHigh) {
+                                      boolean isLowToHigh) {
 
         LittleEndianInputStream lbdis = null;     // low to high byte reader
         DataInputStream bdis = null;        // high to low byte reader
 
         // set up for node format
         byte[] buffer = new byte[BPTREE_NODE_FORMAT_SIZE];
-        BPTreeNode thisNode = null;
-        BPTreeNode childNode = null;
+        BPTreeNode thisNode;
+        BPTreeNode childNode;
 
         byte type;
         byte bval;
@@ -666,7 +480,7 @@ public class BPTree {
                     else
                         childOffset = bdis.readLong();
 
-                    childNode = readBPTreeNode(this.fis, childOffset, thisNode, isLowToHigh);
+                    childNode = readBPTreeNode(this.fis, childOffset, isLowToHigh);
 
                     // insert child node item
                     BPTreeChildNodeItem childItem = new BPTreeChildNodeItem(item, key, childNode);
