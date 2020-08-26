@@ -40,12 +40,28 @@
             <groupId>com.github.samtools</groupId>
             <artifactId>htsjdk</artifactId>
             <version>${htsjdk.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.apache.commons</groupId>
+                    <artifactId>commons-compress</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>
             <groupId>xyz.ielis.hyperutil</groupId>
             <artifactId>hyperutil-reference</artifactId>
             <version>${hyperutil.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.google.guava</groupId>
+                    <artifactId>guava</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>de.charite.compbio</groupId>
+                    <artifactId>jannovar-core</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>
