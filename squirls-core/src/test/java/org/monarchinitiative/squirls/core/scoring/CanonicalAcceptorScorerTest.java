@@ -10,7 +10,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.closeTo;
 
-class CanonicalAcceptorScorerTest extends CalculatorTestBase {
+public class CanonicalAcceptorScorerTest extends CalculatorTestBase {
 
 
     private CanonicalAcceptorFeatureCalculator scorer;
@@ -22,7 +22,7 @@ class CanonicalAcceptorScorerTest extends CalculatorTestBase {
     }
 
     @Test
-    void snpInAcceptor() {
+    public void snpInAcceptor() {
         GenomeVariant variant = new GenomeVariant(new GenomePosition(referenceDictionary, Strand.FWD, 1, 1399), "g", "a");
         final GenomePosition anchor = st.getExons().get(1).getInterval().getGenomeBeginPos();
 
@@ -32,7 +32,7 @@ class CanonicalAcceptorScorerTest extends CalculatorTestBase {
     }
 
     @Test
-    void deletionInAcceptor() {
+    public void deletionInAcceptor() {
         GenomeVariant variant = new GenomeVariant(new GenomePosition(referenceDictionary, Strand.FWD, 1, 1397), "cag", "c");
         final GenomePosition anchor = st.getExons().get(1).getInterval().getGenomeBeginPos();
 
@@ -42,7 +42,7 @@ class CanonicalAcceptorScorerTest extends CalculatorTestBase {
     }
 
     @Test
-    void insertionInAcceptor() {
+    public void insertionInAcceptor() {
         GenomeVariant variant = new GenomeVariant(new GenomePosition(referenceDictionary, Strand.FWD, 1, 1399), "g", "gag");
         final GenomePosition anchor = st.getExons().get(1).getInterval().getGenomeBeginPos();
 
@@ -52,7 +52,7 @@ class CanonicalAcceptorScorerTest extends CalculatorTestBase {
     }
 
     @Test
-    void snpJustUpstreamFromAcceptor() {
+    public void snpJustUpstreamFromAcceptor() {
         GenomeVariant variant = new GenomeVariant(new GenomePosition(referenceDictionary, Strand.FWD, 1, 1374), "c", "t");
         final GenomePosition anchor = st.getExons().get(1).getInterval().getGenomeBeginPos();
 
@@ -62,7 +62,7 @@ class CanonicalAcceptorScorerTest extends CalculatorTestBase {
     }
 
     @Test
-    void snpJustDownstreamFromAcceptor() {
+    public void snpJustDownstreamFromAcceptor() {
         GenomeVariant variant = new GenomeVariant(new GenomePosition(referenceDictionary, Strand.FWD, 1, 1402), "G", "T");
         final GenomePosition anchor = st.getExons().get(1).getInterval().getGenomeBeginPos();
 

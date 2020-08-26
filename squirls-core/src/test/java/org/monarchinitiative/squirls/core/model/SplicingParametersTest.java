@@ -14,16 +14,16 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 @SpringBootTest(classes = TestDataSourceConfig.class)
-class SplicingParametersTest {
+public class SplicingParametersTest {
 
 
     @Autowired
-    private ReferenceDictionary referenceDictionary;
+    public ReferenceDictionary referenceDictionary;
 
     private SplicingParameters parameters;
 
     @BeforeEach
-    void setUp() {
+    public void setUp() {
         parameters = SplicingParameters.builder()
                 .setDonorExonic(3).setDonorIntronic(5)
                 .setAcceptorIntronic(4).setAcceptorExonic(2)
@@ -31,14 +31,14 @@ class SplicingParametersTest {
     }
 
     @Test
-    void makeDonorRegion() {
+    public void makeDonorRegion() {
         final GenomePosition anchor = new GenomePosition(referenceDictionary, Strand.FWD, 1, 1000);
         final GenomeInterval donor = parameters.makeDonorRegion(anchor);
         assertThat(donor, is(new GenomeInterval(referenceDictionary, Strand.FWD, 1, 997, 1005)));
     }
 
     @Test
-    void makeAcceptorRegion() {
+    public void makeAcceptorRegion() {
         final GenomePosition anchor = new GenomePosition(referenceDictionary, Strand.FWD, 1, 1000);
         final GenomeInterval acceptor = parameters.makeAcceptorRegion(anchor);
         assertThat(acceptor, is(new GenomeInterval(referenceDictionary, Strand.FWD, 1, 996, 1002)));

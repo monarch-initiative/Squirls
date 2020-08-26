@@ -28,12 +28,12 @@ import static org.hamcrest.number.IsCloseTo.closeTo;
  * </pre>
  * and the test compares output value of Java implementation with the output above.
  */
-class AbstractDecisionTreeTest extends TestBasedOnIrisInstances {
+public class AbstractDecisionTreeTest extends TestBasedOnIrisInstances {
 
     private AbstractBinaryDecisionTree<Classifiable> tree;
 
     @BeforeEach
-    void setUp() {
+    public void setUp() {
         tree = TestTreeInstances.getTreeOne();
     }
 
@@ -59,7 +59,7 @@ class AbstractDecisionTreeTest extends TestBasedOnIrisInstances {
      * and this test compares output value of Java implementation with the output above.
      */
     @Test
-    void predictProba() {
+    public void predictProba() {
         assertThat(tree.predictProba(versicolorOne), is(closeTo(0., EPSILON)));
         assertThat(tree.predictProba(versicolorFive), is(closeTo(0., EPSILON)));
         assertThat(tree.predictProba(virginicaOne), is(closeTo(1., EPSILON)));

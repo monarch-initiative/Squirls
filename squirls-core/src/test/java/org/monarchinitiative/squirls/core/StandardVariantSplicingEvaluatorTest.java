@@ -30,34 +30,34 @@ import static org.mockito.Mockito.when;
  * Here we test some real-world variants.
  */
 @SpringBootTest(classes = TestDataSourceConfig.class)
-class StandardVariantSplicingEvaluatorTest {
+public class StandardVariantSplicingEvaluatorTest {
 
     /**
      * Tolerance for numeric comparisons.
      */
-    private static final double EPSILON = 5E-6;
+    public static final double EPSILON = 5E-6;
 
-    private static SequenceInterval SI;
+    public static SequenceInterval SI;
 
-    private static ReferenceDictionary RD;
-
-    @Mock
-    private GenomeSequenceAccessor accessor;
+    public static ReferenceDictionary RD;
 
     @Mock
-    private SplicingTranscriptSource transcriptSource;
+    public GenomeSequenceAccessor accessor;
 
     @Mock
-    private SplicingAnnotator annotator;
+    public SplicingTranscriptSource transcriptSource;
 
     @Mock
-    private SquirlsClassifier classifier;
+    public SplicingAnnotator annotator;
 
-    private StandardVariantSplicingEvaluator evaluator;
+    @Mock
+    public SquirlsClassifier classifier;
+
+    public StandardVariantSplicingEvaluator evaluator;
 
 
     @BeforeAll
-    static void beforeAll() {
+    public static void beforeAll() {
         final ReferenceDictionaryBuilder rdBuilder = new ReferenceDictionaryBuilder();
         rdBuilder.putContigID("chr9", 9);
         rdBuilder.putContigID("9", 9);
@@ -73,7 +73,7 @@ class StandardVariantSplicingEvaluatorTest {
     }
 
     @BeforeEach
-    void setUp() {
+    public void setUp() {
         // genome sequence accessor
         when(accessor.getReferenceDictionary()).thenReturn(RD);
         evaluator = StandardVariantSplicingEvaluator.builder()
@@ -86,7 +86,7 @@ class StandardVariantSplicingEvaluatorTest {
     }
 
     @Test
-    void evaluateWrtTx() throws Exception {
+    public void evaluateWrtTx() throws Exception {
         // arrange
         final GenomeVariant variant = new GenomeVariant(new GenomePosition(RD, Strand.FWD, 9, 136_223_949, PositionType.ONE_BASED), "G", "C");
 
@@ -132,7 +132,7 @@ class StandardVariantSplicingEvaluatorTest {
     }
 
     @Test
-    void evaluateWrtTx_unknownContig() {
+    public void evaluateWrtTx_unknownContig() {
         // arrange & act
         final Map<String, SplicingPredictionData> predictionMap = evaluator.evaluate("BLA", 100, "G", "C");
 
@@ -141,7 +141,7 @@ class StandardVariantSplicingEvaluatorTest {
     }
 
     @Test
-    void evaluateWrtTx_unknownTx() {
+    public void evaluateWrtTx_unknownTx() {
         // arrange
         when(transcriptSource.fetchTranscriptByAccession("BLABLA", RD)).thenReturn(Optional.empty());
 
@@ -153,7 +153,7 @@ class StandardVariantSplicingEvaluatorTest {
     }
 
     @Test
-    void evaluateWrtTx_notEnoughSequenceAvailable() {
+    public void evaluateWrtTx_notEnoughSequenceAvailable() {
         // arrange
         // 0 - splicing transcript source
         final SplicingTranscript stx = PojosForTesting.surf2_NM_017503_5(RD);
@@ -174,7 +174,7 @@ class StandardVariantSplicingEvaluatorTest {
      * with. In this case, we evaluate the variant wrt one transcript <code>stx</code>.
      */
     @Test
-    void evaluateWrtCoordinates() throws Exception {
+    public void evaluateWrtCoordinates() throws Exception {
         // arrange
         final GenomeVariant variant = new GenomeVariant(new GenomePosition(RD, Strand.FWD, 9, 136_223_949, PositionType.ONE_BASED), "G", "C");
 

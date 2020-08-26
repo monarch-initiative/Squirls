@@ -16,20 +16,20 @@ import static org.hamcrest.Matchers.hasEntry;
 
 @SpringBootTest(classes = {TestDataSourceConfig.class})
 @Sql(scripts = {"create_kmers_table.sql", "insert_hexamer_data.sql", "insert_septamer_data.sql"})
-class DbKMerDaoTest {
+public class DbKMerDaoTest {
 
     @Autowired
-    private DataSource dataSource;
+    public DataSource dataSource;
 
     private DbKMerDao dao;
 
     @BeforeEach
-    void setUp() {
+    public void setUp() {
         dao = new DbKMerDao(dataSource);
     }
 
     @Test
-    void getSeptamerMap() {
+    public void getSeptamerMap() {
         Map<String, Double> septamers = dao.getSeptamerMap();
 
         assertThat(septamers.size(), is(6));
@@ -42,7 +42,7 @@ class DbKMerDaoTest {
     }
 
     @Test
-    void getHexamerMap() {
+    public void getHexamerMap() {
         Map<String, Double> septamers = dao.getHexamerMap();
 
         assertThat(septamers.size(), is(6));

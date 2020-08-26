@@ -12,12 +12,12 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.closeTo;
 
-class RandomForestTest extends TestBasedOnIrisInstances {
+public class RandomForestTest extends TestBasedOnIrisInstances {
 
     private RandomForest<Classifiable> forest;
 
     @BeforeEach
-    void setUp() {
+    public void setUp() {
         // this test consists of two trees only
         forest = RandomForest.builder()
                 .classes(List.of(1, 2))
@@ -27,7 +27,7 @@ class RandomForestTest extends TestBasedOnIrisInstances {
     }
 
     @Test
-    void predictProba() {
+    public void predictProba() {
         assertThat(forest.predictProba(versicolorOne), is(closeTo(0., EPSILON)));
         assertThat(forest.predictProba(versicolorFive), is(closeTo(0., EPSILON)));
         assertThat(forest.predictProba(virginicaOne), is(closeTo(1., EPSILON)));

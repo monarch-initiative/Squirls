@@ -18,23 +18,23 @@ import xyz.ielis.hyperutil.reference.fasta.SequenceInterval;
 @SpringBootTest(classes = {TestDataSourceConfig.class})
 public class CalculatorTestBase {
 
-    protected static final double EPSILON = 5E-4;
+    public static final double EPSILON = 5E-4;
 
     @Autowired
-    protected SplicingParameters splicingParameters;
+    public SplicingParameters splicingParameters;
 
     @Autowired
-    protected ReferenceDictionary referenceDictionary;
+    public ReferenceDictionary referenceDictionary;
 
     @Autowired
-    protected SplicingInformationContentCalculator calculator;
+    public SplicingInformationContentCalculator calculator;
 
     @Autowired
-    protected AlleleGenerator generator;
+    public AlleleGenerator generator;
 
-    protected SplicingTranscript st;
+    public SplicingTranscript st;
 
-    protected SequenceInterval sequenceInterval;
+    public SequenceInterval sequenceInterval;
 
 
     @BeforeEach

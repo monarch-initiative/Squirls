@@ -35,7 +35,7 @@ public class IntegrationTests {
     private static OverallModelData overallModelData;
 
     @BeforeAll
-    static void beforeAll() throws Exception {
+    public static void beforeAll() throws Exception {
         try (InputStream is = IntegrationTests.class.getResourceAsStream(TOY_MODEL_PATH)) {
             overallModelData = Deserializer.deserializeOverallModelData(is);
         }
@@ -46,7 +46,7 @@ public class IntegrationTests {
      */
 
     @Test
-    void donorTreeZeroPredictProba() {
+    public void donorTreeZeroPredictProba() {
         // get transfer format
         final DecisionTreeTransferModel treeOne = overallModelData.getDonorClf().getRf().getTrees().get(0);
         // make classifier
@@ -61,7 +61,7 @@ public class IntegrationTests {
     }
 
     @Test
-    void donorTreeFiftyPredictProba() {
+    public void donorTreeFiftyPredictProba() {
         // get transfer format
         final DecisionTreeTransferModel treeOne = overallModelData.getDonorClf().getRf().getTrees().get(50);
         // make classifier
@@ -76,7 +76,7 @@ public class IntegrationTests {
     }
 
     @Test
-    void acceptorTreeZeroPredictProba() {
+    public void acceptorTreeZeroPredictProba() {
         // get transfer format
         final DecisionTreeTransferModel treeOne = overallModelData.getAcceptorClf().getRf().getTrees().get(0);
         // make classifier
@@ -91,7 +91,7 @@ public class IntegrationTests {
     }
 
     @Test
-    void acceptorTreeFiftyPredictProba() {
+    public void acceptorTreeFiftyPredictProba() {
         // get transfer format
         final DecisionTreeTransferModel treeOne = overallModelData.getAcceptorClf().getRf().getTrees().get(50);
         // make classifier
@@ -110,7 +110,7 @@ public class IntegrationTests {
      */
 
     @Test
-    void donorForestPredictProba() {
+    public void donorForestPredictProba() {
         // get transfer format
         final RandomForestTransferModel rftm = overallModelData.getDonorClf().getRf();
         // make classifier
@@ -124,7 +124,7 @@ public class IntegrationTests {
     }
 
     @Test
-    void acceptorForestPredictProba() {
+    public void acceptorForestPredictProba() {
         // get transfer format
         final RandomForestTransferModel rftm = overallModelData.getAcceptorClf().getRf();
         // make classifier
@@ -142,7 +142,7 @@ public class IntegrationTests {
      */
 
     @Test
-    void ensembleClfPredictProba() throws Exception {
+    public void ensembleClfPredictProba() throws Exception {
         final SquirlsClassifier overlord = Deserializer.deserialize(overallModelData);
 
         Prediction prediction = overlord.predict(TestVariantInstances.pathogenicDonor()).getPrediction();

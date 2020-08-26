@@ -20,23 +20,23 @@ import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @SpringBootTest(classes = {TestDataSourceConfig.class})
-class DbClassifierDataManagerTest {
+public class DbClassifierDataManagerTest {
 
     private static final double EPSILON = 5E-12;
 
     @Autowired
-    private DataSource dataSource;
+    public DataSource dataSource;
 
     private DbClassifierDataManager manager;
 
     @BeforeEach
-    void setUp() {
+    public void setUp() {
         manager = new DbClassifierDataManager(dataSource);
     }
 
     @Test
     @Sql(scripts = {"create_classifier_table.sql"})
-    void storeClassifier() throws Exception {
+    public void storeClassifier() throws Exception {
         final byte[] payload = new byte[]{-128, 6, 0, 88, 127};
         final String version = "v1";
         final int updated = manager.storeClassifier(version, payload);
@@ -67,7 +67,7 @@ class DbClassifierDataManagerTest {
 
     @Test
     @Sql(scripts = "create_classifier_table.sql", statements = "insert into SPLICING.CLASSIFIER(version, data) values ('v1', '000F10FF')")
-    void readClassifier() {
+    public void readClassifier() {
         final Optional<byte[]> bytes = manager.readClassifierBytes("v1");
         assertTrue(bytes.isPresent());
         assertThat(bytes.get(), is(new byte[]{0, 15, 16, -1}));
@@ -80,21 +80,21 @@ class DbClassifierDataManagerTest {
     @Sql(scripts = "create_classifier_table.sql",
             statements = "insert into SPLICING.CLASSIFIER(version, data) " +
                     " values ('beef_duet', 'BEEFBEEF'), ('beef_quartet', 'BEEFBEEFBEEFBEEF')")
-    void getAllClassifiers() {
+    public void getAllClassifiers() {
         final Collection<String> clfs = manager.getAvailableClassifiers();
         assertThat(clfs, hasSize(2));
         assertThat(clfs, hasItems("beef_duet", "beef_quartet"));
     }
 
     @Test
-    void jsonify() {
+    public void jsonify() {
         final Map<String, Double> parameters = Map.of("bla", 0.123456789012, "kva", 11.998877665544);
         final String payload = DbClassifierDataManager.jsonify(parameters);
         assertThat(payload, is("{\"bla\": 0.123456789012, \"kva\": 11.998877665544}"));
     }
 
     @Test
-    void deJsonify() {
+    public void deJsonify() {
         String payload = "{\"bla\": 0.123456789012, \"kva\": 11.998877665544}";
         final Map<String, Double> params = DbClassifierDataManager.deJsonify(payload);
 

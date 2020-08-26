@@ -17,7 +17,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 
 @SpringBootTest(classes = TestDataSourceConfig.class)
-class BigWigAccessorTest {
+public class BigWigAccessorTest {
 
     /**
      * Small bigWig file containing phyloP scores for region chr9:100,000-101,000 (0-based).
@@ -27,17 +27,17 @@ class BigWigAccessorTest {
     private BigWigAccessor dao;
 
     @BeforeEach
-    void setUp() throws Exception {
+    public void setUp() throws Exception {
         dao = new BigWigAccessor(BW_PATH);
     }
 
     @AfterEach
-    void tearDown() throws Exception {
+    public void tearDown() throws Exception {
         dao.close();
     }
 
     @Test
-    void getScores() throws Exception {
+    public void getScores() throws Exception {
         List<Float> beginScores = dao.getScores("chr9", 100_000, 100_005);
 
         assertThat("Expected to find 5 elements", beginScores, hasSize(5));
@@ -49,14 +49,14 @@ class BigWigAccessorTest {
     }
 
     @Test
-    void getAllScores() throws Exception {
+    public void getAllScores() throws Exception {
         List<Float> beginScores = dao.getScores("chr9", 100_000, 101_000);
 
         assertThat("Expected to find 1,000 elements", beginScores, hasSize(1_000));
     }
 
     @Test
-    void getScoresNotPresent() throws Exception {
+    public void getScoresNotPresent() throws Exception {
         // score for the position 99_999 is not present in the file
         assertThrows(ColesvarWigException.class, () -> dao.getScores("chr9", 99_999, 100_005));
 

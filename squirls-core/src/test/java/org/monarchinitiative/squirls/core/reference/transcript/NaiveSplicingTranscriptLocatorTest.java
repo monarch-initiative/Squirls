@@ -19,15 +19,15 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
 @SpringBootTest(classes = {TestDataSourceConfig.class})
-class NaiveSplicingTranscriptLocatorTest {
+public class NaiveSplicingTranscriptLocatorTest {
 
     private NaiveSplicingTranscriptLocator locator;
 
     @Autowired
-    private SplicingParameters splicingParameters;
+    public SplicingParameters splicingParameters;
 
     @Autowired
-    private ReferenceDictionary referenceDictionary;
+    public ReferenceDictionary referenceDictionary;
 
     private SplicingTranscript fwdTranscript;
 
@@ -35,7 +35,7 @@ class NaiveSplicingTranscriptLocatorTest {
 
 
     @BeforeEach
-    void setUp() {
+    public void setUp() {
         fwdTranscript = PojosForTesting.getTranscriptWithThreeExons(referenceDictionary);
         revTranscript = PojosForTesting.getTranscriptWithThreeExonsOnRevStrand(referenceDictionary);
         locator = new NaiveSplicingTranscriptLocator(splicingParameters);
@@ -47,7 +47,7 @@ class NaiveSplicingTranscriptLocatorTest {
     }
 
     @Test
-    void onDifferentContig() {
+    public void onDifferentContig() {
         GenomeVariant variant = new GenomeVariant(new GenomePosition(referenceDictionary, Strand.FWD, 5, 999), "C", "G");
         final SplicingLocationData data = locator.locate(variant, fwdTranscript);
         assertThat(data, is(SplicingLocationData.outside()));
@@ -55,7 +55,7 @@ class NaiveSplicingTranscriptLocatorTest {
 
 
     @Test
-    void oneBaseBeforeCds() {
+    public void oneBaseBeforeCds() {
         GenomeVariant variant = new GenomeVariant(new GenomePosition(referenceDictionary, Strand.FWD, 1, 999), "C", "G");
         final SplicingLocationData data = locator.locate(variant, fwdTranscript);
         assertThat(data, is(SplicingLocationData.outside()));
@@ -63,7 +63,7 @@ class NaiveSplicingTranscriptLocatorTest {
 
 
     @Test
-    void firstBaseOfCds() {
+    public void firstBaseOfCds() {
         GenomeVariant variant = new GenomeVariant(new GenomePosition(referenceDictionary, Strand.FWD, 1, 1000), "C", "G");
         final SplicingLocationData data = locator.locate(variant, fwdTranscript);
         assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.EXON));
@@ -75,7 +75,7 @@ class NaiveSplicingTranscriptLocatorTest {
 
 
     @Test
-    void oneBaseBeforeFirstDonor() {
+    public void oneBaseBeforeFirstDonor() {
         GenomeVariant variant = new GenomeVariant(new GenomePosition(referenceDictionary, Strand.FWD, 1, 1196), "C", "G");
         final SplicingLocationData data = locator.locate(variant, fwdTranscript);
         assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.EXON));
@@ -86,7 +86,7 @@ class NaiveSplicingTranscriptLocatorTest {
     }
 
     @Test
-    void firstBaseOfFirstDonor() {
+    public void firstBaseOfFirstDonor() {
         GenomeVariant variant = new GenomeVariant(new GenomePosition(referenceDictionary, Strand.FWD, 1, 1197), "C", "G");
         final SplicingLocationData data = locator.locate(variant, fwdTranscript);
         assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.DONOR));
@@ -97,7 +97,7 @@ class NaiveSplicingTranscriptLocatorTest {
     }
 
     @Test
-    void lastBaseOfFirstDonor() {
+    public void lastBaseOfFirstDonor() {
         GenomeVariant variant = new GenomeVariant(new GenomePosition(referenceDictionary, Strand.FWD, 1, 1205), "C", "G");
         final SplicingLocationData data = locator.locate(variant, fwdTranscript);
         assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.DONOR));
@@ -109,7 +109,7 @@ class NaiveSplicingTranscriptLocatorTest {
 
 
     @Test
-    void firstBaseAfterFirstDonor() {
+    public void firstBaseAfterFirstDonor() {
         GenomeVariant variant = new GenomeVariant(new GenomePosition(referenceDictionary, Strand.FWD, 1, 1206), "C", "G");
         final SplicingLocationData data = locator.locate(variant, fwdTranscript);
         assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.INTRON));
@@ -120,7 +120,7 @@ class NaiveSplicingTranscriptLocatorTest {
     }
 
     @Test
-    void oneBaseBeforeFirstAcceptor() {
+    public void oneBaseBeforeFirstAcceptor() {
         GenomeVariant variant = new GenomeVariant(new GenomePosition(referenceDictionary, Strand.FWD, 1, 1374), "C", "G");
         final SplicingLocationData data = locator.locate(variant, fwdTranscript);
         assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.INTRON));
@@ -131,7 +131,7 @@ class NaiveSplicingTranscriptLocatorTest {
     }
 
     @Test
-    void firstBaseOfFirstAcceptor() {
+    public void firstBaseOfFirstAcceptor() {
         GenomeVariant variant = new GenomeVariant(new GenomePosition(referenceDictionary, Strand.FWD, 1, 1375), "C", "G");
         final SplicingLocationData data = locator.locate(variant, fwdTranscript);
         assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.ACCEPTOR));
@@ -143,7 +143,7 @@ class NaiveSplicingTranscriptLocatorTest {
 
 
     @Test
-    void lastBaseOfFirstAcceptor() {
+    public void lastBaseOfFirstAcceptor() {
         GenomeVariant variant = new GenomeVariant(new GenomePosition(referenceDictionary, Strand.FWD, 1, 1401), "C", "G");
         final SplicingLocationData data = locator.locate(variant, fwdTranscript);
         assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.ACCEPTOR));
@@ -154,7 +154,7 @@ class NaiveSplicingTranscriptLocatorTest {
     }
 
     @Test
-    void oneBaseAfterFirstAcceptor() {
+    public void oneBaseAfterFirstAcceptor() {
         GenomeVariant variant = new GenomeVariant(new GenomePosition(referenceDictionary, Strand.FWD, 1, 1402), "C", "G");
         final SplicingLocationData data = locator.locate(variant, fwdTranscript);
         assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.EXON));
@@ -165,7 +165,7 @@ class NaiveSplicingTranscriptLocatorTest {
     }
 
     @Test
-    void oneBaseBeforeSecondDonor() {
+    public void oneBaseBeforeSecondDonor() {
         GenomeVariant variant = new GenomeVariant(new GenomePosition(referenceDictionary, Strand.FWD, 1, 1596), "C", "G");
         final SplicingLocationData data = locator.locate(variant, fwdTranscript);
         assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.EXON));
@@ -176,7 +176,7 @@ class NaiveSplicingTranscriptLocatorTest {
     }
 
     @Test
-    void firstBaseOfSecondDonor() {
+    public void firstBaseOfSecondDonor() {
         GenomeVariant variant = new GenomeVariant(new GenomePosition(referenceDictionary, Strand.FWD, 1, 1597), "C", "G");
         final SplicingLocationData data = locator.locate(variant, fwdTranscript);
         assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.DONOR));
@@ -187,7 +187,7 @@ class NaiveSplicingTranscriptLocatorTest {
     }
 
     @Test
-    void lastBaseOfSecondDonor() {
+    public void lastBaseOfSecondDonor() {
         GenomeVariant variant = new GenomeVariant(new GenomePosition(referenceDictionary, Strand.FWD, 1, 1605), "C", "G");
         final SplicingLocationData data = locator.locate(variant, fwdTranscript);
         assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.DONOR));
@@ -198,7 +198,7 @@ class NaiveSplicingTranscriptLocatorTest {
     }
 
     @Test
-    void oneBaseAfterSecondDonor() {
+    public void oneBaseAfterSecondDonor() {
         GenomeVariant variant = new GenomeVariant(new GenomePosition(referenceDictionary, Strand.FWD, 1, 1606), "C", "G");
         final SplicingLocationData data = locator.locate(variant, fwdTranscript);
         assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.INTRON));
@@ -210,7 +210,7 @@ class NaiveSplicingTranscriptLocatorTest {
 
 
     @Test
-    void oneBaseBeforeSecondAcceptor() {
+    public void oneBaseBeforeSecondAcceptor() {
         GenomeVariant variant = new GenomeVariant(new GenomePosition(referenceDictionary, Strand.FWD, 1, 1774), "C", "G");
         final SplicingLocationData data = locator.locate(variant, fwdTranscript);
         assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.INTRON));
@@ -222,7 +222,7 @@ class NaiveSplicingTranscriptLocatorTest {
 
 
     @Test
-    void firstBaseOfSecondAcceptor() {
+    public void firstBaseOfSecondAcceptor() {
         GenomeVariant variant = new GenomeVariant(new GenomePosition(referenceDictionary, Strand.FWD, 1, 1775), "C", "G");
         final SplicingLocationData data = locator.locate(variant, fwdTranscript);
         assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.ACCEPTOR));
@@ -233,7 +233,7 @@ class NaiveSplicingTranscriptLocatorTest {
     }
 
     @Test
-    void lastBaseOfSecondAcceptor() {
+    public void lastBaseOfSecondAcceptor() {
         GenomeVariant variant = new GenomeVariant(new GenomePosition(referenceDictionary, Strand.FWD, 1, 1801), "C", "G");
         final SplicingLocationData data = locator.locate(variant, fwdTranscript);
         assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.ACCEPTOR));
@@ -245,7 +245,7 @@ class NaiveSplicingTranscriptLocatorTest {
 
 
     @Test
-    void oneBaseAfterSecondAcceptor() {
+    public void oneBaseAfterSecondAcceptor() {
         GenomeVariant variant = new GenomeVariant(new GenomePosition(referenceDictionary, Strand.FWD, 1, 1802), "C", "G");
         final SplicingLocationData data = locator.locate(variant, fwdTranscript);
         assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.EXON));
@@ -257,7 +257,7 @@ class NaiveSplicingTranscriptLocatorTest {
 
 
     @Test
-    void lastBaseOfCds() {
+    public void lastBaseOfCds() {
         GenomeVariant variant = new GenomeVariant(new GenomePosition(referenceDictionary, Strand.FWD, 1, 1999), "C", "G");
         final SplicingLocationData data = locator.locate(variant, fwdTranscript);
         assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.EXON));
@@ -268,14 +268,14 @@ class NaiveSplicingTranscriptLocatorTest {
     }
 
     @Test
-    void oneBaseAfterCds() {
+    public void oneBaseAfterCds() {
         GenomeVariant variant = new GenomeVariant(new GenomePosition(referenceDictionary, Strand.FWD, 1, 2000), "C", "G");
         final SplicingLocationData data = locator.locate(variant, fwdTranscript);
         assertThat(data, is(SplicingLocationData.outside()));
     }
 
     @Test
-    void firstBaseOfSingleExonTranscript() {
+    public void firstBaseOfSingleExonTranscript() {
         final SplicingTranscript se = PojosForTesting.getTranscriptWithSingleExon(referenceDictionary);
         GenomeVariant variant = new GenomeVariant(new GenomePosition(referenceDictionary, Strand.FWD, 1, 1000), "C", "G");
         final SplicingLocationData data = locator.locate(variant, se);
@@ -288,7 +288,7 @@ class NaiveSplicingTranscriptLocatorTest {
 
 
     @Test
-    void lastBaseOfSingleExonTranscript() {
+    public void lastBaseOfSingleExonTranscript() {
         final SplicingTranscript se = PojosForTesting.getTranscriptWithSingleExon(referenceDictionary);
         GenomeVariant variant = new GenomeVariant(new GenomePosition(referenceDictionary, Strand.FWD, 1, 1999), "C", "G");
 

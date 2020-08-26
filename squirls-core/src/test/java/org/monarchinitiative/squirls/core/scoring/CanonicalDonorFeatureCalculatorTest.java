@@ -10,7 +10,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.closeTo;
 
-class CanonicalDonorFeatureCalculatorTest extends CalculatorTestBase {
+public class CanonicalDonorFeatureCalculatorTest extends CalculatorTestBase {
 
     private CanonicalDonorFeatureCalculator scorer;
 
@@ -22,7 +22,7 @@ class CanonicalDonorFeatureCalculatorTest extends CalculatorTestBase {
     }
 
     @Test
-    void snpInDonor() {
+    public void snpInDonor() {
         GenomeVariant variant = new GenomeVariant(new GenomePosition(referenceDictionary, Strand.FWD, 1, 1200), "g", "a");
         final GenomePosition anchor = st.getExons().get(0).getInterval().getGenomeEndPos();
         final double score = scorer.score(anchor, variant, sequenceInterval);
@@ -30,7 +30,7 @@ class CanonicalDonorFeatureCalculatorTest extends CalculatorTestBase {
     }
 
     @Test
-    void deletionInDonor() {
+    public void deletionInDonor() {
         GenomeVariant variant = new GenomeVariant(new GenomePosition(referenceDictionary, Strand.FWD, 1, 1199), "Ggt", "G");
         final GenomePosition anchor = st.getExons().get(0).getInterval().getGenomeEndPos();
         final double score = scorer.score(anchor, variant, sequenceInterval);
@@ -38,7 +38,7 @@ class CanonicalDonorFeatureCalculatorTest extends CalculatorTestBase {
     }
 
     @Test
-    void insertionInDonor() {
+    public void insertionInDonor() {
         GenomeVariant variant = new GenomeVariant(new GenomePosition(referenceDictionary, Strand.FWD, 1, 1200), "gt", "gtgt");
         final GenomePosition anchor = st.getExons().get(0).getInterval().getGenomeEndPos();
         final double score = scorer.score(anchor, variant, sequenceInterval);
@@ -46,7 +46,7 @@ class CanonicalDonorFeatureCalculatorTest extends CalculatorTestBase {
     }
 
     @Test
-    void snpJustUpstreamFromDonor() {
+    public void snpJustUpstreamFromDonor() {
         GenomeVariant variant = new GenomeVariant(new GenomePosition(referenceDictionary, Strand.FWD, 1, 1196), "G", "A");
         final GenomePosition anchor = st.getExons().get(0).getInterval().getGenomeEndPos();
         final double score = scorer.score(anchor, variant, sequenceInterval);
@@ -54,7 +54,7 @@ class CanonicalDonorFeatureCalculatorTest extends CalculatorTestBase {
     }
 
     @Test
-    void snpJustDownstreamFromDonor() {
+    public void snpJustDownstreamFromDonor() {
         GenomeVariant variant = new GenomeVariant(new GenomePosition(referenceDictionary, Strand.FWD, 1, 1206), "a", "c");
         final GenomePosition anchor = st.getExons().get(0).getInterval().getGenomeEndPos();
         final double score = scorer.score(anchor, variant, sequenceInterval);

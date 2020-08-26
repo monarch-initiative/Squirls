@@ -5,10 +5,10 @@ import org.junit.jupiter.api.Test;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 
-class IntronPropertiesTest {
+public class IntronPropertiesTest {
 
     @Test
-    void parsePayload() {
+    public void parsePayload() {
         String payload = "DONOR=8.429;ACCEPTOR=4.541";
         final IntronProperties ip = IntronProperties.parseString(payload);
 

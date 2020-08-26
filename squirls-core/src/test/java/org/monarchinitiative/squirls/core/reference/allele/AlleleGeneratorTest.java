@@ -18,7 +18,7 @@ import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 @SpringBootTest(classes = {TestDataSourceConfig.class})
-class AlleleGeneratorTest {
+public class AlleleGeneratorTest {
 
     private SequenceInterval donorSi;
 
@@ -27,15 +27,15 @@ class AlleleGeneratorTest {
     private GenomePosition anchor;
 
     @Autowired
-    private SplicingParameters splicingParameters;
+    public SplicingParameters splicingParameters;
 
     @Autowired
-    private ReferenceDictionary referenceDictionary;
+    public ReferenceDictionary referenceDictionary;
 
     private AlleleGenerator generator;
 
     @BeforeEach
-    void setUp() {
+    public void setUp() {
         donorSi = SequenceInterval.builder()
                 .interval(new GenomeInterval(referenceDictionary, Strand.FWD, 1, 93, 110))
                 .sequence("CGTGATGgtaggtgaaa")
@@ -53,7 +53,7 @@ class AlleleGeneratorTest {
     // --------------------------      DONOR ALLELE     ---------------------------
 
     @Test
-    void simpleSnp() {
+    public void simpleSnp() {
         final GenomePosition position = new GenomePosition(referenceDictionary, Strand.FWD, 1, 100);
         final GenomeVariant variant = new GenomeVariant(position, "g", "t");
 
@@ -63,7 +63,7 @@ class AlleleGeneratorTest {
     }
 
     @Test
-    void shortDeletion() {
+    public void shortDeletion() {
         final GenomePosition position = new GenomePosition(referenceDictionary, Strand.FWD, 1, 100);
         final GenomeVariant variant = new GenomeVariant(position, "gta", "g");
         // reference is CGTGATGgtaggtgaaa
@@ -72,7 +72,7 @@ class AlleleGeneratorTest {
     }
 
     @Test
-    void shortInsertion() {
+    public void shortInsertion() {
         final GenomePosition position = new GenomePosition(referenceDictionary, Strand.FWD, 1, 100);
         final GenomeVariant variant = new GenomeVariant(position, "g", "gcc");
 
@@ -82,7 +82,7 @@ class AlleleGeneratorTest {
     }
 
     @Test
-    void insertionAcross3PrimeBoundary() {
+    public void insertionAcross3PrimeBoundary() {
         final GenomePosition position = new GenomePosition(referenceDictionary, Strand.FWD, 1, 104);
         final GenomeVariant variant = new GenomeVariant(position, "g", "gcc");
 
@@ -92,7 +92,7 @@ class AlleleGeneratorTest {
     }
 
     @Test
-    void deletionAcross3PrimeBoundary() {
+    public void deletionAcross3PrimeBoundary() {
         final GenomePosition position = new GenomePosition(referenceDictionary, Strand.FWD, 1, 104);
         final GenomeVariant variant = new GenomeVariant(position, "gtg", "g");
 
@@ -102,7 +102,7 @@ class AlleleGeneratorTest {
     }
 
     @Test
-    void deletionOfWholeSite() {
+    public void deletionOfWholeSite() {
         final GenomePosition position = new GenomePosition(referenceDictionary, Strand.FWD, 1, 96);
         final GenomeVariant variant = new GenomeVariant(position, "GATGgtaggt", "G");
 
@@ -112,7 +112,7 @@ class AlleleGeneratorTest {
     }
 
     @Test
-    void deletionSpanningFirstBasesOfDonor() {
+    public void deletionSpanningFirstBasesOfDonor() {
         final GenomePosition position = new GenomePosition(referenceDictionary, Strand.FWD, 1, 94);
         final GenomeVariant variant = new GenomeVariant(position, "GTGAT", "G");
 
@@ -122,7 +122,7 @@ class AlleleGeneratorTest {
     }
 
     @Test
-    void mismatchInContigsForDonor() {
+    public void mismatchInContigsForDonor() {
         final GenomePosition position = new GenomePosition(referenceDictionary, Strand.FWD, 2, 100);
         final GenomeVariant variant = new GenomeVariant(position, "g", "t");
 
@@ -132,21 +132,21 @@ class AlleleGeneratorTest {
     }
 
     @Test
-    void donorRefAllele() {
+    public void donorRefAllele() {
         final String donorSeq = generator.getDonorSiteSnippet(anchor, donorSi);
         // reference is CGTGATGgtaggtgaaa
         assertThat(donorSeq, is("ATGgtaggt"));
     }
 
     @Test
-    void donorRefAlleleIsNullWhenBadInput() {
+    public void donorRefAlleleIsNullWhenBadInput() {
         final String donorSeq = generator.getDonorSiteSnippet(new GenomePosition(referenceDictionary, Strand.FWD, 22, 100), donorSi);
         // reference is CGTGATGgtaggtgaaa
         assertThat(donorSeq, is(nullValue()));
     }
 
     @Test
-    void makeDonorInterval() {
+    public void makeDonorInterval() {
         final GenomeInterval donor = generator.makeDonorInterval(anchor);
         assertThat(donor, is(new GenomeInterval(referenceDictionary, Strand.FWD, 1, 97, 106)));
     }
@@ -155,7 +155,7 @@ class AlleleGeneratorTest {
 
 
     @Test
-    void simpleSnpInAcceptor() {
+    public void simpleSnpInAcceptor() {
         final GenomePosition position = new GenomePosition(referenceDictionary, Strand.FWD, 1, 100);
         final GenomeVariant variant = new GenomeVariant(position, "G", "C");
 
@@ -166,7 +166,7 @@ class AlleleGeneratorTest {
 
 
     @Test
-    void shortDeletionInAcceptor() {
+    public void shortDeletionInAcceptor() {
         final GenomePosition position = new GenomePosition(referenceDictionary, Strand.FWD, 1, 97);
         final GenomeVariant variant = new GenomeVariant(position, "cag", "c");
 
@@ -177,7 +177,7 @@ class AlleleGeneratorTest {
 
 
     @Test
-    void shortInsertionInAcceptor() {
+    public void shortInsertionInAcceptor() {
         final GenomePosition position = new GenomePosition(referenceDictionary, Strand.FWD, 1, 97);
         final GenomeVariant variant = new GenomeVariant(position, "c", "ctt");
 
@@ -188,7 +188,7 @@ class AlleleGeneratorTest {
 
 
     @Test
-    void insertionAcross3PrimeBoundaryInAcceptor() {
+    public void insertionAcross3PrimeBoundaryInAcceptor() {
         final GenomePosition position = new GenomePosition(referenceDictionary, Strand.FWD, 1, 100);
         final GenomeVariant variant = new GenomeVariant(position, "G", "GCC");
 
@@ -199,7 +199,7 @@ class AlleleGeneratorTest {
 
 
     @Test
-    void deletionAcross3PrimeBoundaryInAcceptor() {
+    public void deletionAcross3PrimeBoundaryInAcceptor() {
         final GenomePosition position = new GenomePosition(referenceDictionary, Strand.FWD, 1, 100);
         final GenomeVariant variant = new GenomeVariant(position, "GTGG", "G");
 
@@ -210,7 +210,7 @@ class AlleleGeneratorTest {
 
 
     @Test
-    void deletionOfTheWholeAcceptorSite() {
+    public void deletionOfTheWholeAcceptorSite() {
         final GenomePosition position = new GenomePosition(referenceDictionary, Strand.FWD, 1, 73);
         final GenomeVariant variant = new GenomeVariant(position, "gcaaacactgttccttctctctttcagGT", "g");
 
@@ -221,7 +221,7 @@ class AlleleGeneratorTest {
 
 
     @Test
-    void deletionSpanningFirstBasesOfAcceptor() {
+    public void deletionSpanningFirstBasesOfAcceptor() {
         final GenomePosition position = new GenomePosition(referenceDictionary, Strand.FWD, 1, 73);
         final GenomeVariant variant = new GenomeVariant(position, "gca", "g");
 
@@ -231,7 +231,7 @@ class AlleleGeneratorTest {
     }
 
     @Test
-    void mismatchInContigsForAcceptor() {
+    public void mismatchInContigsForAcceptor() {
         final GenomePosition position = new GenomePosition(referenceDictionary, Strand.FWD, 2, 100);
         final GenomeVariant variant = new GenomeVariant(position, "G", "C");
 
@@ -241,21 +241,21 @@ class AlleleGeneratorTest {
     }
 
     @Test
-    void acceptorRefAllele() {
+    public void acceptorRefAllele() {
         final String acceptorSeq = generator.getAcceptorSiteSnippet(anchor, acceptorSi);
         // reference is atggcaaacactgttccttctctctttcagGTGGCCCTGC
         assertThat(acceptorSeq, is("aaacactgttccttctctctttcagGT"));
     }
 
     @Test
-    void acceptorRefAlleleIsNullWhenBadInput() {
+    public void acceptorRefAlleleIsNullWhenBadInput() {
         final String acceptorSeq = generator.getAcceptorSiteSnippet(new GenomePosition(referenceDictionary, Strand.FWD, 22, 100), acceptorSi);
         // reference is atggcaaacactgttccttctctctttcagGTGGCCCTGC
         assertThat(acceptorSeq, is(nullValue()));
     }
 
     @Test
-    void makeAcceptorInterval() {
+    public void makeAcceptorInterval() {
         final GenomeInterval acceptor = generator.makeAcceptorInterval(anchor);
         assertThat(acceptor, is(new GenomeInterval(referenceDictionary, Strand.FWD, 1, 75, 102)));
     }

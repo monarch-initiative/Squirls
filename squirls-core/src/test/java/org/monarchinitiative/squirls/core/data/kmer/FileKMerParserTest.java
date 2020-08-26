@@ -10,11 +10,11 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasEntry;
 
-class FileKMerParserTest {
+public class FileKMerParserTest {
 
 
     @Test
-    void theFileIsParsed() throws Exception {
+    public void theFileIsParsed() throws Exception {
         final Path path = Paths.get(FileKMerParserTest.class.getResource("good-septamers.tsv").getPath());
         FileKMerParser parser = new FileKMerParser(path);
         final Map<String, Double> septamerMap = parser.getKmerMap();
@@ -23,7 +23,7 @@ class FileKMerParserTest {
     }
 
     @Test
-    void corruptLinesAreIgnored() throws Exception {
+    public void corruptLinesAreIgnored() throws Exception {
         final Path path = Paths.get(FileKMerParserTest.class.getResource("invalid-septamers.tsv").getPath());
         FileKMerParser parser = new FileKMerParser(path);
 
@@ -34,7 +34,7 @@ class FileKMerParserTest {
     }
 
     @Test
-    void hexamersAreParsed() throws Exception {
+    public void hexamersAreParsed() throws Exception {
         final Path path = Paths.get(FileKMerParserTest.class.getResource("hexamer-scores.tsv").getPath());
         FileKMerParser parser = new FileKMerParser(path);
 

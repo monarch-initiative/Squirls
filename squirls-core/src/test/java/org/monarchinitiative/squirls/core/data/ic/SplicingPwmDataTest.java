@@ -10,7 +10,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-class SplicingPwmDataTest {
+public class SplicingPwmDataTest {
 
     private DoubleMatrix donor;
 
@@ -19,14 +19,14 @@ class SplicingPwmDataTest {
     private SplicingParameters parameters;
 
     @BeforeEach
-    void setUp() {
+    public void setUp() {
         donor = PojosForTesting.makeFakeDonorMatrix();
         acceptor = PojosForTesting.makeFakeAcceptorMatrix();
         parameters = PojosForTesting.makeFakeSplicingParameters();
     }
 
     @Test
-    void normalBuild() {
+    public void normalBuild() {
         SplicingPwmData data = SplicingPwmData.builder()
                 .setDonor(donor)
                 .setAcceptor(acceptor)
@@ -38,7 +38,7 @@ class SplicingPwmDataTest {
     }
 
     @Test
-    void failsWhenMissingDonor() {
+    public void failsWhenMissingDonor() {
         assertThrows(NullPointerException.class, () -> SplicingPwmData.builder()
 //                .setDonor(donor)
                 .setAcceptor(acceptor)
@@ -47,7 +47,7 @@ class SplicingPwmDataTest {
     }
 
     @Test
-    void failsWhenMissingAcceptor() {
+    public void failsWhenMissingAcceptor() {
         assertThrows(NullPointerException.class, () -> SplicingPwmData.builder()
                 .setDonor(donor)
 //                .setAcceptor(acceptor)
@@ -56,7 +56,7 @@ class SplicingPwmDataTest {
     }
 
     @Test
-    void failsWhenMissingParameters() {
+    public void failsWhenMissingParameters() {
         assertThrows(NullPointerException.class, () -> SplicingPwmData.builder()
                 .setDonor(donor)
                 .setAcceptor(acceptor)
@@ -65,7 +65,7 @@ class SplicingPwmDataTest {
     }
 
     @Test
-    void shortDonor() {
+    public void shortDonor() {
         assertThrows(IllegalArgumentException.class, () -> SplicingPwmData.builder()
                 .setDonor(new DoubleMatrix())  // donor with 0 columns
                 .setAcceptor(acceptor)
@@ -74,7 +74,7 @@ class SplicingPwmDataTest {
     }
 
     @Test
-    void shortAcceptor() {
+    public void shortAcceptor() {
         assertThrows(IllegalArgumentException.class, () -> SplicingPwmData.builder()
                 .setDonor(donor)
                 .setAcceptor(new DoubleMatrix()) // acceptor with 0 columns

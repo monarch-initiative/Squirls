@@ -11,7 +11,7 @@ import org.monarchinitiative.squirls.core.classifier.transform.prediction.Mutabl
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 
-class LogisticRegressionPredictionTransformerTest {
+public class LogisticRegressionPredictionTransformerTest {
 
     private static final double EPSILON = 5E-6;
 
@@ -21,13 +21,13 @@ class LogisticRegressionPredictionTransformerTest {
     private LogisticRegressionPredictionTransformer transformer;
 
     @BeforeEach
-    void setUp() {
+    public void setUp() {
         transformer = LogisticRegressionPredictionTransformer.getInstance(SLOPE, INTERCEPT);
     }
 
     @ParameterizedTest
     @CsvSource({"0.004012,0.007730", "0.525658,0.905913", "0.004538,0.007785"})
-    void transform(double proba, double expectedProba) {
+    public void transform(double proba, double expectedProba) {
         double threshold = .5;
         double expectedThreshold = 0.871527;
 

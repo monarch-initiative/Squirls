@@ -14,7 +14,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.number.IsCloseTo.closeTo;
 
-class PipelineTest {
+public class PipelineTest {
 
     private static final double EPSILON = 5E-12;
 
@@ -25,7 +25,7 @@ class PipelineTest {
     private Pipeline<Classifiable> pipeline;
 
     @BeforeAll
-    static void beforeAll() throws Exception {
+    public static void beforeAll() throws Exception {
         OverallModelData overallModelData;
         try (InputStream is = PipelineTest.class.getResourceAsStream(TOY_MODEL_PATH)) {
             overallModelData = Deserializer.deserializeOverallModelData(is);
@@ -34,7 +34,7 @@ class PipelineTest {
     }
 
     @BeforeEach
-    void setUp() throws Exception {
+    public void setUp() throws Exception {
         pipeline = Pipeline.builder()
                 .transformer(new SplicingDataImputer<>(donorPipeModel.getFeatureNames(), donorPipeModel.getFeatureStatistics()))
                 .classifier(Deserializer.deserializeDonorClassifier(donorPipeModel.getRf()))
@@ -42,7 +42,7 @@ class PipelineTest {
     }
 
     @Test
-    void predictProba() throws Exception {
+    public void predictProba() throws Exception {
         final double pathoProba = pipeline.predictProba(TestVariantInstances.pathogenicDonor());
         assertThat(pathoProba, is(closeTo(.7873663663768643, EPSILON)));
     }

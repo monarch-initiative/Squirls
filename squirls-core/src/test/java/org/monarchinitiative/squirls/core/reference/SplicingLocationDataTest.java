@@ -5,10 +5,10 @@ import org.junit.jupiter.api.Test;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 
-class SplicingLocationDataTest {
+public class SplicingLocationDataTest {
 
     @Test
-    void boundariesAreNullForOutsidePosition() {
+    public void boundariesAreNullForOutsidePosition() {
         SplicingLocationData data = SplicingLocationData.outside();
         assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.OUTSIDE));
         assertThat(data.getExonIdx(), is(-1));

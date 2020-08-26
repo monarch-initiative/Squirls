@@ -15,14 +15,14 @@ import static org.hamcrest.MatcherAssert.assertThat;
 
 @SpringBootTest(classes = {TestDataSourceConfig.class})
 @Sql(scripts = {"create_pwm_tables.sql", "insert_pwm_data.sql"})
-class DbSplicingPositionalWeightMatrixParserTest {
+public class DbSplicingPositionalWeightMatrixParserTest {
 
     @Autowired
-    private DataSource dataSource;
+    public DataSource dataSource;
 
 
     @Test
-    void donorAcceptorAndSplicingParametersAreParsed() throws Exception {
+    public void donorAcceptorAndSplicingParametersAreParsed() throws Exception {
         DbSplicingPositionalWeightMatrixParser parser = new DbSplicingPositionalWeightMatrixParser(dataSource);
 
         SplicingPwmData data = parser.getSplicingPwmData();

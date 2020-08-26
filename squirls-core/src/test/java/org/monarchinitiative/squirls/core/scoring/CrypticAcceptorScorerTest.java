@@ -10,7 +10,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.closeTo;
 
-class CrypticAcceptorScorerTest extends CalculatorTestBase {
+public class CrypticAcceptorScorerTest extends CalculatorTestBase {
 
     private CrypticAcceptorFeatureCalculator scorer;
 
@@ -22,7 +22,7 @@ class CrypticAcceptorScorerTest extends CalculatorTestBase {
     }
 
     @Test
-    void snpInAcceptor() {
+    public void snpInAcceptor() {
         GenomeVariant variant = new GenomeVariant(new GenomePosition(referenceDictionary, Strand.FWD, 1, 1395), "c", "a");
         final GenomePosition anchor = st.getExons().get(1).getInterval().getGenomeBeginPos();
 
@@ -32,7 +32,7 @@ class CrypticAcceptorScorerTest extends CalculatorTestBase {
     }
 
     @Test
-    void snpDownstreamFromAcceptor() {
+    public void snpDownstreamFromAcceptor() {
         GenomeVariant variant = new GenomeVariant(new GenomePosition(referenceDictionary, Strand.FWD, 1, 1404), "G", "A");
         final GenomePosition anchor = st.getExons().get(1).getInterval().getGenomeBeginPos();
 
@@ -42,7 +42,7 @@ class CrypticAcceptorScorerTest extends CalculatorTestBase {
     }
 
     @Test
-    void snpUpstreamFromAcceptor() {
+    public void snpUpstreamFromAcceptor() {
         GenomeVariant variant = new GenomeVariant(new GenomePosition(referenceDictionary, Strand.FWD, 1, 1374), "c", "g");
         final GenomePosition anchor = st.getExons().get(1).getInterval().getGenomeBeginPos();
 

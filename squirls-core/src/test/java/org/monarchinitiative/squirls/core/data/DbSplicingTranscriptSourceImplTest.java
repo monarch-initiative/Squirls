@@ -26,24 +26,24 @@ import static org.hamcrest.Matchers.hasSize;
 @SpringBootTest(classes = {TestDataSourceConfig.class})
 @Sql(scripts = {"create_refdict_tables.sql", "insert_refdict_data.sql",
         "create_transcripts_tables.sql", "insert_transcripts_data.sql"})
-class DbSplicingTranscriptSourceImplTest {
+public class DbSplicingTranscriptSourceImplTest {
 
 
     @Autowired
-    private DataSource dataSource;
+    public DataSource dataSource;
 
     @Autowired
-    private ReferenceDictionary referenceDictionary;
+    public ReferenceDictionary referenceDictionary;
 
     private DbSplicingTranscriptSource source;
 
     @BeforeEach
-    void setUp() {
+    public void setUp() {
         source = new DbSplicingTranscriptSource(dataSource);
     }
 
     @Test
-    void transcriptsExonsAndIntronsAreDecoded() {
+    public void transcriptsExonsAndIntronsAreDecoded() {
         // we expect to get transcripts `FIRST` and `THIRD` by using these coordinates
         List<SplicingTranscript> transcripts = source.fetchTranscripts("chr1", 1000, 5000, referenceDictionary);
         assertThat(transcripts, hasSize(2));
@@ -90,7 +90,7 @@ class DbSplicingTranscriptSourceImplTest {
     }
 
     @Test
-    void fetchTranscriptByAccession() {
+    public void fetchTranscriptByAccession() {
         final Optional<SplicingTranscript> txOpt = source.fetchTranscriptByAccession("SECOND", referenceDictionary);
         assertThat(txOpt.isPresent(), is(true));
 
@@ -121,13 +121,13 @@ class DbSplicingTranscriptSourceImplTest {
     }
 
     @Test
-    void fetchNonExistingTranscript() {
+    public void fetchNonExistingTranscript() {
         final Optional<SplicingTranscript> txOpt = source.fetchTranscriptByAccession("BLABLA", referenceDictionary);
         assertThat(txOpt.isEmpty(), is(true));
     }
 
     @Test
-    void getTranscriptAccessionIds() {
+    public void getTranscriptAccessionIds() {
         final List<String> ids = source.getTranscriptAccessionIds();
         assertThat(ids, hasSize(3));
         assertThat(ids, hasItems("FIRST", "SECOND", "THIRD"));

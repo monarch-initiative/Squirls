@@ -16,11 +16,11 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.closeTo;
 
-class SeptamerFeatureCalculatorTest extends CalculatorTestBase {
+public class SeptamerFeatureCalculatorTest extends CalculatorTestBase {
 
     @Qualifier("septamerMap")
     @Autowired
-    private Map<String, Double> septamerMap;
+    public Map<String, Double> septamerMap;
 
 
     private SeptamerFeatureCalculator calculator;
@@ -32,7 +32,7 @@ class SeptamerFeatureCalculatorTest extends CalculatorTestBase {
     }
 
     @Test
-    void score() {
+    public void score() {
         GenomeVariant variant = new GenomeVariant(new GenomePosition(referenceDictionary, Strand.FWD, 1, 1201), "t", "g");
         final double score = calculator.score(null, variant, sequenceInterval);
         assertThat(score, is(closeTo(.317399, EPSILON)));
@@ -40,7 +40,7 @@ class SeptamerFeatureCalculatorTest extends CalculatorTestBase {
 
     @ParameterizedTest
     @CsvSource({"AAAAAAA,-0.016", "TTTTTTG,-0.4587", "TTTCACC,0.1455"})
-    void scoreSeptamers(String seq, double expected) {
+    public void scoreSeptamers(String seq, double expected) {
         double s = calculator.scoreSequence(seq);
         assertThat(s, is(closeTo(expected, EPSILON)));
     }
@@ -48,7 +48,7 @@ class SeptamerFeatureCalculatorTest extends CalculatorTestBase {
 
     @ParameterizedTest
     @CsvSource({"CCCCACCTCTTCT,0.2302", "GTTAGGGATGGGA,-1.3347", "TCAGAAGGGCAGA,0.0175"})
-    void scoreSequence(String seq, double expected) {
+    public void scoreSequence(String seq, double expected) {
         double s = calculator.scoreSequence(seq);
         assertThat(s, is(closeTo(expected, EPSILON)));
     }
@@ -58,7 +58,7 @@ class SeptamerFeatureCalculatorTest extends CalculatorTestBase {
      * Both upper and lower cases work for nucleotide notation.
      */
     @Test
-    void upperAndLowerCasesWork() {
+    public void upperAndLowerCasesWork() {
         double s = calculator.scoreSequence("AAAaaaA");
         assertThat(s, is(closeTo(-0.016, EPSILON)));
     }
@@ -68,14 +68,14 @@ class SeptamerFeatureCalculatorTest extends CalculatorTestBase {
      * Minimal length of a sequence to be scored is 7bp.
      */
     @Test
-    void scoreShorterSequence() {
+    public void scoreShorterSequence() {
         double s = calculator.scoreSequence("AAAAAA");
         assertThat(s, is(Double.NaN));
     }
 
 
     @Test
-    void invalidNucleotideCharacterLeadsToNan() {
+    public void invalidNucleotideCharacterLeadsToNan() {
         double s = calculator.scoreSequence("ACGTACGTAAC#TTA");
         assertThat(s, is(Double.NaN));
     }

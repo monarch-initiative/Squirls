@@ -12,17 +12,17 @@ import java.util.Set;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 
-class SplicingDataImputerTest {
+public class SplicingDataImputerTest {
 
     private SplicingDataImputer<MutableFeature> splicingDataImputer;
 
     @BeforeEach
-    void setUp() {
+    public void setUp() {
         splicingDataImputer = new SplicingDataImputer<>(Map.of("a", .5, "b", 1.5));
     }
 
     @Test
-    void transform() throws Exception {
+    public void transform() throws Exception {
         MutableFeature feature = new SimpleMutableFeature(new HashMap<>(Map.of(
                 "a", 1.,
                 "b", Double.NaN,
@@ -33,7 +33,7 @@ class SplicingDataImputerTest {
     }
 
     @Test
-    void getSupportedFeatureNames() {
+    public void getSupportedFeatureNames() {
         assertThat(splicingDataImputer.usedFeatureNames(), hasItems("a", "b"));
     }
 

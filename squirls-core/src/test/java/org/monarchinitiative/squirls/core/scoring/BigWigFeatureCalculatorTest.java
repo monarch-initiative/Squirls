@@ -20,17 +20,17 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.number.IsCloseTo.closeTo;
 import static org.mockito.Mockito.when;
 
-class BigWigFeatureCalculatorTest extends CalculatorTestBase {
+public class BigWigFeatureCalculatorTest extends CalculatorTestBase {
 
 
     @Autowired
     @Qualifier("referenceDictionary")
-    private ReferenceDictionary referenceDictionary;
+    public ReferenceDictionary referenceDictionary;
 
     @Mock
-    private BigWigAccessor accessor;
+    public BigWigAccessor accessor;
 
-    private BigWigFeatureCalculator annotator;
+    public BigWigFeatureCalculator annotator;
 
     @BeforeEach
     public void setUp() throws Exception {
@@ -39,12 +39,12 @@ class BigWigFeatureCalculatorTest extends CalculatorTestBase {
     }
 
     @AfterEach
-    void tearDown() throws Exception {
+    public void tearDown() throws Exception {
         accessor.close();
     }
 
     @Test
-    void annotate() throws Exception {
+    public void annotate() throws Exception {
         // arrange
         GenomeVariant variant = new GenomeVariant(new GenomePosition(referenceDictionary, Strand.FWD, 1, 1201), "t", "g");
         when(accessor.getScores(variant.getGenomeInterval())).thenReturn(List.of(6.03700F));
@@ -57,7 +57,7 @@ class BigWigFeatureCalculatorTest extends CalculatorTestBase {
     }
 
     @Test
-    void annotateDeletion() throws Exception {
+    public void annotateDeletion() throws Exception {
         // arrange
         GenomeVariant variant = new GenomeVariant(new GenomePosition(referenceDictionary, Strand.FWD, 1, 1201), "CTGT", "C");
         when(accessor.getScores(variant.getGenomeInterval())).thenReturn(List.of(.459F, -1.851F, -1.181F));
@@ -74,7 +74,7 @@ class BigWigFeatureCalculatorTest extends CalculatorTestBase {
     }
 
     @Test
-    void annotateVariantWhenDataIsNotAvailable() throws Exception {
+    public void annotateVariantWhenDataIsNotAvailable() throws Exception {
         // arrange
         final GenomePosition pos = new GenomePosition(referenceDictionary, Strand.FWD, 3, 1_000_000, PositionType.ONE_BASED);
         final GenomeVariant variant = new GenomeVariant(pos, "G", "C");

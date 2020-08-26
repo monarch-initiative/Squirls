@@ -9,10 +9,10 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-class InputStreamBasedPositionalWeightMatrixParserTest {
+public class InputStreamBasedPositionalWeightMatrixParserTest {
 
     @Test
-    void parseAllTest() throws Exception {
+    public void parseAllTest() throws Exception {
         SplicingPwmData splicingPwmData;
 
         // test deserialization of the PWMs from YAML file
@@ -29,7 +29,7 @@ class InputStreamBasedPositionalWeightMatrixParserTest {
 
 
     @Test
-    void parseMatrixInYamlWithNoRows() throws Exception {
+    public void parseMatrixInYamlWithNoRows() throws Exception {
         try (InputStream is = InputStreamBasedPositionalWeightMatrixParserTest.class.getResourceAsStream("spliceSitesNoRows.yaml")) {
             assertThrows(IllegalArgumentException.class, () -> new InputStreamBasedPositionalWeightMatrixParser(is));
         }
@@ -37,7 +37,7 @@ class InputStreamBasedPositionalWeightMatrixParserTest {
 
 
     @Test
-    void parseMatrixInYamlWithInvalidRowCount() throws Exception {
+    public void parseMatrixInYamlWithInvalidRowCount() throws Exception {
         try (InputStream is = InputStreamBasedPositionalWeightMatrixParserTest.class.getResourceAsStream("spliceSitesBadRowCount.yaml")) {
             assertThrows(IllegalArgumentException.class, () -> new InputStreamBasedPositionalWeightMatrixParser(is));
 
@@ -46,7 +46,7 @@ class InputStreamBasedPositionalWeightMatrixParserTest {
 
 
     @Test
-    void parseMatrixWhereColumnDoesNotSumToOne() throws Exception {
+    public void parseMatrixWhereColumnDoesNotSumToOne() throws Exception {
         try (InputStream is = InputStreamBasedPositionalWeightMatrixParserTest.class.getResourceAsStream("spliceSitesDoesNotSumTo1.yaml")) {
             assertThrows(IllegalArgumentException.class, () -> new InputStreamBasedPositionalWeightMatrixParser(is));
         }
@@ -54,7 +54,7 @@ class InputStreamBasedPositionalWeightMatrixParserTest {
 
 
     @Test
-    void parseMatrixWhereRowsHaveDifferentSize() throws Exception {
+    public void parseMatrixWhereRowsHaveDifferentSize() throws Exception {
         try (InputStream is = InputStreamBasedPositionalWeightMatrixParserTest.class.getResourceAsStream("spliceSitesRowsWithDifferentSize.yaml")) {
             assertThrows(IllegalArgumentException.class, () -> new InputStreamBasedPositionalWeightMatrixParser(is));
         }

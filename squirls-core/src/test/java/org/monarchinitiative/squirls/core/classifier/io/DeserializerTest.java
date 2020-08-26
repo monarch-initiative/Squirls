@@ -19,13 +19,13 @@ import static org.hamcrest.Matchers.closeTo;
 import static org.hamcrest.Matchers.contains;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-class DeserializerTest extends TestBasedOnIrisInstances {
+public class DeserializerTest extends TestBasedOnIrisInstances {
 
     private static final Path TOY_MODEL_v1 = Paths.get(DeserializerTest.class.getResource("example_model.yaml").getPath());
     private static final Path TOY_MODEL_v1_1 = Paths.get(DeserializerTest.class.getResource("example_model.v1.1.yaml").getPath());
 
     @Test
-    void deserialize() throws Exception {
+    public void deserialize() throws Exception {
         final SquirlsClassifier clf;
         try (InputStream inputStream = Files.newInputStream(TOY_MODEL_v1)) {
             clf = Deserializer.deserialize(inputStream);
@@ -49,7 +49,7 @@ class DeserializerTest extends TestBasedOnIrisInstances {
     }
 
     @Test
-    void deserializeModel_v1_1() throws Exception {
+    public void deserializeModel_v1_1() throws Exception {
         final OverallModelData data;
         try (InputStream is = Files.newInputStream(TOY_MODEL_v1_1)) {
             data = Deserializer.deserializeOverallModelData(is);
@@ -62,7 +62,7 @@ class DeserializerTest extends TestBasedOnIrisInstances {
     }
 
     @Test
-    void deserializeOverallModelData_v1() throws Exception {
+    public void deserializeOverallModelData_v1() throws Exception {
         final OverallModelData data;
         try (InputStream is = Files.newInputStream(TOY_MODEL_v1)) {
             data = Deserializer.deserializeOverallModelData(is);

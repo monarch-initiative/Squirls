@@ -11,7 +11,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.closeTo;
 import static org.hamcrest.Matchers.is;
 
-class SplicingInformationContentCalculatorTest {
+public class SplicingInformationContentCalculatorTest {
 
     private static final double EPSILON = 0.0001;
 
@@ -22,19 +22,19 @@ class SplicingInformationContentCalculatorTest {
     private SplicingInformationContentCalculator instance;
 
     @BeforeAll
-    static void setUpBeforeAll() {
+    public static void setUpBeforeAll() {
         DONOR_MATRIX = PojosForTesting.makeDonorMatrix();
         ACCEPTOR_MATRIX = PojosForTesting.makeAcceptorMatrix();
         SPLICING_PARAMETERS = PojosForTesting.makeSplicingParameters();
     }
 
     @BeforeEach
-    void setUp() {
+    public void setUp() {
         instance = new SplicingInformationContentCalculator(DONOR_MATRIX, ACCEPTOR_MATRIX, SPLICING_PARAMETERS);
     }
 
     @Test
-    void getSpliceDonorScoreTest() {
+    public void getSpliceDonorScoreTest() {
         assertThat(instance.getSpliceDonorScore("CAGgtaggc"), closeTo(8.66411, EPSILON));
         assertThat(instance.getSpliceDonorScore("TCCgtgagt"), closeTo(3.01706, EPSILON));
         assertThat(instance.getSpliceDonorScore("AAAaaaaaa"), closeTo(-13.77075, EPSILON));
@@ -44,7 +44,7 @@ class SplicingInformationContentCalculatorTest {
 
 
     @Test
-    void getSpliceAcceptorScoreTest() {
+    public void getSpliceAcceptorScoreTest() {
         assertThat(instance.getSpliceAcceptorScore("aggtttttttgaaagtctctcgtagAA"), closeTo(5.44088, EPSILON));
         assertThat(instance.getSpliceAcceptorScore("gctcctttcttaacaggctggaaagTT"), closeTo(-3.37936, EPSILON));
         assertThat(instance.getSpliceAcceptorScore("aaaaaaaaaaaaaaaaaaaaaaaaaAA"), closeTo(-25.48958, EPSILON));

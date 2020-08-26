@@ -10,17 +10,17 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.hasSize;
 
-class IdentityTransformerTest {
+public class IdentityTransformerTest {
 
     private IdentityTransformer transformer;
 
     @BeforeEach
-    void setUp() {
+    public void setUp() {
         transformer = IdentityTransformer.getInstance();
     }
 
     @Test
-    void transform() {
+    public void transform() {
         final Prediction prediction = StandardPrediction.builder()
                 .addProbaThresholdPair(.500000000, .123456)
                 .build();
