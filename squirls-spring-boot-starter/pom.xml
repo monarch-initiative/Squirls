@@ -15,15 +15,16 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.yaml</groupId>
+                    <artifactId>snakeyaml</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.monarchinitiative.squirls</groupId>
             <artifactId>squirls-spring-boot-autoconfigure</artifactId>
-            <version>${project.parent.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.monarchinitiative.squirls</groupId>
-            <artifactId>squirls-core</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
     </dependencies>
