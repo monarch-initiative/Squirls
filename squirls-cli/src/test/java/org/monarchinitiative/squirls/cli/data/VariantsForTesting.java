@@ -47,7 +47,7 @@ public class VariantsForTesting {
      * @return evaluation object with all the data
      * @throws Exception bla
      */
-    public static SplicingVariantAlleleEvaluation SURF2Exon3AcceptorMinus2Evaluation(ReferenceDictionary rd, VariantAnnotator annotator) throws Exception {
+    public static SplicingVariantAlleleEvaluation SURF2Exon3AcceptorMinus1Evaluation(ReferenceDictionary rd, VariantAnnotator annotator) throws Exception {
         /*
         Prepare POJOs
          */
