@@ -83,6 +83,34 @@ public class StandardSquirlsClassifier implements SquirlsClassifier {
         return data;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        StandardSquirlsClassifier that = (StandardSquirlsClassifier) o;
+        return Objects.equals(donorClf, that.donorClf) &&
+                Objects.equals(acceptorClf, that.acceptorClf) &&
+                Objects.equals(usedFeatures, that.usedFeatures) &&
+                Objects.equals(donorThreshold, that.donorThreshold) &&
+                Objects.equals(acceptorThreshold, that.acceptorThreshold);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(donorClf, acceptorClf, usedFeatures, donorThreshold, acceptorThreshold);
+    }
+
+    @Override
+    public String toString() {
+        return "StandardSquirlsClassifier{" +
+                "donorClf=" + donorClf +
+                ", acceptorClf=" + acceptorClf +
+                ", usedFeatures=" + usedFeatures +
+                ", donorThreshold=" + donorThreshold +
+                ", acceptorThreshold=" + acceptorThreshold +
+                '}';
+    }
+
     public static final class Builder {
         private BinaryClassifier<Classifiable> donorClf;
         private BinaryClassifier<Classifiable> acceptorClf;

@@ -8,6 +8,8 @@ import org.slf4j.LoggerFactory;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 /**
@@ -199,6 +201,42 @@ public abstract class AbstractBinaryDecisionTree<T extends Classifiable> extends
      * @return map with mappings from feature matrix id to feature name
      */
     protected abstract Map<Integer, String> getFeatureIndices();
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        AbstractBinaryDecisionTree<?> that = (AbstractBinaryDecisionTree<?>) o;
+        return nNodes == that.nNodes &&
+                Arrays.equals(features, that.features) &&
+                Arrays.equals(thresholds, that.thresholds) &&
+                Arrays.equals(childrenLeft, that.childrenLeft) &&
+                Arrays.equals(childrenRight, that.childrenRight) &&
+                Arrays.equals(classCounts, that.classCounts);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = Objects.hash(nNodes);
+        result = 31 * result + Arrays.hashCode(features);
+        result = 31 * result + Arrays.hashCode(thresholds);
+        result = 31 * result + Arrays.hashCode(childrenLeft);
+        result = 31 * result + Arrays.hashCode(childrenRight);
+        result = 31 * result + Arrays.hashCode(classCounts);
+        return result;
+    }
+
+    @Override
+    public String toString() {
+        return "AbstractBinaryDecisionTree{" +
+                "nNodes=" + nNodes +
+                ", features=" + Arrays.toString(features) +
+                ", thresholds=" + Arrays.toString(thresholds) +
+                ", childrenLeft=" + Arrays.toString(childrenLeft) +
+                ", childrenRight=" + Arrays.toString(childrenRight) +
+                ", classCounts=" + Arrays.stream(classCounts).map(Arrays::toString).collect(Collectors.joining(",")) +
+                "} " + super.toString();
+    }
 
     public abstract static class Builder<A extends Builder<A>> extends AbstractBinaryClassifier.Builder<A> {
 

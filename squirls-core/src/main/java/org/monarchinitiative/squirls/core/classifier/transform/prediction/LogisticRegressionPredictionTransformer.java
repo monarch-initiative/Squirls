@@ -3,6 +3,8 @@ package org.monarchinitiative.squirls.core.classifier.transform.prediction;
 import org.monarchinitiative.squirls.core.Prediction;
 import org.monarchinitiative.squirls.core.classifier.StandardPrediction;
 
+import java.util.Objects;
+
 /**
  * This class transforms pathogenicity probabilities using logistic regression parameters.
  */
@@ -59,5 +61,27 @@ public class LogisticRegressionPredictionTransformer implements PredictionTransf
         data.setPrediction(builder.build());
 
         return data;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        LogisticRegressionPredictionTransformer that = (LogisticRegressionPredictionTransformer) o;
+        return Double.compare(that.slope, slope) == 0 &&
+                Double.compare(that.intercept, intercept) == 0;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(slope, intercept);
+    }
+
+    @Override
+    public String toString() {
+        return "LogisticRegressionPredictionTransformer{" +
+                "slope=" + slope +
+                ", intercept=" + intercept +
+                '}';
     }
 }

@@ -2,6 +2,7 @@ package org.monarchinitiative.squirls.core.classifier;
 
 import org.monarchinitiative.squirls.core.classifier.transform.feature.FeatureTransformer;
 
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -35,6 +36,28 @@ public class Pipeline<T extends Classifiable> implements BinaryClassifier<T> {
     public double predictProba(T instance) throws PredictionException {
         final T transformed = this.transformer.transform(instance);
         return classifier.predictProba(transformed);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Pipeline<?> pipeline = (Pipeline<?>) o;
+        return Objects.equals(transformer, pipeline.transformer) &&
+                Objects.equals(classifier, pipeline.classifier);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(transformer, classifier);
+    }
+
+    @Override
+    public String toString() {
+        return "Pipeline{" +
+                "transformer=" + transformer +
+                ", classifier=" + classifier +
+                '}';
     }
 
     public static final class Builder<T extends Classifiable> {

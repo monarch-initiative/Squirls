@@ -6,10 +6,7 @@ import org.monarchinitiative.squirls.core.classifier.tree.AbstractBinaryDecision
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -72,6 +69,27 @@ public class RandomForest<T extends Classifiable> extends AbstractBinaryClassifi
                 .average()
                 // this should not happen since we check for that in the constructor
                 .orElseThrow(() -> new RuntimeException("Hoops, there is no tree in the forest!"));
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        if (!super.equals(o)) return false;
+        RandomForest<?> that = (RandomForest<?>) o;
+        return Objects.equals(trees, that.trees);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), trees);
+    }
+
+    @Override
+    public String toString() {
+        return "RandomForest{" +
+                "trees=" + trees +
+                "} " + super.toString();
     }
 
     public static class Builder<A extends Classifiable> extends AbstractBinaryClassifier.Builder<Builder<A>> {

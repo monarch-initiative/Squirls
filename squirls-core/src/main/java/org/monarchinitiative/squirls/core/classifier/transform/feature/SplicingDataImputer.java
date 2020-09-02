@@ -4,10 +4,7 @@ import org.monarchinitiative.squirls.core.classifier.PredictionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class SplicingDataImputer<T extends MutableFeature> implements FeatureTransformer<T> {
@@ -53,5 +50,25 @@ public class SplicingDataImputer<T extends MutableFeature> implements FeatureTra
         }
 
         return fd;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        SplicingDataImputer<?> that = (SplicingDataImputer<?>) o;
+        return Objects.equals(medianMap, that.medianMap);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(medianMap);
+    }
+
+    @Override
+    public String toString() {
+        return "SplicingDataImputer{" +
+                "medianMap=" + medianMap +
+                '}';
     }
 }

@@ -65,6 +65,26 @@ public abstract class AbstractBinaryClassifier<T extends Classifiable> implement
         }
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        AbstractBinaryClassifier<?> that = (AbstractBinaryClassifier<?>) o;
+        return Arrays.equals(classes, that.classes);
+    }
+
+    @Override
+    public int hashCode() {
+        return Arrays.hashCode(classes);
+    }
+
+    @Override
+    public String toString() {
+        return "AbstractBinaryClassifier{" +
+                "classes=" + Arrays.toString(classes) +
+                '}';
+    }
+
     public abstract static class Builder<A extends Builder<A>> {
 
         private final List<Integer> classes = new ArrayList<>();
