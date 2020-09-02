@@ -53,6 +53,13 @@ public abstract class BaseKmer implements FeatureCalculator {
         double alt = scoreSequence(paddedAltAllele);
         // subtract total alt from total ref
         // the score should be high if the alt allele abolishes ESE element in ref allele
-        return ref - alt;
+        // return ref - alt;
+
+        /*
+        NOTE - the way how k-mer based features are computed changed after training the best model. This led to bugs
+        and inconsistencies between Python and Java Squirls implementations.
+        To maintain compatibility, we roll back to the original k-mer score calculation as `alt - ref`.
+         */
+        return alt - ref;
     }
 }

@@ -86,8 +86,8 @@ class DenseSplicingAnnotatorTest {
         assertThat(ann.getFeature("cryptic_acceptor", Double.class), is(closeTo(-8.1159, EPSILON)));
         assertThat(ann.getFeature("canonical_acceptor", Double.class), is(closeTo(0., EPSILON)));
 
-        assertThat(ann.getFeature("hexamer", Double.class), is(closeTo(1.306309, EPSILON)));
-        assertThat(ann.getFeature("septamer", Double.class), is(closeTo(.339600, EPSILON)));
+        assertThat(ann.getFeature("hexamer", Double.class), is(closeTo(-1.306309, EPSILON)));
+        assertThat(ann.getFeature("septamer", Double.class), is(closeTo(-.339600, EPSILON)));
 
         assertThat(ann.getFeature("phylop", Double.class), is(closeTo(.12345, EPSILON)));
     }

@@ -87,8 +87,8 @@ class RichSplicingAnnotatorTest {
         assertThat(ann.getFeature("canonical_acceptor", Double.class), is(closeTo(0., EPSILON)));
         assertThat(ann.getFeature("acceptor_offset", Double.class), is(closeTo(200., EPSILON)));
 
-        assertThat(ann.getFeature("hexamer", Double.class), is(closeTo(1.306309, EPSILON)));
-        assertThat(ann.getFeature("septamer", Double.class), is(closeTo(.339600, EPSILON)));
+        assertThat(ann.getFeature("hexamer", Double.class), is(closeTo(-1.306309, EPSILON)));
+        assertThat(ann.getFeature("septamer", Double.class), is(closeTo(-.339600, EPSILON)));
         assertThat(ann.getFeature("phylop", Double.class), is(closeTo(.12345, EPSILON)));
 
         assertThat(ann.getFeature("wt_ri_donor", Double.class), is(closeTo(2.8938, EPSILON)));
