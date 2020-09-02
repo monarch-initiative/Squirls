@@ -15,7 +15,11 @@ class LogisticRegressionPredictionTransformerTest {
 
     private static final double EPSILON = 5E-6;
 
+    /*
+     * Slope and intercept are real values from v1.1 classifier.
+     */
     private static final double SLOPE = 13.64842177;
+
     private static final double INTERCEPT = -4.90967636;
 
     private LogisticRegressionPredictionTransformer transformer;
@@ -25,9 +29,18 @@ class LogisticRegressionPredictionTransformerTest {
         transformer = LogisticRegressionPredictionTransformer.getInstance(SLOPE, INTERCEPT);
     }
 
+    /**
+     * Validate that {@link LogisticRegressionPredictionTransformer} predicts the same values as scikit-learn's
+     * LogisticRegression classifier with the same slope and intercept.
+     */
     @ParameterizedTest
-    @CsvSource({"0.004012,0.007730", "0.525658,0.905913", "0.004538,0.007785"})
-    void transform(double proba, double expectedProba) {
+    @CsvSource({
+            "0.,.00732088",
+            ".3,.30679419",
+            ".5,.87152772",
+            ".7,.99047457",
+            "1.,.99983977"})
+    void transformSpan(double proba, double expectedProba) {
         double threshold = .5;
         double expectedThreshold = 0.871527;
 

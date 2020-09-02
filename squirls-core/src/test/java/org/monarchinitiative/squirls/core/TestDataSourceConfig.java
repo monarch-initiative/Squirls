@@ -4,6 +4,10 @@ import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import de.charite.compbio.jannovar.data.ReferenceDictionary;
 import de.charite.compbio.jannovar.data.ReferenceDictionaryBuilder;
+import org.monarchinitiative.squirls.core.classifier.SquirlsClassifier;
+import org.monarchinitiative.squirls.core.classifier.io.Deserializer;
+import org.monarchinitiative.squirls.core.classifier.transform.prediction.LogisticRegressionPredictionTransformer;
+import org.monarchinitiative.squirls.core.classifier.transform.prediction.PredictionTransformer;
 import org.monarchinitiative.squirls.core.data.ic.InputStreamBasedPositionalWeightMatrixParser;
 import org.monarchinitiative.squirls.core.data.ic.SplicingPositionalWeightMatrixParser;
 import org.monarchinitiative.squirls.core.data.ic.SplicingPwmData;
@@ -35,6 +39,11 @@ import java.util.Map;
 public class TestDataSourceConfig {
 
     /**
+     * Path to real-life Squirls v1.1 YAML model.
+     */
+    private static final String SQUIRLS_MODEL_PATH = "classifier/io/example_model.v1.1.yaml";
+
+    /**
      * @return in-memory database for testing
      */
     @Bean
@@ -46,6 +55,26 @@ public class TestDataSourceConfig {
         config.setJdbcUrl(jdbcUrl);
 
         return new HikariDataSource(config);
+    }
+
+    /**
+     * Real life {@link SquirlsClassifier} for model v1.1.
+     */
+    @Bean
+    public SquirlsClassifier squirlsClassifier() throws IOException {
+        try (InputStream is = TestDataSourceConfig.class.getResourceAsStream(SQUIRLS_MODEL_PATH)) {
+            return Deserializer.deserialize(is);
+        }
+    }
+
+    /**
+     * Real life logistic regression {@link PredictionTransformer} for model v1.1.
+     */
+    @Bean
+    public PredictionTransformer predictionTransformer() {
+        final double slope = 13.648422;
+        final double intercept = -4.909676;
+        return LogisticRegressionPredictionTransformer.getInstance(slope, intercept);
     }
 
     @Bean

@@ -30,10 +30,12 @@ public class LogisticRegressionPredictionTransformer implements PredictionTransf
     static double transform(double x, double slope, double intercept) {
         // apply the logistic regression transformation
         final double exp = Math.exp(-(slope * x + intercept));
-        double score = 1 / (1 + exp);
 
-        // make sure we stay between 0.0 and 1.0
-        return Math.max(0., Math.min(1., score));
+        // this check should not be necessary
+        //   double score = 1 / (1 + exp);
+        //   return Math.max(0., Math.min(1., score));
+
+        return 1 / (1 + exp);
     }
 
     public double getSlope() {
