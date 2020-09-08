@@ -47,7 +47,7 @@ The command generates an empty configuration file in YAML format. Open the file 
 Annotate VCF file by running:
 
 ```bash
-java -jar squirls-cli/target/squirls-cli-1.3.0-SNAPSHOT.jar run -c config.yml annotate-vcf 
+java -jar squirls-cli/target/squirls-cli-1.3.0-RC2.jar run -c config.yml annotate-vcf 
 --threshold 0.5
 example.vcf example.annotated.vcf
 ```
@@ -56,6 +56,20 @@ At the moment, the annotation adds 2 INFO fields:
 - `SQUIRLS` - variant is pathogenic if the flag is present. The flag is added if pathogenicity is above the given `--threshold` (`0.2` by default) 
 - `SQUIRLS_SCORE` - pathogenicity score for alternate allele with respect to transcript, e.g. `T|NM_123456=0.9|NM_987654=0.1`   
 
+### Create HTML report for variants in VCF file
+
+This command computes SQUIRLS pathogenicity scores for each variant in a given VCF file and creates 
+an HTML file with graphics. The HTML file is stored next to the input VCF file.
+
+We perform functional annotation of variants with respect to transcripts as a part of this command. 
+This is implemented by Jannovar, therefore, the command requires path to Jannovar transcript cache.  
+
+```bash
+java -jar squirls-cli/target/squirls-cli-1.3.0-RC2.jar run -c config.yml analyze-vcf -d path/to/jannovar/cache.ser path/to/example.vcf
+```  
+
+> **Note:** to see all types of the generated graphics, run the `analyze-vcf` command on the VCF file located at
+> `squirls-cli/src/examples/example.vcf`
 
 ## Build resource files for supported genome assemblies
 

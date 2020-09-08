@@ -38,7 +38,7 @@ public class SimpleSplicingVariantGraphicsGenerator implements SplicingVariantGr
     private static final String EMPTY_SVG_IMAGE = "<svg width=\"100\" height=\"5\" xmlns=\"http://www.w3.org/2000/svg\"></svg>";
 
     /**
-     * Field used to ensure that we log a missing feature only once
+     * Field used to ensure that we log a missing feature only once.
      */
     private static final AtomicBoolean LOGGED_MISSING_FEATURE = new AtomicBoolean();
 
@@ -132,6 +132,58 @@ public class SimpleSplicingVariantGraphicsGenerator implements SplicingVariantGr
         return EMPTY_SVG_IMAGE;
     }
 
+    /**
+     * Assemble SVG & HTML code into a single HTML string consisting of title and SVG graphics.
+     *
+     * @param title     title label
+     * @param primary   SVG string with primary graphics
+     * @param secondary SVG string with secondary graphics
+     * @return result HTML string
+     */
+    private static String makeCrypticContextGraphics(String title, String primary, String secondary) {
+        final StringBuilder graphics = new StringBuilder();
+        // add title
+        graphics.append("<div class=\"graphics-container\">")
+                .append("<div class=\"graphics-title\">").append(title).append("</div>")
+                .append("<div class=\"graphics-content\">");
+
+        // primary graphics
+        graphics.append("<div class=\"graphics-subcontent\">")
+                .append(primary)
+                .append("</div>");
+
+        // secondary graphics
+        graphics.append("<div class=\"graphics-subcontent\">")
+                .append(secondary)
+                .append("</div>");
+
+        // close tags
+        return graphics.append("</div>") // graphics-content
+                .append("</div>") // graphics-container
+                .toString();
+    }
+
+    /**
+     * Generate graphics for variants affecting canonical donor.
+     * <p>
+     * We show:
+     * <ol>
+     *     <li>primary graphics:
+     *     <ul>
+     *         <li>sequence ruler</li>
+     *         <li>sequence trekker</li>
+     *     </ul>
+     *     </li>
+     *     <li>secondary graphics:
+     *     <ul>
+     *          <li>position of variant delta Ri in the Ri distribution</li>
+     *     </ul>
+     *     </li>
+     * </ol>
+     *
+     * @param predictionData data to generate the graphics for
+     * @return String with content in HTML format containing SVG with graphics
+     */
     private String makeCanonicalDonorContextGraphics(SplicingPredictionData predictionData) {
         final VisualizationContext context = VisualizationContext.CANONICAL_DONOR;
 
@@ -148,10 +200,29 @@ public class SimpleSplicingVariantGraphicsGenerator implements SplicingVariantGr
                 final String refAllele = alleleGenerator.getDonorSiteSnippet(donorAnchor, sequence);
                 if (refAllele != null) {
                     final String altAllele = alleleGenerator.getDonorSiteWithAltAllele(donorAnchor, variant, sequence);
-                    return assembleFigures(context,
-                            vmvtGenerator.getDonorSequenceRuler(refAllele, altAllele),
-                            vmvtGenerator.getDonorTrekkerSvg(refAllele, altAllele),
-                            vmvtGenerator.getDonorDistributionSvg(refAllele, altAllele));
+
+                    final StringBuilder graphics = new StringBuilder();
+                    // add title
+                    graphics.append("<div class=\"graphics-container\">")
+                            .append("<div class=\"graphics-title\">").append(context.getTitle()).append("</div>")
+                            .append("<div class=\"graphics-content\">");
+
+                    // primary - add ruler and trekker
+                    graphics.append("<div class=\"graphics-subcontent\">")
+                            .append(vmvtGenerator.getDonorSequenceRuler(refAllele, altAllele))
+                            .append(vmvtGenerator.getDonorTrekkerSvg(refAllele, altAllele))
+                            .append("</div>");
+
+                    // secondary - add distribution
+                    graphics.append("<div class=\"graphics-subcontent\">")
+                            .append(vmvtGenerator.getDonorDistributionSvg(refAllele, altAllele))
+                            .append("</div>");
+
+                    // close tags
+                    return graphics.append("</div>") // graphics-content
+                            .append("</div>") // graphics-container
+                            .toString();
+
                 } else {
                     // we cannot set the primary graphics here
                     LOGGER.debug("Unable to get sequence for the canonical donor site `{}` for variant `{}`",
@@ -162,6 +233,27 @@ public class SimpleSplicingVariantGraphicsGenerator implements SplicingVariantGr
         return EMPTY_SVG_IMAGE;
     }
 
+    /**
+     * Generate graphics for variants affecting canonical acceptor.
+     * <p>
+     * We show:
+     * <ol>
+     *     <li>primary graphics:
+     *     <ul>
+     *         <li>sequence ruler</li>
+     *         <li>sequence trekker</li>
+     *     </ul>
+     *     </li>
+     *     <li>secondary graphics:
+     *     <ul>
+     *          <li>position of variant delta Ri in the Ri distribution</li>
+     *     </ul>
+     *     </li>
+     * </ol>
+     *
+     * @param predictionData data to generate the graphics for
+     * @return String with content in HTML format containing SVG with graphics
+     */
     private String makeCanonicalAcceptorContextGraphics(SplicingPredictionData predictionData) {
         final VisualizationContext context = VisualizationContext.CANONICAL_ACCEPTOR;
         final GenomeVariant variant = predictionData.getVariant();
@@ -176,10 +268,28 @@ public class SimpleSplicingVariantGraphicsGenerator implements SplicingVariantGr
                 final String refAllele = alleleGenerator.getAcceptorSiteSnippet(acceptorAnchor, sequence);
                 if (refAllele != null) {
                     final String altAllele = alleleGenerator.getAcceptorSiteWithAltAllele(acceptorAnchor, variant, sequence);
-                    return assembleFigures(context,
-                            vmvtGenerator.getAcceptorSequenceRuler(refAllele, altAllele),
-                            vmvtGenerator.getAcceptorTrekkerSvg(refAllele, altAllele),
-                            vmvtGenerator.getAcceptorDistributionSvg(refAllele, altAllele));
+
+                    final StringBuilder graphics = new StringBuilder();
+                    // add title
+                    graphics.append("<div class=\"graphics-container\">")
+                            .append("<div class=\"graphics-title\">").append(context.getTitle()).append("</div>")
+                            .append("<div class=\"graphics-content\">");
+
+                    // primary - add ruler and trekker
+                    graphics.append("<div class=\"graphics-subcontent\">")
+                            .append(vmvtGenerator.getAcceptorSequenceRuler(refAllele, altAllele))
+                            .append(vmvtGenerator.getAcceptorTrekkerSvg(refAllele, altAllele))
+                            .append("</div>");
+
+                    // secondary - add distribution
+                    graphics.append("<div class=\"graphics-subcontent\">")
+                            .append(vmvtGenerator.getAcceptorDistributionSvg(refAllele, altAllele))
+                            .append("</div>");
+
+                    // close tags
+                    return graphics.append("</div>") // graphics-content
+                            .append("</div>") // graphics-container
+                            .toString();
                 } else {
                     // we cannot set the primary graphics here
                     LOGGER.debug("Unable to get sequence for the canonical acceptor site `{}` for variant `{}`",
@@ -190,6 +300,27 @@ public class SimpleSplicingVariantGraphicsGenerator implements SplicingVariantGr
         return EMPTY_SVG_IMAGE;
     }
 
+    /**
+     * Generate graphics for variants leading to creation of a cryptic donor site.
+     * <p>
+     * We show:
+     * <ol>
+     *     <li>primary graphics:
+     *     <ul>
+     *         <li>sequence ruler</li>
+     *         <li>sequence trekker</li>
+     *     </ul>
+     *     </li>
+     *     <li>secondary graphics:
+     *     <ul>
+     *         <li>sequence walker of canonical alt sequence vs. sequence walker of cryptic alt sequence</li>
+     *     </ul>
+     *     </li>
+     * </ol>
+     *
+     * @param predictionData data to generate the graphics for
+     * @return String with content in HTML format containing SVG with graphics
+     */
     private String makeCrypticDonorContextGraphics(SplicingPredictionData predictionData) {
         final VisualizationContext context = VisualizationContext.CRYPTIC_DONOR;
 
@@ -227,18 +358,39 @@ public class SimpleSplicingVariantGraphicsGenerator implements SplicingVariantGr
         } else {
             // there is no anchor, this happens in single-exon transcripts
             if (!predictionData.getTranscript().getIntrons().isEmpty()) {
-                // however, complain if this is not single-exon transcript!
+                // however, complain if this is not a single-exon transcript!
                 LOGGER.warn("Did not find donor site in metadata while but the transcript has {} intron(s)",
                         predictionData.getTranscript().getIntrons().size());
             }
-            walkers = null;
+            walkers = EMPTY_SVG_IMAGE;
         }
 
-        return assembleFigures(context, trekker, walkers);
+        return makeCrypticContextGraphics(context.getTitle(), trekker, walkers);
     }
 
+    /**
+     * Generate graphics for variants leading to creation of a cryptic acceptor site.
+     * <p>
+     * We show:
+     * <ol>
+     *     <li>primary graphics:
+     *     <ul>
+     *         <li>sequence ruler</li>
+     *         <li>sequence trekker</li>
+     *     </ul>
+     *     </li>
+     *     <li>secondary graphics:
+     *     <ul>
+     *         <li>sequence walker of canonical alt sequence vs. sequence walker of cryptic alt sequence</li>
+     *     </ul>
+     *     </li>
+     * </ol>
+     *
+     * @param predictionData data to generate the graphics for
+     * @return String with content in HTML format containing SVG with graphics
+     */
     private String makeCrypticAcceptorContextGraphics(SplicingPredictionData predictionData) {
-        final VisualizationContext context = VisualizationContext.CRYPTIC_DONOR;
+        final VisualizationContext context = VisualizationContext.CRYPTIC_ACCEPTOR;
 
         final SequenceInterval sequence = predictionData.getSequence();
         final GenomeVariant variant = predictionData.getVariant();
@@ -281,9 +433,10 @@ public class SimpleSplicingVariantGraphicsGenerator implements SplicingVariantGr
             walkers = null;
         }
 
-        return assembleFigures(context, trekker, walkers);
+        return makeCrypticContextGraphics(context.getTitle(), trekker, walkers);
     }
 
+    @Deprecated // this is not being used anymore
     private String makeSreContextGraphics(SplicingPredictionData predictionData) {
         final VisualizationContext context = VisualizationContext.SRE;
 

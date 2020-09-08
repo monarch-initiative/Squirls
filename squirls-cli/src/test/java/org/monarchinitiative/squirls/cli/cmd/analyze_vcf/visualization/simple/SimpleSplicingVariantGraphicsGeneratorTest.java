@@ -37,7 +37,7 @@ class SimpleSplicingVariantGraphicsGeneratorTest {
         final String graphics = generator.generateGraphics(evaluation);
 
         // TODO: 9. 6. 2020 add tests
-//        System.out.println(graphics);
+        System.out.println(graphics);
     }
 
     @Test
