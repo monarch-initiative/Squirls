@@ -21,4 +21,9 @@ public class IdentityTransformer implements PredictionTransformer {
     public <T extends MutablePrediction> T transform(T data) {
         return data;
     }
+
+    @Override
+    public String toString() {
+        return "IdentityTransformer{}";
+    }
 }

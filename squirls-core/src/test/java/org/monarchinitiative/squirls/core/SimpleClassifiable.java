@@ -4,6 +4,7 @@ import org.monarchinitiative.squirls.core.classifier.Classifiable;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 public class SimpleClassifiable implements Classifiable {
@@ -38,6 +39,28 @@ public class SimpleClassifiable implements Classifiable {
     @Override
     public void setPrediction(Prediction prediction) {
         this.prediction = prediction;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        SimpleClassifiable that = (SimpleClassifiable) o;
+        return Objects.equals(featureMap, that.featureMap) &&
+                Objects.equals(prediction, that.prediction);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(featureMap, prediction);
+    }
+
+    @Override
+    public String toString() {
+        return "SimpleClassifiable{" +
+                "featureMap=" + featureMap +
+                ", prediction=" + prediction +
+                '}';
     }
 }
 

@@ -3,6 +3,8 @@ package org.monarchinitiative.squirls.core.classifier.transform.prediction;
 import org.monarchinitiative.squirls.core.Prediction;
 import org.monarchinitiative.squirls.core.classifier.StandardPrediction;
 
+import java.util.Objects;
+
 /**
  * This class transforms pathogenicity probabilities using logistic regression parameters.
  */
@@ -30,10 +32,12 @@ public class LogisticRegressionPredictionTransformer implements PredictionTransf
     static double transform(double x, double slope, double intercept) {
         // apply the logistic regression transformation
         final double exp = Math.exp(-(slope * x + intercept));
-        double score = 1 / (1 + exp);
 
-        // make sure we stay between 0.0 and 1.0
-        return Math.max(0., Math.min(1., score));
+        // this check should not be necessary
+        //   double score = 1 / (1 + exp);
+        //   return Math.max(0., Math.min(1., score));
+
+        return 1 / (1 + exp);
     }
 
     public double getSlope() {
@@ -57,5 +61,27 @@ public class LogisticRegressionPredictionTransformer implements PredictionTransf
         data.setPrediction(builder.build());
 
         return data;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        LogisticRegressionPredictionTransformer that = (LogisticRegressionPredictionTransformer) o;
+        return Double.compare(that.slope, slope) == 0 &&
+                Double.compare(that.intercept, intercept) == 0;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(slope, intercept);
+    }
+
+    @Override
+    public String toString() {
+        return "LogisticRegressionPredictionTransformer{" +
+                "slope=" + slope +
+                ", intercept=" + intercept +
+                '}';
     }
 }

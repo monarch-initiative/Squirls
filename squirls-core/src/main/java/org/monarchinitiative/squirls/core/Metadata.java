@@ -1,6 +1,6 @@
 package org.monarchinitiative.squirls.core;
 
-import de.charite.compbio.jannovar.reference.GenomeInterval;
+import de.charite.compbio.jannovar.reference.GenomePosition;
 import org.monarchinitiative.squirls.core.model.SplicingTranscript;
 
 import java.util.HashMap;
@@ -27,17 +27,21 @@ public class Metadata {
     private static final Metadata EMPTY = new Metadata();
 
     /**
-     * Coordinates of the donor sites closest to given variant.
+     * Map with transcript accession ID to coordinates of the donor site closest to the variant.
+     * <p>
+     * The coordinate represents the 1-based position of the first intronic base. In 0-based coordinate system,
+     * the coordinate represents the exon|intron boundary.
      */
-    private final Map<String, GenomeInterval> donorCoordinateMap;
+    private final Map<String, GenomePosition> donorCoordinateMap;
+
     /**
-     * Coordinates of the donor sites closest to given variant.
+     * Map with transcript accession ID to coordinates of the acceptor site closest to the variant.
+     * <p>
+     * The coordinate represents the 1-based position of the first exonic base. In 0-based coordinate system,
+     * the coordinate represents the intron|exon boundary.
      */
-    private final Map<String, GenomeInterval> acceptorCoordinateMap;
-    /**
-     * Mean PhyloP score of the region spanned by the <em>REF</em> variant allele.
-     */
-    private final Double meanPhyloPConservation;
+    private final Map<String, GenomePosition> acceptorCoordinateMap;
+
 
     /**
      * Special private constructor for creating {@link #EMPTY} singleton instance.
@@ -45,13 +49,11 @@ public class Metadata {
     private Metadata() {
         donorCoordinateMap = Map.of();
         acceptorCoordinateMap = Map.of();
-        meanPhyloPConservation = Double.NaN;
     }
 
     private Metadata(Builder builder) {
         donorCoordinateMap = Map.copyOf(builder.donorCoordinateMap);
         acceptorCoordinateMap = Map.copyOf(builder.acceptorCoordinateMap);
-        meanPhyloPConservation = builder.meanPhyloPScore;
     }
 
     public static Metadata empty() {
@@ -63,15 +65,11 @@ public class Metadata {
     }
 
 
-    public Double getMeanPhyloPConservation() {
-        return meanPhyloPConservation;
-    }
-
-    public Map<String, GenomeInterval> getDonorCoordinateMap() {
+    public Map<String, GenomePosition> getDonorCoordinateMap() {
         return donorCoordinateMap;
     }
 
-    public Map<String, GenomeInterval> getAcceptorCoordinateMap() {
+    public Map<String, GenomePosition> getAcceptorCoordinateMap() {
         return acceptorCoordinateMap;
     }
 
@@ -88,46 +86,39 @@ public class Metadata {
         if (o == null || getClass() != o.getClass()) return false;
         Metadata metadata = (Metadata) o;
         return Objects.equals(donorCoordinateMap, metadata.donorCoordinateMap) &&
-                Objects.equals(acceptorCoordinateMap, metadata.acceptorCoordinateMap) &&
-                Objects.equals(meanPhyloPConservation, metadata.meanPhyloPConservation);
+                Objects.equals(acceptorCoordinateMap, metadata.acceptorCoordinateMap);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(donorCoordinateMap, acceptorCoordinateMap, meanPhyloPConservation);
+        return Objects.hash(donorCoordinateMap, acceptorCoordinateMap);
     }
 
     public static final class Builder {
-        private final Map<String, GenomeInterval> donorCoordinateMap = new HashMap<>();
-        private final Map<String, GenomeInterval> acceptorCoordinateMap = new HashMap<>();
-        private Double meanPhyloPScore = Double.NaN;
+        private final Map<String, GenomePosition> donorCoordinateMap = new HashMap<>();
+        private final Map<String, GenomePosition> acceptorCoordinateMap = new HashMap<>();
 
         private Builder() {
         }
 
 
-        public Builder putDonorCoordinate(String txAccession, GenomeInterval donorInterval) {
-            this.donorCoordinateMap.put(txAccession, donorInterval);
+        public Builder putDonorCoordinate(String txAccession, GenomePosition donorPosition) {
+            this.donorCoordinateMap.put(txAccession, donorPosition);
             return this;
         }
 
-        public Builder putAllDonorCoordinates(Map<String, GenomeInterval> donorCoordinateMap) {
+        public Builder putAllDonorCoordinates(Map<String, GenomePosition> donorCoordinateMap) {
             this.donorCoordinateMap.putAll(donorCoordinateMap);
             return this;
         }
 
-        public Builder putAcceptorCoordinate(String txAccession, GenomeInterval acceptorInterval) {
-            this.acceptorCoordinateMap.put(txAccession, acceptorInterval);
+        public Builder putAcceptorCoordinate(String txAccession, GenomePosition acceptorPosition) {
+            this.acceptorCoordinateMap.put(txAccession, acceptorPosition);
             return this;
         }
 
-        public Builder putAllAcceptorCoordinates(Map<String, GenomeInterval> acceptorCoordinateMap) {
+        public Builder putAllAcceptorCoordinates(Map<String, GenomePosition> acceptorCoordinateMap) {
             this.acceptorCoordinateMap.putAll(acceptorCoordinateMap);
-            return this;
-        }
-
-        public Builder meanPhyloPScore(double score) {
-            this.meanPhyloPScore = score;
             return this;
         }
 
