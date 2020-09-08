@@ -1,10 +1,7 @@
 package org.monarchinitiative.squirls.core.scoring.calculators;
 
-import de.charite.compbio.jannovar.reference.GenomeInterval;
-import de.charite.compbio.jannovar.reference.GenomePosition;
 import de.charite.compbio.jannovar.reference.GenomeVariant;
 import org.monarchinitiative.squirls.core.model.SplicingTranscript;
-import org.monarchinitiative.squirls.core.reference.SplicingLocationData;
 import org.monarchinitiative.squirls.core.reference.allele.AlleleGenerator;
 import org.monarchinitiative.squirls.core.reference.transcript.SplicingTranscriptLocator;
 import xyz.ielis.hyperutil.reference.fasta.SequenceInterval;
@@ -18,7 +15,7 @@ import java.util.regex.Pattern;
  * To simplify things, AGEZ is not defined specifically for each transcript, but as a region spanning (-51,-3] positions
  * upstream from the acceptor site.
  */
-public class ExclusionZoneFeatureCalculator implements FeatureCalculator {
+public class ExclusionZoneFeatureCalculator extends BaseAgezCalculator {
 
     /**
      * This pattern matches nucleotide string if it contains `AG` dinucleotide.
@@ -26,20 +23,10 @@ public class ExclusionZoneFeatureCalculator implements FeatureCalculator {
     private static final Pattern AG_PATTERN = Pattern.compile("^[acgt]*ag[actg]*$", Pattern.CASE_INSENSITIVE);
 
     /**
-     * Default AGEZ begin and end coordinates.
-     */
-    private static final int AGEZ_BEGIN = -51, AGEZ_END = -3;
-
-
-    private final SplicingTranscriptLocator locator;
-
-    private final int agezBegin, agezEnd;
-
-    /**
      * Create the calculator using default AGEZ begin/end coordinates.
      */
     public ExclusionZoneFeatureCalculator(SplicingTranscriptLocator locator) {
-        this(locator, AGEZ_BEGIN, AGEZ_END);
+        super(locator);
     }
 
     /**
@@ -50,9 +37,7 @@ public class ExclusionZoneFeatureCalculator implements FeatureCalculator {
      * @param agezEnd   0-based (included) end position of AGEZ with respect to intron|exon boundary, e.g. -3
      */
     public ExclusionZoneFeatureCalculator(SplicingTranscriptLocator locator, int agezBegin, int agezEnd) {
-        this.locator = locator;
-        this.agezBegin = agezBegin;
-        this.agezEnd = agezEnd;
+        super(locator, agezBegin, agezEnd);
     }
 
     /**
@@ -67,18 +52,7 @@ public class ExclusionZoneFeatureCalculator implements FeatureCalculator {
      */
     @Override
     public double score(GenomeVariant variant, SplicingTranscript transcript, SequenceInterval sequence) {
-        final SplicingLocationData locationData = locator.locate(variant, transcript);
-
-        if (locationData.getAcceptorBoundary().isEmpty()) {
-            // no acceptor boundary, the variant is located within the coding region or canonical donor region
-            // of the first exon
-            return 0.;
-        }
-
-        final GenomePosition acceptorBoundary = locationData.getAcceptorBoundary().get();
-        final GenomeInterval agezInterval = new GenomeInterval(acceptorBoundary.shifted(agezBegin), -(agezBegin - agezEnd));
-        if (!variant.getGenomeInterval().overlapsWith(agezInterval)) {
-            // variant is not located within AG exclusion zone region
+        if (!overlapsWithAgezRegion(variant, transcript)) {
             return 0.;
         }
 

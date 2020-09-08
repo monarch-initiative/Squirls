@@ -1,0 +1,44 @@
+package org.monarchinitiative.squirls.core.scoring.calculators;
+
+import de.charite.compbio.jannovar.reference.GenomeInterval;
+import de.charite.compbio.jannovar.reference.GenomePosition;
+import de.charite.compbio.jannovar.reference.GenomeVariant;
+import org.monarchinitiative.squirls.core.model.SplicingTranscript;
+import org.monarchinitiative.squirls.core.reference.SplicingLocationData;
+import org.monarchinitiative.squirls.core.reference.transcript.SplicingTranscriptLocator;
+
+abstract class BaseAgezCalculator implements FeatureCalculator {
+
+    /**
+     * Default AGEZ begin and end coordinates.
+     */
+    protected static final int AGEZ_BEGIN = -51, AGEZ_END = -3;
+    protected final SplicingTranscriptLocator locator;
+    protected final int agezBegin;
+    protected final int agezEnd;
+
+    BaseAgezCalculator(SplicingTranscriptLocator locator) {
+        this(locator, AGEZ_BEGIN, AGEZ_END);
+    }
+
+    BaseAgezCalculator(SplicingTranscriptLocator locator, int agezBegin, int agezEnd) {
+        this.locator = locator;
+        this.agezBegin = agezBegin;
+        this.agezEnd = agezEnd;
+    }
+
+    protected boolean overlapsWithAgezRegion(GenomeVariant variant, SplicingTranscript transcript) {
+        final SplicingLocationData locationData = locator.locate(variant, transcript);
+
+        if (locationData.getAcceptorBoundary().isEmpty()) {
+            // no acceptor boundary, the variant is located within the coding region or canonical donor region
+            // of the first exon
+            return false;
+        }
+
+        final GenomePosition acceptorBoundary = locationData.getAcceptorBoundary().get();
+        final GenomeInterval agezInterval = new GenomeInterval(acceptorBoundary.shifted(agezBegin), -(agezBegin - agezEnd));
+
+        return variant.getGenomeInterval().overlapsWith(agezInterval);
+    }
+}

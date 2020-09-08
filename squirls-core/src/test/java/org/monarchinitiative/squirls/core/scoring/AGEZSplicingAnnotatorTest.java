@@ -69,5 +69,6 @@ public class AGEZSplicingAnnotatorTest {
         ann = annotator.annotate(ann);
 
         assertThat(ann.getFeature("creates_ag_in_agez", Double.class), is(closeTo(1., EPSILON)));
+        assertThat(ann.getFeature("ppt_is_truncated", Double.class), is(closeTo(0., EPSILON)));
     }
 }

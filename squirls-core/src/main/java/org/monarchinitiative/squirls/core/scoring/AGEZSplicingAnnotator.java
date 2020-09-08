@@ -4,9 +4,10 @@ import org.monarchinitiative.squirls.core.data.ic.SplicingPwmData;
 import org.monarchinitiative.squirls.core.reference.allele.AlleleGenerator;
 import org.monarchinitiative.squirls.core.reference.transcript.NaiveSplicingTranscriptLocator;
 import org.monarchinitiative.squirls.core.reference.transcript.SplicingTranscriptLocator;
-import org.monarchinitiative.squirls.core.scoring.calculators.*;
+import org.monarchinitiative.squirls.core.scoring.calculators.ExclusionZoneFeatureCalculator;
+import org.monarchinitiative.squirls.core.scoring.calculators.FeatureCalculator;
+import org.monarchinitiative.squirls.core.scoring.calculators.PptIsTruncated;
 import org.monarchinitiative.squirls.core.scoring.calculators.conservation.BigWigAccessor;
-import org.monarchinitiative.squirls.core.scoring.calculators.ic.SplicingInformationContentCalculator;
 
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -15,7 +16,7 @@ import java.util.stream.Stream;
 /**
  * This {@link SplicingAnnotator} implementation is used for evaluation of <em>AGEZ</em> features based on
  * <a href="https://pubmed.ncbi.nlm.nih.gov/32126153/">this paper</a>.
- *
+ * <p>
  * In addition to
  */
 public class AGEZSplicingAnnotator extends AbstractSplicingAnnotator {
@@ -36,9 +37,11 @@ public class AGEZSplicingAnnotator extends AbstractSplicingAnnotator {
         SplicingTranscriptLocator locator = new NaiveSplicingTranscriptLocator(splicingPwmData.getParameters());
         AlleleGenerator generator = new AlleleGenerator(splicingPwmData.getParameters());
 
+        // TODO - consider tweaking the AGEZ-defining regions
         final Map<String, FeatureCalculator> agezCalculators = Map.of(
-                "creates_ag_in_agez", new ExclusionZoneFeatureCalculator(locator)
-                );
+                "creates_ag_in_agez", new ExclusionZoneFeatureCalculator(locator),
+                "ppt_is_truncated", new PptIsTruncated(locator)
+        );
 
         final Map<String, FeatureCalculator> denseCalculators = DenseSplicingAnnotator.makeDenseCalculatorMap(splicingPwmData, hexamerMap, septamerMap, bigWigAccessor);
 
