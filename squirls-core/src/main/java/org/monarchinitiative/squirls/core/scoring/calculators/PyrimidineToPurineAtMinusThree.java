@@ -61,6 +61,12 @@ public class PyrimidineToPurineAtMinusThree implements FeatureCalculator {
         final String refAcceptorSnippet = generator.getAcceptorSiteSnippet(acceptorBoundary, sequence);
         final String altAcceptorSnippet = generator.getAcceptorSiteWithAltAllele(acceptorBoundary, variant, sequence);
 
+        if (refAcceptorSnippet == null || altAcceptorSnippet == null) {
+            // unable to create padded alleles due to insufficient sequence. This should not happen since we fetch
+            // the entire sequence of the transcript region +- padding
+            return Double.NaN;
+        }
+
         // snippets are converted to upper case to simplify pattern matching
         return RAG.matcher(refAcceptorSnippet.toUpperCase()).matches() ^ RAG.matcher(altAcceptorSnippet.toUpperCase()).matches()
                 ? 1.
