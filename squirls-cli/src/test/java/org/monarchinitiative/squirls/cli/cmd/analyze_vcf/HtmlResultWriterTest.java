@@ -25,7 +25,7 @@ import java.util.Set;
 class HtmlResultWriterTest {
 
     // TODO: 3. 6. 2020 remove
-    private static final Path OUTPATH = Paths.get("SQUIRLS.html");
+    private static final Path OUTPATH = Paths.get("target/SQUIRLS.html");
 
     @Autowired
     private JannovarData jannovarData;
