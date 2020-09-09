@@ -68,10 +68,7 @@ public class ExclusionZoneFeatureCalculator extends BaseAgezCalculator {
         /*
         A new AG di-nucleotide is created if altAllele is a match while refAllele is not
          */
-        final boolean refMatches = AG_PATTERN.matcher(refAllele).matches();
-        final boolean altMatches = AG_PATTERN.matcher(altAllele).matches();
-
-        return altMatches && !refMatches
+        return AG_PATTERN.matcher(refAllele).matches() ^ AG_PATTERN.matcher(altAllele).matches()
                 ? 1.
                 : 0.;
     }

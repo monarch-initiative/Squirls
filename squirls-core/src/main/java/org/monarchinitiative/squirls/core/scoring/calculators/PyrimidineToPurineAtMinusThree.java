@@ -17,10 +17,6 @@ public class PyrimidineToPurineAtMinusThree implements FeatureCalculator {
     private static final Logger LOGGER = LoggerFactory.getLogger(PyrimidineToPurineAtMinusThree.class);
 
     /**
-     * Pattern that matches acceptor snippet if there is a pyrimidine at -3 position.
-     */
-    private static final Pattern YAG = Pattern.compile("^[ACGT]+[CT]AG[ACGT]{2}$");
-    /**
      * Pattern that matches acceptor snippet if there is a purine at -3 position.
      */
     private static final Pattern RAG = Pattern.compile("^[ACGT]+[AG]AG[ACGT]{2}$");
@@ -66,7 +62,7 @@ public class PyrimidineToPurineAtMinusThree implements FeatureCalculator {
         final String altAcceptorSnippet = generator.getAcceptorSiteWithAltAllele(acceptorBoundary, variant, sequence);
 
         // snippets are converted to upper case to simplify pattern matching
-        return YAG.matcher(refAcceptorSnippet.toUpperCase()).matches() && RAG.matcher(altAcceptorSnippet.toUpperCase()).matches()
+        return RAG.matcher(refAcceptorSnippet.toUpperCase()).matches() ^ RAG.matcher(altAcceptorSnippet.toUpperCase()).matches()
                 ? 1.
                 : 0.;
 
