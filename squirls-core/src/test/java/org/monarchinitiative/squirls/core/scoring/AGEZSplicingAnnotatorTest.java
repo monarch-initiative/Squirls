@@ -5,7 +5,8 @@ import de.charite.compbio.jannovar.reference.GenomePosition;
 import de.charite.compbio.jannovar.reference.GenomeVariant;
 import de.charite.compbio.jannovar.reference.Strand;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.Mock;
 import org.monarchinitiative.squirls.core.PojosForTesting;
 import org.monarchinitiative.squirls.core.SimpleAnnotatable;
@@ -60,15 +61,19 @@ public class AGEZSplicingAnnotatorTest {
         annotator = new AGEZSplicingAnnotator(splicingPwmData, hexamerMap, septamerMap, accessor);
     }
 
-    @Test
-    public void annotate() {
+    @ParameterizedTest
+    @CsvSource({
+            "1391,c,cag,1.,0.",
+            "1384,gcc,gaa,0.,1.",
+    })
+    public void annotate(int pos, String ref, String alt, double createsAgInAgez, double pptIsTruncated) {
         // "1391,c,cag,1.", // match, turns "c" -> "cag" within AGEZ
-        final GenomeVariant variant = new GenomeVariant(new GenomePosition(rd, Strand.FWD, 1, 1391), "c", "cag");
+        final GenomeVariant variant = new GenomeVariant(new GenomePosition(rd, Strand.FWD, 1, pos), ref, alt);
 
         SimpleAnnotatable ann = new SimpleAnnotatable(variant, st, sequence);
         ann = annotator.annotate(ann);
 
-        assertThat(ann.getFeature("creates_ag_in_agez", Double.class), is(closeTo(1., EPSILON)));
-        assertThat(ann.getFeature("ppt_is_truncated", Double.class), is(closeTo(0., EPSILON)));
+        assertThat(ann.getFeature("creates_ag_in_agez", Double.class), is(closeTo(createsAgInAgez, EPSILON)));
+        assertThat(ann.getFeature("ppt_is_truncated", Double.class), is(closeTo(pptIsTruncated, EPSILON)));
     }
 }
