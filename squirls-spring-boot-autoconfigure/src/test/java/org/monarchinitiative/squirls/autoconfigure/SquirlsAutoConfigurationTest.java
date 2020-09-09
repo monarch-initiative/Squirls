@@ -74,11 +74,14 @@ class SquirlsAutoConfigurationTest extends AbstractAutoConfigurationTest {
                 "squirls.data-version=1710",
                 "squirls.phylop-bigwig-path=" + SMALL_BW,
                 "squirls.classifier.version=v1.1",
-                "squirls.classifier.max-variant-length=50");
+                "squirls.classifier.max-variant-length=50",
+                "squirls.annotator.version=agez"
+        );
 
         SquirlsProperties properties = context.getBean(SquirlsProperties.class);
         assertThat(properties.getClassifier().getVersion(), is("v1.1"));
         assertThat(properties.getClassifier().getMaxVariantLength(), is(50));
+        assertThat(properties.getAnnotator().getVersion(), is("agez"));
     }
 
     @Test
@@ -137,5 +140,16 @@ class SquirlsAutoConfigurationTest extends AbstractAutoConfigurationTest {
                 "squirls.phylop-bigwig-path=" + SMALL_BW,
                 "squirls.classifier.version=puddle"));
         assertThat(thrown.getMessage(), containsString("Classifier version `puddle` is not available, choose one from "));
+    }
+
+    @Test
+    void testNonExistingSplicingAnnotator() {
+        Throwable thrown = assertThrows(BeanCreationException.class, () -> load(SquirlsAutoConfiguration.class,
+                "squirls.data-directory=" + TEST_DATA,
+                "squirls.genome-assembly=hg19",
+                "squirls.data-version=1710",
+                "squirls.phylop-bigwig-path=" + SMALL_BW,
+                "squirls.annotator.version=non-existing"));
+        assertThat(thrown.getMessage(), containsString("invalid 'squirls.annotator.version' property value: `non-existing`"));
     }
 }
