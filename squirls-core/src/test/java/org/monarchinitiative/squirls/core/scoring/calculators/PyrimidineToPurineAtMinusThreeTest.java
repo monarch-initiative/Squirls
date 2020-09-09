@@ -11,27 +11,29 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.closeTo;
 
+public class PyrimidineToPurineAtMinusThreeTest extends CalculatorTestBase {
 
-public class ExclusionZoneFeatureCalculatorTest extends CalculatorTestBase {
-
-    private ExclusionZoneFeatureCalculator calculator;
+    private PyrimidineToPurineAtMinusThree calculator;
 
     @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
-        calculator = new ExclusionZoneFeatureCalculator(locator);
+        calculator = new PyrimidineToPurineAtMinusThree(locator, generator);
     }
 
     @ParameterizedTest
     @CsvSource({
-            "1383,c,a,1.", // match, "ccg" -> "cag" within AGEZ
-            "1389,c,a,1.", // match, "acg" -> "agg" within AGEZ
-            "1388,ac,a,1.", // match, turns "acg" -> "ag" but at coding position of the first exon (no acceptor)
-            "1390,c,cag,1.", // match, turns "c" -> "cag" within AGEZ
+            // matches
+            "1397,c,a,1.", // "c" -> "a" converts Y to R at -3 position
+            "1396,gc,g,1.", // "gc" -> "g" deletes cytosine at -3 and effectively converts g at -4 to R at -3 position
+            "1397,c,ca,1.", // "c" -> "ca" inserts R to -3 position
+            "1395,cgc,cag,1.", // "cgc" -> "cag" replaces Y with R at -3 position
             // --------------------------------------------------------
-            "1198,A,G,0.", // non-match, turns "AAG" -> "AGG" but at coding position of the first exon (no acceptor)
-            "1399,g,a,0.", // non-match, turns "agG" -> "aaG" but the position is not within AGEZ
-            "1389,c,t,0.", // non-match, turns "acg" -> "atg" within AGEZ
+            // non-matches
+            "1397,c,t,0.", // "c" -> "t" retains pyrimidine at -3 position
+            "1394,ccgc,c,0.", // the deletion retains pyrimidine at -3 position
+            "1395,cgc,ctt,0.", // "cgc" -> "ctt" retains Y at -3 position
+            "1402,G,T,0.", // not located within the acceptor site
     })
     public void score(int pos, String ref, String alt, double expected) {
         final GenomeVariant variant = new GenomeVariant(new GenomePosition(rd, Strand.FWD, 1, pos), ref, alt);
@@ -39,4 +41,5 @@ public class ExclusionZoneFeatureCalculatorTest extends CalculatorTestBase {
 
         assertThat(actual, is(closeTo(expected, EPSILON)));
     }
+
 }

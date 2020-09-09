@@ -63,11 +63,13 @@ public class AGEZSplicingAnnotatorTest {
 
     @ParameterizedTest
     @CsvSource({
-            "1391,c,cag,1.,0.",
-            "1384,gcc,gaa,0.,1.",
+            "1390,c,cag,1.,0.,0.", // match, turns "c" -> "cag" within AGEZ
+            "1384,gcc,gaa,0.,1.,0.", // match, "gcc" -> "gaa" deletes 2 cytosines within AGEZ
+            "1397,c,a,0.,0.,1.", // "c" -> "a" converts Y to R at -3 position
     })
-    public void annotate(int pos, String ref, String alt, double createsAgInAgez, double pptIsTruncated) {
-        // "1391,c,cag,1.", // match, turns "c" -> "cag" within AGEZ
+    public void annotate(int pos, String ref, String alt,
+                         double createsAgInAgez, double pptIsTruncated, double purineAtMinusThree) {
+
         final GenomeVariant variant = new GenomeVariant(new GenomePosition(rd, Strand.FWD, 1, pos), ref, alt);
 
         SimpleAnnotatable ann = new SimpleAnnotatable(variant, st, sequence);
@@ -75,5 +77,6 @@ public class AGEZSplicingAnnotatorTest {
 
         assertThat(ann.getFeature("creates_ag_in_agez", Double.class), is(closeTo(createsAgInAgez, EPSILON)));
         assertThat(ann.getFeature("ppt_is_truncated", Double.class), is(closeTo(pptIsTruncated, EPSILON)));
+        assertThat(ann.getFeature("yag_at_acceptor_minus_three", Double.class), is(closeTo(purineAtMinusThree, EPSILON)));
     }
 }

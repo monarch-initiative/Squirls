@@ -7,6 +7,7 @@ import org.monarchinitiative.squirls.core.reference.transcript.SplicingTranscrip
 import org.monarchinitiative.squirls.core.scoring.calculators.ExclusionZoneFeatureCalculator;
 import org.monarchinitiative.squirls.core.scoring.calculators.FeatureCalculator;
 import org.monarchinitiative.squirls.core.scoring.calculators.PptIsTruncated;
+import org.monarchinitiative.squirls.core.scoring.calculators.PyrimidineToPurineAtMinusThree;
 import org.monarchinitiative.squirls.core.scoring.calculators.conservation.BigWigAccessor;
 
 import java.util.Map;
@@ -37,10 +38,11 @@ public class AGEZSplicingAnnotator extends AbstractSplicingAnnotator {
         SplicingTranscriptLocator locator = new NaiveSplicingTranscriptLocator(splicingPwmData.getParameters());
         AlleleGenerator generator = new AlleleGenerator(splicingPwmData.getParameters());
 
-        // TODO - consider tweaking the AGEZ-defining regions
+        // TODO - consider externalizing the AGEZ region definitions
         final Map<String, FeatureCalculator> agezCalculators = Map.of(
                 "creates_ag_in_agez", new ExclusionZoneFeatureCalculator(locator),
-                "ppt_is_truncated", new PptIsTruncated(locator)
+                "ppt_is_truncated", new PptIsTruncated(locator),
+                "yag_at_acceptor_minus_three", new PyrimidineToPurineAtMinusThree(locator, generator)
         );
 
         final Map<String, FeatureCalculator> denseCalculators = DenseSplicingAnnotator.makeDenseCalculatorMap(splicingPwmData, hexamerMap, septamerMap, bigWigAccessor);
