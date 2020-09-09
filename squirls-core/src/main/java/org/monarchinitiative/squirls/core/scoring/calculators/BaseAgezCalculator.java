@@ -9,17 +9,10 @@ import org.monarchinitiative.squirls.core.reference.transcript.SplicingTranscrip
 
 abstract class BaseAgezCalculator implements FeatureCalculator {
 
-    /**
-     * Default AGEZ begin and end coordinates.
-     */
-    protected static final int AGEZ_BEGIN = -51, AGEZ_END = -3;
+
     protected final SplicingTranscriptLocator locator;
     protected final int agezBegin;
     protected final int agezEnd;
-
-    BaseAgezCalculator(SplicingTranscriptLocator locator) {
-        this(locator, AGEZ_BEGIN, AGEZ_END);
-    }
 
     BaseAgezCalculator(SplicingTranscriptLocator locator, int agezBegin, int agezEnd) {
         this.locator = locator;
@@ -27,7 +20,7 @@ abstract class BaseAgezCalculator implements FeatureCalculator {
         this.agezEnd = agezEnd;
     }
 
-    protected boolean overlapsWithAgezRegion(GenomeVariant variant, SplicingTranscript transcript) {
+    boolean overlapsWithAgezRegion(GenomeVariant variant, SplicingTranscript transcript) {
         final SplicingLocationData locationData = locator.locate(variant, transcript);
 
         if (locationData.getAcceptorBoundary().isEmpty()) {

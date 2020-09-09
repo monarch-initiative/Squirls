@@ -14,10 +14,6 @@ import xyz.ielis.hyperutil.reference.fasta.SequenceInterval;
 public class PptIsTruncated extends BaseAgezCalculator {
 
 
-    public PptIsTruncated(SplicingTranscriptLocator locator) {
-        super(locator);
-    }
-
     public PptIsTruncated(SplicingTranscriptLocator locator, int agezBegin, int agezEnd) {
         super(locator, agezBegin, agezEnd);
     }

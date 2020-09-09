@@ -65,6 +65,5 @@ public class PyrimidineToPurineAtMinusThree implements FeatureCalculator {
         return RAG.matcher(refAcceptorSnippet.toUpperCase()).matches() ^ RAG.matcher(altAcceptorSnippet.toUpperCase()).matches()
                 ? 1.
                 : 0.;
-
     }
 }

@@ -18,7 +18,7 @@ public class PptIsTruncatedTest extends CalculatorTestBase {
     @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
-        calculator = new PptIsTruncated(locator);
+        calculator = new PptIsTruncated(locator, ExclusionZoneFeatureCalculator.AGEZ_BEGIN, ExclusionZoneFeatureCalculator.AGEZ_END);
     }
 
     @ParameterizedTest

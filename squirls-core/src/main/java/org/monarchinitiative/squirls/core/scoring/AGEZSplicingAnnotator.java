@@ -40,9 +40,10 @@ public class AGEZSplicingAnnotator extends AbstractSplicingAnnotator {
 
         // TODO - consider externalizing the AGEZ region definitions
         final Map<String, FeatureCalculator> agezCalculators = Map.of(
-                "creates_ag_in_agez", new ExclusionZoneFeatureCalculator(locator),
-                "ppt_is_truncated", new PptIsTruncated(locator),
-                "yag_at_acceptor_minus_three", new PyrimidineToPurineAtMinusThree(locator, generator)
+                "creates_ag_in_agez", ExclusionZoneFeatureCalculator.makeAgCalculator(locator, ExclusionZoneFeatureCalculator.AGEZ_BEGIN, ExclusionZoneFeatureCalculator.AGEZ_END),
+                "ppt_is_truncated", new PptIsTruncated(locator, ExclusionZoneFeatureCalculator.AGEZ_BEGIN, ExclusionZoneFeatureCalculator.AGEZ_END),
+                "yag_at_acceptor_minus_three", new PyrimidineToPurineAtMinusThree(locator, generator),
+                "creates_yag_in_agez", ExclusionZoneFeatureCalculator.makeYagCalculator(locator, ExclusionZoneFeatureCalculator.AGEZ_BEGIN, ExclusionZoneFeatureCalculator.AGEZ_END)
         );
 
         final Map<String, FeatureCalculator> denseCalculators = DenseSplicingAnnotator.makeDenseCalculatorMap(splicingPwmData, hexamerMap, septamerMap, bigWigAccessor);
