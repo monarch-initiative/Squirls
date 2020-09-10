@@ -10,6 +10,7 @@ import org.monarchinitiative.squirls.core.scoring.calculators.PptIsTruncated;
 import org.monarchinitiative.squirls.core.scoring.calculators.PyrimidineToPurineAtMinusThree;
 import org.monarchinitiative.squirls.core.scoring.calculators.conservation.BigWigAccessor;
 
+import java.util.Collection;
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -27,28 +28,23 @@ public class AGEZSplicingAnnotator extends AbstractSplicingAnnotator {
                                  Map<String, Double> septamerMap,
                                  BigWigAccessor bigWigAccessor) {
         super(new NaiveSplicingTranscriptLocator(splicingPwmData.getParameters()),
-                makeCalculatorMap(splicingPwmData, hexamerMap, septamerMap, bigWigAccessor));
+                Stream.of(
+                        makeCalculatorMap(splicingPwmData).entrySet(), // agez calculators
+                        RichSplicingAnnotator.makeCalculatorMap(splicingPwmData).entrySet(), // rich
+                        DenseSplicingAnnotator.makeDenseCalculatorMap(splicingPwmData, hexamerMap, septamerMap, bigWigAccessor).entrySet()) // dense
+                        .flatMap(Collection::stream)
+                        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)));
     }
 
-    static Map<String, FeatureCalculator> makeCalculatorMap(SplicingPwmData splicingPwmData,
-                                                            Map<String, Double> hexamerMap,
-                                                            Map<String, Double> septamerMap,
-                                                            BigWigAccessor bigWigAccessor) {
-
+    static Map<String, FeatureCalculator> makeCalculatorMap(SplicingPwmData splicingPwmData) {
         SplicingTranscriptLocator locator = new NaiveSplicingTranscriptLocator(splicingPwmData.getParameters());
         AlleleGenerator generator = new AlleleGenerator(splicingPwmData.getParameters());
-
         // TODO - consider externalizing the AGEZ region definitions
-        final Map<String, FeatureCalculator> agezCalculators = Map.of(
+        return Map.of(
                 "creates_ag_in_agez", ExclusionZoneFeatureCalculator.makeAgCalculator(locator, ExclusionZoneFeatureCalculator.AGEZ_BEGIN, ExclusionZoneFeatureCalculator.AGEZ_END),
                 "ppt_is_truncated", new PptIsTruncated(locator, ExclusionZoneFeatureCalculator.AGEZ_BEGIN, ExclusionZoneFeatureCalculator.AGEZ_END),
                 "yag_at_acceptor_minus_three", new PyrimidineToPurineAtMinusThree(locator, generator),
                 "creates_yag_in_agez", ExclusionZoneFeatureCalculator.makeYagCalculator(locator, ExclusionZoneFeatureCalculator.AGEZ_BEGIN, ExclusionZoneFeatureCalculator.AGEZ_END)
         );
-
-        final Map<String, FeatureCalculator> denseCalculators = DenseSplicingAnnotator.makeDenseCalculatorMap(splicingPwmData, hexamerMap, septamerMap, bigWigAccessor);
-
-        return Stream.concat(denseCalculators.entrySet().stream(), agezCalculators.entrySet().stream())
-                .collect(Collectors.toUnmodifiableMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 }
