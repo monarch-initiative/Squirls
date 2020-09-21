@@ -8,6 +8,7 @@ import org.monarchinitiative.squirls.core.scoring.calculators.*;
 import org.monarchinitiative.squirls.core.scoring.calculators.conservation.BigWigAccessor;
 import org.monarchinitiative.squirls.core.scoring.calculators.ic.SplicingInformationContentCalculator;
 
+import java.util.Collection;
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -44,19 +45,23 @@ public class RichSplicingAnnotator extends AbstractSplicingAnnotator {
                                  Map<String, Double> hexamerMap,
                                  Map<String, Double> septamerMap,
                                  BigWigAccessor bigWigAccessor) {
-        super(new NaiveSplicingTranscriptLocator(splicingPwmData.getParameters()), makeCalculatorMap(splicingPwmData, hexamerMap, septamerMap, bigWigAccessor));
+        super(new NaiveSplicingTranscriptLocator(splicingPwmData.getParameters()),
+                Stream.of(
+                        // rich
+                        makeCalculatorMap(splicingPwmData).entrySet(),
+                        // dense
+                        DenseSplicingAnnotator.makeDenseCalculatorMap(splicingPwmData, hexamerMap, septamerMap, bigWigAccessor).entrySet())
+                        .flatMap(Collection::stream)
+                        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)));
     }
 
-    static Map<String, FeatureCalculator> makeCalculatorMap(SplicingPwmData splicingPwmData,
-                                                            Map<String, Double> hexamerMap,
-                                                            Map<String, Double> septamerMap,
-                                                            BigWigAccessor bigWigAccessor) {
+    static Map<String, FeatureCalculator> makeCalculatorMap(SplicingPwmData splicingPwmData) {
 
         SplicingTranscriptLocator locator = new NaiveSplicingTranscriptLocator(splicingPwmData.getParameters());
         SplicingInformationContentCalculator calculator = new SplicingInformationContentCalculator(splicingPwmData);
         AlleleGenerator generator = new AlleleGenerator(splicingPwmData.getParameters());
 
-        final Map<String, FeatureCalculator> richCalculators = Map.of(
+        return Map.of(
                 "wt_ri_donor", new WtRiDonor(calculator, generator, locator),
                 "wt_ri_acceptor", new WtRiAcceptor(calculator, generator, locator),
                 "alt_ri_best_window_donor", new BestWindowAltRiCrypticDonor(calculator, generator),
@@ -65,11 +70,6 @@ public class RichSplicingAnnotator extends AbstractSplicingAnnotator {
                 "s_strength_diff_acceptor", new SStrengthDiffAcceptor(calculator, generator, locator),
                 "exon_length", new ExonLength(locator),
                 "intron_length", new IntronLength(locator));
-
-        final Map<String, FeatureCalculator> denseCalculators = DenseSplicingAnnotator.makeDenseCalculatorMap(splicingPwmData, hexamerMap, septamerMap, bigWigAccessor);
-
-        return Stream.concat(denseCalculators.entrySet().stream(), richCalculators.entrySet().stream())
-                .collect(Collectors.toUnmodifiableMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 
 }

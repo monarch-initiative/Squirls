@@ -31,6 +31,9 @@ public class SquirlsProperties {
     @NestedConfigurationProperty // squirls.classifier
     private ClassifierProperties classifier = new ClassifierProperties();
 
+    @NestedConfigurationProperty // squirls.annotator
+    private AnnotatorProperties annotator = new AnnotatorProperties();
+
     public String getPhylopBigwigPath() {
         return phylopBigwigPath;
     }
@@ -69,5 +72,13 @@ public class SquirlsProperties {
 
     public void setClassifier(ClassifierProperties classifier) {
         this.classifier = classifier;
+    }
+
+    public AnnotatorProperties getAnnotator() {
+        return annotator;
+    }
+
+    public void setAnnotator(AnnotatorProperties annotator) {
+        this.annotator = annotator;
     }
 }

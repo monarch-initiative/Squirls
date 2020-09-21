@@ -16,6 +16,7 @@ import org.monarchinitiative.squirls.core.data.ic.CorruptedPwmException;
 import org.monarchinitiative.squirls.core.data.ic.DbSplicingPositionalWeightMatrixParser;
 import org.monarchinitiative.squirls.core.data.ic.SplicingPwmData;
 import org.monarchinitiative.squirls.core.data.kmer.DbKMerDao;
+import org.monarchinitiative.squirls.core.scoring.AGEZSplicingAnnotator;
 import org.monarchinitiative.squirls.core.scoring.DenseSplicingAnnotator;
 import org.monarchinitiative.squirls.core.scoring.SplicingAnnotator;
 import org.monarchinitiative.squirls.core.scoring.calculators.conservation.BigWigAccessor;
@@ -46,7 +47,7 @@ import java.util.stream.Collectors;
  * @author Daniel Danis <daniel.danis@jax.org>
  */
 @Configuration
-@EnableConfigurationProperties({SquirlsProperties.class, ClassifierProperties.class})
+@EnableConfigurationProperties({SquirlsProperties.class, ClassifierProperties.class, AnnotatorProperties.class})
 public class SquirlsAutoConfiguration {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SquirlsAutoConfiguration.class);
@@ -126,7 +127,9 @@ public class SquirlsAutoConfiguration {
                                                              SplicingTranscriptSource splicingTranscriptSource,
                                                              SplicingAnnotator splicingAnnotator,
                                                              ClassifierDataManager classifierDataManager) throws InvalidSquirlsResourceException {
-        final String clfVersion = properties.getClassifier().getVersion();
+        final ClassifierProperties classifierProperties = properties.getClassifier();
+
+        final String clfVersion = classifierProperties.getVersion();
         final Collection<String> avail = classifierDataManager.getAvailableClassifiers();
         if (!avail.contains(clfVersion)) {
             String msg = String.format("Classifier version `%s` is not available, choose one from `%s`",
@@ -164,7 +167,7 @@ public class SquirlsAutoConfiguration {
                 .annotator(splicingAnnotator)
                 .classifier(clf)
                 .transformer(transformer)
-                .maxVariantLength(properties.getClassifier().getMaxVariantLength())
+                .maxVariantLength(classifierProperties.getMaxVariantLength())
                 .build();
     }
 
@@ -176,9 +179,18 @@ public class SquirlsAutoConfiguration {
     @Bean
     public SplicingAnnotator splicingAnnotator(SplicingPwmData splicingPwmData,
                                                DbKMerDao dbKMerDao,
-                                               BigWigAccessor phylopBigwigAccessor) {
-        LOGGER.debug("Using dense splicing annotator");
-        return new DenseSplicingAnnotator(splicingPwmData, dbKMerDao.getHexamerMap(), dbKMerDao.getSeptamerMap(), phylopBigwigAccessor);
+                                               BigWigAccessor phylopBigwigAccessor) throws UndefinedSquirlsResourceException {
+        final AnnotatorProperties annotatorProperties = properties.getAnnotator();
+        final String version = annotatorProperties.getVersion();
+        LOGGER.debug("Using `{}` splicing annotator", version);
+        switch (version) {
+            case "dense":
+                return new DenseSplicingAnnotator(splicingPwmData, dbKMerDao.getHexamerMap(), dbKMerDao.getSeptamerMap(), phylopBigwigAccessor);
+            case "agez":
+                return new AGEZSplicingAnnotator(splicingPwmData, dbKMerDao.getHexamerMap(), dbKMerDao.getSeptamerMap(), phylopBigwigAccessor);
+            default:
+                throw new UndefinedSquirlsResourceException(String.format("invalid 'squirls.annotator.version' property value: `%s`", version));
+        }
     }
 
     @Bean
