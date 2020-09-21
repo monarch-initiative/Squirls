@@ -29,8 +29,8 @@ class FakeUpDatabase {
     private static final Path SEPTAMER_TSV_PATH = Paths.get(FakeUpDatabase.class.getResource("septamer-scores.tsv").getPath());
 
     private static final Map<String, Path> MODEL_PATHS = Map.of(
-            "v1", Paths.get(FakeUpDatabase.class.getResource("ensemble_model.v1.yaml").getPath()),
-            "v1.1", Paths.get(FakeUpDatabase.class.getResource("ensemble_model.v1.1.yaml").getPath()));
+            "v0.4.1", Paths.get(FakeUpDatabase.class.getResource("example_model.v0.4.1.yaml").getPath()),
+            "v1.1", Paths.get(FakeUpDatabase.class.getResource("example_model.v1.1.sklearn-0.23.1-slope-intercept-array.yaml").getPath()));
 
     private static final Map<String, byte[]> MODEL_DATA = new HashMap<>();
 

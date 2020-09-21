@@ -60,8 +60,8 @@ public class StandardSquirlsClassifier implements SquirlsClassifier {
                 final double donorProba = donorClf.predictProba(data);
                 final double acceptorProba = acceptorClf.predictProba(data);
                 data.setPrediction(StandardPrediction.builder()
-                        .addProbaThresholdPair(donorProba, donorThreshold)
-                        .addProbaThresholdPair(acceptorProba, acceptorThreshold)
+                        .addProbaThresholdPair(donorClf.getName(), donorProba, donorThreshold)
+                        .addProbaThresholdPair(acceptorClf.getName(), acceptorProba, acceptorThreshold)
                         .build());
             } catch (PredictionException e) {
                 LOGGER.debug("Error: ", e);

@@ -8,7 +8,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @ConfigurationProperties(prefix = "squirls.classifier")
 public class ClassifierProperties {
 
-    private String version = "v1";
+    private String version = "v0.4.1";
     private int maxVariantLength = 100;
 
     public String getVersion() {

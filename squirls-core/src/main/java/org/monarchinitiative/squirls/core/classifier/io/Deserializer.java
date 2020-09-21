@@ -11,6 +11,7 @@ import org.yaml.snakeyaml.constructor.Constructor;
 
 import java.io.InputStream;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -18,6 +19,10 @@ import java.util.stream.Collectors;
  * This class deserializes {@link SquirlsClassifier} from a YAML file.
  */
 public class Deserializer {
+
+    private static final AtomicInteger DONOR_TREE_COUNTER = new AtomicInteger();
+
+    private static final AtomicInteger ACCEPTOR_TREE_COUNTER = new AtomicInteger();
 
     private Deserializer() {
         // private no-op
@@ -37,7 +42,7 @@ public class Deserializer {
     }
 
     public static OverallModelData deserializeOverallModelData(InputStream is) {
-        Yaml yaml = new Yaml(new Constructor(OverallModelData.class));
+        Yaml yaml = new Yaml(new Constructor(OverallModelDataV041.class));
         return yaml.load(is);
     }
 
@@ -54,6 +59,7 @@ public class Deserializer {
 
     public static <T extends Classifiable> RandomForest<T> deserializeDonorClassifier(RandomForestTransferModel rfModel) {
         return RandomForest.<T>builder()
+                .name("donor_rf")
                 .classes(rfModel.getClasses())
                 .addTrees(rfModel.getTrees().values().stream()
                         .map(Deserializer.<T>toDonorClassifierTree(rfModel.getClasses()))
@@ -63,6 +69,7 @@ public class Deserializer {
 
     public static <T extends Classifiable> Function<DecisionTreeTransferModel, DonorSplicingDecisionTree<T>> toDonorClassifierTree(List<Integer> classes) {
         return md -> DonorSplicingDecisionTree.<T>builder()
+                .name(String.format("donor_tree_%d", DONOR_TREE_COUNTER.getAndIncrement()))
                 .classes(classes)
                 .nNodes(md.getNodeCount())
                 .features(md.getFeature())
@@ -82,6 +89,7 @@ public class Deserializer {
 
     public static <T extends Classifiable> RandomForest<T> deserializeAcceptorClassifier(RandomForestTransferModel rfModel) {
         return RandomForest.<T>builder()
+                .name("acceptor_rf")
                 .classes(rfModel.getClasses())
                 .addTrees(rfModel.getTrees().values().stream()
                         .map(Deserializer.<T>toAcceptorClassifierTree(rfModel.getClasses()))
@@ -91,6 +99,7 @@ public class Deserializer {
 
     public static <T extends Classifiable> Function<DecisionTreeTransferModel, AcceptorSplicingDecisionTree<T>> toAcceptorClassifierTree(List<Integer> classes) {
         return md -> AcceptorSplicingDecisionTree.<T>builder()
+                .name(String.format("acceptor_tree_%d", ACCEPTOR_TREE_COUNTER.getAndIncrement()))
                 .classes(classes)
                 .nNodes(md.getNodeCount())
                 .features(md.getFeature())

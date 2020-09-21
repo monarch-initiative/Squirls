@@ -60,6 +60,11 @@ public class Pipeline<T extends Classifiable> implements BinaryClassifier<T> {
                 '}';
     }
 
+    @Override
+    public String getName() {
+        return String.join(",", transformer.getClass().getSimpleName(), classifier.getName());
+    }
+
     public static final class Builder<T extends Classifiable> {
         private FeatureTransformer<T> transformer;
         private BinaryClassifier<T> randomForest;

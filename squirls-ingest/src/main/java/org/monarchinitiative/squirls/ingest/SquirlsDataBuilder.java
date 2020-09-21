@@ -8,8 +8,10 @@ import org.flywaydb.core.Flyway;
 import org.monarchinitiative.squirls.core.SquirlsException;
 import org.monarchinitiative.squirls.core.classifier.io.Deserializer;
 import org.monarchinitiative.squirls.core.classifier.io.OverallModelData;
-import org.monarchinitiative.squirls.core.classifier.transform.prediction.LogisticRegressionPredictionTransformer;
+import org.monarchinitiative.squirls.core.classifier.io.PredictionTransformationParameters;
 import org.monarchinitiative.squirls.core.classifier.transform.prediction.PredictionTransformer;
+import org.monarchinitiative.squirls.core.classifier.transform.prediction.RegularLogisticRegression;
+import org.monarchinitiative.squirls.core.classifier.transform.prediction.SimpleLogisticRegression;
 import org.monarchinitiative.squirls.core.data.DbClassifierDataManager;
 import org.monarchinitiative.squirls.core.data.ic.InputStreamBasedPositionalWeightMatrixParser;
 import org.monarchinitiative.squirls.core.data.ic.SplicingPositionalWeightMatrixParser;
@@ -133,18 +135,33 @@ public class SquirlsDataBuilder {
     }
 
     /**
-     * Store classifier data
+     * Serialize data required to construct {@link org.monarchinitiative.squirls.core.VariantSplicingEvaluator}
      *
      * @param dataSource data source for a database
      * @param clfVersion classifier version
-     * @param clfBytes   classifier data
+     * @param clfBytes   all data required to construct {@link org.monarchinitiative.squirls.core.VariantSplicingEvaluator}
      */
     private static void processClassifier(DataSource dataSource, String clfVersion, byte[] clfBytes) {
-        LOGGER.info("Inserting classifier `{}`", clfVersion);
-        final OverallModelData data = Deserializer.deserializeOverallModelData(new ByteArrayInputStream(clfBytes));
         final DbClassifierDataManager manager = new DbClassifierDataManager(dataSource);
+        final OverallModelData data = Deserializer.deserializeOverallModelData(new ByteArrayInputStream(clfBytes));
+
+        // squirls classifier
+        LOGGER.info("Inserting classifier `{}`", clfVersion);
         int updated = manager.storeClassifier(clfVersion, clfBytes);
-        PredictionTransformer transformer = LogisticRegressionPredictionTransformer.getInstance(data.getSlope(), data.getIntercept());
+
+        // prediction transformer
+        final PredictionTransformationParameters params = data.getLogisticRegressionParameters();
+        final PredictionTransformer transformer;
+        if (params.getSlope().get(0).size() < 2) {
+            // this must be simple logistic regression
+            double slope = params.getSlope().get(0).get(0);
+            double intercept = params.getInterceptScalar();
+            transformer = SimpleLogisticRegression.getInstance(slope, intercept);
+        } else {
+            // this is regular logistic regression
+            transformer = RegularLogisticRegression.getInstance(params.getDonorSlope(), params.getAcceptorSlope(), params.getInterceptScalar());
+        }
+
         updated += manager.storeTransformer(clfVersion, transformer);
 
         LOGGER.info("Updated {} rows", updated);

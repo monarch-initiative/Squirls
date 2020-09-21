@@ -3,6 +3,7 @@ package org.monarchinitiative.squirls.core.classifier;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.monarchinitiative.squirls.core.Prediction;
+import org.monarchinitiative.squirls.core.TestDataSourceConfig;
 import org.monarchinitiative.squirls.core.classifier.forest.RandomForest;
 import org.monarchinitiative.squirls.core.classifier.io.DecisionTreeTransferModel;
 import org.monarchinitiative.squirls.core.classifier.io.Deserializer;
@@ -12,6 +13,7 @@ import org.monarchinitiative.squirls.core.classifier.tree.AcceptorSplicingDecisi
 import org.monarchinitiative.squirls.core.classifier.tree.DonorSplicingDecisionTree;
 
 import java.io.InputStream;
+import java.nio.file.Files;
 import java.util.List;
 
 import static org.hamcrest.CoreMatchers.is;
@@ -30,13 +32,11 @@ public class IntegrationTests {
 
     private static final double EPSILON = 5E-12;
 
-    private static final String TOY_MODEL_PATH = "io/example_model.yaml";
-
     private static OverallModelData overallModelData;
 
     @BeforeAll
     static void beforeAll() throws Exception {
-        try (InputStream is = IntegrationTests.class.getResourceAsStream(TOY_MODEL_PATH)) {
+        try (InputStream is = Files.newInputStream(TestDataSourceConfig.SQUIRLS_MODEL_PATH)) {
             overallModelData = Deserializer.deserializeOverallModelData(is);
         }
     }
@@ -54,10 +54,10 @@ public class IntegrationTests {
 
         // perform classification & assert
         double pathoProba = tree.predictProba(TestVariantInstances.pathogenicDonor());
-        assertThat(pathoProba, is(closeTo(.9273255813953488, EPSILON)));
+        assertThat(pathoProba, is(closeTo(0., EPSILON)));
 
         pathoProba = tree.predictProba(TestVariantInstances.donorCryptic());
-        assertThat(pathoProba, is(closeTo(.6923076923076923, EPSILON)));
+        assertThat(pathoProba, is(closeTo(.6545454545454545, EPSILON)));
     }
 
     @Test
@@ -69,10 +69,10 @@ public class IntegrationTests {
 
         // perform classification & assert
         double pathoProba = tree.predictProba(TestVariantInstances.pathogenicDonor());
-        assertThat(pathoProba, is(closeTo(.9156626506024096, EPSILON)));
+        assertThat(pathoProba, is(closeTo(.9301075268817204, EPSILON)));
 
         pathoProba = tree.predictProba(TestVariantInstances.donorCryptic());
-        assertThat(pathoProba, is(closeTo(.09174311926605505, EPSILON)));
+        assertThat(pathoProba, is(closeTo(.034782608695652174, EPSILON)));
     }
 
     @Test
@@ -84,10 +84,10 @@ public class IntegrationTests {
 
         // perform classification & assert
         double pathoProba = tree.predictProba(TestVariantInstances.pathogenicAcceptor());
-        assertThat(pathoProba, is(closeTo(.390625, EPSILON)));
+        assertThat(pathoProba, is(closeTo(.5925925925925926, EPSILON)));
 
         pathoProba = tree.predictProba(TestVariantInstances.acceptorCryptic());
-        assertThat(pathoProba, is(closeTo(.14893617021276595, EPSILON)));
+        assertThat(pathoProba, is(closeTo(.04947229551451187, EPSILON)));
     }
 
     @Test
@@ -99,10 +99,10 @@ public class IntegrationTests {
 
         // perform classification & assert
         double pathoProba = tree.predictProba(TestVariantInstances.pathogenicAcceptor());
-        assertThat(pathoProba, is(closeTo(.603448275862069, EPSILON)));
+        assertThat(pathoProba, is(closeTo(.4111111111111111, EPSILON)));
 
         pathoProba = tree.predictProba(TestVariantInstances.acceptorCryptic());
-        assertThat(pathoProba, is(closeTo(.027337289619612803, EPSILON)));
+        assertThat(pathoProba, is(closeTo(.017110078132726733, EPSILON)));
     }
 
     /*
@@ -117,10 +117,10 @@ public class IntegrationTests {
         final RandomForest<Classifiable> forest = Deserializer.deserializeDonorClassifier(rftm);
 
         double pathoProba = forest.predictProba(TestVariantInstances.pathogenicDonor());
-        assertThat(pathoProba, is(closeTo(.7873663663768643, EPSILON)));
+        assertThat(pathoProba, is(closeTo(.8594975603713706, EPSILON)));
 
         pathoProba = forest.predictProba(TestVariantInstances.donorCryptic());
-        assertThat(pathoProba, is(closeTo(.22439633436158474, EPSILON)));
+        assertThat(pathoProba, is(closeTo(.21285603989235405, EPSILON)));
     }
 
     @Test
@@ -131,10 +131,10 @@ public class IntegrationTests {
         final RandomForest<Classifiable> forest = Deserializer.deserializeAcceptorClassifier(rftm);
 
         double pathoProba = forest.predictProba(TestVariantInstances.pathogenicAcceptor());
-        assertThat(pathoProba, is(closeTo(.3726891708713847, EPSILON)));
+        assertThat(pathoProba, is(closeTo(.4936002946815444, EPSILON)));
 
         pathoProba = forest.predictProba(TestVariantInstances.acceptorCryptic());
-        assertThat(pathoProba, is(closeTo(.022480121825609604, EPSILON)));
+        assertThat(pathoProba, is(closeTo(.01954726418268275, EPSILON)));
     }
 
     /*
@@ -147,18 +147,18 @@ public class IntegrationTests {
 
         Prediction prediction = overlord.predict(TestVariantInstances.pathogenicDonor()).getPrediction();
         assertTrue(prediction.isPositive());
-        assertThat(prediction.getMaxPathogenicity(), is(closeTo(.7873663663768643, EPSILON)));
+        assertThat(prediction.getMaxPathogenicity(), is(closeTo(.8594975603713706, EPSILON)));
 
         prediction = overlord.predict(TestVariantInstances.donorCryptic()).getPrediction();
         assertTrue(prediction.isPositive());
-        assertThat(prediction.getMaxPathogenicity(), is(closeTo(.22439633436158474, EPSILON)));
+        assertThat(prediction.getMaxPathogenicity(), is(closeTo(.21285603989235405, EPSILON)));
 
         prediction = overlord.predict(TestVariantInstances.pathogenicAcceptor()).getPrediction();
         assertTrue(prediction.isPositive());
-        assertThat(prediction.getMaxPathogenicity(), is(closeTo(.3726891708713847, EPSILON)));
+        assertThat(prediction.getMaxPathogenicity(), is(closeTo(.4936002946815444, EPSILON)));
 
         prediction = overlord.predict(TestVariantInstances.acceptorCryptic()).getPrediction();
         assertTrue(prediction.isPositive());
-        assertThat(prediction.getMaxPathogenicity(), is(closeTo(.022480121825609604, EPSILON)));
+        assertThat(prediction.getMaxPathogenicity(), is(closeTo(.01954726418268275, EPSILON)));
     }
 }
