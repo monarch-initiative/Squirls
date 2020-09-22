@@ -36,11 +36,10 @@ public class BigWig implements FeatureCalculator {
     public double score(GenomeVariant variant, SplicingTranscript transcript, SequenceInterval sequence) {
         try {
             final List<Float> scores = accessor.getScores(variant.getGenomeInterval());
-            final double sum = scores.stream()
+            return scores.stream()
                     .mapToDouble(Float::doubleValue)
-                    .reduce(Double::sum)
+                    .average()
                     .orElse(Double.NaN);
-            return (sum / scores.size());
         } catch (SquirlsWigException e) {
             LOGGER.debug("Unable to find scores for variant `{}`", variant);
             return Double.NaN;
