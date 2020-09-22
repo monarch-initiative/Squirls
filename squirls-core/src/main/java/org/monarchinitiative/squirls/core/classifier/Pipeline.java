@@ -12,11 +12,14 @@ import java.util.stream.Stream;
  */
 public class Pipeline<T extends Classifiable> implements BinaryClassifier<T> {
 
+    private final String name;
+
     private final FeatureTransformer<T> transformer;
 
     private final BinaryClassifier<T> classifier;
 
     private Pipeline(Builder<T> builder) {
+        name = Objects.requireNonNull(builder.name, "Pipeline name cannot be null");
         transformer = builder.transformer;
         classifier = builder.randomForest;
     }
@@ -62,14 +65,22 @@ public class Pipeline<T extends Classifiable> implements BinaryClassifier<T> {
 
     @Override
     public String getName() {
-        return String.join(",", transformer.getClass().getSimpleName(), classifier.getName());
+        return name;
     }
 
     public static final class Builder<T extends Classifiable> {
         private FeatureTransformer<T> transformer;
         private BinaryClassifier<T> randomForest;
 
+        private String name;
+
         private Builder() {
+        }
+
+
+        public Builder<T> name(String name) {
+            this.name = name;
+            return this;
         }
 
         public Builder<T> transformer(FeatureTransformer<T> transformer) {

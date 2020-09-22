@@ -48,6 +48,7 @@ public class Deserializer {
 
     static <T extends Classifiable> BinaryClassifier<T> deserializeDonorPipeline(PipelineTransferModel ptm) {
         return Pipeline.<T>builder()
+                .name("donor")
                 .transformer(deserializeImputer(ptm.getFeatureNames(), ptm.getFeatureStatistics()))
                 .classifier(deserializeDonorClassifier(ptm))
                 .build();
@@ -83,6 +84,7 @@ public class Deserializer {
 
     static <T extends Classifiable> BinaryClassifier<T> deserializeAcceptorPipeline(PipelineTransferModel ptm) {
         return Pipeline.<T>builder()
+                .name("acceptor")
                 .transformer(deserializeImputer(ptm.getFeatureNames(), ptm.getFeatureStatistics()))
                 .classifier(deserializeAcceptorClassifier(ptm))
                 .build();

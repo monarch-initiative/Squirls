@@ -39,6 +39,7 @@ class PipelineTest {
     @BeforeEach
     void setUp() throws Exception {
         pipeline = Pipeline.builder()
+                .name("pipeline_star")
                 .transformer(new SplicingDataImputer<>(donorPipeModel.getFeatureNames(), donorPipeModel.getFeatureStatistics()))
                 .classifier(Deserializer.deserializeDonorClassifier(donorPipeModel))
                 .build();
@@ -61,5 +62,10 @@ class PipelineTest {
                 hasEntry(3, "phylop"),
                 hasEntry(4, "hexamer"),
                 hasEntry(5, "septamer")));
+    }
+
+    @Test
+    public void pipelineName() {
+        assertThat(pipeline.getName(), is("pipeline_star"));
     }
 }

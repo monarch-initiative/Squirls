@@ -58,6 +58,7 @@ public class RegularLogisticRegression implements PredictionTransformer {
         final Map<String, Prediction.PartialPrediction> predictions = data.getPrediction().getPartialPredictions().stream()
                 .collect(Collectors.toMap(Prediction.PartialPrediction::getName, Function.identity()));
 
+        // this currently matches the strings set to Pipelines when deserializing donor and acceptor pipelines
         if (!predictions.containsKey("donor") || !predictions.containsKey("acceptor")) {
             // cannot perform transformation
             if (reportMissingPrediction.compareAndSet(true, false)) {
