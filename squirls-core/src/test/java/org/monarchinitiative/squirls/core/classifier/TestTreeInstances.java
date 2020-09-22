@@ -1,14 +1,21 @@
 package org.monarchinitiative.squirls.core.classifier;
 
-import org.monarchinitiative.squirls.core.classifier.tree.AbstractBinaryDecisionTree;
+import org.monarchinitiative.squirls.core.classifier.tree.BinaryDecisionTree;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * This class contains Python's Scikit-Learn DecisionTreeClassifier trees that were trained on IRIS dataset, as
  * described in individual Javadoc's descriptions.
  */
 public class TestTreeInstances {
+
+    private static final Map<Integer, String> IRIS_FEATURE_IDXs = Map.of(
+            0, "sepal_length",
+            1, "sepal_width",
+            2, "petal_length",
+            3, "petal_width");
 
     /**
      * <pre>
@@ -24,10 +31,11 @@ public class TestTreeInstances {
      *
      * @return tree
      */
-    public static AbstractBinaryDecisionTree<Classifiable> getTreeOne() {
+    public static BinaryDecisionTree<Classifiable> getTreeOne() {
         // dtc = DecisionTreeClassifier(random_state=50, max_depth=3).fit(Xbin, ybin)
-        return IrisDecisionTree.builder()
+        return BinaryDecisionTree.builder()
                 .name("tree_0")
+                .putAllFeatureIndices(IRIS_FEATURE_IDXs)
                 .nNodes(13)
                 .classes(List.of(1, 2))
                 .childrenLeft(List.of(1, 2, 3, -1, -1, 6, -1, -1, 9, 10, -1, -1, -1))
@@ -67,9 +75,10 @@ public class TestTreeInstances {
      *
      * @return tree <code>one</code>
      */
-    public static AbstractBinaryDecisionTree<Classifiable> getRandomForestTreeOne() {
-        return IrisDecisionTree.builder()
+    public static BinaryDecisionTree<Classifiable> getRandomForestTreeOne() {
+        return BinaryDecisionTree.builder()
                 .name("rf_tree_0")
+                .putAllFeatureIndices(IRIS_FEATURE_IDXs)
                 .nNodes(7)
                 .classes(List.of(1, 2))
                 .childrenLeft(List.of(1, 2, -1, -1, 5, -1, -1))
@@ -103,9 +112,10 @@ public class TestTreeInstances {
      *
      * @return tree <code>two</code>
      */
-    public static AbstractBinaryDecisionTree<Classifiable> getRandomForestTreeTwo() {
-        return IrisDecisionTree.builder()
+    public static BinaryDecisionTree<Classifiable> getRandomForestTreeTwo() {
+        return BinaryDecisionTree.builder()
                 .name("rf_tree_1")
+                .putAllFeatureIndices(IRIS_FEATURE_IDXs)
                 .nNodes(7)
                 .classes(List.of(1, 2))
                 .childrenLeft(List.of(1, 2, -1, -1, 5, -1, -1))

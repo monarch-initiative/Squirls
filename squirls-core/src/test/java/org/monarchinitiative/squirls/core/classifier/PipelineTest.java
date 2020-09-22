@@ -11,9 +11,12 @@ import org.monarchinitiative.squirls.core.classifier.transform.feature.SplicingD
 
 import java.io.InputStream;
 import java.nio.file.Files;
+import java.util.Map;
 
+import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.number.IsCloseTo.closeTo;
 
 class PipelineTest {
@@ -37,7 +40,7 @@ class PipelineTest {
     void setUp() throws Exception {
         pipeline = Pipeline.builder()
                 .transformer(new SplicingDataImputer<>(donorPipeModel.getFeatureNames(), donorPipeModel.getFeatureStatistics()))
-                .classifier(Deserializer.deserializeDonorClassifier(donorPipeModel.getRf()))
+                .classifier(Deserializer.deserializeDonorClassifier(donorPipeModel))
                 .build();
     }
 
@@ -45,5 +48,18 @@ class PipelineTest {
     void predictProba() throws Exception {
         final double pathoProba = pipeline.predictProba(TestVariantInstances.pathogenicDonor());
         assertThat(pathoProba, is(closeTo(.8594975603713706, EPSILON)));
+    }
+
+    @Test
+    public void pipelineGetFeatureIndices() {
+        final Map<Integer, String> featureIndices = donorPipeModel.getFeatureIndices();
+
+        assertThat(featureIndices, allOf(
+                hasEntry(0, "donor_offset"),
+                hasEntry(1, "canonical_donor"),
+                hasEntry(2, "cryptic_donor"),
+                hasEntry(3, "phylop"),
+                hasEntry(4, "hexamer"),
+                hasEntry(5, "septamer")));
     }
 }

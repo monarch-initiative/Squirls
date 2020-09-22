@@ -38,7 +38,7 @@ public class StandardSquirlsClassifier implements SquirlsClassifier {
 
         usedFeatures = Stream.concat(donorClf.usedFeatureNames().stream(), acceptorClf.usedFeatureNames().stream())
                 .collect(Collectors.toUnmodifiableSet());
-        LOGGER.debug("initialized classifier with the following features: {}",
+        LOGGER.debug("Initialized classifier with the following features: {}",
                 usedFeatures.stream().sorted().collect(Collectors.joining(", ", "[", "]")));
     }
 

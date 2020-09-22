@@ -8,13 +8,11 @@ import org.monarchinitiative.squirls.core.classifier.forest.RandomForest;
 import org.monarchinitiative.squirls.core.classifier.io.DecisionTreeTransferModel;
 import org.monarchinitiative.squirls.core.classifier.io.Deserializer;
 import org.monarchinitiative.squirls.core.classifier.io.OverallModelData;
-import org.monarchinitiative.squirls.core.classifier.io.RandomForestTransferModel;
-import org.monarchinitiative.squirls.core.classifier.tree.AcceptorSplicingDecisionTree;
-import org.monarchinitiative.squirls.core.classifier.tree.DonorSplicingDecisionTree;
+import org.monarchinitiative.squirls.core.classifier.io.PipelineTransferModel;
+import org.monarchinitiative.squirls.core.classifier.tree.BinaryDecisionTree;
 
 import java.io.InputStream;
 import java.nio.file.Files;
-import java.util.List;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -50,7 +48,7 @@ public class IntegrationTests {
         // get transfer format
         final DecisionTreeTransferModel treeOne = overallModelData.getDonorClf().getRf().getTrees().get(0);
         // make classifier
-        final DonorSplicingDecisionTree<Classifiable> tree = Deserializer.toDonorClassifierTree(List.of(0, 1)).apply(treeOne);
+        final BinaryDecisionTree<Classifiable> tree = Deserializer.toDonorClassifierTree(overallModelData.getDonorClf()).apply(treeOne);
 
         // perform classification & assert
         double pathoProba = tree.predictProba(TestVariantInstances.pathogenicDonor());
@@ -65,7 +63,7 @@ public class IntegrationTests {
         // get transfer format
         final DecisionTreeTransferModel treeOne = overallModelData.getDonorClf().getRf().getTrees().get(50);
         // make classifier
-        final DonorSplicingDecisionTree<Classifiable> tree = Deserializer.toDonorClassifierTree(List.of(0, 1)).apply(treeOne);
+        final BinaryDecisionTree<Classifiable> tree = Deserializer.toDonorClassifierTree(overallModelData.getDonorClf()).apply(treeOne);
 
         // perform classification & assert
         double pathoProba = tree.predictProba(TestVariantInstances.pathogenicDonor());
@@ -80,7 +78,7 @@ public class IntegrationTests {
         // get transfer format
         final DecisionTreeTransferModel treeOne = overallModelData.getAcceptorClf().getRf().getTrees().get(0);
         // make classifier
-        final AcceptorSplicingDecisionTree<Classifiable> tree = Deserializer.toAcceptorClassifierTree(List.of(0, 1)).apply(treeOne);
+        final BinaryDecisionTree<Classifiable> tree = Deserializer.toAcceptorClassifierTree(overallModelData.getAcceptorClf()).apply(treeOne);
 
         // perform classification & assert
         double pathoProba = tree.predictProba(TestVariantInstances.pathogenicAcceptor());
@@ -95,7 +93,7 @@ public class IntegrationTests {
         // get transfer format
         final DecisionTreeTransferModel treeOne = overallModelData.getAcceptorClf().getRf().getTrees().get(50);
         // make classifier
-        final AcceptorSplicingDecisionTree<Classifiable> tree = Deserializer.toAcceptorClassifierTree(List.of(0, 1)).apply(treeOne);
+        final BinaryDecisionTree<Classifiable> tree = Deserializer.toAcceptorClassifierTree(overallModelData.getAcceptorClf()).apply(treeOne);
 
         // perform classification & assert
         double pathoProba = tree.predictProba(TestVariantInstances.pathogenicAcceptor());
@@ -112,9 +110,9 @@ public class IntegrationTests {
     @Test
     void donorForestPredictProba() {
         // get transfer format
-        final RandomForestTransferModel rftm = overallModelData.getDonorClf().getRf();
+        final PipelineTransferModel ptm = overallModelData.getDonorClf();
         // make classifier
-        final RandomForest<Classifiable> forest = Deserializer.deserializeDonorClassifier(rftm);
+        final RandomForest<Classifiable> forest = Deserializer.deserializeDonorClassifier(ptm);
 
         double pathoProba = forest.predictProba(TestVariantInstances.pathogenicDonor());
         assertThat(pathoProba, is(closeTo(.8594975603713706, EPSILON)));
@@ -126,9 +124,9 @@ public class IntegrationTests {
     @Test
     void acceptorForestPredictProba() {
         // get transfer format
-        final RandomForestTransferModel rftm = overallModelData.getAcceptorClf().getRf();
+        final PipelineTransferModel ptm = overallModelData.getAcceptorClf();
         // make classifier
-        final RandomForest<Classifiable> forest = Deserializer.deserializeAcceptorClassifier(rftm);
+        final RandomForest<Classifiable> forest = Deserializer.deserializeAcceptorClassifier(ptm);
 
         double pathoProba = forest.predictProba(TestVariantInstances.pathogenicAcceptor());
         assertThat(pathoProba, is(closeTo(.4936002946815444, EPSILON)));

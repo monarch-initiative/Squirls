@@ -28,9 +28,9 @@ import static org.hamcrest.number.IsCloseTo.closeTo;
  * </pre>
  * and the test compares output value of Java implementation with the output above.
  */
-class AbstractDecisionTreeTest extends TestBasedOnIrisInstances {
+class BinaryDecisionTreeTest extends TestBasedOnIrisInstances {
 
-    private AbstractBinaryDecisionTree<Classifiable> tree;
+    private BinaryDecisionTree<Classifiable> tree;
 
     @BeforeEach
     void setUp() {
@@ -38,7 +38,7 @@ class AbstractDecisionTreeTest extends TestBasedOnIrisInstances {
     }
 
     /**
-     * The test compares outputs of {@link AbstractBinaryDecisionTree} with outputs of Scikit-learn's
+     * The test compares outputs of {@link BinaryDecisionTree} with outputs of Scikit-learn's
      * <code>DecisionTreeClassifier</code> trained on Iris dataset as described below:
      * <pre>
      * from sklearn.tree import DecisionTreeClassifier

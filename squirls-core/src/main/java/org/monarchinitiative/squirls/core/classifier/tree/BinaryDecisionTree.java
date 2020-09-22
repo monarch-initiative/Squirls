@@ -5,10 +5,7 @@ import org.monarchinitiative.squirls.core.classifier.Classifiable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -17,9 +14,9 @@ import java.util.stream.IntStream;
  *
  * @param <T>
  */
-public abstract class AbstractBinaryDecisionTree<T extends Classifiable> extends AbstractBinaryClassifier<T> {
+public class BinaryDecisionTree<T extends Classifiable> extends AbstractBinaryClassifier<T> {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractBinaryDecisionTree.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(BinaryDecisionTree.class);
 
     /**
      * In arrays that define this tree, this is the index of the root node.
@@ -60,11 +57,18 @@ public abstract class AbstractBinaryDecisionTree<T extends Classifiable> extends
      */
     private final int[][] classCounts;
 
+    /**
+     * When the model was trained in python, the feature matrix had columns in certain order. This map
+     * translates feature names into the feature matrix order to ensure that feature name corresponds to the appropriate
+     * entry in {@link #features} array.
+     */
+    private final Map<Integer, String> featureIndices;
 
-    protected AbstractBinaryDecisionTree(Builder<?> builder) {
+    private BinaryDecisionTree(Builder<T> builder) {
         super(builder);
         this.nNodes = builder.nNodes;
         this.features = toIntArray(builder.features);
+        this.featureIndices = Map.copyOf(builder.featureIndices);
         this.thresholds = toDoubleArray(builder.thresholds);
         this.childrenLeft = toIntArray(builder.childrenLeft);
         this.childrenRight = toIntArray(builder.childrenRight);
@@ -89,6 +93,10 @@ public abstract class AbstractBinaryDecisionTree<T extends Classifiable> extends
             array[i] = inner;
         }
         return array;
+    }
+
+    public static <T extends Classifiable> Builder<T> builder() {
+        return new Builder<>();
     }
 
     /**
@@ -139,6 +147,11 @@ public abstract class AbstractBinaryDecisionTree<T extends Classifiable> extends
         }
     }
 
+    @Override
+    public Set<String> usedFeatureNames() {
+        return Set.copyOf(featureIndices.values());
+    }
+
     /**
      * Predict class probabilities for given instance. Expecting to get an instance with all features available.
      *
@@ -149,6 +162,9 @@ public abstract class AbstractBinaryDecisionTree<T extends Classifiable> extends
     public double predictProba(T instance) {
         return predictProba(instance, ROOT_IDX);
     }
+
+//
+//    protected abstract Map<Integer, String> getFeatureIndices();
 
     /**
      * Get class probabilities of this instance.
@@ -167,11 +183,11 @@ public abstract class AbstractBinaryDecisionTree<T extends Classifiable> extends
              * - recurse down
              */
             final int featureIdx = features[nodeIdx];
-            final String featureName = getFeatureIndices().get(featureIdx);
+            final String featureName = featureIndices.get(featureIdx);
 
             /*
              We should not get null pointer here since we check that we have all the features at the level of
-             OverlordClassifier.
+             SquirlsClassifier.
              */
             final double feature = instance.getFeature(featureName, Double.class);
             final double threshold = thresholds[nodeIdx];
@@ -194,19 +210,11 @@ public abstract class AbstractBinaryDecisionTree<T extends Classifiable> extends
         }
     }
 
-    /**
-     * When the model was trained in python, the feature matrix had columns in certain order. The map returned by this
-     * method translates feature names into the feature order in that feature matrix.
-     *
-     * @return map with mappings from feature matrix id to feature name
-     */
-    protected abstract Map<Integer, String> getFeatureIndices();
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        AbstractBinaryDecisionTree<?> that = (AbstractBinaryDecisionTree<?>) o;
+        BinaryDecisionTree<?> that = (BinaryDecisionTree<?>) o;
         return nNodes == that.nNodes &&
                 Arrays.equals(features, that.features) &&
                 Arrays.equals(thresholds, that.thresholds) &&
@@ -238,7 +246,9 @@ public abstract class AbstractBinaryDecisionTree<T extends Classifiable> extends
                 "} " + super.toString();
     }
 
-    public abstract static class Builder<A extends Builder<A>> extends AbstractBinaryClassifier.Builder<A> {
+    public static class Builder<T extends Classifiable> extends AbstractBinaryClassifier.Builder<Builder<T>> {
+
+        private final Map<Integer, String> featureIndices = new HashMap<>();
 
         private int nNodes;
 
@@ -256,32 +266,52 @@ public abstract class AbstractBinaryDecisionTree<T extends Classifiable> extends
             // protected no-op
         }
 
-        public A nNodes(int nNodes) {
+        @Override
+        public BinaryDecisionTree<T> build() {
+            return new BinaryDecisionTree<>(this);
+        }
+
+        @Override
+        protected Builder<T> self() {
+            return this;
+        }
+
+        public Builder<T> nNodes(int nNodes) {
             this.nNodes = nNodes;
             return self();
         }
 
-        public A features(List<Integer> features) {
+        public Builder<T> putFeatureIndex(int index, String feature) {
+            featureIndices.put(index, feature);
+            return self();
+        }
+
+        public Builder<T> putAllFeatureIndices(Map<? extends Integer, ? extends String> featureIndices) {
+            this.featureIndices.putAll(featureIndices);
+            return self();
+        }
+
+        public Builder<T> features(List<Integer> features) {
             this.features = List.copyOf(features);
             return self();
         }
 
-        public A thresholds(List<Double> thresholds) {
+        public Builder<T> thresholds(List<Double> thresholds) {
             this.thresholds = List.copyOf(thresholds);
             return self();
         }
 
-        public A childrenLeft(List<Integer> childrenLeft) {
+        public Builder<T> childrenLeft(List<Integer> childrenLeft) {
             this.childrenLeft = List.copyOf(childrenLeft);
             return self();
         }
 
-        public A childrenRight(List<Integer> childrenRight) {
+        public Builder<T> childrenRight(List<Integer> childrenRight) {
             this.childrenRight = List.copyOf(childrenRight);
             return self();
         }
 
-        public A values(List<List<Integer>> values) {
+        public Builder<T> values(List<List<Integer>> values) {
             this.values = List.copyOf(values);
             return self();
         }
