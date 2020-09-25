@@ -24,13 +24,13 @@ import static org.hamcrest.Matchers.is;
 
 @SpringBootTest(classes = {TestDataSourceConfig.class})
 @Sql(scripts = {"create_transcript_intron_exon_tables.sql"})
-class TranscriptIngestDaoTest {
+public class TranscriptIngestDaoTest {
 
     @Autowired
-    private DataSource dataSource;
+    public DataSource dataSource;
 
     @Autowired
-    private ReferenceDictionary referenceDictionary;
+    public ReferenceDictionary referenceDictionary;
 
     private TranscriptIngestDao instance;
 
@@ -64,12 +64,12 @@ class TranscriptIngestDaoTest {
     }
 
     @BeforeEach
-    void setUp() {
+    public void setUp() {
         instance = new TranscriptIngestDao(dataSource, referenceDictionary);
     }
 
     @Test
-    void insertCorrectData() throws Exception {
+    public void insertCorrectData() throws Exception {
         JdbcTemplate template = new JdbcTemplate(dataSource);
         List<String> records = template.query("SELECT * FROM SPLICING.TRANSCRIPTS", rowMapper());
         assertThat(records, hasSize(0));
@@ -89,13 +89,13 @@ class TranscriptIngestDaoTest {
     }
 
     @Test
-    void insertNull() {
+    public void insertNull() {
         int i = instance.insertTranscript(null);
         assertThat(i, is(0));
     }
 
     @Test
-    void insertEmptyData() {
+    public void insertEmptyData() {
         int i = instance.insertTranscript(SplicingTranscript.getDefaultInstance());
         assertThat(i, is(0));
     }

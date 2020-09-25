@@ -119,6 +119,13 @@ public class SquirlsDataBuilder {
         transcriptsIngestRunner.run();
     }
 
+    private static void ingestReferenceSequences(DataSource dataSource,
+                                                 ReferenceDictionary rd,
+                                                 GenomeSequenceAccessor accessor,
+                                                 Collection<TranscriptModel> transcripts) {
+
+    }
+
     /**
      * Store data for septamers and hexamer methods.
      *
@@ -184,6 +191,7 @@ public class SquirlsDataBuilder {
 
         // 0 - deserialize Jannovar transcript databases
         JannovarDataManager manager = JannovarDataManager.fromDirectory(jannovarDbDir);
+        Collection<TranscriptModel> transcripts = manager.getAllTranscriptModels();
 
         // 1a - parse YAML with splicing matrices
         SplicingPwmData splicingPwmData;
@@ -231,7 +239,7 @@ public class SquirlsDataBuilder {
         LOGGER.info("Inserting k-mer maps");
         processKmers(dataSource, hexamerMap, septamerMap);
 
-        // 3e - store reference dictionary and transcripts
+        // 3e - store reference dictionary, transcripts, and reference sequence for genes
         SplicingInformationContentCalculator calculator = new SplicingInformationContentCalculator(splicingPwmData);
         try (GenomeSequenceAccessor accessor = GenomeSequenceAccessorBuilder.builder()
                 .setFastaPath(genomeFastaPath)
@@ -244,7 +252,10 @@ public class SquirlsDataBuilder {
             referenceDictionaryIngestDao.saveReferenceDictionary(rd);
 
             LOGGER.info("Inserting transcripts");
-            ingestTranscripts(dataSource, rd, accessor, manager.getAllTranscriptModels(), calculator);
+            ingestTranscripts(dataSource, rd, accessor, transcripts, calculator);
+
+            LOGGER.info("Storing reference sequences for genes");
+            ingestReferenceSequences(dataSource, rd, accessor, transcripts);
         } catch (IOException e) {
             throw new SquirlsException(e);
         }

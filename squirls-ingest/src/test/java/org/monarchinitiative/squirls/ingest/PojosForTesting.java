@@ -121,7 +121,7 @@ public class PojosForTesting {
 
     public static SequenceInterval getSequenceIntervalForTranscriptWithThreeExons(ReferenceDictionary referenceDictionary) {
         return SequenceInterval.builder()
-                .interval(new GenomeInterval(referenceDictionary, Strand.FWD, 1, 900, 2100))
+                .interval(new GenomeInterval(referenceDictionary, Strand.FWD, 2, 900, 2100))
                 .sequence("AAACAGGTTAATCGCCACGACATAGTAGTATTTAGAGTTACTAGTAAGCCTGATGCCACT" + // 960
                         "ACACAATTCTAGCTTTTCTCTTTAGGATGATTGTTTCATT" + // 1000
                         "CAGTCTTATCTCTTTTAGAA" + // 1020
