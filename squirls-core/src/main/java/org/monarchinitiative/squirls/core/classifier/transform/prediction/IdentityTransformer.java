@@ -18,6 +18,11 @@ public class IdentityTransformer implements PredictionTransformer {
     }
 
     @Override
+    public String getName() {
+        return "identity_transformer";
+    }
+
+    @Override
     public <T extends MutablePrediction> T transform(T data) {
         return data;
     }

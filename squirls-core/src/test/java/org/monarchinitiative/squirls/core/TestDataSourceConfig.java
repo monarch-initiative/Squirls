@@ -6,8 +6,8 @@ import de.charite.compbio.jannovar.data.ReferenceDictionary;
 import de.charite.compbio.jannovar.data.ReferenceDictionaryBuilder;
 import org.monarchinitiative.squirls.core.classifier.SquirlsClassifier;
 import org.monarchinitiative.squirls.core.classifier.io.Deserializer;
-import org.monarchinitiative.squirls.core.classifier.transform.prediction.LogisticRegressionPredictionTransformer;
 import org.monarchinitiative.squirls.core.classifier.transform.prediction.PredictionTransformer;
+import org.monarchinitiative.squirls.core.classifier.transform.prediction.SimpleLogisticRegression;
 import org.monarchinitiative.squirls.core.data.ic.InputStreamBasedPositionalWeightMatrixParser;
 import org.monarchinitiative.squirls.core.data.ic.SplicingPositionalWeightMatrixParser;
 import org.monarchinitiative.squirls.core.data.ic.SplicingPwmData;
@@ -41,7 +41,7 @@ public class TestDataSourceConfig {
     /**
      * Path to real-life Squirls v1.1 YAML model.
      */
-    private static final String SQUIRLS_MODEL_PATH = "classifier/io/example_model.v1.1.yaml";
+    public static final Path SQUIRLS_MODEL_PATH = Paths.get(TestDataSourceConfig.class.getResource("classifier/io/example_model.v1.1.sklearn-0.23.1-slope-intercept-array.yaml").getPath());
 
     /**
      * @return in-memory database for testing
@@ -62,7 +62,7 @@ public class TestDataSourceConfig {
      */
     @Bean
     public SquirlsClassifier squirlsClassifier() throws IOException {
-        try (InputStream is = TestDataSourceConfig.class.getResourceAsStream(SQUIRLS_MODEL_PATH)) {
+        try (InputStream is = Files.newInputStream(SQUIRLS_MODEL_PATH)) {
             return Deserializer.deserialize(is);
         }
     }
@@ -74,7 +74,7 @@ public class TestDataSourceConfig {
     public PredictionTransformer predictionTransformer() {
         final double slope = 13.648422;
         final double intercept = -4.909676;
-        return LogisticRegressionPredictionTransformer.getInstance(slope, intercept);
+        return SimpleLogisticRegression.getInstance(slope, intercept);
     }
 
     @Bean

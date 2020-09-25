@@ -4,20 +4,25 @@ import org.monarchinitiative.squirls.core.classifier.*;
 import org.monarchinitiative.squirls.core.classifier.forest.RandomForest;
 import org.monarchinitiative.squirls.core.classifier.transform.feature.FeatureTransformer;
 import org.monarchinitiative.squirls.core.classifier.transform.feature.SplicingDataImputer;
-import org.monarchinitiative.squirls.core.classifier.tree.AcceptorSplicingDecisionTree;
-import org.monarchinitiative.squirls.core.classifier.tree.DonorSplicingDecisionTree;
+import org.monarchinitiative.squirls.core.classifier.tree.BinaryDecisionTree;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.Constructor;
 
 import java.io.InputStream;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
- * This class deserializes {@link SquirlsClassifier} from a YAML file.
+ * This static utility class deserializes {@link SquirlsClassifier} from a YAML file. The class also provides raw
+ * classifier data in form of {@link OverallModelData}.
  */
 public class Deserializer {
+
+    private static final AtomicInteger DONOR_TREE_COUNTER = new AtomicInteger();
+
+    private static final AtomicInteger ACCEPTOR_TREE_COUNTER = new AtomicInteger();
 
     private Deserializer() {
         // private no-op
@@ -37,14 +42,16 @@ public class Deserializer {
     }
 
     public static OverallModelData deserializeOverallModelData(InputStream is) {
-        Yaml yaml = new Yaml(new Constructor(OverallModelData.class));
+        Yaml yaml = new Yaml(new Constructor(OverallModelDataV041.class));
         return yaml.load(is);
     }
 
     static <T extends Classifiable> BinaryClassifier<T> deserializeDonorPipeline(PipelineTransferModel ptm) {
         return Pipeline.<T>builder()
+                .name("donor")
+                .classes(ptm.getRf().getClasses())
                 .transformer(deserializeImputer(ptm.getFeatureNames(), ptm.getFeatureStatistics()))
-                .classifier(deserializeDonorClassifier(ptm.getRf()))
+                .classifier(deserializeDonorClassifier(ptm))
                 .build();
     }
 
@@ -52,18 +59,21 @@ public class Deserializer {
         return new SplicingDataImputer<>(featureNames, featureStatistics);
     }
 
-    public static <T extends Classifiable> RandomForest<T> deserializeDonorClassifier(RandomForestTransferModel rfModel) {
+    public static <T extends Classifiable> RandomForest<T> deserializeDonorClassifier(PipelineTransferModel ptm) {
         return RandomForest.<T>builder()
-                .classes(rfModel.getClasses())
-                .addTrees(rfModel.getTrees().values().stream()
-                        .map(Deserializer.<T>toDonorClassifierTree(rfModel.getClasses()))
+                .name("donor_rf")
+                .classes(ptm.getRf().getClasses())
+                .addTrees(ptm.getRf().getTrees().values().stream()
+                        .map(Deserializer.<T>toDonorClassifierTree(ptm))
                         .collect(Collectors.toList()))
                 .build();
     }
 
-    public static <T extends Classifiable> Function<DecisionTreeTransferModel, DonorSplicingDecisionTree<T>> toDonorClassifierTree(List<Integer> classes) {
-        return md -> DonorSplicingDecisionTree.<T>builder()
-                .classes(classes)
+    public static <T extends Classifiable> Function<DecisionTreeTransferModel, BinaryDecisionTree<T>> toDonorClassifierTree(PipelineTransferModel ptm) {
+        return md -> BinaryDecisionTree.<T>builder()
+                .name(String.format("donor_tree_%d", DONOR_TREE_COUNTER.getAndIncrement()))
+                .putAllFeatureIndices(ptm.getFeatureIndices())
+                .classes(ptm.getRf().getClasses())
                 .nNodes(md.getNodeCount())
                 .features(md.getFeature())
                 .childrenLeft(md.getChildrenLeft())
@@ -75,23 +85,28 @@ public class Deserializer {
 
     static <T extends Classifiable> BinaryClassifier<T> deserializeAcceptorPipeline(PipelineTransferModel ptm) {
         return Pipeline.<T>builder()
+                .name("acceptor")
+                .classes(ptm.getRf().getClasses())
                 .transformer(deserializeImputer(ptm.getFeatureNames(), ptm.getFeatureStatistics()))
-                .classifier(deserializeAcceptorClassifier(ptm.getRf()))
+                .classifier(deserializeAcceptorClassifier(ptm))
                 .build();
     }
 
-    public static <T extends Classifiable> RandomForest<T> deserializeAcceptorClassifier(RandomForestTransferModel rfModel) {
+    public static <T extends Classifiable> RandomForest<T> deserializeAcceptorClassifier(PipelineTransferModel ptm) {
         return RandomForest.<T>builder()
-                .classes(rfModel.getClasses())
-                .addTrees(rfModel.getTrees().values().stream()
-                        .map(Deserializer.<T>toAcceptorClassifierTree(rfModel.getClasses()))
+                .name("acceptor_rf")
+                .classes(ptm.getRf().getClasses())
+                .addTrees(ptm.getRf().getTrees().values().stream()
+                        .map(Deserializer.<T>toAcceptorClassifierTree(ptm))
                         .collect(Collectors.toList()))
                 .build();
     }
 
-    public static <T extends Classifiable> Function<DecisionTreeTransferModel, AcceptorSplicingDecisionTree<T>> toAcceptorClassifierTree(List<Integer> classes) {
-        return md -> AcceptorSplicingDecisionTree.<T>builder()
-                .classes(classes)
+    public static <T extends Classifiable> Function<DecisionTreeTransferModel, BinaryDecisionTree<T>> toAcceptorClassifierTree(PipelineTransferModel ptm) {
+        return md -> BinaryDecisionTree.<T>builder()
+                .name(String.format("acceptor_tree_%d", ACCEPTOR_TREE_COUNTER.getAndIncrement()))
+                .putAllFeatureIndices(ptm.getFeatureIndices())
+                .classes(ptm.getRf().getClasses())
                 .nNodes(md.getNodeCount())
                 .features(md.getFeature())
                 .childrenLeft(md.getChildrenLeft())

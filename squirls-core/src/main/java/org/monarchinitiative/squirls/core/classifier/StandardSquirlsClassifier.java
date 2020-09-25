@@ -38,7 +38,7 @@ public class StandardSquirlsClassifier implements SquirlsClassifier {
 
         usedFeatures = Stream.concat(donorClf.usedFeatureNames().stream(), acceptorClf.usedFeatureNames().stream())
                 .collect(Collectors.toUnmodifiableSet());
-        LOGGER.debug("initialized classifier with the following features: {}",
+        LOGGER.debug("Initialized classifier with the following features: {}",
                 usedFeatures.stream().sorted().collect(Collectors.joining(", ", "[", "]")));
     }
 
@@ -60,8 +60,8 @@ public class StandardSquirlsClassifier implements SquirlsClassifier {
                 final double donorProba = donorClf.predictProba(data);
                 final double acceptorProba = acceptorClf.predictProba(data);
                 data.setPrediction(StandardPrediction.builder()
-                        .addProbaThresholdPair(donorProba, donorThreshold)
-                        .addProbaThresholdPair(acceptorProba, acceptorThreshold)
+                        .addProbaThresholdPair(donorClf.getName(), donorProba, donorThreshold)
+                        .addProbaThresholdPair(acceptorClf.getName(), acceptorProba, acceptorThreshold)
                         .build());
             } catch (PredictionException e) {
                 LOGGER.debug("Error: ", e);

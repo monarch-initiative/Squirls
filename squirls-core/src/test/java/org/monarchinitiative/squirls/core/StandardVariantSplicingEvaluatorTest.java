@@ -108,8 +108,8 @@ class StandardVariantSplicingEvaluatorTest {
 
         // 3 - classifier
         StandardPrediction prediction = StandardPrediction.builder()
-                .addProbaThresholdPair(.6, .7)
-                .addProbaThresholdPair(.1, .6)
+                .addProbaThresholdPair("donor", .6, .7)
+                .addProbaThresholdPair("acceptor", .1, .6)
                 .build();
         final StandardSplicingPredictionData predicted = StandardSplicingPredictionData.of(variant, stx, SI);
         predicted.putFeature("donor_offset", 5);
@@ -198,8 +198,8 @@ class StandardVariantSplicingEvaluatorTest {
         predicted.putFeature("donor_offset", 5);
         predicted.putFeature("acceptor_offset", 1234); // not real
         predicted.setPrediction(StandardPrediction.builder()
-                .addProbaThresholdPair(.6, .7)
-                .addProbaThresholdPair(.1, .6)
+                .addProbaThresholdPair("donor", .6, .7)
+                .addProbaThresholdPair("acceptor", .1, .6)
                 .build());
 
         when(classifier.predict(annotated)).thenReturn(predicted);

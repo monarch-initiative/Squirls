@@ -21,10 +21,12 @@ squirls:
   # Path to bigwig file with genome-wide PhyloP scores
   phylop-bigwig-path:
 
-  classifier:
-    # Which classifier to use
-    #version: v1
-    # Variant with longer REF allele will not be evaluated
-    #max-variant-length: 100
-  # TODO - add annotator if necessary
+  #classifier:
+  # Which classifier to use
+  #version: v1
+  # Variant with longer REF allele will not be evaluated
+  #max-variant-length: 100
+  #annotator:
+  # Which annotator to use. Use `agez` with classifier v0.4.1 and `dense` for v1.1
+  #  version: dense
 
