@@ -11,6 +11,7 @@ import org.monarchinitiative.squirls.core.classifier.transform.feature.SplicingD
 
 import java.io.InputStream;
 import java.nio.file.Files;
+import java.util.List;
 import java.util.Map;
 
 import static org.hamcrest.CoreMatchers.allOf;
@@ -40,6 +41,7 @@ class PipelineTest {
     void setUp() throws Exception {
         pipeline = Pipeline.builder()
                 .name("pipeline_star")
+                .classes(List.of(1, 2))
                 .transformer(new SplicingDataImputer<>(donorPipeModel.getFeatureNames(), donorPipeModel.getFeatureStatistics()))
                 .classifier(Deserializer.deserializeDonorClassifier(donorPipeModel))
                 .build();

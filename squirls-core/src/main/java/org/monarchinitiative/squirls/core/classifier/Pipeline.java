@@ -1,6 +1,7 @@
 package org.monarchinitiative.squirls.core.classifier;
 
 import org.monarchinitiative.squirls.core.classifier.transform.feature.FeatureTransformer;
+import org.monarchinitiative.squirls.core.classifier.tree.BinaryDecisionTree;
 
 import java.util.Objects;
 import java.util.Set;
@@ -10,16 +11,14 @@ import java.util.stream.Stream;
 /**
  * Pipeline class inspired by scikit-learn. This pipeline consists of an imputer followed by a classifier.
  */
-public class Pipeline<T extends Classifiable> implements BinaryClassifier<T> {
-
-    private final String name;
+public class Pipeline<T extends Classifiable> extends AbstractBinaryClassifier<T> {
 
     private final FeatureTransformer<T> transformer;
 
     private final BinaryClassifier<T> classifier;
 
     private Pipeline(Builder<T> builder) {
-        name = Objects.requireNonNull(builder.name, "Pipeline name cannot be null");
+        super(builder);
         transformer = builder.transformer;
         classifier = builder.randomForest;
     }
@@ -63,24 +62,13 @@ public class Pipeline<T extends Classifiable> implements BinaryClassifier<T> {
                 '}';
     }
 
-    @Override
-    public String getName() {
-        return name;
-    }
 
-    public static final class Builder<T extends Classifiable> {
+    public static final class Builder<T extends Classifiable> extends AbstractBinaryClassifier.Builder<Builder<T>> {
+
         private FeatureTransformer<T> transformer;
         private BinaryClassifier<T> randomForest;
 
-        private String name;
-
         private Builder() {
-        }
-
-
-        public Builder<T> name(String name) {
-            this.name = name;
-            return this;
         }
 
         public Builder<T> transformer(FeatureTransformer<T> transformer) {
@@ -95,6 +83,11 @@ public class Pipeline<T extends Classifiable> implements BinaryClassifier<T> {
 
         public Pipeline<T> build() {
             return new Pipeline<>(this);
+        }
+
+        @Override
+        protected Builder<T> self() {
+            return this;
         }
     }
 }
