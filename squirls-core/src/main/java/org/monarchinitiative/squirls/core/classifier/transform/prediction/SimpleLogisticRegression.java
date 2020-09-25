@@ -38,10 +38,6 @@ public class SimpleLogisticRegression implements PredictionTransformer {
         // apply the logistic regression transformation
         final double exp = Math.exp(-(slope * x + intercept));
 
-        // this check should not be necessary
-        //   double score = 1 / (1 + exp);
-        //   return Math.max(0., Math.min(1., score));
-
         return 1 / (1 + exp);
     }
 
