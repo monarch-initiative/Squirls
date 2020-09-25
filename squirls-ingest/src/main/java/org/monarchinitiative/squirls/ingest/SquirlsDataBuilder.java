@@ -3,6 +3,8 @@ package org.monarchinitiative.squirls.ingest;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import de.charite.compbio.jannovar.data.ReferenceDictionary;
+import de.charite.compbio.jannovar.reference.GenomeInterval;
+import de.charite.compbio.jannovar.reference.GenomePosition;
 import de.charite.compbio.jannovar.reference.TranscriptModel;
 import org.flywaydb.core.Flyway;
 import org.monarchinitiative.squirls.core.SquirlsException;
@@ -23,11 +25,13 @@ import org.monarchinitiative.squirls.ingest.kmers.KmerIngestDao;
 import org.monarchinitiative.squirls.ingest.pwm.PwmIngestDao;
 import org.monarchinitiative.squirls.ingest.reference.GenomeAssemblyDownloader;
 import org.monarchinitiative.squirls.ingest.reference.ReferenceDictionaryIngestDao;
+import org.monarchinitiative.squirls.ingest.reference.ReferenceSequenceIngestDao;
 import org.monarchinitiative.squirls.ingest.transcripts.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import xyz.ielis.hyperutil.reference.fasta.GenomeSequenceAccessor;
 import xyz.ielis.hyperutil.reference.fasta.GenomeSequenceAccessorBuilder;
+import xyz.ielis.hyperutil.reference.fasta.SequenceInterval;
 
 import javax.sql.DataSource;
 import java.io.ByteArrayInputStream;
@@ -37,7 +41,10 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * A static class with methods for building splicing database.
@@ -45,6 +52,11 @@ import java.util.Map;
  * @see Main for an example usage
  */
 public class SquirlsDataBuilder {
+
+    /**
+     * Number of bases upstream and downstream that we store in addition to storing gene's reference FASTA sequence.
+     */
+    public static final int GENE_SEQUENCE_PADDING = 500;
 
     public static final String DONOR_NAME = "SPLICE_DONOR_SITE";
 
@@ -119,11 +131,62 @@ public class SquirlsDataBuilder {
         transcriptsIngestRunner.run();
     }
 
-    private static void ingestReferenceSequences(DataSource dataSource,
-                                                 ReferenceDictionary rd,
-                                                 GenomeSequenceAccessor accessor,
-                                                 Collection<TranscriptModel> transcripts) {
+    /**
+     * Insert reference sequence of all genes into the database.
+     * <p>
+     * Group transcripts by the gene symbol, then for each gene:
+     * <ul>
+     *     <li>find the interval that encompasses all transcript of the gene</li>
+     *     <li>extend the interval with upstream and downstream padding</li>
+     *     <li>fetch FASTA sequence for the interval</li>
+     *     <li>store in the database</li>
+     * </ul>
+     */
+    static void ingestReferenceSequences(DataSource dataSource,
+                                         GenomeSequenceAccessor accessor,
+                                         Collection<TranscriptModel> transcripts) {
+        // group transcripts by gene symbol
+        final Map<String, List<TranscriptModel>> txByGeneSymbol = transcripts.stream()
+                .collect(Collectors.groupingBy(TranscriptModel::getGeneSymbol));
 
+        // process all genes
+        int updated = 0;
+        final ReferenceSequenceIngestDao dao = new ReferenceSequenceIngestDao(dataSource);
+        for (Map.Entry<String, List<TranscriptModel>> entry : txByGeneSymbol.entrySet()) {
+            final String symbol = entry.getKey();
+            final List<TranscriptModel> txs = entry.getValue();
+            if (txs.isEmpty()) {
+                // no transcript for the gene
+                LOGGER.warn("No tx found for gene `{}`", symbol);
+                continue;
+            }
+
+            GenomePosition begin = null, end = null;
+            for (TranscriptModel tx : txs) {
+                // inspect begin
+                final GenomePosition currentBegin = tx.getTXRegion().getGenomeBeginPos();
+                if (begin == null || currentBegin.isLt(begin)) {
+                    begin = currentBegin;
+                }
+                // inspect end
+                final GenomePosition currentEnd = tx.getTXRegion().getGenomeEndPos();
+                if (end == null || currentEnd.isGt(end)) {
+                    end = currentEnd;
+                }
+            }
+
+            // we're interested in fetching this sequence
+            final GenomeInterval interval = new GenomeInterval(begin, end.differenceTo(begin)).withMorePadding(GENE_SEQUENCE_PADDING);
+            final Optional<SequenceInterval> opt = accessor.fetchSequence(interval);
+            if (opt.isEmpty()) {
+                LOGGER.warn("Could not fetch sequence for gene {} at {}", symbol, interval);
+                continue;
+            }
+            final SequenceInterval sequenceInterval = opt.get();
+            updated += dao.insertSequence(symbol, sequenceInterval);
+        }
+
+        LOGGER.info("Updated {} rows in reference sequence table", updated);
     }
 
     /**
@@ -255,7 +318,7 @@ public class SquirlsDataBuilder {
             ingestTranscripts(dataSource, rd, accessor, transcripts, calculator);
 
             LOGGER.info("Storing reference sequences for genes");
-            ingestReferenceSequences(dataSource, rd, accessor, transcripts);
+            ingestReferenceSequences(dataSource, accessor, transcripts);
         } catch (IOException e) {
             throw new SquirlsException(e);
         }

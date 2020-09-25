@@ -27,7 +27,11 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
 
 @SpringBootTest(classes = {TestDataSourceConfig.class})
-@Sql(scripts = {"pwm/create_pwm_tables.sql", "transcripts/create_transcript_intron_exon_tables.sql"})
+@Sql(scripts = {
+        "pwm/create_pwm_tables.sql",
+        "transcripts/create_transcript_intron_exon_tables.sql",
+        "reference/create_ref_sequence_table.sql"
+})
 class SquirlsDataBuilderTest {
 
     private static final String ASSEMBLY = "hg19";
@@ -131,4 +135,38 @@ class SquirlsDataBuilderTest {
                 "0;16000;18000;adam;ir;DONOR=-4.676134711788632;ACCEPTOR=-14.459319682085656;1"));
     }
 
+    @Test
+    public void ingestReferenceSequences() throws Exception {
+        // act
+        SquirlsDataBuilder.ingestReferenceSequences(dataSource, accessor, transcriptModels);
+
+        // assert
+        String tmSql = "select SYMBOL, CONTIG, BEGIN_POS, END_POS, STRAND, FASTA_SEQUENCE " +
+                "from SPLICING.REF_SEQUENCE";
+
+        List<String> tms = new ArrayList<>();
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement tmSt = connection.prepareStatement(tmSql);
+             ResultSet tmRs = tmSt.executeQuery()) {
+            while (tmRs.next()) {
+                tms.add(String.join(",",
+                        tmRs.getString("SYMBOL"),
+                        tmRs.getString("CONTIG"),
+                        tmRs.getString("BEGIN_POS"),
+                        tmRs.getString("END_POS"),
+                        tmRs.getString("STRAND"),
+                        new String(tmRs.getBytes("FASTA_SEQUENCE"))));
+            }
+        }
+
+        assertThat(tms, hasSize(1));
+
+        final String[] record = tms.get(0).split(",");
+        assertThat(record[0], is("ADAM"));
+        assertThat(record[1], is("2"));
+        assertThat(record[2], is("9500"));
+        assertThat(record[3], is("20500"));
+        assertThat(record[4], is("TRUE"));
+        assertThat(record[5], is(accessor.fetchSequence("chr2", 9501, 20500))); // 1-based numbering
+    }
 }
