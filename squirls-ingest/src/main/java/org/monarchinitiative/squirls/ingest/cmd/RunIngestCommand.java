@@ -104,6 +104,7 @@ public class RunIngestCommand extends IngestCommand {
                 Path.of(ingestProperties.getSplicingInformationContentMatrix()),
                 Path.of(ingestProperties.getHexamerTsvPath()),
                 Path.of(ingestProperties.getSeptamerTsvPath()),
+                Path.of(ingestProperties.getPhylopPath()),
                 classifiers,
                 versionedAssembly);
     }

@@ -5,7 +5,6 @@ import org.monarchinitiative.squirls.core.reference.allele.AlleleGenerator;
 import org.monarchinitiative.squirls.core.reference.transcript.NaiveSplicingTranscriptLocator;
 import org.monarchinitiative.squirls.core.reference.transcript.SplicingTranscriptLocator;
 import org.monarchinitiative.squirls.core.scoring.calculators.*;
-import org.monarchinitiative.squirls.core.scoring.calculators.conservation.BigWigAccessor;
 import org.monarchinitiative.squirls.core.scoring.calculators.ic.SplicingInformationContentCalculator;
 
 import java.util.Collection;
@@ -43,14 +42,13 @@ public class RichSplicingAnnotator extends AbstractSplicingAnnotator {
 
     public RichSplicingAnnotator(SplicingPwmData splicingPwmData,
                                  Map<String, Double> hexamerMap,
-                                 Map<String, Double> septamerMap,
-                                 BigWigAccessor bigWigAccessor) {
+                                 Map<String, Double> septamerMap) {
         super(new NaiveSplicingTranscriptLocator(splicingPwmData.getParameters()),
                 Stream.of(
                         // rich
                         makeCalculatorMap(splicingPwmData).entrySet(),
                         // dense
-                        DenseSplicingAnnotator.makeDenseCalculatorMap(splicingPwmData, hexamerMap, septamerMap, bigWigAccessor).entrySet())
+                        DenseSplicingAnnotator.makeDenseCalculatorMap(splicingPwmData, hexamerMap, septamerMap).entrySet())
                         .flatMap(Collection::stream)
                         .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)));
     }

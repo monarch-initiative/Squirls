@@ -19,6 +19,12 @@ threes.ingest:
     #hg19: http://hgdownload.soe.ucsc.edu/goldenPath/hg19/bigZips/chromFa.tar.gz
     #hg38: http://hgdownload.soe.ucsc.edu/goldenPath/hg38/bigZips/hg38.chromFa.tar.gz
 
+  # path to BigWig file with genome-wide PhyloP scores
+  # The file is usually available to download from
+  # - hg19 - https://hgdownload.cse.ucsc.edu/goldenpath/hg19/phyloP100way/hg19.100way.phyloP100way.bw
+  # - hg38 - https://hgdownload.soe.ucsc.edu/goldenPath/hg38/phyloP100way/hg38.phyloP100way.bw
+  phylop-path:
+
 # Do not edit anything below
 spring:
   flyway:

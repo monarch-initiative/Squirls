@@ -6,25 +6,21 @@ import de.charite.compbio.jannovar.reference.GenomeVariant;
 import de.charite.compbio.jannovar.reference.Strand;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
 import org.monarchinitiative.squirls.core.PojosForTesting;
 import org.monarchinitiative.squirls.core.SimpleAnnotatable;
 import org.monarchinitiative.squirls.core.TestDataSourceConfig;
 import org.monarchinitiative.squirls.core.data.ic.SplicingPwmData;
 import org.monarchinitiative.squirls.core.model.SplicingTranscript;
-import org.monarchinitiative.squirls.core.scoring.calculators.conservation.BigWigAccessor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.SpringBootTest;
 import xyz.ielis.hyperutil.reference.fasta.SequenceInterval;
 
-import java.util.List;
 import java.util.Map;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.closeTo;
-import static org.mockito.Mockito.when;
 
 @SpringBootTest(classes = TestDataSourceConfig.class)
 class RichSplicingAnnotatorTest {
@@ -45,9 +41,6 @@ class RichSplicingAnnotatorTest {
     @Autowired
     private Map<String, Double> septamerMap;
 
-    @Mock
-    private BigWigAccessor accessor;
-
     private SplicingTranscript st;
 
     private SequenceInterval sequence;
@@ -58,7 +51,7 @@ class RichSplicingAnnotatorTest {
     void setUp() {
         st = PojosForTesting.getTranscriptWithThreeExons(rd);
         sequence = PojosForTesting.getSequenceIntervalForTranscriptWithThreeExons(rd);
-        annotator = new RichSplicingAnnotator(splicingPwmData, hexamerMap, septamerMap, accessor);
+        annotator = new RichSplicingAnnotator(splicingPwmData, hexamerMap, septamerMap);
     }
 
     @Test
@@ -76,7 +69,7 @@ class RichSplicingAnnotatorTest {
     @Test
     void secondExonDonor() throws Exception {
         final GenomeVariant variant = new GenomeVariant(new GenomePosition(rd, Strand.FWD, 1, 1599), "C", "A");
-        when(accessor.getScores(variant.getGenomeInterval())).thenReturn(List.of(.12345F));
+//        when(accessor.getScores(variant.getGenomeInterval())).thenReturn(List.of(.12345F));
 
         final Annotatable ann = annotator.annotate(new SimpleAnnotatable(variant, st, sequence));
 
@@ -89,7 +82,8 @@ class RichSplicingAnnotatorTest {
 
         assertThat(ann.getFeature("hexamer", Double.class), is(closeTo(-1.306309, EPSILON)));
         assertThat(ann.getFeature("septamer", Double.class), is(closeTo(-.339600, EPSILON)));
-        assertThat(ann.getFeature("phylop", Double.class), is(closeTo(.12345, EPSILON)));
+        // TODO: 10/2/20 evaluate
+//        assertThat(ann.getFeature("phylop", Double.class), is(closeTo(.12345, EPSILON)));
 
         assertThat(ann.getFeature("wt_ri_donor", Double.class), is(closeTo(2.8938, EPSILON)));
         assertThat(ann.getFeature("wt_ri_acceptor", Double.class), is(closeTo(4.1148, EPSILON)));

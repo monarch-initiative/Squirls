@@ -14,7 +14,6 @@ import org.monarchinitiative.squirls.core.SimpleAnnotatable;
 import org.monarchinitiative.squirls.core.TestDataSourceConfig;
 import org.monarchinitiative.squirls.core.data.ic.SplicingPwmData;
 import org.monarchinitiative.squirls.core.model.SplicingTranscript;
-import org.monarchinitiative.squirls.core.scoring.calculators.conservation.BigWigAccessor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -46,9 +45,6 @@ public class AGEZSplicingAnnotatorTest {
     @Autowired
     public Map<String, Double> septamerMap;
 
-    @Mock
-    public BigWigAccessor accessor;
-
     private SplicingTranscript st;
 
     private SequenceInterval sequence;
@@ -60,7 +56,7 @@ public class AGEZSplicingAnnotatorTest {
     public void setUp() {
         st = PojosForTesting.getTranscriptWithThreeExons(rd);
         sequence = PojosForTesting.getSequenceIntervalForTranscriptWithThreeExons(rd);
-        annotator = new AGEZSplicingAnnotator(splicingPwmData, hexamerMap, septamerMap, accessor);
+        annotator = new AGEZSplicingAnnotator(splicingPwmData, hexamerMap, septamerMap);
     }
 
     @ParameterizedTest

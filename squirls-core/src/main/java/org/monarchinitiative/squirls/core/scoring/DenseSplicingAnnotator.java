@@ -5,7 +5,6 @@ import org.monarchinitiative.squirls.core.reference.allele.AlleleGenerator;
 import org.monarchinitiative.squirls.core.reference.transcript.NaiveSplicingTranscriptLocator;
 import org.monarchinitiative.squirls.core.reference.transcript.SplicingTranscriptLocator;
 import org.monarchinitiative.squirls.core.scoring.calculators.*;
-import org.monarchinitiative.squirls.core.scoring.calculators.conservation.BigWigAccessor;
 import org.monarchinitiative.squirls.core.scoring.calculators.ic.SplicingInformationContentCalculator;
 
 import java.util.Map;
@@ -33,19 +32,17 @@ public class DenseSplicingAnnotator extends AbstractSplicingAnnotator {
      * @param splicingPwmData splice site data
      * @param hexamerMap      map of hexamer scores from the ESRSeq method
      * @param septamerMap     map of septamer scores from the SMS method
-     * @param bigWigAccessor  the accessor that allows to get PhyloP scores from a bigwig file
      */
     public DenseSplicingAnnotator(SplicingPwmData splicingPwmData,
                                   Map<String, Double> hexamerMap,
-                                  Map<String, Double> septamerMap,
-                                  BigWigAccessor bigWigAccessor) {
-        super(new NaiveSplicingTranscriptLocator(splicingPwmData.getParameters()), makeDenseCalculatorMap(splicingPwmData, hexamerMap, septamerMap, bigWigAccessor));
+                                  Map<String, Double> septamerMap) {
+        super(new NaiveSplicingTranscriptLocator(splicingPwmData.getParameters()), makeDenseCalculatorMap(splicingPwmData, hexamerMap, septamerMap));
     }
 
     static Map<String, FeatureCalculator> makeDenseCalculatorMap(SplicingPwmData splicingPwmData,
                                                                  Map<String, Double> hexamerMap,
-                                                                 Map<String, Double> septamerMap,
-                                                                 BigWigAccessor bigWigAccessor) {
+                                                                 Map<String, Double> septamerMap
+                                                                 ) {
 
         SplicingTranscriptLocator locator = new NaiveSplicingTranscriptLocator(splicingPwmData.getParameters());
         SplicingInformationContentCalculator calculator = new SplicingInformationContentCalculator(splicingPwmData);
@@ -58,7 +55,7 @@ public class DenseSplicingAnnotator extends AbstractSplicingAnnotator {
                 "cryptic_acceptor", new CrypticAcceptor(calculator, generator, locator),
                 "hexamer", new Hexamer(hexamerMap),
                 "septamer", new Septamer(septamerMap),
-                "phylop", new BigWig(bigWigAccessor),
+                "phylop", new BigWig(),
                 "donor_offset", new ClosestDonorDistance(),
                 "acceptor_offset", new ClosestAcceptorDistance());
     }

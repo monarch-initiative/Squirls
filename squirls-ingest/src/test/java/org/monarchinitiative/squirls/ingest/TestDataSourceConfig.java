@@ -14,6 +14,7 @@ import org.monarchinitiative.squirls.core.data.ic.InputStreamBasedPositionalWeig
 import org.monarchinitiative.squirls.core.data.ic.SplicingPositionalWeightMatrixParser;
 import org.monarchinitiative.squirls.core.data.ic.SplicingPwmData;
 import org.monarchinitiative.squirls.core.scoring.calculators.ic.SplicingInformationContentCalculator;
+import org.monarchinitiative.squirls.ingest.conservation.BigWigAccessor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -131,6 +132,12 @@ public class TestDataSourceConfig {
                 .setFastaFaiPath(fastaFai)
                 .setFastaDictPath(fastaDict)
                 .build();
+    }
+
+    @Bean
+    public BigWigAccessor bigWigAccessor() throws Exception {
+        Path phylop = Paths.get(TestDataSourceConfig.class.getResource("conservation/small.bw").getPath());
+        return new BigWigAccessor(phylop);
     }
 
 }

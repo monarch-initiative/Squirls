@@ -19,7 +19,6 @@ import org.monarchinitiative.squirls.core.data.kmer.DbKMerDao;
 import org.monarchinitiative.squirls.core.scoring.AGEZSplicingAnnotator;
 import org.monarchinitiative.squirls.core.scoring.DenseSplicingAnnotator;
 import org.monarchinitiative.squirls.core.scoring.SplicingAnnotator;
-import org.monarchinitiative.squirls.core.scoring.calculators.conservation.BigWigAccessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -103,11 +102,11 @@ public class SquirlsAutoConfiguration {
     }
 
 
-    @Bean
-    public BigWigAccessor phylopBigwigAccessor(Path phylopBigwigPath) throws IOException {
-        LOGGER.debug("Using phyloP bigwig file at `{}`", phylopBigwigPath);
-        return new BigWigAccessor(phylopBigwigPath);
-    }
+//    @Bean
+//    public BigWigAccessor phylopBigwigAccessor(Path phylopBigwigPath) throws IOException {
+//        LOGGER.debug("Using phyloP bigwig file at `{}`", phylopBigwigPath);
+//        return new BigWigAccessor(phylopBigwigPath);
+//    }
 
     @Bean
     public SquirlsDataResolver squirlsDataResolver(Path squirlsDataDirectory,
@@ -178,16 +177,15 @@ public class SquirlsAutoConfiguration {
 
     @Bean
     public SplicingAnnotator splicingAnnotator(SplicingPwmData splicingPwmData,
-                                               DbKMerDao dbKMerDao,
-                                               BigWigAccessor phylopBigwigAccessor) throws UndefinedSquirlsResourceException {
+                                               DbKMerDao dbKMerDao) throws UndefinedSquirlsResourceException {
         final AnnotatorProperties annotatorProperties = properties.getAnnotator();
         final String version = annotatorProperties.getVersion();
         LOGGER.debug("Using `{}` splicing annotator", version);
         switch (version) {
             case "dense":
-                return new DenseSplicingAnnotator(splicingPwmData, dbKMerDao.getHexamerMap(), dbKMerDao.getSeptamerMap(), phylopBigwigAccessor);
+                return new DenseSplicingAnnotator(splicingPwmData, dbKMerDao.getHexamerMap(), dbKMerDao.getSeptamerMap());
             case "agez":
-                return new AGEZSplicingAnnotator(splicingPwmData, dbKMerDao.getHexamerMap(), dbKMerDao.getSeptamerMap(), phylopBigwigAccessor);
+                return new AGEZSplicingAnnotator(splicingPwmData, dbKMerDao.getHexamerMap(), dbKMerDao.getSeptamerMap());
             default:
                 throw new UndefinedSquirlsResourceException(String.format("invalid 'squirls.annotator.version' property value: `%s`", version));
         }

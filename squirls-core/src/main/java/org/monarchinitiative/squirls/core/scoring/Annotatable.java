@@ -4,6 +4,7 @@ import de.charite.compbio.jannovar.reference.GenomeVariant;
 import org.monarchinitiative.squirls.core.Metadata;
 import org.monarchinitiative.squirls.core.classifier.SquirlsClassifier;
 import org.monarchinitiative.squirls.core.classifier.transform.feature.MutableFeature;
+import org.monarchinitiative.squirls.core.data.SplicingAnnotationData;
 import org.monarchinitiative.squirls.core.model.SplicingTranscript;
 import xyz.ielis.hyperutil.reference.fasta.SequenceInterval;
 

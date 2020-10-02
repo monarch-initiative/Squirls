@@ -8,7 +8,6 @@ import org.monarchinitiative.squirls.core.scoring.calculators.ExclusionZoneFeatu
 import org.monarchinitiative.squirls.core.scoring.calculators.FeatureCalculator;
 import org.monarchinitiative.squirls.core.scoring.calculators.PptIsTruncated;
 import org.monarchinitiative.squirls.core.scoring.calculators.PyrimidineToPurineAtMinusThree;
-import org.monarchinitiative.squirls.core.scoring.calculators.conservation.BigWigAccessor;
 
 import java.util.Collection;
 import java.util.Map;
@@ -25,13 +24,12 @@ public class AGEZSplicingAnnotator extends AbstractSplicingAnnotator {
 
     public AGEZSplicingAnnotator(SplicingPwmData splicingPwmData,
                                  Map<String, Double> hexamerMap,
-                                 Map<String, Double> septamerMap,
-                                 BigWigAccessor bigWigAccessor) {
+                                 Map<String, Double> septamerMap) {
         super(new NaiveSplicingTranscriptLocator(splicingPwmData.getParameters()),
                 Stream.of(
                         makeCalculatorMap(splicingPwmData).entrySet(), // agez calculators
                         RichSplicingAnnotator.makeCalculatorMap(splicingPwmData).entrySet(), // rich
-                        DenseSplicingAnnotator.makeDenseCalculatorMap(splicingPwmData, hexamerMap, septamerMap, bigWigAccessor).entrySet()) // dense
+                        DenseSplicingAnnotator.makeDenseCalculatorMap(splicingPwmData, hexamerMap, septamerMap).entrySet()) // dense
                         .flatMap(Collection::stream)
                         .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)));
     }

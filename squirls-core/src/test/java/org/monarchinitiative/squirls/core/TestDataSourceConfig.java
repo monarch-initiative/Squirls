@@ -18,7 +18,6 @@ import org.monarchinitiative.squirls.core.reference.transcript.NaiveSplicingTran
 import org.monarchinitiative.squirls.core.reference.transcript.SplicingTranscriptLocator;
 import org.monarchinitiative.squirls.core.scoring.DenseSplicingAnnotator;
 import org.monarchinitiative.squirls.core.scoring.SplicingAnnotator;
-import org.monarchinitiative.squirls.core.scoring.calculators.conservation.BigWigAccessor;
 import org.monarchinitiative.squirls.core.scoring.calculators.ic.SplicingInformationContentCalculator;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
@@ -130,9 +129,8 @@ public class TestDataSourceConfig {
     @Bean
     public SplicingAnnotator denseSplicingEvaluator(SplicingPwmData splicingPwmData,
                                                     Map<String, Double> hexamerMap,
-                                                    Map<String, Double> septamerMap,
-                                                    @Qualifier("phylopAccessor") BigWigAccessor phylopAccessor) {
-        return new DenseSplicingAnnotator(splicingPwmData, hexamerMap, septamerMap, phylopAccessor);
+                                                    Map<String, Double> septamerMap) {
+        return new DenseSplicingAnnotator(splicingPwmData, hexamerMap, septamerMap);
     }
 
     @Bean
@@ -147,9 +145,4 @@ public class TestDataSourceConfig {
         return new FileKMerParser(path).getKmerMap();
     }
 
-    @Bean
-    public BigWigAccessor phylopAccessor() throws IOException {
-        Path path = Paths.get(TestDataSourceConfig.class.getResource("scoring/calculators/conservation/small.bw").getPath());
-        return new BigWigAccessor(path);
-    }
 }

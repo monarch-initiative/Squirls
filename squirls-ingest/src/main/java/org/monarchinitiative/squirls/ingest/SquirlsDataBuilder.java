@@ -21,6 +21,7 @@ import org.monarchinitiative.squirls.core.data.ic.SplicingPwmData;
 import org.monarchinitiative.squirls.core.data.kmer.FileKMerParser;
 import org.monarchinitiative.squirls.core.model.SplicingParameters;
 import org.monarchinitiative.squirls.core.scoring.calculators.ic.SplicingInformationContentCalculator;
+import org.monarchinitiative.squirls.ingest.conservation.BigWigAccessor;
 import org.monarchinitiative.squirls.ingest.kmers.KmerIngestDao;
 import org.monarchinitiative.squirls.ingest.pwm.PwmIngestDao;
 import org.monarchinitiative.squirls.ingest.reference.GenomeAssemblyDownloader;
@@ -142,9 +143,10 @@ public class SquirlsDataBuilder {
      *     <li>store in the database</li>
      * </ul>
      */
-    static void ingestReferenceSequences(DataSource dataSource,
-                                         GenomeSequenceAccessor accessor,
-                                         Collection<TranscriptModel> transcripts) {
+    static void ingestReferenceData(DataSource dataSource,
+                                    GenomeSequenceAccessor accessor,
+                                    BigWigAccessor phyloPAccessor,
+                                    Collection<TranscriptModel> transcripts) {
         // group transcripts by gene symbol
         final Map<String, List<TranscriptModel>> txByGeneSymbol = transcripts.stream()
                 .collect(Collectors.groupingBy(TranscriptModel::getGeneSymbol));
@@ -175,8 +177,11 @@ public class SquirlsDataBuilder {
                 }
             }
 
-            // we're interested in fetching this sequence
+            /*
+            we're interested in fetching reference sequence and PhyloP scores for this interval
+            */
             final GenomeInterval interval = new GenomeInterval(begin, end.differenceTo(begin)).withMorePadding(GENE_SEQUENCE_PADDING);
+            // sequence
             final Optional<SequenceInterval> opt = accessor.fetchSequence(interval);
             if (opt.isEmpty()) {
                 LOGGER.warn("Could not fetch sequence for gene {} at {}", symbol, interval);
@@ -184,6 +189,8 @@ public class SquirlsDataBuilder {
             }
             final SequenceInterval sequenceInterval = opt.get();
             updated += dao.insertSequence(symbol, sequenceInterval);
+
+            // PhyloP
         }
 
         LOGGER.info("Updated {} rows in reference sequence table", updated);
@@ -248,7 +255,7 @@ public class SquirlsDataBuilder {
      * @throws SquirlsException if anything goes wrong
      */
     public static void buildDatabase(Path buildDir, URL genomeUrl, Path jannovarDbDir, Path yamlPath,
-                                     Path hexamerPath, Path septamerPath,
+                                     Path hexamerPath, Path septamerPath, Path phyloPPath,
                                      Map<String, byte[]> classifiers,
                                      String versionedAssembly) throws SquirlsException {
 
@@ -317,8 +324,12 @@ public class SquirlsDataBuilder {
             LOGGER.info("Inserting transcripts");
             ingestTranscripts(dataSource, rd, accessor, transcripts, calculator);
 
-            LOGGER.info("Storing reference sequences for genes");
-            ingestReferenceSequences(dataSource, accessor, transcripts);
+            try (BigWigAccessor phyloPAccessor = new BigWigAccessor(phyloPPath)) {
+                LOGGER.info("Storing reference sequences and PhyloP scores for genes");
+                ingestReferenceData(dataSource, accessor, phyloPAccessor, transcripts);
+            } catch (Exception e) {
+                throw new SquirlsException(e);
+            }
         } catch (IOException e) {
             throw new SquirlsException(e);
         }
@@ -328,6 +339,8 @@ public class SquirlsDataBuilder {
         for (Map.Entry<String, byte[]> entry : classifiers.entrySet()) {
             processClassifier(dataSource, entry.getKey(), entry.getValue());
         }
+
+        // TODO - remove reference genome FASTA & companion files after build
 
     }
 

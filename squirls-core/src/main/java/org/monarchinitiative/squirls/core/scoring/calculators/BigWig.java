@@ -2,13 +2,9 @@ package org.monarchinitiative.squirls.core.scoring.calculators;
 
 import de.charite.compbio.jannovar.reference.GenomeVariant;
 import org.monarchinitiative.squirls.core.model.SplicingTranscript;
-import org.monarchinitiative.squirls.core.scoring.calculators.conservation.BigWigAccessor;
-import org.monarchinitiative.squirls.core.scoring.calculators.conservation.SquirlsWigException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import xyz.ielis.hyperutil.reference.fasta.SequenceInterval;
-
-import java.util.List;
 
 /**
  * This class operates on a bigWig file and gets score for a given {@link GenomeVariant} from a bigWig file.
@@ -17,10 +13,7 @@ public class BigWig implements FeatureCalculator {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BigWig.class);
 
-    private final BigWigAccessor accessor;
-
-    public BigWig(BigWigAccessor accessor) {
-        this.accessor = accessor;
+    public BigWig() {
     }
 
     /**
@@ -34,15 +27,17 @@ public class BigWig implements FeatureCalculator {
      */
     @Override
     public double score(GenomeVariant variant, SplicingTranscript transcript, SequenceInterval sequence) {
-        try {
-            final List<Float> scores = accessor.getScores(variant.getGenomeInterval());
-            return scores.stream()
-                    .mapToDouble(Float::doubleValue)
-                    .average()
-                    .orElse(Double.NaN);
-        } catch (SquirlsWigException e) {
-            LOGGER.debug("Unable to find scores for variant `{}`", variant);
-            return Double.NaN;
-        }
+//        try {
+//            final List<Float> scores = accessor.getScores(variant.getGenomeInterval());
+//            return scores.stream()
+//                    .mapToDouble(Float::doubleValue)
+//                    .average()
+//                    .orElse(Double.NaN);
+//        } catch (SquirlsWigException e) {
+//            LOGGER.debug("Unable to find scores for variant `{}`", variant);
+//            return Double.NaN;
+//        }
+        // TODO: 10/2/20 make this work again
+        return Double.NaN;
     }
 }

@@ -6,6 +6,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.monarchinitiative.squirls.core.SquirlsException;
 import org.monarchinitiative.squirls.core.scoring.calculators.ic.SplicingInformationContentCalculator;
+import org.monarchinitiative.squirls.ingest.conservation.BigWigAccessor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.jdbc.Sql;
@@ -32,7 +33,7 @@ import static org.hamcrest.Matchers.hasSize;
         "transcripts/create_transcript_intron_exon_tables.sql",
         "reference/create_ref_sequence_table.sql"
 })
-class SquirlsDataBuilderTest {
+public class SquirlsDataBuilderTest {
 
     private static final String ASSEMBLY = "hg19";
 
@@ -45,29 +46,32 @@ class SquirlsDataBuilderTest {
     private Path buildDir;
 
     @Autowired
-    private GenomeSequenceAccessor accessor;
+    public GenomeSequenceAccessor accessor;
 
     @Autowired
-    private SplicingInformationContentCalculator splicingInformationContentCalculator;
+    public SplicingInformationContentCalculator splicingInformationContentCalculator;
 
     @Autowired
-    private DataSource dataSource;
+    public DataSource dataSource;
 
     @Autowired
-    private List<TranscriptModel> transcriptModels;
+    public List<TranscriptModel> transcriptModels;
+
+    @Autowired
+    public BigWigAccessor bigWigAccessor;
 
     @BeforeEach
-    void setUp() throws Exception {
+    public void setUp() throws Exception {
         buildDir = Files.createDirectories(Paths.get(System.getProperty("java.io.tmpdir")).resolve("3S-TEST"));
     }
 
     @AfterEach
-    void tearDown() throws Exception {
+    public void tearDown() throws Exception {
         TestUtils.deleteFolderAndFiles(buildDir);
     }
 
     @Test
-    void downloadReferenceGenome() throws SquirlsException {
+    public void downloadReferenceGenome() throws SquirlsException {
         // arrange - nothing to be done
 
         // act - download a small reference genome
@@ -81,7 +85,7 @@ class SquirlsDataBuilderTest {
     }
 
     @Test
-    void ingestTranscripts() throws Exception {
+    public void ingestTranscripts() throws Exception {
         // arrange - nothing to be done
 
         // act
@@ -138,7 +142,7 @@ class SquirlsDataBuilderTest {
     @Test
     public void ingestReferenceSequences() throws Exception {
         // act
-        SquirlsDataBuilder.ingestReferenceSequences(dataSource, accessor, transcriptModels);
+        SquirlsDataBuilder.ingestReferenceData(dataSource, accessor, bigWigAccessor,  transcriptModels);
 
         // assert
         String tmSql = "select SYMBOL, CONTIG, BEGIN_POS, END_POS, STRAND, FASTA_SEQUENCE " +

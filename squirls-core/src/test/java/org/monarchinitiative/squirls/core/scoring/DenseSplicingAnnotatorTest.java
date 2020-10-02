@@ -12,7 +12,6 @@ import org.monarchinitiative.squirls.core.SimpleAnnotatable;
 import org.monarchinitiative.squirls.core.TestDataSourceConfig;
 import org.monarchinitiative.squirls.core.data.ic.SplicingPwmData;
 import org.monarchinitiative.squirls.core.model.SplicingTranscript;
-import org.monarchinitiative.squirls.core.scoring.calculators.conservation.BigWigAccessor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -45,9 +44,6 @@ class DenseSplicingAnnotatorTest {
     @Autowired
     private Map<String, Double> septamerMap;
 
-    @Mock
-    private BigWigAccessor accessor;
-
     private SplicingTranscript st;
 
     private SequenceInterval sequence;
@@ -59,7 +55,7 @@ class DenseSplicingAnnotatorTest {
     void setUp() {
         st = PojosForTesting.getTranscriptWithThreeExons(rd);
         sequence = PojosForTesting.getSequenceIntervalForTranscriptWithThreeExons(rd);
-        annotator = new DenseSplicingAnnotator(splicingPwmData, hexamerMap, septamerMap, accessor);
+        annotator = new DenseSplicingAnnotator(splicingPwmData, hexamerMap, septamerMap);
     }
 
     @Test
@@ -76,7 +72,7 @@ class DenseSplicingAnnotatorTest {
     @Test
     void secondExonDonor() throws Exception {
         final GenomeVariant variant = new GenomeVariant(new GenomePosition(rd, Strand.FWD, 1, 1599), "C", "A");
-        when(accessor.getScores(variant.getGenomeInterval())).thenReturn(List.of(.12345F));
+//        when(accessor.getScores(variant.getGenomeInterval())).thenReturn(List.of(.12345F));
 
         SimpleAnnotatable ann = new SimpleAnnotatable(variant, st, sequence);
         ann = annotator.annotate(ann);
@@ -89,7 +85,8 @@ class DenseSplicingAnnotatorTest {
         assertThat(ann.getFeature("hexamer", Double.class), is(closeTo(-1.306309, EPSILON)));
         assertThat(ann.getFeature("septamer", Double.class), is(closeTo(-.339600, EPSILON)));
 
-        assertThat(ann.getFeature("phylop", Double.class), is(closeTo(.12345, EPSILON)));
+        // TODO: 10/2/20 evaluate
+//        assertThat(ann.getFeature("phylop", Double.class), is(closeTo(.12345, EPSILON)));
     }
 
     @Test
