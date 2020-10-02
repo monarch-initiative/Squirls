@@ -27,17 +27,15 @@ public class ReferenceSequenceIngestDao {
 
     public int insertSequence(String symbol, SequenceInterval sequence) {
         int updatedRows = 0;
+
         try (final Connection connection = dataSource.getConnection()) {
-            connection.setAutoCommit(false);
-
             // SYMBOL char(50) not null,
-            //    CONTIG       int      not null,-- contig id which maps to `SPLICING.REF_DICT_ID_NAME.ID` and `SPLICING.REF_DICT_NAME_ID.ID`
-            //    BEGIN_POS    int      not null,-- 0-based (exclusive) begin position of the region on STRAND
-            //    END_POS      int      not null,-- 0-based (inclusive) end position of the region on STRAND
-            //    STRAND       bool     not null,-- true if FWD, false if REV
-            //    SEQUENCE    blob
+            //    CONTIG       int      not null,  -- contig id which maps to `SPLICING.REF_DICT_ID_NAME.ID` and `SPLICING.REF_DICT_NAME_ID.ID`
+            //    BEGIN_POS    int      not null,  -- 0-based (exclusive) begin position of the region on STRAND
+            //    END_POS      int      not null,  -- 0-based (inclusive) end position of the region on STRAND
+            //    STRAND       bool     not null,  -- true if FWD, false if REV
+            //    SEQUENCE     blob
 
-            // store indices & names
             String refSeqSql = "INSERT INTO SPLICING.REF_SEQUENCE " +
                     "(SYMBOL, CONTIG, BEGIN_POS, END_POS, STRAND, FASTA_SEQUENCE) " +
                     "VALUES (?, ?, ?, ?, ?, ?)";
@@ -50,13 +48,9 @@ public class ReferenceSequenceIngestDao {
                 ps.setBoolean(5, interval.getStrand().isForward());
                 ps.setBytes(6, sequence.getSequence().getBytes(CHARSET));
                 updatedRows += ps.executeUpdate();
-                LOGGER.debug("Updated '{}' records in the SPLICING.REF_SEQUENCE table", updatedRows);
-
             } catch (SQLException e) {
-                connection.rollback();
                 LOGGER.warn("Error: ", e);
             }
-            connection.commit();
         } catch (SQLException e) {
             LOGGER.warn("Error: ", e);
         }

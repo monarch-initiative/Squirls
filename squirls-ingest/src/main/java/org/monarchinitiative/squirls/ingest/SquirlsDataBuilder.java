@@ -22,6 +22,8 @@ import org.monarchinitiative.squirls.core.data.kmer.FileKMerParser;
 import org.monarchinitiative.squirls.core.model.SplicingParameters;
 import org.monarchinitiative.squirls.core.scoring.calculators.ic.SplicingInformationContentCalculator;
 import org.monarchinitiative.squirls.ingest.conservation.BigWigAccessor;
+import org.monarchinitiative.squirls.ingest.conservation.BigWigIngestDao;
+import org.monarchinitiative.squirls.ingest.conservation.SquirlsWigException;
 import org.monarchinitiative.squirls.ingest.kmers.KmerIngestDao;
 import org.monarchinitiative.squirls.ingest.pwm.PwmIngestDao;
 import org.monarchinitiative.squirls.ingest.reference.GenomeAssemblyDownloader;
@@ -48,7 +50,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
- * A static class with methods for building splicing database.
+ * A static class with methods for building the database with SQUIRLS data.
  *
  * @see Main for an example usage
  */
@@ -153,7 +155,8 @@ public class SquirlsDataBuilder {
 
         // process all genes
         int updated = 0;
-        final ReferenceSequenceIngestDao dao = new ReferenceSequenceIngestDao(dataSource);
+        final ReferenceSequenceIngestDao referenceSequenceDao = new ReferenceSequenceIngestDao(dataSource);
+        final BigWigIngestDao phyloPDao = new BigWigIngestDao(dataSource);
         for (Map.Entry<String, List<TranscriptModel>> entry : txByGeneSymbol.entrySet()) {
             final String symbol = entry.getKey();
             final List<TranscriptModel> txs = entry.getValue();
@@ -188,9 +191,15 @@ public class SquirlsDataBuilder {
                 continue;
             }
             final SequenceInterval sequenceInterval = opt.get();
-            updated += dao.insertSequence(symbol, sequenceInterval);
+            updated += referenceSequenceDao.insertSequence(symbol, sequenceInterval);
 
             // PhyloP
+            try {
+                final List<Float> phyloPScores = phyloPAccessor.getScores(interval);
+                phyloPDao.insertScores(symbol, interval, phyloPScores);
+            } catch (SquirlsWigException e) {
+                LOGGER.warn("Could not fetch phyloP scores for gene {} at {}", symbol, interval);
+            }
         }
 
         LOGGER.info("Updated {} rows in reference sequence table", updated);

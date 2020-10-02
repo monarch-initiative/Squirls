@@ -74,7 +74,7 @@ public class BigWigAccessor implements AutoCloseable {
              */
             getIterator(genomeInterval).forEachRemaining(v -> scores.add(v.getWigValue()));
         }
-        // check completness of data
+        // check completeness of data
         if (genomeInterval.length() != scores.size()) {
             throw new SquirlsWigException(String.format("Could not find bigWig score for each position of query `%s`", genomeInterval));
         }
