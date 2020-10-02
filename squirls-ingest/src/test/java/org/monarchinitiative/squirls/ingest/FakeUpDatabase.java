@@ -29,12 +29,12 @@ class FakeUpDatabase {
     private static final Path SEPTAMER_TSV_PATH = Paths.get(FakeUpDatabase.class.getResource("septamer-scores.tsv").getPath());
 
     /**
-     * TODO - make this file to contain regions +- 1,000 bp:
-     *  - for gene HNF4A at 20:g.42983840_43061985
-     *  - for gene GCK at 7:g.44183370_44238269
-     *  - for gene FBN1 at 15:g.48700003_48938546
+     * A small BigWig file containing PhyloP scores for regions +- 1,000 bp:
+     * - HNF4A at 20:g.42983840_43061985
+     * - GCK at 7:g.44183370_44238269
+     * - FBN1 at 15:g.48700003_48938546
      */
-    private static final Path PHYLOP_PATH = Paths.get(FakeUpDatabase.class.getResource("conservation/small.bw").getPath());
+    private static final Path PHYLOP_PATH = Paths.get(FakeUpDatabase.class.getResource("conservation/gck_hnf4a_fbn1.bw").getPath());
 
     private static final Map<String, Path> MODEL_PATHS = Map.of(
             "v0.4.1", Paths.get(FakeUpDatabase.class.getResource("example_model.v0.4.1.yaml").getPath()),

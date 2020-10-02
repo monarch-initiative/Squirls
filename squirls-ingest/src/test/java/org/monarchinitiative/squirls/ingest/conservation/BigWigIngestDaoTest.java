@@ -61,7 +61,7 @@ public class BigWigIngestDaoTest {
 
         String symbol = "ABCD94";
         GenomeInterval interval = new GenomeInterval(rd, Strand.FWD, 94, 10, 15);
-        List<Float> scores = List.of(0f, 2f, Float.MIN_VALUE, Float.MAX_VALUE, Float.NaN);
+        float[] scores = new float[]{0f, 2f, Float.MIN_VALUE, Float.MAX_VALUE, Float.NaN};
 
         final int updated = dao.insertScores(symbol, interval, scores);
 

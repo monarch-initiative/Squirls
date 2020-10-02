@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -66,6 +67,7 @@ public class BigWigAccessor implements AutoCloseable {
      * @throws SquirlsWigException if there doesn't exist value for every genomic position from within given genomeInterval
      */
     public List<Float> getScores(GenomeInterval genomeInterval) throws SquirlsWigException {
+        // TODO: 10/2/20 rework to return an array
         final List<Float> scores = new ArrayList<>(genomeInterval.length());
         synchronized (this) {
             /*
@@ -90,18 +92,25 @@ public class BigWigAccessor implements AutoCloseable {
      * @return list of values for the interval
      * @throws SquirlsWigException if there doesn't exist value for every genomic position from within given genomeInterval
      */
-    public List<Float> getScores(String chrom, int begin, int end) throws SquirlsWigException {
-        final List<Float> scores = new ArrayList<>();
+    public float[] getScores(String chrom, int begin, int end) throws SquirlsWigException {
+//        final List<Float> scores = new ArrayList<>(end - begin);
+        final float[] scores = new float[end - begin];
+        Arrays.fill(scores, Float.NaN);
         synchronized (this) {
             /*
              We need to make this method synchronized, since the code within `bbfile` sub-package is not thread-safe.
              Ask me how I know.. ;)
              */
-            getIterator(chrom, begin, end).forEachRemaining(v -> scores.add(v.getWigValue()));
-        }
-        // check completness of data
-        if (end - begin != scores.size()) {
-            throw new SquirlsWigException(String.format("Could not find bigWig score for each position of query `%s:%d-%d`", chrom, begin, end));
+            final BigWigIterator iterator = getIterator(chrom, begin, end);
+            while (iterator.hasNext()) {
+                final WigItem item = iterator.next();
+                final int startBase = item.getStartBase();
+                final float value = item.getWigValue();
+                int idx = startBase - begin;
+                scores[idx] = value;
+            }
+            // TODO: 10/2/20 iterate in a more clever way and insert NaN when value is missing
+//            iterator.forEachRemaining(v -> scores.add(v.getWigValue()));
         }
         return scores;
     }

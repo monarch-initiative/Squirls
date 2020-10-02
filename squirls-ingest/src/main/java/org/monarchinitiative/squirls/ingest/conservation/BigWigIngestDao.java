@@ -27,18 +27,18 @@ public class BigWigIngestDao {
      * @param values list of floats
      * @return byte array with length of multiple of 4 where each 4 bytes represent a float from the input {@code values}
      */
-    private static byte[] encodeFloatsToBytes(List<Float> values) {
-        byte[] arr = new byte[values.size() * 4];
-        for (int i = 0; i < values.size(); i++) {
+    private static byte[] encodeFloatsToBytes(float[] values) {
+        byte[] arr = new byte[values.length * 4];
+        for (int i = 0; i < values.length; i++) {
             // convert float into 4 bytes
-            byte[] current = ByteBuffer.allocate(4).putFloat(values.get(i)).array();
+            byte[] current = ByteBuffer.allocate(4).putFloat(values[i]).array();
             // put the bytes into the array
             System.arraycopy(current, 0, arr, i * 4, 4);
         }
         return arr;
     }
 
-    public int insertScores(String symbol, GenomeInterval interval, List<Float> values) {
+    public int insertScores(String symbol, GenomeInterval interval, float[] values) {
         int updatedRows = 0;
 
         try (final Connection connection = dataSource.getConnection()) {

@@ -5,6 +5,7 @@ import com.zaxxer.hikari.HikariDataSource;
 import de.charite.compbio.jannovar.data.ReferenceDictionary;
 import de.charite.compbio.jannovar.reference.GenomeInterval;
 import de.charite.compbio.jannovar.reference.GenomePosition;
+import de.charite.compbio.jannovar.reference.Strand;
 import de.charite.compbio.jannovar.reference.TranscriptModel;
 import org.flywaydb.core.Flyway;
 import org.monarchinitiative.squirls.core.SquirlsException;
@@ -195,7 +196,10 @@ public class SquirlsDataBuilder {
 
             // PhyloP
             try {
-                final List<Float> phyloPScores = phyloPAccessor.getScores(interval);
+                final GenomeInterval ppIv = interval.withStrand(Strand.FWD);
+                String contig = ppIv.getRefDict().getContigIDToName().get(ppIv.getChr());
+                contig = (contig.startsWith("chr")) ? contig : "chr" + contig;
+                final float[] phyloPScores = phyloPAccessor.getScores(contig, ppIv.getBeginPos(), ppIv.getEndPos());
                 phyloPDao.insertScores(symbol, interval, phyloPScores);
             } catch (SquirlsWigException e) {
                 LOGGER.warn("Could not fetch phyloP scores for gene {} at {}", symbol, interval);
