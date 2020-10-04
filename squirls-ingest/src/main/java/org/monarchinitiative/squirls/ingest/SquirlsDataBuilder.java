@@ -24,7 +24,6 @@ import org.monarchinitiative.squirls.core.model.SplicingParameters;
 import org.monarchinitiative.squirls.core.scoring.calculators.ic.SplicingInformationContentCalculator;
 import org.monarchinitiative.squirls.ingest.conservation.BigWigAccessor;
 import org.monarchinitiative.squirls.ingest.conservation.BigWigIngestDao;
-import org.monarchinitiative.squirls.ingest.conservation.SquirlsWigException;
 import org.monarchinitiative.squirls.ingest.kmers.KmerIngestDao;
 import org.monarchinitiative.squirls.ingest.pwm.PwmIngestDao;
 import org.monarchinitiative.squirls.ingest.reference.GenomeAssemblyDownloader;
@@ -185,7 +184,7 @@ public class SquirlsDataBuilder {
             we're interested in fetching reference sequence and PhyloP scores for this interval
             */
             final GenomeInterval interval = new GenomeInterval(begin, end.differenceTo(begin)).withMorePadding(GENE_SEQUENCE_PADDING);
-            // sequence
+            // Sequence
             final Optional<SequenceInterval> opt = accessor.fetchSequence(interval);
             if (opt.isEmpty()) {
                 LOGGER.warn("Could not fetch sequence for gene {} at {}", symbol, interval);
@@ -195,15 +194,11 @@ public class SquirlsDataBuilder {
             updated += referenceSequenceDao.insertSequence(symbol, sequenceInterval);
 
             // PhyloP
-            try {
-                final GenomeInterval ppIv = interval.withStrand(Strand.FWD);
-                String contig = ppIv.getRefDict().getContigIDToName().get(ppIv.getChr());
-                contig = (contig.startsWith("chr")) ? contig : "chr" + contig;
-                final float[] phyloPScores = phyloPAccessor.getScores(contig, ppIv.getBeginPos(), ppIv.getEndPos());
-                phyloPDao.insertScores(symbol, interval, phyloPScores);
-            } catch (SquirlsWigException e) {
-                LOGGER.warn("Could not fetch phyloP scores for gene {} at {}", symbol, interval);
-            }
+            final GenomeInterval ppIv = interval.withStrand(Strand.FWD);
+            String contig = ppIv.getRefDict().getContigIDToName().get(ppIv.getChr());
+            contig = (contig.startsWith("chr")) ? contig : "chr" + contig;
+            final float[] phyloPScores = phyloPAccessor.getScores(contig, ppIv.getBeginPos(), ppIv.getEndPos());
+            phyloPDao.insertScores(symbol, interval, phyloPScores);
         }
 
         LOGGER.info("Updated {} rows in reference sequence table", updated);

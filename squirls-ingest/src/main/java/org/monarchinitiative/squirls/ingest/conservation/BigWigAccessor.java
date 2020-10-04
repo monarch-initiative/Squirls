@@ -1,6 +1,5 @@
 package org.monarchinitiative.squirls.ingest.conservation;
 
-import de.charite.compbio.jannovar.data.ReferenceDictionary;
 import de.charite.compbio.jannovar.reference.GenomeInterval;
 import de.charite.compbio.jannovar.reference.Strand;
 import org.monarchinitiative.squirls.ingest.conservation.bbfile.BBFileHeader;
@@ -12,9 +11,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 
 /**
  * Class designed to be used for extraction of features' values from BigWig files such as genomic position conservation
@@ -60,27 +57,41 @@ public class BigWigAccessor implements AutoCloseable {
     }
 
     /**
+     * Reverse an array in place.
+     *
+     * @param array to be reversed
+     * @return reversed array, such that the first array value is moved to the last.
+     */
+    private static float[] reverseArray(float[] array) {
+        final int l = array.length / 2;
+        int j;
+        float val;
+        for (int i = 0; i < l; i++) {
+            j = array.length - i - 1;
+            val = array[i];
+            array[i] = array[j];
+            array[j] = val;
+        }
+        return array;
+    }
+
+    /**
      * Get list of feature values for given {@link GenomeInterval} object.
      *
      * @param genomeInterval {@link GenomeInterval} object to extract values from.
      * @return list of values for the interval
-     * @throws SquirlsWigException if there doesn't exist value for every genomic position from within given genomeInterval
      */
-    public List<Float> getScores(GenomeInterval genomeInterval) throws SquirlsWigException {
-        // TODO: 10/2/20 rework to return an array
-        final List<Float> scores = new ArrayList<>(genomeInterval.length());
-        synchronized (this) {
-            /*
-             We need to make this method synchronized, since the code within `bbfile` sub-package is not thread-safe.
-             Ask me how I know.. ;)
-             */
-            getIterator(genomeInterval).forEachRemaining(v -> scores.add(v.getWigValue()));
-        }
-        // check completeness of data
-        if (genomeInterval.length() != scores.size()) {
-            throw new SquirlsWigException(String.format("Could not find bigWig score for each position of query `%s`", genomeInterval));
-        }
-        return scores;
+    public float[] getScores(GenomeInterval genomeInterval) {
+        // the scores are stored for regions on FWD strand
+        final GenomeInterval interval = genomeInterval.withStrand(Strand.FWD);
+        String contig = interval.getRefDict().getContigIDToName().get(interval.getChr());
+        contig = (contig.startsWith("chr")) ? contig : "chr" + contig;
+        int begin = interval.getBeginPos(), end = interval.getEndPos();
+
+        final float[] scores = getScores(contig, begin, end);
+        return (genomeInterval.getStrand().isForward())
+                ? scores
+                : reverseArray(scores);
     }
 
     /**
@@ -90,10 +101,8 @@ public class BigWigAccessor implements AutoCloseable {
      * @param begin 0-based (excluded) begin coordinate on FWD strand
      * @param end   0-based (included) end coordinate on FWD strand
      * @return list of values for the interval
-     * @throws SquirlsWigException if there doesn't exist value for every genomic position from within given genomeInterval
      */
-    public float[] getScores(String chrom, int begin, int end) throws SquirlsWigException {
-//        final List<Float> scores = new ArrayList<>(end - begin);
+    public float[] getScores(String chrom, int begin, int end) {
         final float[] scores = new float[end - begin];
         Arrays.fill(scores, Float.NaN);
         synchronized (this) {
@@ -109,37 +118,9 @@ public class BigWigAccessor implements AutoCloseable {
                 int idx = startBase - begin;
                 scores[idx] = value;
             }
-            // TODO: 10/2/20 iterate in a more clever way and insert NaN when value is missing
-//            iterator.forEachRemaining(v -> scores.add(v.getWigValue()));
         }
         return scores;
     }
-
-
-    /**
-     * Get iterator over given genomeInterval. Iterator contains {@link WigItem} container objects and there is no
-     * guarantee, that there exist an object for every position in genomeInterval.
-     *
-     * @param genomeInterval to iterate over. {@link Strand} of Interval is converted to FWD, therefore the iteration
-     *                       over genomic positions within interval is performed always in ascending order.
-     * @return iterator
-     */
-    private BigWigIterator getIterator(GenomeInterval genomeInterval) {
-        final GenomeInterval interval = genomeInterval.withStrand(Strand.FWD);
-
-        final ReferenceDictionary dictionary = interval.getRefDict();
-        final String chrom = dictionary.getContigIDToName().get(interval.getChr());
-
-        int start = interval.getBeginPos();
-        int end = interval.getEndPos();
-        /*
-         If true, features must be fully contained by selection region. Frankly, I don't know what this means, it is
-         written in library.
-         */
-        final boolean contained = true;
-        return reader.getBigWigIterator(chrom, start, chrom, end, contained);
-    }
-
 
     /**
      * Get iterator over given genomeInterval. Iterator contains {@link WigItem} container objects and there is no
@@ -158,7 +139,6 @@ public class BigWigAccessor implements AutoCloseable {
         final boolean contained = true;
         return reader.getBigWigIterator(chrom, start, chrom, end, contained);
     }
-
 
     /**
      * Close the underlying reader.

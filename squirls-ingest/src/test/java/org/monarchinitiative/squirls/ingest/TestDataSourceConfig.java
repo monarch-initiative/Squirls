@@ -76,6 +76,11 @@ public class TestDataSourceConfig {
         builder.putContigID("chr3", 3);
         builder.putContigName(3, "chr3");
         builder.putContigLength(3, 200_000);
+
+        builder.putContigID("chr9", 9);
+        builder.putContigName(9, "chr9");
+        builder.putContigLength(9, 141_213_431); // real number
+
         return builder.build();
     }
 
