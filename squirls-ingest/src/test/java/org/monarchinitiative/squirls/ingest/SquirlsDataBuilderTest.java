@@ -30,8 +30,7 @@ import static org.hamcrest.Matchers.hasSize;
 @SpringBootTest(classes = {TestDataSourceConfig.class})
 @Sql(scripts = {
         "pwm/create_pwm_tables.sql",
-        "transcripts/create_transcript_intron_exon_tables.sql",
-        "reference/create_ref_sequence_table.sql"
+        "transcripts/create_gene_tx_data_table.sql"
 })
 public class SquirlsDataBuilderTest {
 
@@ -89,11 +88,11 @@ public class SquirlsDataBuilderTest {
         // arrange - nothing to be done
 
         // act
-        SquirlsDataBuilder.ingestTranscripts(dataSource, accessor.getReferenceDictionary(), accessor, transcriptModels, splicingInformationContentCalculator);
+        SquirlsDataBuilder.ingestTranscripts(dataSource, accessor.getReferenceDictionary(), accessor, bigWigAccessor, splicingInformationContentCalculator, transcriptModels);
 
         // assert
-        String tmSql = "select CONTIG, BEGIN_POS, END_POS, BEGIN_ON_FWD, END_ON_FWD, STRAND, TX_ACCESSION " +
-                "from SPLICING.TRANSCRIPTS";
+        String tmSql = "select TX_ID, CONTIG, BEGIN_POS, END_POS, BEGIN_ON_FWD, END_ON_FWD, STRAND, ACCESSION_ID " +
+                "from SPLICING.TRANSCRIPT";
 
         List<String> tms = new ArrayList<>();
         try (Connection connection = dataSource.getConnection();
@@ -101,30 +100,33 @@ public class SquirlsDataBuilderTest {
              ResultSet tmRs = tmSt.executeQuery()) {
             while (tmRs.next()) {
                 tms.add(String.join(",",
+                        tmRs.getString("TX_ID"),
                         tmRs.getString("CONTIG"),
                         tmRs.getString("BEGIN_POS"),
                         tmRs.getString("END_POS"),
                         tmRs.getString("BEGIN_ON_FWD"),
                         tmRs.getString("END_ON_FWD"),
                         tmRs.getString("STRAND"),
-                        tmRs.getString("TX_ACCESSION")));
+                        tmRs.getString("ACCESSION_ID")));
             }
         }
         assertThat(tms, hasSize(1));
-        assertThat(tms, hasItem(String.join(",", "0", "10000", "20000", "10000", "20000", "TRUE", "adam")));
+        assertThat(tms, hasItem(String.join(",", "0", "0", "10000", "20000", "10000", "20000", "TRUE", "adam")));
 
-        String efSql = "select CONTIG, BEGIN_POS, END_POS, TX_ACCESSION, REGION_TYPE, PROPERTIES, REGION_NUMBER from SPLICING.FEATURE_REGIONS;";
 
+
+        String efSql = "select TX_ID, CONTIG, BEGIN_POS, END_POS, REGION_TYPE, PROPERTIES, REGION_NUMBER " +
+                "from SPLICING.TX_FEATURE_REGION;";
         List<String> records = new ArrayList<>();
         try (Connection connection = dataSource.getConnection();
              PreparedStatement efSt = connection.prepareStatement(efSql);
              ResultSet efRs = efSt.executeQuery()) {
             while (efRs.next()) {
                 records.add(String.join(";",
+                        efRs.getString("TX_ID"),
                         efRs.getString("CONTIG"),
                         efRs.getString("BEGIN_POS"),
                         efRs.getString("END_POS"),
-                        efRs.getString("TX_ACCESSION"),
                         efRs.getString("REGION_TYPE"),
                         efRs.getString("PROPERTIES"),
                         efRs.getString("REGION_NUMBER")));
@@ -132,45 +134,70 @@ public class SquirlsDataBuilderTest {
         }
         assertThat(records, hasSize(5));
         assertThat(records, hasItems(
-                "0;10000;12000;adam;ex;;0",
-                "0;14000;16000;adam;ex;;1",
-                "0;18000;20000;adam;ex;;2",
-                "0;12000;14000;adam;ir;DONOR=-5.641756189392563;ACCEPTOR=-22.149718912705787;0",
-                "0;16000;18000;adam;ir;DONOR=-4.676134711788632;ACCEPTOR=-14.459319682085656;1"));
-    }
+                "0;0;10000;12000;ex;;0",
+                "0;0;14000;16000;ex;;1",
+                "0;0;18000;20000;ex;;2",
+                "0;0;12000;14000;ir;DONOR=-5.641756189392563;ACCEPTOR=-22.149718912705787;0",
+                "0;0;16000;18000;ir;DONOR=-4.676134711788632;ACCEPTOR=-14.459319682085656;1"));
 
-    @Test
-    public void ingestReferenceSequences() throws Exception {
-        // act
-        SquirlsDataBuilder.ingestReferenceData(dataSource, accessor, bigWigAccessor,  transcriptModels);
 
-        // assert
-        String tmSql = "select SYMBOL, CONTIG, BEGIN_POS, END_POS, STRAND, FASTA_SEQUENCE " +
-                "from SPLICING.REF_SEQUENCE";
 
-        List<String> tms = new ArrayList<>();
+        String geneSql = "select CONTIG, BEGIN_POS, END_POS, BEGIN_ON_FWD, END_ON_FWD, STRAND, GENE_ID, SYMBOL " +
+                "from SPLICING.GENE";
+        List<String> genes = new ArrayList<>();
         try (Connection connection = dataSource.getConnection();
-             PreparedStatement tmSt = connection.prepareStatement(tmSql);
-             ResultSet tmRs = tmSt.executeQuery()) {
-            while (tmRs.next()) {
-                tms.add(String.join(",",
-                        tmRs.getString("SYMBOL"),
-                        tmRs.getString("CONTIG"),
-                        tmRs.getString("BEGIN_POS"),
-                        tmRs.getString("END_POS"),
-                        tmRs.getString("STRAND"),
-                        new String(tmRs.getBytes("FASTA_SEQUENCE"))));
+             PreparedStatement geneSt = connection.prepareStatement(geneSql);
+             ResultSet rs = geneSt.executeQuery()) {
+            while (rs.next()) {
+                genes.add(String.join(";",
+                        rs.getString("CONTIG"),
+                        rs.getString("BEGIN_POS"),
+                        rs.getString("END_POS"),
+                        rs.getString("BEGIN_ON_FWD"),
+                        rs.getString("END_ON_FWD"),
+                        rs.getString("STRAND"),
+                        rs.getString("GENE_ID"),
+                        rs.getString("SYMBOL")));
             }
         }
+        assertThat(genes, hasSize(1));
+        assertThat(genes, hasItem("0;10000;20000;10000;20000;TRUE;0;ADAM"));
 
-        assertThat(tms, hasSize(1));
 
-        final String[] record = tms.get(0).split(",");
-        assertThat(record[0], is("ADAM"));
-        assertThat(record[1], is("2"));
-        assertThat(record[2], is("9500"));
-        assertThat(record[3], is("20500"));
-        assertThat(record[4], is("TRUE"));
-        assertThat(record[5], is(accessor.fetchSequence("chr2", 9501, 20500))); // 1-based numbering
+
+        String geneTrackSql = "select GENE_ID, CONTIG, BEGIN_POS, END_POS, STRAND " +
+                "from SPLICING.GENE_TRACK";
+        List<String> geneTracks = new ArrayList<>();
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement gtPs = connection.prepareStatement(geneTrackSql);
+             ResultSet rs = gtPs.executeQuery()) {
+            while (rs.next()) {
+                geneTracks.add(String.join(";",
+                        rs.getString("GENE_ID"),
+                        rs.getString("CONTIG"),
+                        rs.getString("BEGIN_POS"),
+                        rs.getString("END_POS"),
+                        rs.getString("STRAND")));
+            }
+        }
+        assertThat(geneTracks, hasSize(1));
+        assertThat(geneTracks, hasItem("0;0;9500;20500;TRUE"));
+
+
+
+        String geneToTxSql = "select GENE_ID, TX_ID " +
+                "from SPLICING.GENE_TO_TX";
+        List<String> geneToTx = new ArrayList<>();
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement ps = connection.prepareStatement(geneToTxSql);
+             ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                geneToTx.add(String.join(";",
+                        rs.getString("GENE_ID"),
+                        rs.getString("TX_ID")));
+            }
+        }
+        assertThat(geneToTx, hasSize(1));
+        assertThat(geneToTx, hasItem("0;0"));
     }
 }

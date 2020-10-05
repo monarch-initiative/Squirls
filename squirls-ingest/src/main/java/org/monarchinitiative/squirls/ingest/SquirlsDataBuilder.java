@@ -3,9 +3,6 @@ package org.monarchinitiative.squirls.ingest;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import de.charite.compbio.jannovar.data.ReferenceDictionary;
-import de.charite.compbio.jannovar.reference.GenomeInterval;
-import de.charite.compbio.jannovar.reference.GenomePosition;
-import de.charite.compbio.jannovar.reference.Strand;
 import de.charite.compbio.jannovar.reference.TranscriptModel;
 import org.flywaydb.core.Flyway;
 import org.monarchinitiative.squirls.core.SquirlsException;
@@ -23,18 +20,18 @@ import org.monarchinitiative.squirls.core.data.kmer.FileKMerParser;
 import org.monarchinitiative.squirls.core.model.SplicingParameters;
 import org.monarchinitiative.squirls.core.scoring.calculators.ic.SplicingInformationContentCalculator;
 import org.monarchinitiative.squirls.ingest.conservation.BigWigAccessor;
-import org.monarchinitiative.squirls.ingest.conservation.BigWigIngestDao;
 import org.monarchinitiative.squirls.ingest.kmers.KmerIngestDao;
 import org.monarchinitiative.squirls.ingest.pwm.PwmIngestDao;
 import org.monarchinitiative.squirls.ingest.reference.GenomeAssemblyDownloader;
 import org.monarchinitiative.squirls.ingest.reference.ReferenceDictionaryIngestDao;
-import org.monarchinitiative.squirls.ingest.reference.ReferenceSequenceIngestDao;
-import org.monarchinitiative.squirls.ingest.transcripts.*;
+import org.monarchinitiative.squirls.ingest.transcripts.JannovarDataManager;
+import org.monarchinitiative.squirls.ingest.transcripts.SplicingCalculator;
+import org.monarchinitiative.squirls.ingest.transcripts.SplicingCalculatorImpl;
+import org.monarchinitiative.squirls.ingest.transcripts.TranscriptsIngestRunner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import xyz.ielis.hyperutil.reference.fasta.GenomeSequenceAccessor;
 import xyz.ielis.hyperutil.reference.fasta.GenomeSequenceAccessorBuilder;
-import xyz.ielis.hyperutil.reference.fasta.SequenceInterval;
 
 import javax.sql.DataSource;
 import java.io.ByteArrayInputStream;
@@ -44,10 +41,7 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collection;
-import java.util.List;
 import java.util.Map;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 /**
  * A static class with methods for building the database with SQUIRLS data.
@@ -124,84 +118,14 @@ public class SquirlsDataBuilder {
      * Process given <code>transcripts</code>.
      */
     static void ingestTranscripts(DataSource dataSource,
-                                  ReferenceDictionary referenceDictionary,
+                                  ReferenceDictionary rd,
                                   GenomeSequenceAccessor accessor,
-                                  Collection<TranscriptModel> transcripts,
-                                  SplicingInformationContentCalculator calculator) {
-        TranscriptIngestDao transcriptIngestDao = new TranscriptIngestDao(dataSource, referenceDictionary);
+                                  BigWigAccessor phylopAccessor,
+                                  SplicingInformationContentCalculator calculator,
+                                  Collection<TranscriptModel> transcripts) {
         SplicingCalculator splicingCalculator = new SplicingCalculatorImpl(accessor, calculator);
-        TranscriptsIngestRunner transcriptsIngestRunner = new TranscriptsIngestRunner(splicingCalculator, transcriptIngestDao, transcripts);
-        transcriptsIngestRunner.run();
-    }
-
-    /**
-     * Insert reference sequence of all genes into the database.
-     * <p>
-     * Group transcripts by the gene symbol, then for each gene:
-     * <ul>
-     *     <li>find the interval that encompasses all transcript of the gene</li>
-     *     <li>extend the interval with upstream and downstream padding</li>
-     *     <li>fetch FASTA sequence for the interval</li>
-     *     <li>store in the database</li>
-     * </ul>
-     */
-    static void ingestReferenceData(DataSource dataSource,
-                                    GenomeSequenceAccessor accessor,
-                                    BigWigAccessor phyloPAccessor,
-                                    Collection<TranscriptModel> transcripts) {
-        // group transcripts by gene symbol
-        final Map<String, List<TranscriptModel>> txByGeneSymbol = transcripts.stream()
-                .collect(Collectors.groupingBy(TranscriptModel::getGeneSymbol));
-
-        // process all genes
-        int updated = 0;
-        final ReferenceSequenceIngestDao referenceSequenceDao = new ReferenceSequenceIngestDao(dataSource);
-        final BigWigIngestDao phyloPDao = new BigWigIngestDao(dataSource);
-        for (Map.Entry<String, List<TranscriptModel>> entry : txByGeneSymbol.entrySet()) {
-            final String symbol = entry.getKey();
-            final List<TranscriptModel> txs = entry.getValue();
-            if (txs.isEmpty()) {
-                // no transcript for the gene
-                LOGGER.warn("No tx found for gene `{}`", symbol);
-                continue;
-            }
-
-            GenomePosition begin = null, end = null;
-            for (TranscriptModel tx : txs) {
-                // inspect begin
-                final GenomePosition currentBegin = tx.getTXRegion().getGenomeBeginPos();
-                if (begin == null || currentBegin.isLt(begin)) {
-                    begin = currentBegin;
-                }
-                // inspect end
-                final GenomePosition currentEnd = tx.getTXRegion().getGenomeEndPos();
-                if (end == null || currentEnd.isGt(end)) {
-                    end = currentEnd;
-                }
-            }
-
-            /*
-            we're interested in fetching reference sequence and PhyloP scores for this interval
-            */
-            final GenomeInterval interval = new GenomeInterval(begin, end.differenceTo(begin)).withMorePadding(GENE_SEQUENCE_PADDING);
-            // Sequence
-            final Optional<SequenceInterval> opt = accessor.fetchSequence(interval);
-            if (opt.isEmpty()) {
-                LOGGER.warn("Could not fetch sequence for gene {} at {}", symbol, interval);
-                continue;
-            }
-            final SequenceInterval sequenceInterval = opt.get();
-            updated += referenceSequenceDao.insertSequence(symbol, sequenceInterval);
-
-            // PhyloP
-            final GenomeInterval ppIv = interval.withStrand(Strand.FWD);
-            String contig = ppIv.getRefDict().getContigIDToName().get(ppIv.getChr());
-            contig = (contig.startsWith("chr")) ? contig : "chr" + contig;
-            final float[] phyloPScores = phyloPAccessor.getScores(contig, ppIv.getBeginPos(), ppIv.getEndPos());
-            phyloPDao.insertScores(symbol, interval, phyloPScores);
-        }
-
-        LOGGER.info("Updated {} rows in reference sequence table", updated);
+        TranscriptsIngestRunner transcriptsIngestRunner = new TranscriptsIngestRunner(dataSource, rd, splicingCalculator, accessor, phylopAccessor);
+        transcriptsIngestRunner.run(transcripts);
     }
 
     /**
@@ -323,21 +247,15 @@ public class SquirlsDataBuilder {
                 .setFastaPath(genomeFastaPath)
                 .setFastaFaiPath(genomeFastaFaiPath)
                 .setFastaDictPath(genomeFastaDictPath)
-                .build()) {
+                .build();
+             BigWigAccessor phyloPAccessor = new BigWigAccessor(phyloPPath)) {
             final ReferenceDictionary rd = accessor.getReferenceDictionary();
             LOGGER.info("Inserting reference dictionary");
             ReferenceDictionaryIngestDao referenceDictionaryIngestDao = new ReferenceDictionaryIngestDao(dataSource);
             referenceDictionaryIngestDao.saveReferenceDictionary(rd);
 
             LOGGER.info("Inserting transcripts");
-            ingestTranscripts(dataSource, rd, accessor, transcripts, calculator);
-
-            try (BigWigAccessor phyloPAccessor = new BigWigAccessor(phyloPPath)) {
-                LOGGER.info("Storing reference sequences and PhyloP scores for genes");
-                ingestReferenceData(dataSource, accessor, phyloPAccessor, transcripts);
-            } catch (Exception e) {
-                throw new SquirlsException(e);
-            }
+            ingestTranscripts(dataSource, rd, accessor, phyloPAccessor, calculator, transcripts);
         } catch (IOException e) {
             throw new SquirlsException(e);
         }

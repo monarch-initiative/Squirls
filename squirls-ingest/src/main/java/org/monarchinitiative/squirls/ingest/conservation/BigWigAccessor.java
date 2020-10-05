@@ -9,6 +9,7 @@ import org.monarchinitiative.squirls.ingest.conservation.bbfile.WigItem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Arrays;
@@ -21,7 +22,7 @@ import java.util.Arrays;
  * <p>
  * Created by Daniel Danis on 5/16/17.
  */
-public class BigWigAccessor implements AutoCloseable {
+public class BigWigAccessor implements Closeable {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BigWigAccessor.class);
 
@@ -144,12 +145,12 @@ public class BigWigAccessor implements AutoCloseable {
      * Close the underlying reader.
      */
     @Override
-    public void close() throws Exception {
+    public void close() throws IOException {
         try {
             reader.close();
         } catch (Exception e) {
             LOGGER.warn("Error closing the bigWig file at `{}`", bigWigPath);
-            throw e;
+            throw new IOException(e);
         }
     }
 }

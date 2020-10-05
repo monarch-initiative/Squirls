@@ -10,7 +10,11 @@ import org.monarchinitiative.squirls.core.model.SplicingExon;
 import org.monarchinitiative.squirls.core.model.SplicingIntron;
 import org.monarchinitiative.squirls.core.model.SplicingParameters;
 import org.monarchinitiative.squirls.core.model.SplicingTranscript;
+import org.monarchinitiative.squirls.ingest.transcripts.GeneAnnotationData;
 import xyz.ielis.hyperutil.reference.fasta.SequenceInterval;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  *
@@ -286,6 +290,47 @@ public class PojosForTesting {
                 .setAcceptorExonic(2)
                 .setAcceptorIntronic(25)
                 .build();
+    }
+
+    public static GeneAnnotationData makeGeneAnnotationData(ReferenceDictionary rd) {
+        String symbol = "ALPHA";
+        List<SplicingTranscript> transcripts = List.of(
+                SplicingTranscript.builder()
+                        .setAccessionId("FIRST")
+                        .setCoordinates(new GenomeInterval(rd, Strand.FWD, 2, 100, 108).withStrand(Strand.REV))
+                        .addExon(SplicingExon.builder()
+                                .setInterval(new GenomeInterval(rd, Strand.FWD, 2, 100, 103).withStrand(Strand.REV))
+                                .build())
+                        .addIntron(SplicingIntron.builder()
+                                .setInterval(new GenomeInterval(rd, Strand.FWD, 2, 103, 106).withStrand(Strand.REV))
+                                .setDonorScore(.1)
+                                .setAcceptorScore(.2)
+                                .build())
+                        .addExon(SplicingExon.builder()
+                                .setInterval(new GenomeInterval(rd, Strand.FWD, 2, 106, 108).withStrand(Strand.REV))
+                                .build())
+                        .build(),
+                SplicingTranscript.builder()
+                        .setAccessionId("LAST")
+                        .setCoordinates(new GenomeInterval(rd, Strand.FWD, 2, 102, 110).withStrand(Strand.REV))
+                        .addExon(SplicingExon.builder()
+                                .setInterval(new GenomeInterval(rd, Strand.FWD, 2, 102, 105).withStrand(Strand.REV))
+                                .build())
+                        .addIntron(SplicingIntron.builder()
+                                .setInterval(new GenomeInterval(rd, Strand.FWD, 2, 105, 108).withStrand(Strand.REV))
+                                .setDonorScore(.3)
+                                .setAcceptorScore(.4)
+                                .build())
+                        .addExon(SplicingExon.builder()
+                                .setInterval(new GenomeInterval(rd, Strand.FWD, 2, 108, 110).withStrand(Strand.REV))
+                                .build())
+                        .build()
+                );
+        GenomeInterval trackInterval = new GenomeInterval(rd, Strand.FWD, 2, 100, 110).withStrand(Strand.REV);
+        String refSequence = "ACGTacgtAC";
+        float[] phylopScores = new float[]{1.f, 2.f, 3.f, 4.f, 5.f, 10.f, 20.f, 30.f, 40.f, 50.f};
+
+        return new GeneAnnotationData(symbol, transcripts, trackInterval, refSequence, phylopScores);
     }
 
 }

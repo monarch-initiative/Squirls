@@ -77,6 +77,10 @@ public class TestDataSourceConfig {
         builder.putContigName(3, "chr3");
         builder.putContigLength(3, 200_000);
 
+        builder.putContigID("chr7", 7);
+        builder.putContigName(7, "chr7");
+        builder.putContigLength(7, 159_138_663); // real number
+
         builder.putContigID("chr9", 9);
         builder.putContigName(9, "chr9");
         builder.putContigLength(9, 141_213_431); // real number
@@ -141,7 +145,7 @@ public class TestDataSourceConfig {
 
     @Bean
     public BigWigAccessor bigWigAccessor() throws Exception {
-        Path phylop = Paths.get(TestDataSourceConfig.class.getResource("conservation/small.bw").getPath());
+        Path phylop = Paths.get(TestDataSourceConfig.class.getResource("gck_hnf4a_fbn1.bw").getPath());
         return new BigWigAccessor(phylop);
     }
 

@@ -34,7 +34,7 @@ class FakeUpDatabase {
      * - GCK at 7:g.44183370_44238269
      * - FBN1 at 15:g.48700003_48938546
      */
-    private static final Path PHYLOP_PATH = Paths.get(FakeUpDatabase.class.getResource("conservation/gck_hnf4a_fbn1.bw").getPath());
+    private static final Path PHYLOP_PATH = Paths.get(FakeUpDatabase.class.getResource("gck_hnf4a_fbn1.bw").getPath());
 
     private static final Map<String, Path> MODEL_PATHS = Map.of(
             "v0.4.1", Paths.get(FakeUpDatabase.class.getResource("example_model.v0.4.1.yaml").getPath()),
