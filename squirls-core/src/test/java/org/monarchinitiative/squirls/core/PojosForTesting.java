@@ -8,12 +8,58 @@ import org.monarchinitiative.squirls.core.model.SplicingExon;
 import org.monarchinitiative.squirls.core.model.SplicingIntron;
 import org.monarchinitiative.squirls.core.model.SplicingParameters;
 import org.monarchinitiative.squirls.core.model.SplicingTranscript;
+import org.monarchinitiative.squirls.core.scoring.FloatRegion;
+import org.monarchinitiative.squirls.core.scoring.SequenceRegion;
+import org.monarchinitiative.squirls.core.scoring.TrackRegion;
 import xyz.ielis.hyperutil.reference.fasta.SequenceInterval;
+
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+import java.util.stream.Collectors;
 
 /**
  * Class with static method for construction of medium-complicated objects.
  */
 public class PojosForTesting {
+
+    private static final String THREE_EXON_TX_SEQ = // upstream 100bp
+            "AAACAGGTTAATCGCCACGACATAGTAGTATTTAGAGTTACTAGTAAGCCTGATGCCACT" + // 960
+                    "ACACAATTCTAGCTTTTCTCAGAGCCCCGCCCCCGGCTCC" + // 1000
+                    //
+                    // 1st exon
+                    "AGGTTCTGCGAGCGGCTTCCAACATAGGaaaaaattatttaataataaaatttaattGGC" +
+                    "AAAATGAAGGTATGGCTTATAAGAGTGTTTTCCTATTGTTTTCAGTGTAGGACTCACTGT" +
+                    "TCTAAATAACTGGGACACCCAAGGATTCTGAGCCTGCGGCTCCAGACGGACGCCCGCAAG" +
+                    "TCCAGACGGACGCCCGCAAG" + // 1200 (end of the 1st exon)
+                    //
+                    // 1st intron
+                    "gttcgcagcgcgggaggggaacggagtggcggaGTAGAATTCTGGTTAAAATTTGGCATA" +
+                    "GAACACCCGGGTATTTTTTCATAATGCACCCAATAACTGTCATTCACTAATTGAGAATGG" +
+                    "TGATTTAACAAAGGATAATAAAGTTATGAActgacgtcctcctggccctcctgacgtcct" +
+                    "gcccgcccacgcgtccgcag" +
+                    //                  ^  <- 1400 (end of the 1st intron)
+                    // 2nd exon
+                    "GTGAGGTGCATCCTGACAGGTCACGAGCTGCCCTtcactcCCTCCATAAATCTCACAGTA" +
+                    "TTCTTTTCTTtttcctttcctttccttgctcttctttctctcctattgctttcctttcat" +
+                    "ttccttCTCATAAAAGAAAAATAACAATATAGAAAATAACAAAATATAGATGGTCAACCT" +
+                    "GTGCCCAGCACCAAGAACCC" +
+                    //                  ^  <- 1600 (end of the 2nd exon)
+                    // 2nd intron
+                    "gtaggtggtccgcggcggcgcggggaggcccaggGCTGATGTATATACTTACATATTTTA" +
+                    "CAGTGTATTCAAATAAAGAGTATATTACATAAGACATATCCTTTTGTAACCAACTTTTGT" +
+                    "CATTAACAATTTACTGGACTTGTCAACAAACCTAAATCTGtgtgaactgtccctacaaat" +
+                    "ttggtctctctgctctgtag" +
+                    //                  ^  <- 1800 (end of the 2nd intron)
+                    // 3rd exon
+                    "GCACCAGTTGTTCTGCAAACTCACCCTGCGGCACATCAACAAGTGCCCAGAACACTGTCT" +
+                    "aatttttcacTTTACATCACATAATGAATGGATCCAAATATGTTATGGATAGATATCTTC" +
+                    "AAACTTTCTACTTACAAGTAGTGATAATAACAGATGTTCTCTCTAAAGTGTAGTTGGTAT" +
+                    "CCAGCGAGCTCTGTGTAAAT" +
+                    //                  ^  <- 2000 (end of the 3rd exon)
+                    // downstream 100bp
+                    "AATATCTTAATGGGACAAAGTTCAAATATTTGATGACCAGCTATCGTGACCTTTATCTCT" +
+                    "GTGGCTCTGTGGGCCTGTAGTTTTTACGTGCTTTTAGTGT";
 
     private PojosForTesting() {
         // static utility class
@@ -22,44 +68,7 @@ public class PojosForTesting {
     public static SequenceInterval getSequenceIntervalForTranscriptWithThreeExons(ReferenceDictionary referenceDictionary) {
         return SequenceInterval.builder()
                 .interval(new GenomeInterval(referenceDictionary, Strand.FWD, 1, 900, 2100))
-                .sequence(
-                        // upstream 100bp
-                        "AAACAGGTTAATCGCCACGACATAGTAGTATTTAGAGTTACTAGTAAGCCTGATGCCACT" + // 960
-                                "ACACAATTCTAGCTTTTCTCAGAGCCCCGCCCCCGGCTCC" + // 1000
-                                //
-                                // 1st exon
-                                "AGGTTCTGCGAGCGGCTTCCAACATAGGaaaaaattatttaataataaaatttaattGGC" +
-                                "AAAATGAAGGTATGGCTTATAAGAGTGTTTTCCTATTGTTTTCAGTGTAGGACTCACTGT" +
-                                "TCTAAATAACTGGGACACCCAAGGATTCTGAGCCTGCGGCTCCAGACGGACGCCCGCAAG" +
-                                "TCCAGACGGACGCCCGCAAG" + // 1200 (end of the 1st exon)
-                                //
-                                // 1st intron
-                                "gttcgcagcgcgggaggggaacggagtggcggaGTAGAATTCTGGTTAAAATTTGGCATA" +
-                                "GAACACCCGGGTATTTTTTCATAATGCACCCAATAACTGTCATTCACTAATTGAGAATGG" +
-                                "TGATTTAACAAAGGATAATAAAGTTATGAActgacgtcctcctggccctcctgacgtcct" +
-                                "gcccgcccacgcgtccgcag" +
-                                //                  ^  <- 1400 (end of the 1st intron)
-                                // 2nd exon
-                                "GTGAGGTGCATCCTGACAGGTCACGAGCTGCCCTtcactcCCTCCATAAATCTCACAGTA" +
-                                "TTCTTTTCTTtttcctttcctttccttgctcttctttctctcctattgctttcctttcat" +
-                                "ttccttCTCATAAAAGAAAAATAACAATATAGAAAATAACAAAATATAGATGGTCAACCT" +
-                                "GTGCCCAGCACCAAGAACCC" +
-                                //                  ^  <- 1600 (end of the 2nd exon)
-                                // 2nd intron
-                                "gtaggtggtccgcggcggcgcggggaggcccaggGCTGATGTATATACTTACATATTTTA" +
-                                "CAGTGTATTCAAATAAAGAGTATATTACATAAGACATATCCTTTTGTAACCAACTTTTGT" +
-                                "CATTAACAATTTACTGGACTTGTCAACAAACCTAAATCTGtgtgaactgtccctacaaat" +
-                                "ttggtctctctgctctgtag" +
-                                //                  ^  <- 1800 (end of the 2nd intron)
-                                // 3rd exon
-                                "GCACCAGTTGTTCTGCAAACTCACCCTGCGGCACATCAACAAGTGCCCAGAACACTGTCT" +
-                                "aatttttcacTTTACATCACATAATGAATGGATCCAAATATGTTATGGATAGATATCTTC" +
-                                "AAACTTTCTACTTACAAGTAGTGATAATAACAGATGTTCTCTCTAAAGTGTAGTTGGTAT" +
-                                "CCAGCGAGCTCTGTGTAAAT" +
-                                //                  ^  <- 2000 (end of the 3rd exon)
-                                // downstream 100bp
-                                "AATATCTTAATGGGACAAAGTTCAAATATTTGATGACCAGCTATCGTGACCTTTATCTCT" +
-                                "GTGGCTCTGTGGGCCTGTAGTTTTTACGTGCTTTTAGTGT")
+                .sequence(THREE_EXON_TX_SEQ)
                 .build();
     }
 
@@ -260,5 +269,17 @@ public class PojosForTesting {
                 .setAcceptorExonic(2)
                 .setAcceptorIntronic(25)
                 .build();
+    }
+
+    public static Map<String, TrackRegion<?>> getTrackMap(ReferenceDictionary rd) {
+        GenomeInterval interval = new GenomeInterval(rd, Strand.FWD, 1, 900, 2100);
+        final List<Float> fakePhylop = new Random(123)
+                .doubles(1200)
+                .mapToObj(j -> (float) j)
+                .collect(Collectors.toList());
+        return Map.of(
+                "sequence", SequenceRegion.of(interval, THREE_EXON_TX_SEQ),
+                "phylop", FloatRegion.of(interval, fakePhylop)
+        );
     }
 }

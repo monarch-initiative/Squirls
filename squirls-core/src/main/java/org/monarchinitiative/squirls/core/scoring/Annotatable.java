@@ -4,9 +4,9 @@ import de.charite.compbio.jannovar.reference.GenomeVariant;
 import org.monarchinitiative.squirls.core.Metadata;
 import org.monarchinitiative.squirls.core.classifier.SquirlsClassifier;
 import org.monarchinitiative.squirls.core.classifier.transform.feature.MutableFeature;
-import org.monarchinitiative.squirls.core.data.SplicingAnnotationData;
 import org.monarchinitiative.squirls.core.model.SplicingTranscript;
-import xyz.ielis.hyperutil.reference.fasta.SequenceInterval;
+
+import java.util.Set;
 
 /**
  * This interface describes objects that can be annotated with features by {@link SplicingAnnotator} before being
@@ -18,10 +18,13 @@ public interface Annotatable extends MutableFeature {
 
     SplicingTranscript getTranscript();
 
-    SequenceInterval getSequence();
+    Set<String> getTrackNames();
+
+    <T extends TrackRegion<?>> T getTrack(String name, Class<T> clz);
 
     Metadata getMetadata();
 
     void setMetadata(Metadata metadata);
+
 
 }

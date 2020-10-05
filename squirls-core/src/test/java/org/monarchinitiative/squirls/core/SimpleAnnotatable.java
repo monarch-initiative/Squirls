@@ -3,7 +3,7 @@ package org.monarchinitiative.squirls.core;
 import de.charite.compbio.jannovar.reference.GenomeVariant;
 import org.monarchinitiative.squirls.core.model.SplicingTranscript;
 import org.monarchinitiative.squirls.core.scoring.Annotatable;
-import xyz.ielis.hyperutil.reference.fasta.SequenceInterval;
+import org.monarchinitiative.squirls.core.scoring.TrackRegion;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -13,14 +13,16 @@ public class SimpleAnnotatable implements Annotatable {
 
     private final GenomeVariant variant;
     private final SplicingTranscript transcript;
-    private final SequenceInterval sequence;
+    private final Map<String, TrackRegion<?>> trackMap;
     private final Map<String, Object> features = new HashMap<>();
     private Metadata metadata;
 
-    public SimpleAnnotatable(GenomeVariant variant, SplicingTranscript transcript, SequenceInterval sequence) {
+    public SimpleAnnotatable(GenomeVariant variant,
+                             SplicingTranscript transcript,
+                             Map<String, TrackRegion<?>> tracks) {
         this.variant = variant;
         this.transcript = transcript;
-        this.sequence = sequence;
+        this.trackMap = Map.copyOf(tracks);
     }
 
     @Override
@@ -34,8 +36,13 @@ public class SimpleAnnotatable implements Annotatable {
     }
 
     @Override
-    public SequenceInterval getSequence() {
-        return sequence;
+    public Set<String> getTrackNames() {
+        return Set.copyOf(trackMap.keySet());
+    }
+
+    @Override
+    public <T extends TrackRegion<?>> T getTrack(String name, Class<T> clz) {
+        return clz.cast(trackMap.get(name));
     }
 
     @Override

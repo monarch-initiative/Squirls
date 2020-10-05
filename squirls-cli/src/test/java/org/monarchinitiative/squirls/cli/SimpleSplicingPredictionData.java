@@ -5,6 +5,7 @@ import org.monarchinitiative.squirls.core.Metadata;
 import org.monarchinitiative.squirls.core.Prediction;
 import org.monarchinitiative.squirls.core.SplicingPredictionData;
 import org.monarchinitiative.squirls.core.model.SplicingTranscript;
+import org.monarchinitiative.squirls.core.scoring.TrackRegion;
 import xyz.ielis.hyperutil.reference.fasta.SequenceInterval;
 
 import java.util.HashMap;
@@ -53,8 +54,13 @@ public class SimpleSplicingPredictionData implements SplicingPredictionData {
     }
 
     @Override
-    public SequenceInterval getSequence() {
-        return sequence;
+    public Set<String> getTrackNames() {
+        return Set.of(); // todo - implement
+    }
+
+    @Override
+    public <T extends TrackRegion<?>> T getTrack(String name, Class<T> clz) {
+        return null;  // todo - implement
     }
 
     @Override

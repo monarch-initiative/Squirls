@@ -10,6 +10,7 @@ import java.util.Optional;
 /**
  *
  */
+@Deprecated
 public interface SplicingTranscriptSource {
 
     List<String> getTranscriptAccessionIds();

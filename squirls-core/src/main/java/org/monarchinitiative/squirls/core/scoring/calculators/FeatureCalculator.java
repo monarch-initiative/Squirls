@@ -2,6 +2,7 @@ package org.monarchinitiative.squirls.core.scoring.calculators;
 
 import de.charite.compbio.jannovar.reference.GenomeVariant;
 import org.monarchinitiative.squirls.core.model.SplicingTranscript;
+import org.monarchinitiative.squirls.core.scoring.FloatRegion;
 import xyz.ielis.hyperutil.reference.fasta.SequenceInterval;
 
 public interface FeatureCalculator {
@@ -16,4 +17,8 @@ public interface FeatureCalculator {
      * @return feature value
      */
     double score(GenomeVariant variant, SplicingTranscript transcript, SequenceInterval sequence);
+
+    default double score(GenomeVariant variant, SplicingTranscript transcript, SequenceInterval sequence, FloatRegion phylop) {
+        return score(variant, transcript, sequence);
+    }
 }

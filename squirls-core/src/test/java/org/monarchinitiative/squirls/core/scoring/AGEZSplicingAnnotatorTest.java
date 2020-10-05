@@ -1,6 +1,5 @@
 package org.monarchinitiative.squirls.core.scoring;
 
-import de.charite.compbio.jannovar.data.ReferenceDictionary;
 import de.charite.compbio.jannovar.reference.GenomePosition;
 import de.charite.compbio.jannovar.reference.GenomeVariant;
 import de.charite.compbio.jannovar.reference.Strand;
@@ -8,54 +7,21 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
-import org.mockito.Mock;
-import org.monarchinitiative.squirls.core.PojosForTesting;
-import org.monarchinitiative.squirls.core.SimpleAnnotatable;
-import org.monarchinitiative.squirls.core.TestDataSourceConfig;
-import org.monarchinitiative.squirls.core.data.ic.SplicingPwmData;
-import org.monarchinitiative.squirls.core.model.SplicingTranscript;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.boot.test.context.SpringBootTest;
-import xyz.ielis.hyperutil.reference.fasta.SequenceInterval;
-
-import java.util.Map;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.closeTo;
 import static org.hamcrest.Matchers.hasItems;
 
-@SpringBootTest(classes = TestDataSourceConfig.class)
-public class AGEZSplicingAnnotatorTest {
+public class AGEZSplicingAnnotatorTest extends SplicingAnnotatorTestBase {
 
-    private static final double EPSILON = 0.0005;
-
-    @Autowired
-    public ReferenceDictionary rd;
-
-    @Autowired
-    public SplicingPwmData splicingPwmData;
-
-    @Qualifier("hexamerMap")
-    @Autowired
-    public Map<String, Double> hexamerMap;
-
-    @Qualifier("septamerMap")
-    @Autowired
-    public Map<String, Double> septamerMap;
-
-    private SplicingTranscript st;
-
-    private SequenceInterval sequence;
 
     private AGEZSplicingAnnotator annotator;
 
 
     @BeforeEach
     public void setUp() {
-        st = PojosForTesting.getTranscriptWithThreeExons(rd);
-        sequence = PojosForTesting.getSequenceIntervalForTranscriptWithThreeExons(rd);
+        super.setUp();
         annotator = new AGEZSplicingAnnotator(splicingPwmData, hexamerMap, septamerMap);
     }
 
@@ -71,7 +37,7 @@ public class AGEZSplicingAnnotatorTest {
 
         final GenomeVariant variant = new GenomeVariant(new GenomePosition(rd, Strand.FWD, 1, pos), ref, alt);
 
-        SimpleAnnotatable ann = new SimpleAnnotatable(variant, st, sequence);
+        Annotatable ann = makeAnnotatable(variant);
         ann = annotator.annotate(ann);
 
         assertThat(ann.getFeature("creates_ag_in_agez", Double.class), is(closeTo(createsAgInAgez, EPSILON)));
@@ -84,7 +50,7 @@ public class AGEZSplicingAnnotatorTest {
     public void allFeaturesAreCalculated() {
         final GenomeVariant variant = new GenomeVariant(new GenomePosition(rd, Strand.FWD, 1, 1389), "c", "cag");
 
-        SimpleAnnotatable ann = new SimpleAnnotatable(variant, st, sequence);
+        Annotatable ann = makeAnnotatable(variant);
         ann = annotator.annotate(ann);
 
         // we expect the agez calculator to compute the following features:
