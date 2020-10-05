@@ -73,7 +73,7 @@ public class SquirlsDataBuilder {
         // private no-op
     }
 
-    private static int applyMigrations(DataSource dataSource) {
+    static int applyMigrations(DataSource dataSource) {
         Flyway flyway = Flyway.configure()
                 .dataSource(dataSource)
                 .locations(LOCATIONS)
@@ -81,7 +81,7 @@ public class SquirlsDataBuilder {
         return flyway.migrate();
     }
 
-    private static DataSource makeDataSource(Path databasePath) {
+    static DataSource makeDataSource(Path databasePath) {
         // TODO(optional) - add JDBC parameters?
         String jdbcUrl = String.format("jdbc:h2:file:%s", databasePath.toString());
         HikariConfig config = new HikariConfig();
