@@ -77,7 +77,7 @@ public class SquirlsDataBuilder {
 
     static DataSource makeDataSource(Path databasePath) {
         // TODO(optional) - add JDBC parameters?
-        String jdbcUrl = String.format("jdbc:h2:file:%s", databasePath.toString());
+        String jdbcUrl = String.format("jdbc:h2:file:%s;DB_CLOSE_ON_EXIT=FALSE", databasePath.toString());
         HikariConfig config = new HikariConfig();
         config.setUsername("sa");
         config.setPassword("sa");

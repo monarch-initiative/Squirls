@@ -15,6 +15,16 @@ public class ProgressLogger {
 
     private final AtomicInteger total = new AtomicInteger();
 
+    private final int reportingEach;
+
+    public ProgressLogger() {
+        this(5_000);
+    }
+
+    public ProgressLogger(int reportingEach) {
+        this.reportingEach = reportingEach;
+    }
+
     public AtomicInteger getTotal() {
         return total;
     }
@@ -27,7 +37,7 @@ public class ProgressLogger {
         return t -> {
             int i = total.incrementAndGet();
             if (msg != null && !msg.isEmpty()) {
-                if (i % 5_000 == 0) {
+                if (i % reportingEach == 0) {
                     LOGGER.info(msg, i);
                 }
             }
