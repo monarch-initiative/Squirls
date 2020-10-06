@@ -2,7 +2,6 @@ package org.monarchinitiative.squirls.ingest.transcripts;
 
 import de.charite.compbio.jannovar.data.ReferenceDictionary;
 import de.charite.compbio.jannovar.reference.GenomeInterval;
-import de.charite.compbio.jannovar.reference.GenomePosition;
 import de.charite.compbio.jannovar.reference.TranscriptModel;
 import org.monarchinitiative.squirls.core.model.SplicingTranscript;
 import org.monarchinitiative.squirls.ingest.ProgressLogger;
@@ -81,7 +80,7 @@ public class TranscriptsIngestRunner {
                             transcripts.add(tm);
                         }
                     }
-                    LOGGER.info("Gene {} has transcripts on {}. Keeping transcripts {} located on chrX", symbol, contigs, transcripts.stream().map(TranscriptModel::getAccession).sorted().collect(toList()));
+                    LOGGER.info("Gene {} has transcripts on {}. Keeping transcripts located on chrX: {}", symbol, contigs, transcripts.stream().map(TranscriptModel::getAccession).sorted().collect(toList()));
                     txs.clear();
                     txs.addAll(transcripts);
                 } else {
@@ -97,10 +96,12 @@ public class TranscriptsIngestRunner {
                 return Optional.empty();
             }
 
-            /*
-              we're interested in fetching reference sequence and PhyloP scores for this interval
-            */
+
             final GenomeInterval bnd = boundaries.get();
+            /*
+                  REMAP to reference dictionary built from the downloaded reference genome build, hoping that
+                  names and lengths will match.
+             */
             final GenomeInterval bndOnBuild = new GenomeInterval(rd, bnd.getStrand(),
                     rd.getContigNameToID().get(bnd.getRefDict().getContigIDToName().get(bnd.getChr())),
                     bnd.getBeginPos(), bnd.getEndPos());
@@ -115,6 +116,9 @@ public class TranscriptsIngestRunner {
             int paddingUpstream = Math.min(SquirlsDataBuilder.GENE_SEQUENCE_PADDING, bndOnBuild.getBeginPos());
             // we can go beyond chromosome if we go way too downstream
             int paddingDownstream = Math.min(contigLength - bndOnBuild.getEndPos(), SquirlsDataBuilder.GENE_SEQUENCE_PADDING);
+            /*
+              we're interested in fetching reference sequence and PhyloP scores for this interval
+            */
             final GenomeInterval interval = bndOnBuild.withMorePadding(paddingUpstream, paddingDownstream);
 
             // Sequence
@@ -163,7 +167,7 @@ public class TranscriptsIngestRunner {
                 final int chrNumber = Integer.parseInt(contigName);
                 return 0 < chrNumber && chrNumber < 23;
             } catch (NumberFormatException e) {
-                // swallow, this happens n case of 17_KI270729v1_random, 14_GL000225v1_random, etc.
+                // swallow, this happens in case of 17_KI270729v1_random, 14_GL000225v1_random, etc.
             }
             return false;
         };
