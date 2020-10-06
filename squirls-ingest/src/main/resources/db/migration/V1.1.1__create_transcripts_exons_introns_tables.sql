@@ -60,6 +60,8 @@ create table SPLICING.GENE_TO_TX
 );
 create index GENE_TO_TX_GENE_ID_index
     on SPLICING.GENE_TO_TX (GENE_ID);
+create index GENE_TO_TX_TX_ID_index
+    on SPLICING.GENE_TO_TX (TX_ID);
 
 drop table if exists SPLICING.TRANSCRIPT;
 create table SPLICING.TRANSCRIPT
