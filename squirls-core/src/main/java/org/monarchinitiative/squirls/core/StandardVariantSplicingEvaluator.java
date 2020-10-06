@@ -4,33 +4,26 @@ import de.charite.compbio.jannovar.data.ReferenceDictionary;
 import de.charite.compbio.jannovar.reference.*;
 import org.monarchinitiative.squirls.core.classifier.SquirlsClassifier;
 import org.monarchinitiative.squirls.core.classifier.transform.prediction.PredictionTransformer;
+import org.monarchinitiative.squirls.core.data.SplicingAnnotationData;
 import org.monarchinitiative.squirls.core.data.SplicingAnnotationDataSource;
-import org.monarchinitiative.squirls.core.data.SplicingTranscriptSource;
-import org.monarchinitiative.squirls.core.model.SplicingTranscript;
 import org.monarchinitiative.squirls.core.scoring.SplicingAnnotator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import xyz.ielis.hyperutil.reference.fasta.GenomeSequenceAccessor;
-import xyz.ielis.hyperutil.reference.fasta.SequenceInterval;
 
-import java.util.*;
-import java.util.function.Function;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 public class StandardVariantSplicingEvaluator implements VariantSplicingEvaluator {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(StandardVariantSplicingEvaluator.class);
 
-    @Deprecated
-    private static final int PADDING = 150;
-
-    @Deprecated
-    private final GenomeSequenceAccessor accessor;
-
+    /**
+     * This reference dictionary represents data that is within SQUIRLS database.
+     */
     private final ReferenceDictionary rd;
-
-    @Deprecated
-    private final SplicingTranscriptSource txSource;
 
     private final SplicingAnnotationDataSource annSource;
 
@@ -42,19 +35,9 @@ public class StandardVariantSplicingEvaluator implements VariantSplicingEvaluato
 
     private final int maxVariantLength;
 
-
-    /**
-     * Amount of neighboring FASTA sequence fetched for each variant.
-     */
-    private final int padding;
-
     private StandardVariantSplicingEvaluator(Builder builder) {
-        accessor = Objects.requireNonNull(builder.accessor, "Accessor cannot be null");
-        rd = builder.accessor.getReferenceDictionary();
-        txSource = Objects.requireNonNull(builder.txSource, "Transcript source cannot be null");
-        // TODO: 10/5/20 fix
-//        annSource = Objects.requireNonNull(builder.annSource, "Annotation source cannot be null");
-        annSource = builder.annSource;
+        annSource = Objects.requireNonNull(builder.annSource, "Annotation source cannot be null");
+        rd = annSource.getReferenceDictionary();
 
         annotator = Objects.requireNonNull(builder.annotator, "Annotator cannot be null");
         classifier = Objects.requireNonNull(builder.classifier, "Classifier cannot be null");
@@ -66,7 +49,6 @@ public class StandardVariantSplicingEvaluator implements VariantSplicingEvaluato
             throw new IllegalArgumentException(msg);
         }
         maxVariantLength = builder.maxVariantLength;
-        padding = PADDING + maxVariantLength;
     }
 
     public static Builder builder() {
@@ -81,7 +63,7 @@ public class StandardVariantSplicingEvaluator implements VariantSplicingEvaluato
      * Note that only transcripts with at least 2 exons are considered.
      *
      * @param contig string with name of the chromosome
-     * @param pos    1-based (included) variant position on FWD strand
+     * @param pos    1-based (included) variant position on FWD strand (VCF-style)
      * @param ref    reference allele, e.g. `C`, `CCT`
      * @param alt    alternate allele, e.g. `T`, `AA`
      * @param txIds  set of transcript accession IDs with respect to which the variant should be evaluated
@@ -89,146 +71,69 @@ public class StandardVariantSplicingEvaluator implements VariantSplicingEvaluato
      */
     @Override
     public Map<String, SplicingPredictionData> evaluate(String contig, int pos, String ref, String alt, Set<String> txIds) {
-        /*
-         0 - perform some sanity checks at the beginning.
-         */
-        if (!rd.getContigNameToID().containsKey(contig)) {
-            // unknown contig, nothing to be done here
-            LOGGER.info("Unknown contig for variant {}:{}{}>{}", contig, pos, ref, alt);
+        // perform some sanity checks at the beginning
+        if (!checkVariant(contig, pos, ref, alt)) {
+            // check failed
             return Map.of();
         }
-
-        // do not process variants that are longer than preset value
-        if (ref.length() > maxVariantLength) {
-            LOGGER.debug("Not evaluating variant longer than maximum variant length: `{}` > `{}` for `{}:{}{}>{}`",
-                    ref.length(), maxVariantLength, contig, pos, ref, alt);
-            return Map.of();
-        }
-
-        /*
-         1 - get overlapping splicing transcripts. Query by coordinates if no txIDs are provided. Only transcripts with
-         two or more exons that overlap with the variant interval are considered.
-         */
         final GenomeVariant variant = new GenomeVariant(new GenomePosition(rd, Strand.FWD, rd.getContigNameToID().get(contig), pos, PositionType.ONE_BASED), ref, alt);
-//        final Map<String, SplicingTranscript> txMap = fetchTranscripts(variant, txIds);
-//
-//        if (txMap.isEmpty()) {
-//            // shortcut, no transcripts to evaluate
-//            return Map.of();
-//        }
-//
-//        /*
-//         2 - get enough reference sequence for evaluation with respect to all transcripts
-//         */
-//        GenomePosition bp = null, ep = null;
-//        for (SplicingTranscript tx : txMap.values()) {
-//            final GenomeInterval txIntervalFwd = tx.getTxRegionCoordinates().withStrand(Strand.FWD);
-//            if (bp == null || bp.isGt(txIntervalFwd.getGenomeBeginPos())) {
-//                bp = txIntervalFwd.getGenomeBeginPos();
-//            }
-//            if (ep == null || ep.isLt(txIntervalFwd.getGenomeEndPos())) {
-//                ep = txIntervalFwd.getGenomeEndPos();
-//            }
-//        }
-//
-//        // PADDING + maxVariantLength should provide enough sequence in most cases
-//        final GenomeInterval toFetch = new GenomeInterval(bp.shifted(-padding), ep.differenceTo(bp) + 2 * padding);
-//        final Optional<SequenceInterval> sio = accessor.fetchSequence(toFetch);
-//        if (sio.isEmpty()) {
-//            LOGGER.debug("Unable to get reference sequence for `{}` when evaluating variant `{}`", toFetch, variant);
-//            return Map.of();
-//        }
+        final GenomeInterval varInterval = variant.getGenomeInterval();
+        final Map<String, SplicingAnnotationData> annotationData = annSource.getAnnotationData(contig, varInterval.getBeginPos(), varInterval.getEndPos())
+                // let's filter the results to remove transcripts we're not interested in on the fly
+                .entrySet().stream()
+                .filter(e -> e.getValue().getTranscripts().stream().anyMatch(st -> txIds.contains(st.getAccessionId())))
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
 
-        /*
-         3 - let's evaluate the variant with respect to all transcripts
-         */
-        return annSource.getAnnotations(variant, txIds)
-                .stream().map(annotator::annotate)
-                .map(classifier::predict)
-                .map(transformer::transform)
-                .collect(Collectors.toUnmodifiableMap(k -> k.getTranscript().getAccessionId(), Function.identity()));
-
-//        return txMap.keySet().stream()
-//                .map(tx -> StandardSplicingPredictionData.of(variant, txMap.get(tx), sio.get()))
-//                .map(annotator::annotate)
-//                .map(classifier::predict)
-//                .map(transformer::transform)
-//                .collect(Collectors.toUnmodifiableMap(k -> k.getTranscript().getAccessionId(), Function.identity()));
+        return evaluateVariantAgainstTranscripts(variant, annotationData);
     }
 
     @Override
     public Map<String, SplicingPredictionData> evaluate(String contig, int pos, String ref, String alt) {
-        /*
-         0 - perform some sanity checks at the beginning.
-         */
+        // perform some sanity checks at the beginning
+        if (!checkVariant(contig, pos, ref, alt)) {
+            // check failed
+            return Map.of();
+        }
+        final GenomeVariant variant = new GenomeVariant(new GenomePosition(rd, Strand.FWD, rd.getContigNameToID().get(contig), pos, PositionType.ONE_BASED), ref, alt);
+        final GenomeInterval varInterval = variant.getGenomeInterval();
+        final Map<String, SplicingAnnotationData> annotationData = annSource.getAnnotationData(contig, varInterval.getBeginPos(), varInterval.getEndPos());
+
+        return evaluateVariantAgainstTranscripts(variant, annotationData);
+    }
+
+    private Map<String, SplicingPredictionData> evaluateVariantAgainstTranscripts(GenomeVariant variant, Map<String, SplicingAnnotationData> annotationData) {
+        final Map<String, SplicingPredictionData> predictions = new ConcurrentHashMap<>();
+        for (String geneSymbol : annotationData.keySet()) {
+            final SplicingAnnotationData data = annotationData.get(geneSymbol);
+            data.getTranscripts().parallelStream()
+                    .map(tx -> StandardSplicingPredictionData.of(variant, tx, data.getTracks()))
+                    .map(annotator::annotate)
+                    .map(classifier::predict)
+                    .map(transformer::transform)
+                    .forEach(k -> predictions.put(k.getTranscript().getAccessionId(), k));
+        }
+        return predictions;
+    }
+
+    private boolean checkVariant(String contig, int pos, String ref, String alt) {
         if (!rd.getContigNameToID().containsKey(contig)) {
             // unknown contig, nothing to be done here
             LOGGER.info("Unknown contig for variant {}:{}{}>{}", contig, pos, ref, alt);
-            return Map.of();
+            return false;
         }
 
         // do not process variants that are longer than preset value
         if (ref.length() > maxVariantLength) {
             LOGGER.debug("Not evaluating variant longer than maximum variant length: `{}` > `{}` for `{}:{}{}>{}`",
                     ref.length(), maxVariantLength, contig, pos, ref, alt);
-            return Map.of();
+            return false;
         }
-
-        final GenomeVariant variant = new GenomeVariant(new GenomePosition(rd, Strand.FWD, rd.getContigNameToID().get(contig), pos, PositionType.ONE_BASED), ref, alt);
-
-        return annSource.getAnnotations(variant)
-                .stream().map(annotator::annotate)
-                .map(classifier::predict)
-                .map(transformer::transform)
-                .collect(Collectors.toUnmodifiableMap(k -> k.getTranscript().getAccessionId(), Function.identity()));
+        return true;
     }
 
-//    /**
-//     * Use provided variant coordinates <em>OR</em> transcript accession IDs to fetch {@link SplicingTranscript}s from
-//     * the database.
-//     * <p>
-//     * Only transcripts consisting of 2 or more exons that overlap with the <code>variant</code> are returned.
-//     * </p>
-//     *
-//     * @param variant {@link GenomeVariant} with variant coordinates
-//     * @param txIds   set of transcript accession IDs
-//     * @return map with transcripts group
-//     */
-//    @Deprecated
-//    private Map<String, SplicingTranscript> fetchTranscripts(GenomeVariant variant, Set<String> txIds) {
-//        final Map<String, SplicingTranscript> txMap = new HashMap<>();
-//        final GenomeInterval variantInterval = variant.getGenomeInterval();
-//
-//        if (txIds.isEmpty()) {
-//            // querying by coordinates
-//            return txSource.fetchTranscripts(variant.getChrName(), variantInterval.getBeginPos(), variantInterval.getEndPos(), accessor.getReferenceDictionary()).stream()
-//                    .filter(st -> !st.getIntrons().isEmpty())
-//                    .collect(Collectors.toMap(SplicingTranscript::getAccessionId, Function.identity()));
-//
-//        } else {
-//            // or query by transcript IDs
-//            for (String txId : txIds) {
-//                final Optional<SplicingTranscript> sto = txSource.fetchTranscriptByAccession(txId, accessor.getReferenceDictionary());
-//                if (sto.isPresent()) {
-//                    final SplicingTranscript st = sto.get();
-//                    // the transcript
-//                    //  - has 2+ exons
-//                    //  - overlaps with the variant
-//                    if (!st.getIntrons().isEmpty() && st.getTxRegionCoordinates().overlapsWith(variantInterval)) {
-//                        txMap.put(txId, st);
-//                    }
-//                } else {
-//                    LOGGER.debug("Unknown transcript id `{}`", txId);
-//                }
-//            }
-//        }
-//        return txMap;
-//    }
-
     public static final class Builder {
-        private GenomeSequenceAccessor accessor;
-        private SplicingTranscriptSource txSource;
+
         private SplicingAnnotationDataSource annSource;
         private SplicingAnnotator annotator;
         private SquirlsClassifier classifier;
@@ -237,18 +142,6 @@ public class StandardVariantSplicingEvaluator implements VariantSplicingEvaluato
         private int maxVariantLength = 100;
 
         private Builder() {
-        }
-
-        @Deprecated
-        public Builder accessor(GenomeSequenceAccessor accessor) {
-            this.accessor = accessor;
-            return this;
-        }
-
-        @Deprecated
-        public Builder txSource(SplicingTranscriptSource txSource) {
-            this.txSource = txSource;
-            return this;
         }
 
         public Builder annDataSource(SplicingAnnotationDataSource annSource) {

@@ -5,26 +5,28 @@ import de.charite.compbio.jannovar.data.ReferenceDictionaryBuilder;
 import de.charite.compbio.jannovar.reference.*;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.monarchinitiative.squirls.core.classifier.SquirlsClassifier;
 import org.monarchinitiative.squirls.core.classifier.StandardPrediction;
 import org.monarchinitiative.squirls.core.classifier.transform.prediction.IdentityTransformer;
+import org.monarchinitiative.squirls.core.data.SplicingAnnotationData;
 import org.monarchinitiative.squirls.core.data.SplicingAnnotationDataSource;
-import org.monarchinitiative.squirls.core.data.SplicingTranscriptSource;
 import org.monarchinitiative.squirls.core.model.SplicingTranscript;
+import org.monarchinitiative.squirls.core.scoring.FloatRegion;
+import org.monarchinitiative.squirls.core.scoring.SequenceRegion;
 import org.monarchinitiative.squirls.core.scoring.SplicingAnnotator;
+import org.monarchinitiative.squirls.core.scoring.TrackRegion;
 import org.springframework.boot.test.context.SpringBootTest;
-import xyz.ielis.hyperutil.reference.fasta.GenomeSequenceAccessor;
-import xyz.ielis.hyperutil.reference.fasta.SequenceInterval;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -32,24 +34,9 @@ import static org.mockito.Mockito.when;
  * Here we test some real-world variants.
  */
 @SpringBootTest(classes = TestDataSourceConfig.class)
-@Disabled
-        // TODO - enable once the annotation source has been fixed
 class StandardVariantSplicingEvaluatorTest {
 
-    /**
-     * Tolerance for numeric comparisons.
-     */
-    private static final double EPSILON = 5E-6;
-
-    private static SequenceInterval SI;
-
     private static ReferenceDictionary RD;
-
-    @Mock
-    private GenomeSequenceAccessor accessor;
-
-    @Mock
-    private SplicingTranscriptSource transcriptSource;
 
     @Mock
     private SplicingAnnotationDataSource annotationDataSource;
@@ -59,6 +46,7 @@ class StandardVariantSplicingEvaluatorTest {
 
     @Mock
     private SquirlsClassifier classifier;
+
 
     private StandardVariantSplicingEvaluator evaluator;
 
@@ -71,23 +59,13 @@ class StandardVariantSplicingEvaluatorTest {
         rdBuilder.putContigName(9, "chr9");
         rdBuilder.putContigLength(9, 141_213_431);
         RD = rdBuilder.build();
-        char[] chars = new char[136_230_000 - 136_210_000 + 1];
-        Arrays.fill(chars, 'A'); // the sequence does not really matter since we use mocks
-        SI = SequenceInterval.builder()
-                .interval(new GenomeInterval(RD, Strand.FWD, 9, 136_210_000, 136_230_000, PositionType.ONE_BASED))
-                .sequence(new String(chars))
-                .build();
     }
 
     @BeforeEach
     void setUp() {
-        // genome sequence accessor
-        when(accessor.getReferenceDictionary()).thenReturn(RD);
+        when(annotationDataSource.getReferenceDictionary()).thenReturn(RD);
+
         evaluator = StandardVariantSplicingEvaluator.builder()
-
-                .accessor(accessor)
-                .txSource(transcriptSource)
-
                 .annDataSource(annotationDataSource)
                 .annotator(annotator)
                 .classifier(classifier)
@@ -95,26 +73,78 @@ class StandardVariantSplicingEvaluatorTest {
                 .build();
     }
 
+    /**
+     * This test only specifies variant coordinates, thus it is evaluated with respect to all transcripts it overlaps
+     * with. In this case, we evaluate the variant wrt one transcript <code>stx</code>.
+     */
     @Test
-    void evaluateWrtTx() throws Exception {
+    void evaluateWrtCoordinates() {
         // arrange
-        final GenomeVariant variant = new GenomeVariant(new GenomePosition(RD, Strand.FWD, 9, 136_223_949, PositionType.ONE_BASED), "G", "C");
+        int begin = 136_223_948, end = 136_223_949;
+        final GenomeVariant variant = new GenomeVariant(new GenomePosition(RD, Strand.FWD, 9, end, PositionType.ONE_BASED), "G", "C");
 
-        // 0 - splicing transcript source
+        // 1 - splicing annotation data source
         final SplicingTranscript stx = PojosForTesting.surf2_NM_017503_5(RD);
-//        when(transcriptSource.fetchTranscriptByAccession("NM_017503.5", RD))
-//                .thenReturn(Optional.of(stx));
-        when(annotationDataSource.getAnnotations(variant, Set.of("NM_017503.5")))
-                .thenReturn(Set.of()); // TODO: 10/5/20 implement
+        final GenomeInterval trackInterval = new GenomeInterval(RD, Strand.FWD, 9, 136_223_945, 136_223_955);
+        Map<String, SplicingAnnotationData> annData = Map.of("SURF2",
+                new SimpleSplicingAnnotationData(Set.of(stx),
+                        Map.of("fasta", SequenceRegion.of(trackInterval, "ACGTacgtAC"),
+                                "phylop", FloatRegion.of(trackInterval, List.of(.1f, .1f, .1f, .1f, .1f, .1f, .1f, .1f, .1f, .1f)))));
+        final Map<String, ? extends TrackRegion<?>> tracks = annData.get("SURF2").getTracks();
 
-        // 1 - genome sequence accessor
-//        when(accessor.fetchSequence(any(GenomeInterval.class))).thenReturn(Optional.of(SI));
+        when(annotationDataSource.getAnnotationData("chr9", begin, end))
+                .thenReturn(annData);
 
         // 2 - splicing annotator
-//        final SplicingPredictionData plain = StandardSplicingPredictionData.of(variant, stx, SI);
-        final SplicingPredictionData plain = null;
-//        final SplicingPredictionData annotated = StandardSplicingPredictionData.of(variant, stx, SI);
-        final SplicingPredictionData annotated = null;
+        final SplicingPredictionData plain = StandardSplicingPredictionData.of(variant, stx, tracks);
+        final SplicingPredictionData annotated = StandardSplicingPredictionData.of(variant, stx, tracks);
+        annotated.putFeature("donor_offset", 5);
+        annotated.putFeature("acceptor_offset", 1234); // not real
+        when(annotator.annotate(plain)).thenReturn(annotated);
+
+        // 3 - classifier
+        final SplicingPredictionData predicted = StandardSplicingPredictionData.of(variant, stx, tracks);
+        predicted.putFeature("donor_offset", 5);
+        predicted.putFeature("acceptor_offset", 1234); // not real
+        predicted.setPrediction(StandardPrediction.builder()
+                .addProbaThresholdPair("donor", .6, .7)
+                .addProbaThresholdPair("acceptor", .1, .6)
+                .build());
+        when(classifier.predict(annotated)).thenReturn(predicted);
+
+        // act
+        final Map<String, SplicingPredictionData> predictionMap = evaluator.evaluate("chr9", end, "G", "C");
+
+        // assert
+        assertThat(predictionMap.size(), is(1));
+        assertThat(predictionMap, hasKey("NM_017503.5"));
+        assertThat(predictionMap, hasValue(predicted));
+
+        verify(annotator).annotate(plain);
+    }
+
+    @Test
+    void evaluateWrtTx() {
+        // arrange
+        int begin = 136_223_948, end = 136_223_949;
+        final GenomeVariant variant = new GenomeVariant(new GenomePosition(RD, Strand.FWD, 9, end, PositionType.ONE_BASED), "G", "C");
+
+        // 1 - splicing annotation data source
+        final SplicingTranscript stx = PojosForTesting.surf2_NM_017503_5(RD);
+        final GenomeInterval trackInterval = new GenomeInterval(RD, Strand.FWD, 9, 136_223_945, 136_223_955);
+        Map<String, SplicingAnnotationData> annData = Map.of("SURF2",
+                new SimpleSplicingAnnotationData(Set.of(stx),
+                        Map.of("fasta", SequenceRegion.of(trackInterval, "ACGTacgtAC"),
+                                "phylop", FloatRegion.of(trackInterval, List.of(.1f, .1f, .1f, .1f, .1f, .1f, .1f, .1f, .1f, .1f)))));
+        final Map<String, ? extends TrackRegion<?>> tracks = annData.get("SURF2").getTracks();
+
+        when(annotationDataSource.getAnnotationData("chr9", begin, end))
+                .thenReturn(annData);
+
+
+        // 2 - splicing annotator
+        final SplicingPredictionData plain = StandardSplicingPredictionData.of(variant, stx, tracks);
+        final SplicingPredictionData annotated = StandardSplicingPredictionData.of(variant, stx, tracks);
         annotated.putFeature("donor_offset", 5);
         annotated.putFeature("acceptor_offset", 1234); // not real
 
@@ -125,8 +155,7 @@ class StandardVariantSplicingEvaluatorTest {
                 .addProbaThresholdPair("donor", .6, .7)
                 .addProbaThresholdPair("acceptor", .1, .6)
                 .build();
-//        final SplicingPredictionData predicted = StandardSplicingPredictionData.of(variant, stx, SI);
-        final SplicingPredictionData predicted = null;
+        final SplicingPredictionData predicted = StandardSplicingPredictionData.of(variant, stx, tracks);
         predicted.putFeature("donor_offset", 5);
         predicted.putFeature("acceptor_offset", 1234); // not real
         predicted.setPrediction(prediction);
@@ -142,7 +171,6 @@ class StandardVariantSplicingEvaluatorTest {
         assertThat(predictions, hasKey("NM_017503.5"));
         assertThat(predictions, hasValue(predicted));
 
-        verify(accessor).fetchSequence(new GenomeInterval(RD, Strand.FWD, 9, 136_223_176, 136_228_284, PositionType.ONE_BASED));
         verify(annotator).annotate(plain);
     }
 
@@ -158,79 +186,39 @@ class StandardVariantSplicingEvaluatorTest {
     @Test
     void evaluateWrtTx_unknownTx() {
         // arrange
-        when(transcriptSource.fetchTranscriptByAccession("BLABLA", RD)).thenReturn(Optional.empty());
+        int begin = 136_223_948, end = 136_223_949;
+
+        final SplicingTranscript stx = PojosForTesting.surf2_NM_017503_5(RD);
+        final GenomeInterval trackInterval = new GenomeInterval(RD, Strand.FWD, 9, 136_223_945, 136_223_955);
+        Map<String, SplicingAnnotationData> annData = Map.of("SURF2",
+                new SimpleSplicingAnnotationData(Set.of(stx),
+                        Map.of("fasta", SequenceRegion.of(trackInterval, "ACGTacgtAC"),
+                                "phylop", FloatRegion.of(trackInterval, List.of(.1f, .1f, .1f, .1f, .1f, .1f, .1f, .1f, .1f, .1f)))));
+        final Map<String, ? extends TrackRegion<?>> tracks = annData.get("SURF2").getTracks();
+
+        when(annotationDataSource.getAnnotationData("chr9", begin, end))
+                .thenReturn(annData);
 
         // act
-        final Map<String, SplicingPredictionData> predictionMap = evaluator.evaluate("chr9", 136_223_949, "G", "C", Set.of("BLABLA"));
+        final Map<String, SplicingPredictionData> predictionMap = evaluator.evaluate("chr9", end, "G", "C", Set.of("BLABLA"));
 
         // assert
         assertThat(predictionMap, is(anEmptyMap()));
     }
 
     @Test
-    void evaluateWrtTx_notEnoughSequenceAvailable() {
+    void evaluateWrtCoordinates_longVariant() {
         // arrange
-        // 0 - splicing transcript source
-        final SplicingTranscript stx = PojosForTesting.surf2_NM_017503_5(RD);
-        when(transcriptSource.fetchTranscriptByAccession("NM_017503.5", RD)).thenReturn(Optional.of(stx));
-
-        // 1 - genome sequence accessor
-        when(accessor.fetchSequence(any(GenomeInterval.class))).thenReturn(Optional.empty());
+        int pos = 136_223_949;
+        final char[] chars = new char[101]; // default cutoff is 100bp
+        Arrays.fill(chars, 'A');
+        String ref = new String(chars);
+        String alt = "A";
 
         // act
-        final Map<String, SplicingPredictionData> predictionMap = evaluator.evaluate("chr9", 136_223_949, "G", "C", Set.of("NM_017503.5"));
+        final Map<String, SplicingPredictionData> predictionMap = evaluator.evaluate("chr9", pos, ref, alt);
 
         // assert
         assertThat(predictionMap, is(anEmptyMap()));
-    }
-
-    /**
-     * This test only specifies variant coordinates, thus it is evaluated with respect to all transcripts it overlaps
-     * with. In this case, we evaluate the variant wrt one transcript <code>stx</code>.
-     */
-    @Test
-    void evaluateWrtCoordinates() throws Exception {
-        // arrange
-        final GenomeVariant variant = new GenomeVariant(new GenomePosition(RD, Strand.FWD, 9, 136_223_949, PositionType.ONE_BASED), "G", "C");
-
-        // 0 - splicing transcript source
-        final SplicingTranscript stx = PojosForTesting.surf2_NM_017503_5(RD);
-        when(transcriptSource.fetchTranscripts("chr9", 136_223_948, 136_223_949, RD)).thenReturn(List.of(stx));
-
-        // 1 - genome sequence accessor
-        when(accessor.fetchSequence(any(GenomeInterval.class))).thenReturn(Optional.of(SI));
-
-        // 2 - splicing annotator
-//        final SplicingPredictionData plain = StandardSplicingPredictionData.of(variant, stx, SI);
-        final SplicingPredictionData plain = null;
-//        final SplicingPredictionData annotated = StandardSplicingPredictionData.of(variant, stx, SI);
-        final SplicingPredictionData annotated = null;
-        annotated.putFeature("donor_offset", 5);
-        annotated.putFeature("acceptor_offset", 1234); // not real
-
-        when(annotator.annotate(plain)).thenReturn(annotated);
-
-        // 3 - classifier
-//        final SplicingPredictionData predicted = StandardSplicingPredictionData.of(variant, stx, SI);
-        final SplicingPredictionData predicted = null;
-        predicted.putFeature("donor_offset", 5);
-        predicted.putFeature("acceptor_offset", 1234); // not real
-        predicted.setPrediction(StandardPrediction.builder()
-                .addProbaThresholdPair("donor", .6, .7)
-                .addProbaThresholdPair("acceptor", .1, .6)
-                .build());
-
-        when(classifier.predict(annotated)).thenReturn(predicted);
-
-        // act
-        final Map<String, SplicingPredictionData> predictionMap = evaluator.evaluate("chr9", 136_223_949, "G", "C");
-
-        // assert
-        assertThat(predictionMap.size(), is(1));
-        assertThat(predictionMap, hasKey("NM_017503.5"));
-        assertThat(predictionMap, hasValue(predicted));
-
-        verify(accessor).fetchSequence(new GenomeInterval(RD, Strand.FWD, 9, 136_223_176, 136_228_284, PositionType.ONE_BASED));
-        verify(annotator).annotate(plain);
     }
 }

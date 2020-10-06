@@ -5,7 +5,6 @@ import de.charite.compbio.jannovar.reference.GenomeInterval;
 import de.charite.compbio.jannovar.reference.Strand;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.monarchinitiative.squirls.core.model.SplicingTranscript;
 import org.monarchinitiative.squirls.ingest.PojosForTesting;
 import org.monarchinitiative.squirls.ingest.TestDataSourceConfig;
 import org.springframework.beans.factory.annotation.Autowired;

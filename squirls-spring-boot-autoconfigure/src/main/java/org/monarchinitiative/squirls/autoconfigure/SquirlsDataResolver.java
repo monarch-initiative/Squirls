@@ -21,18 +21,6 @@ public class SquirlsDataResolver {
         this.genomeAssembly = genomeAssembly;
     }
 
-    public Path genomeFastaPath() {
-        return squirlsDataDirectory.resolve(String.format("%s_%s.fa", dataVersion, genomeAssembly));
-    }
-
-    public Path genomeFastaFaiPath() {
-        return squirlsDataDirectory.resolve(String.format("%s_%s.fa.fai", dataVersion, genomeAssembly));
-    }
-
-    public Path genomeFastaDictPath() {
-        return squirlsDataDirectory.resolve(String.format("%s_%s.fa.dict", dataVersion, genomeAssembly));
-    }
-
     public Path getDatasourcePath() {
         // the actual suffix *.mv.db is not being added
         return squirlsDataDirectory.resolve(String.format("%s_%s_splicing", dataVersion, genomeAssembly))

@@ -12,6 +12,7 @@ import org.monarchinitiative.squirls.core.data.ic.SplicingPwmData;
 import org.monarchinitiative.squirls.core.model.SplicingParameters;
 import org.monarchinitiative.squirls.core.model.SplicingTranscript;
 import org.monarchinitiative.squirls.core.reference.allele.AlleleGenerator;
+import org.monarchinitiative.squirls.core.scoring.SequenceRegion;
 import org.monarchinitiative.squirls.core.scoring.calculators.ic.SplicingInformationContentCalculator;
 import org.monarchinitiative.vmvt.core.VmvtGenerator;
 import org.slf4j.Logger;
@@ -188,7 +189,11 @@ public class SimpleSplicingVariantGraphicsGenerator implements SplicingVariantGr
         final VisualizationContext context = VisualizationContext.CANONICAL_DONOR;
 
         final GenomeVariant variant = predictionData.getVariant();
-        final SequenceInterval sequence = predictionData.getSequence();
+        final SequenceRegion fastaTrack = predictionData.getTrack("fasta", SequenceRegion.class);
+        final SequenceInterval sequence = SequenceInterval.builder()
+                .sequence(fastaTrack.getValue())
+                .interval(fastaTrack.getInterval())
+                .build();
         final SplicingTranscript transcript = predictionData.getTranscript();
 
         // Overlaps with canonical donor site?
@@ -257,7 +262,11 @@ public class SimpleSplicingVariantGraphicsGenerator implements SplicingVariantGr
     private String makeCanonicalAcceptorContextGraphics(SplicingPredictionData predictionData) {
         final VisualizationContext context = VisualizationContext.CANONICAL_ACCEPTOR;
         final GenomeVariant variant = predictionData.getVariant();
-        final SequenceInterval sequence = predictionData.getSequence();
+        final SequenceRegion fastaTrack = predictionData.getTrack("fasta", SequenceRegion.class);
+        final SequenceInterval sequence = SequenceInterval.builder()
+                .sequence(fastaTrack.getValue())
+                .interval(fastaTrack.getInterval())
+                .build();
         final SplicingTranscript transcript = predictionData.getTranscript();
 
         // Overlaps with canonical acceptor site?
@@ -324,7 +333,11 @@ public class SimpleSplicingVariantGraphicsGenerator implements SplicingVariantGr
     private String makeCrypticDonorContextGraphics(SplicingPredictionData predictionData) {
         final VisualizationContext context = VisualizationContext.CRYPTIC_DONOR;
 
-        final SequenceInterval sequence = predictionData.getSequence();
+        final SequenceRegion fastaTrack = predictionData.getTrack("fasta", SequenceRegion.class);
+        final SequenceInterval sequence = SequenceInterval.builder()
+                .sequence(fastaTrack.getValue())
+                .interval(fastaTrack.getInterval())
+                .build();
         final GenomeVariant variant = predictionData.getVariant();
         final GenomeInterval variantInterval = variant.getGenomeInterval();
 
@@ -392,7 +405,11 @@ public class SimpleSplicingVariantGraphicsGenerator implements SplicingVariantGr
     private String makeCrypticAcceptorContextGraphics(SplicingPredictionData predictionData) {
         final VisualizationContext context = VisualizationContext.CRYPTIC_ACCEPTOR;
 
-        final SequenceInterval sequence = predictionData.getSequence();
+        final SequenceRegion fastaTrack = predictionData.getTrack("fasta", SequenceRegion.class);
+        final SequenceInterval sequence = SequenceInterval.builder()
+                .sequence(fastaTrack.getValue())
+                .interval(fastaTrack.getInterval())
+                .build();
         final GenomeVariant variant = predictionData.getVariant();
         final GenomeInterval variantInterval = variant.getGenomeInterval();
 
@@ -441,7 +458,11 @@ public class SimpleSplicingVariantGraphicsGenerator implements SplicingVariantGr
         final VisualizationContext context = VisualizationContext.SRE;
 
         final GenomeVariant variant = predictionData.getVariant();
-        final SequenceInterval sequence = predictionData.getSequence();
+        final SequenceRegion fastaTrack = predictionData.getTrack("fasta", SequenceRegion.class);
+        final SequenceInterval sequence = SequenceInterval.builder()
+                .sequence(fastaTrack.getValue())
+                .interval(fastaTrack.getInterval())
+                .build();
 
         // primary - hexamer
         final String hexamerRefSnippet = AlleleGenerator.getPaddedAllele(variant.getGenomeInterval(), sequence, variant.getRef(), 5);  // 5 because at least one base is REF/ALT

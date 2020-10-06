@@ -5,6 +5,7 @@ import de.charite.compbio.jannovar.annotation.builders.AnnotationBuilderOptions;
 import de.charite.compbio.jannovar.data.JannovarData;
 import de.charite.compbio.jannovar.data.ReferenceDictionary;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.monarchinitiative.squirls.cli.TestDataSourceConfig;
 import org.monarchinitiative.squirls.cli.cmd.analyze_vcf.visualization.simple.SimpleSplicingVariantGraphicsGenerator;
@@ -26,13 +27,10 @@ class HtmlResultWriterTest {
 
     // TODO: 3. 6. 2020 remove
     private static final Path OUTPATH = Paths.get("target/SQUIRLS.html");
-
-    @Autowired
-    private JannovarData jannovarData;
-
     @Autowired
     public SplicingPwmData splicingPwmData;
-
+    @Autowired
+    private JannovarData jannovarData;
     private SimpleSplicingVariantGraphicsGenerator graphicsGenerator;
 
     private VariantAnnotator annotator;
@@ -98,8 +96,9 @@ class HtmlResultWriterTest {
      * @throws Exception bla
      */
     @Test
+    @Disabled
+    // TODO - remove or make a real test
     void writeResultsRealGraphics() throws Exception {
-        // TODO - remove or make a real test
         final ReferenceDictionary rd = jannovarData.getRefDict();
         final Set<SplicingVariantAlleleEvaluation> variantData = Set.of(
                 // donor

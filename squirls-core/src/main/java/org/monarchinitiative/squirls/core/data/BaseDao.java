@@ -11,7 +11,10 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-public abstract class BaseDao implements SplicingTranscriptSource {
+/**
+ * This class provides reference dictionary that represents coordinate system of data stored in SQUIRLS database.
+ */
+public abstract class BaseDao {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BaseDao.class);
 

@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
  *
  */
 @Deprecated
-public class DbSplicingTranscriptSource extends BaseDao {
+public class DbSplicingTranscriptSource extends BaseDao implements SplicingTranscriptSource {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DbSplicingTranscriptSource.class);
 

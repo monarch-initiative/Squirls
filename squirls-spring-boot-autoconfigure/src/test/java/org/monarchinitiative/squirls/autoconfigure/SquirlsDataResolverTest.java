@@ -20,14 +20,6 @@ class SquirlsDataResolverTest {
     }
 
     @Test
-    void getFastaStuff() {
-        final Path versionedAssemblyDataDirPath = TEST_DATA.resolve("1710_hg19");
-        assertThat(resolver.genomeFastaPath(), is(versionedAssemblyDataDirPath.resolve("1710_hg19.fa")));
-        assertThat(resolver.genomeFastaFaiPath(), is(versionedAssemblyDataDirPath.resolve("1710_hg19.fa.fai")));
-        assertThat(resolver.genomeFastaDictPath(), is(versionedAssemblyDataDirPath.resolve("1710_hg19.fa.dict")));
-    }
-
-    @Test
     void getDatasourcePath() {
         assertThat(resolver.getDatasourcePath().toFile().getName(), is("1710_hg19_splicing"));
     }

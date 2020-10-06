@@ -10,8 +10,8 @@ import org.monarchinitiative.squirls.core.classifier.transform.prediction.Identi
 import org.monarchinitiative.squirls.core.classifier.transform.prediction.PredictionTransformer;
 import org.monarchinitiative.squirls.core.data.ClassifierDataManager;
 import org.monarchinitiative.squirls.core.data.DbClassifierDataManager;
-import org.monarchinitiative.squirls.core.data.DbSplicingTranscriptSource;
-import org.monarchinitiative.squirls.core.data.SplicingTranscriptSource;
+import org.monarchinitiative.squirls.core.data.DbSplicingAnnotationDataSource;
+import org.monarchinitiative.squirls.core.data.SplicingAnnotationDataSource;
 import org.monarchinitiative.squirls.core.data.ic.CorruptedPwmException;
 import org.monarchinitiative.squirls.core.data.ic.DbSplicingPositionalWeightMatrixParser;
 import org.monarchinitiative.squirls.core.data.ic.SplicingPwmData;
@@ -26,12 +26,8 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import xyz.ielis.hyperutil.reference.fasta.GenomeSequenceAccessor;
-import xyz.ielis.hyperutil.reference.fasta.GenomeSequenceAccessorBuilder;
-import xyz.ielis.hyperutil.reference.fasta.InvalidFastaFileException;
 
 import javax.sql.DataSource;
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -46,7 +42,10 @@ import java.util.stream.Collectors;
  * @author Daniel Danis <daniel.danis@jax.org>
  */
 @Configuration
-@EnableConfigurationProperties({SquirlsProperties.class, ClassifierProperties.class, AnnotatorProperties.class})
+@EnableConfigurationProperties({
+        SquirlsProperties.class,
+        ClassifierProperties.class,
+        AnnotatorProperties.class})
 public class SquirlsAutoConfiguration {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SquirlsAutoConfiguration.class);
@@ -93,37 +92,19 @@ public class SquirlsAutoConfiguration {
     }
 
     @Bean
-    @ConditionalOnMissingBean(name = "phylopBigwigPath")
-    public Path phylopBigwigPath() throws UndefinedSquirlsResourceException {
-        if (properties.getPhylopBigwigPath() == null) {
-            throw new UndefinedSquirlsResourceException("Path to PhyloP bigwig file is not specified");
-        }
-        return Paths.get(properties.getPhylopBigwigPath());
-    }
-
-
-//    @Bean
-//    public BigWigAccessor phylopBigwigAccessor(Path phylopBigwigPath) throws IOException {
-//        LOGGER.debug("Using phyloP bigwig file at `{}`", phylopBigwigPath);
-//        return new BigWigAccessor(phylopBigwigPath);
-//    }
-
-    @Bean
     public SquirlsDataResolver squirlsDataResolver(Path squirlsDataDirectory,
                                                    String squirlsGenomeAssembly,
                                                    String squirlsDataVersion) {
         return new SquirlsDataResolver(squirlsDataDirectory, squirlsDataVersion, squirlsGenomeAssembly);
     }
 
-
     @Bean
-    public SplicingTranscriptSource splicingTranscriptSource(DataSource squirlsDatasource) {
-        return new DbSplicingTranscriptSource(squirlsDatasource);
+    public SplicingAnnotationDataSource splicingAnnotationDataSource(DataSource squirlsDatasource) {
+        return new DbSplicingAnnotationDataSource(squirlsDatasource);
     }
 
     @Bean
-    public VariantSplicingEvaluator variantSplicingEvaluator(GenomeSequenceAccessor genomeSequenceAccessor,
-                                                             SplicingTranscriptSource splicingTranscriptSource,
+    public VariantSplicingEvaluator variantSplicingEvaluator(SplicingAnnotationDataSource splicingAnnotationDataSource,
                                                              SplicingAnnotator splicingAnnotator,
                                                              ClassifierDataManager classifierDataManager) throws InvalidSquirlsResourceException {
         final ClassifierProperties classifierProperties = properties.getClassifier();
@@ -161,8 +142,7 @@ public class SquirlsAutoConfiguration {
 
         // make variant evaluator
         return StandardVariantSplicingEvaluator.builder()
-                .accessor(genomeSequenceAccessor)
-                .txSource(splicingTranscriptSource)
+                .annDataSource(splicingAnnotationDataSource)
                 .annotator(splicingAnnotator)
                 .classifier(clf)
                 .transformer(transformer)
@@ -194,16 +174,6 @@ public class SquirlsAutoConfiguration {
     @Bean
     public DbKMerDao dbKMerDao(@Qualifier("squirlsDatasource") DataSource squirlsDatasource) {
         return new DbKMerDao(squirlsDatasource);
-    }
-
-    @Bean
-    public GenomeSequenceAccessor genomeSequenceAccessor(SquirlsDataResolver squirlsDataResolver) throws InvalidFastaFileException {
-        return GenomeSequenceAccessorBuilder.builder()
-                .setFastaPath(squirlsDataResolver.genomeFastaPath())
-                .setFastaFaiPath(squirlsDataResolver.genomeFastaFaiPath())
-                .setFastaDictPath(squirlsDataResolver.genomeFastaDictPath())
-                .setType(GenomeSequenceAccessor.Type.SINGLE_FASTA)
-                .build();
     }
 
     @Bean
