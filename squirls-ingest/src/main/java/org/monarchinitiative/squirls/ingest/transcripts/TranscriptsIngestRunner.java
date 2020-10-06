@@ -102,7 +102,7 @@ public class TranscriptsIngestRunner {
             final int contigLength = rd.getContigIDToLength().get(bnd.getChr());
             if (bnd.getBeginPos() < 0 || bnd.getEndPos() > contigLength) {
                 // transcript region goes beyond chromosome, this is illegal
-                LOGGER.warn("Skipping {}, transcript(s) goes beyond chromosome", symbol);
+                LOGGER.warn("Skipping {}, transcript(s) goes beyond chromosome: {}", symbol, bnd);
                 return Optional.empty();
             }
             // we can get negative position if we go way too upstream
