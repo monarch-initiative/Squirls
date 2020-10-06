@@ -2,6 +2,7 @@ package org.monarchinitiative.squirls.ingest.transcripts;
 
 import de.charite.compbio.jannovar.data.ReferenceDictionary;
 import de.charite.compbio.jannovar.reference.GenomeInterval;
+import de.charite.compbio.jannovar.reference.GenomePosition;
 import de.charite.compbio.jannovar.reference.TranscriptModel;
 import org.monarchinitiative.squirls.core.model.SplicingTranscript;
 import org.monarchinitiative.squirls.ingest.ProgressLogger;
@@ -97,7 +98,19 @@ public class TranscriptsIngestRunner {
             /*
               we're interested in fetching reference sequence and PhyloP scores for this interval
             */
-            final GenomeInterval interval = boundaries.get().withMorePadding(SquirlsDataBuilder.GENE_SEQUENCE_PADDING);
+            final GenomeInterval bnd = boundaries.get();
+            final int contigLength = rd.getContigIDToLength().get(bnd.getChr());
+            if (bnd.getBeginPos() < 0 || bnd.getEndPos() > contigLength) {
+                // transcript region goes beyond chromosome, this is illegal
+                LOGGER.warn("Skipping {}, transcript(s) goes beyond chromosome", symbol);
+                return Optional.empty();
+            }
+            // we can get negative position if we go way too upstream
+            int paddingUpstream = Math.min(SquirlsDataBuilder.GENE_SEQUENCE_PADDING, bnd.getBeginPos());
+            // we can go beyond chromosome if we go way too downstream
+            int paddingDownstream = Math.min(contigLength - bnd.getEndPos(), SquirlsDataBuilder.GENE_SEQUENCE_PADDING);
+            final GenomeInterval interval = bnd.withMorePadding(paddingUpstream, paddingDownstream);
+
             // Sequence
             final Optional<SequenceInterval> opt = genomeSequenceAccessor.fetchSequence(interval);
             if (opt.isEmpty()) {
@@ -119,6 +132,22 @@ public class TranscriptsIngestRunner {
             return Optional.of(new GeneAnnotationData(symbol, stxs, interval, sequence, phylopScores));
         };
 
+    }
+
+    private static int calculateUpstreamPadding(GenomePosition pos, int padding, ReferenceDictionary rd) {
+        switch (pos.getStrand()) {
+            case FWD:
+
+                return Math.min(padding, pos.getPos());
+            case REV:
+
+                final int contigLength = rd.getContigIDToLength().get(pos.getChr());
+                return pos.getPos() + padding > contigLength
+                        ? contigLength - pos.getPos()
+                        : padding;
+            default:
+                throw new RuntimeException(String.format("Strand should be either FWD or REV, but here %s", pos.getStrand()));
+        }
     }
 
     private static Predicate<? super TranscriptModel> transcriptsOnNonPrimaryContigs(ReferenceDictionary rd) {
@@ -146,7 +175,7 @@ public class TranscriptsIngestRunner {
         LOGGER.info("Processing {} genes", txByGeneSymbol.size());
 
         ProgressLogger progress = new ProgressLogger(500);
-        int updated = txByGeneSymbol.entrySet().parallelStream()
+        int updated = txByGeneSymbol.entrySet().stream()
                 .peek(e -> progress.logTotal("Processed {} genes"))
                 .map(toGeneAnnotationData(genomeSequenceAccessor, phylopAccessor, calculator, rd))
                 .filter(Optional::isPresent)

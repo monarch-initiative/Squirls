@@ -1,5 +1,6 @@
 package org.monarchinitiative.squirls.ingest;
 
+import de.charite.compbio.jannovar.data.ReferenceDictionary;
 import de.charite.compbio.jannovar.reference.TranscriptModel;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -57,6 +58,9 @@ public class SquirlsDataBuilderTest {
     public List<TranscriptModel> transcriptModels;
 
     @Autowired
+    public ReferenceDictionary referenceDictionary;
+
+    @Autowired
     public BigWigAccessor bigWigAccessor;
 
     @BeforeEach
@@ -88,7 +92,7 @@ public class SquirlsDataBuilderTest {
         // arrange - nothing to be done
 
         // act
-        SquirlsDataBuilder.ingestTranscripts(dataSource, accessor.getReferenceDictionary(), accessor, bigWigAccessor, splicingInformationContentCalculator, transcriptModels);
+        SquirlsDataBuilder.ingestTranscripts(dataSource, referenceDictionary, accessor, bigWigAccessor, splicingInformationContentCalculator, transcriptModels);
 
         // assert
         String tmSql = "select TX_ID, CONTIG, BEGIN_POS, END_POS, BEGIN_ON_FWD, END_ON_FWD, STRAND, ACCESSION_ID " +
@@ -111,7 +115,7 @@ public class SquirlsDataBuilderTest {
             }
         }
         assertThat(tms, hasSize(1));
-        assertThat(tms, hasItem(String.join(",", "0", "0", "10000", "20000", "10000", "20000", "TRUE", "adam")));
+        assertThat(tms, hasItem(String.join(",", "0", "2", "10000", "20000", "10000", "20000", "TRUE", "adam")));
 
 
 
@@ -134,11 +138,11 @@ public class SquirlsDataBuilderTest {
         }
         assertThat(records, hasSize(5));
         assertThat(records, hasItems(
-                "0;0;10000;12000;ex;;0",
-                "0;0;14000;16000;ex;;1",
-                "0;0;18000;20000;ex;;2",
-                "0;0;12000;14000;ir;DONOR=-5.641756189392563;ACCEPTOR=-22.149718912705787;0",
-                "0;0;16000;18000;ir;DONOR=-4.676134711788632;ACCEPTOR=-14.459319682085656;1"));
+                "0;2;10000;12000;ex;;0",
+                "0;2;14000;16000;ex;;1",
+                "0;2;18000;20000;ex;;2",
+                "0;2;12000;14000;ir;DONOR=-5.641756189392563;ACCEPTOR=-22.149718912705787;0",
+                "0;2;16000;18000;ir;DONOR=-4.676134711788632;ACCEPTOR=-14.459319682085656;1"));
 
 
 
@@ -161,7 +165,7 @@ public class SquirlsDataBuilderTest {
             }
         }
         assertThat(genes, hasSize(1));
-        assertThat(genes, hasItem("0;10000;20000;10000;20000;TRUE;0;ADAM"));
+        assertThat(genes, hasItem("2;10000;20000;10000;20000;TRUE;0;ADAM"));
 
 
 
@@ -181,7 +185,7 @@ public class SquirlsDataBuilderTest {
             }
         }
         assertThat(geneTracks, hasSize(1));
-        assertThat(geneTracks, hasItem("0;0;9500;20500;TRUE"));
+        assertThat(geneTracks, hasItem("0;2;9500;20500;TRUE"));
 
 
 
