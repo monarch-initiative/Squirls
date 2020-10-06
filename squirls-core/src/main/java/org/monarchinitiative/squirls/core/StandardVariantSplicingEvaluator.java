@@ -6,6 +6,7 @@ import org.monarchinitiative.squirls.core.classifier.SquirlsClassifier;
 import org.monarchinitiative.squirls.core.classifier.transform.prediction.PredictionTransformer;
 import org.monarchinitiative.squirls.core.data.SplicingAnnotationData;
 import org.monarchinitiative.squirls.core.data.SplicingAnnotationDataSource;
+import org.monarchinitiative.squirls.core.model.SplicingTranscript;
 import org.monarchinitiative.squirls.core.scoring.SplicingAnnotator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,6 +15,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 public class StandardVariantSplicingEvaluator implements VariantSplicingEvaluator {
@@ -55,6 +57,10 @@ public class StandardVariantSplicingEvaluator implements VariantSplicingEvaluato
         return new Builder();
     }
 
+    private static Predicate<? super SplicingTranscript> transcriptsWithNoIntrons() {
+        return tm -> !tm.getIntrons().isEmpty();
+    }
+
     /**
      * Evaluate given variant with respect to transcripts in <code>txIds</code>. The method <em>attempts</em> to evaluate
      * the variant with respect to given <code>txIds</code>, but does not guarantee that results will be provided for
@@ -72,7 +78,7 @@ public class StandardVariantSplicingEvaluator implements VariantSplicingEvaluato
     @Override
     public Map<String, SplicingPredictionData> evaluate(String contig, int pos, String ref, String alt, Set<String> txIds) {
         // perform some sanity checks at the beginning
-        if (!checkVariant(contig, pos, ref, alt)) {
+        if (variantFailsInputCheck(contig, pos, ref, alt)) {
             // check failed
             return Map.of();
         }
@@ -91,7 +97,7 @@ public class StandardVariantSplicingEvaluator implements VariantSplicingEvaluato
     @Override
     public Map<String, SplicingPredictionData> evaluate(String contig, int pos, String ref, String alt) {
         // perform some sanity checks at the beginning
-        if (!checkVariant(contig, pos, ref, alt)) {
+        if (variantFailsInputCheck(contig, pos, ref, alt)) {
             // check failed
             return Map.of();
         }
@@ -107,6 +113,7 @@ public class StandardVariantSplicingEvaluator implements VariantSplicingEvaluato
         for (String geneSymbol : annotationData.keySet()) {
             final SplicingAnnotationData data = annotationData.get(geneSymbol);
             data.getTranscripts().parallelStream()
+                    .filter(transcriptsWithNoIntrons())
                     .map(tx -> StandardSplicingPredictionData.of(variant, tx, data.getTracks()))
                     .map(annotator::annotate)
                     .map(classifier::predict)
@@ -116,20 +123,20 @@ public class StandardVariantSplicingEvaluator implements VariantSplicingEvaluato
         return predictions;
     }
 
-    private boolean checkVariant(String contig, int pos, String ref, String alt) {
+    private boolean variantFailsInputCheck(String contig, int pos, String ref, String alt) {
         if (!rd.getContigNameToID().containsKey(contig)) {
             // unknown contig, nothing to be done here
             LOGGER.info("Unknown contig for variant {}:{}{}>{}", contig, pos, ref, alt);
-            return false;
+            return true;
         }
 
         // do not process variants that are longer than preset value
         if (ref.length() > maxVariantLength) {
             LOGGER.debug("Not evaluating variant longer than maximum variant length: `{}` > `{}` for `{}:{}{}>{}`",
                     ref.length(), maxVariantLength, contig, pos, ref, alt);
-            return false;
+            return true;
         }
-        return true;
+        return false;
     }
 
     public static final class Builder {
