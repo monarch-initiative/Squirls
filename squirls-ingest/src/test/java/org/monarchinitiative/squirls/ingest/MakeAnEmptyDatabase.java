@@ -1,6 +1,7 @@
 package org.monarchinitiative.squirls.ingest;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import javax.sql.DataSource;
@@ -13,6 +14,7 @@ import java.nio.file.Path;
  * <p>
  * The database is built at the top level
  */
+@Disabled
 public class MakeAnEmptyDatabase {
 
     /**
