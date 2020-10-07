@@ -278,7 +278,7 @@ public class PojosForTesting {
                 .mapToObj(j -> (float) j)
                 .collect(Collectors.toList());
         return Map.of(
-                "sequence", SequenceRegion.of(interval, THREE_EXON_TX_SEQ),
+                "fasta", SequenceRegion.of(interval, THREE_EXON_TX_SEQ),
                 "phylop", FloatRegion.of(interval, fakePhylop)
         );
     }
