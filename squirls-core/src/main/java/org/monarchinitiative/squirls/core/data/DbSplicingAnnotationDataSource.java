@@ -2,6 +2,7 @@ package org.monarchinitiative.squirls.core.data;
 
 import de.charite.compbio.jannovar.data.ReferenceDictionary;
 import de.charite.compbio.jannovar.reference.GenomeInterval;
+import de.charite.compbio.jannovar.reference.GenomePosition;
 import de.charite.compbio.jannovar.reference.Strand;
 import org.monarchinitiative.squirls.core.model.SplicingExon;
 import org.monarchinitiative.squirls.core.model.SplicingIntron;
@@ -13,8 +14,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.sql.DataSource;
-import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
+import java.io.EOFException;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
@@ -28,6 +29,11 @@ import java.util.stream.Collectors;
 public class DbSplicingAnnotationDataSource extends BaseDao implements SplicingAnnotationDataSource {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DbSplicingAnnotationDataSource.class);
+
+    /**
+     * Number of upstream and downstream PhyloP scores fetched for a query region.
+     */
+    private static final int PHYLOP_PADDING_N = 2;
 
     private static final String FASTA_TRACK_NAME = "fasta";
     private static final String PHYLOP_TRACK_NAME = "phylop";
@@ -66,6 +72,7 @@ public class DbSplicingAnnotationDataSource extends BaseDao implements SplicingA
             return Map.of();
         }
         final int dbChr = internalReferenceDictionary.getContigNameToID().get(contig);
+        final GenomeInterval queryInterval = new GenomeInterval(internalReferenceDictionary, Strand.FWD, dbChr, begin, end);
 
         // transcript data
         String txSql = "select tx.TX_ID tx_id, tx.ACCESSION_ID, tx.CONTIG as tx_contig, tx.BEGIN_POS tx_begin, tx.END_POS tx_end, tx.STRAND tx_strand, " +
@@ -80,13 +87,13 @@ public class DbSplicingAnnotationDataSource extends BaseDao implements SplicingA
         String tracksSql = "select tx.ACCESSION_ID tx_accession, g.SYMBOL symbol, " +
                 "  t.CONTIG t_contig, t.BEGIN_POS t_begin, t.END_POS t_end, t.STRAND t_strand, " +
                 "  t.FASTA_SEQUENCE fasta, t.PHYLOP_VALUES phylop " +
-                "from SPLICING.TRANSCRIPT tx " +
-                "  join SPLICING.GENE_TO_TX gtx on tx.TX_ID = gtx.TX_ID " +
-                "  join SPLICING.GENE g on gtx.GENE_ID = g.GENE_ID " +
+                "from SPLICING.GENE g " +
+                "  join SPLICING.GENE_TO_TX gtx on g.GENE_ID = gtx.GENE_ID " +
+                "  join SPLICING.TRANSCRIPT tx on gtx.TX_ID = tx.TX_ID " +
                 "  join SPLICING.GENE_TRACK t on g.GENE_ID = t.GENE_ID " +
-                "where tx.CONTIG = ? " +
-                "  and ? < tx.END_ON_FWD " +
-                "  and tx.BEGIN_ON_FWD < ?";
+                "where g.CONTIG = ? " +
+                "  and ? < g.END_ON_FWD " +
+                "  and g.BEGIN_ON_FWD < ?";
 
         /*
          We want to populate these collections:
@@ -123,7 +130,7 @@ public class DbSplicingAnnotationDataSource extends BaseDao implements SplicingA
             tracksPs.setInt(3, end);
 
             try (ResultSet rs = tracksPs.executeQuery()) {
-                final TrackData trackData = assembleTracks(rs);
+                final TrackData trackData = assembleTracks(rs, queryInterval);
 
                 trackMap.putAll(trackData.trackMap);
                 geneToTxMap.putAll(trackData.geneToTxMap);
@@ -143,6 +150,7 @@ public class DbSplicingAnnotationDataSource extends BaseDao implements SplicingA
             // gather transcripts for this gene
             final Set<SplicingTranscript> geneTranscripts = geneToTxMap.get(symbol).stream()
                     .map(txByAccession::get)
+                    .filter(Objects::nonNull)
                     .collect(Collectors.toSet());
             // gather tracks that belong to the gene
             final Map<String, TrackRegion<?>> tracks = trackMap.get(symbol);
@@ -230,7 +238,7 @@ public class DbSplicingAnnotationDataSource extends BaseDao implements SplicingA
                 .collect(Collectors.toSet());
     }
 
-    private TrackData assembleTracks(ResultSet rs) throws SQLException {
+    private TrackData assembleTracks(ResultSet rs, GenomeInterval query) throws SQLException {
         // key - gene symbol
         //   key - track name, value - track
         Map<String, Map<String, TrackRegion<?>>> trackMap = new HashMap<>();
@@ -240,10 +248,10 @@ public class DbSplicingAnnotationDataSource extends BaseDao implements SplicingA
         while (rs.next()) {
             final String symbol = rs.getString("symbol");
             if (!trackMap.containsKey(symbol)) {
-                        /*
-                         We're seeing this gene symbol for the first time.
-                         This is the time to add tracks, since tracks are unique to the gene
-                         */
+                /*
+                 We're seeing this gene symbol for the first time.
+                 This is the time to add tracks, since tracks are unique to the gene
+                 */
                 Map<String, TrackRegion<?>> tracks = new HashMap<>();
                 // 0 - figure out track's interval
                 final int trackContig = rs.getInt("t_contig");
@@ -251,27 +259,51 @@ public class DbSplicingAnnotationDataSource extends BaseDao implements SplicingA
                 final int trackEnd = rs.getInt("t_end");
                 final Strand trackStrand = rs.getBoolean("t_strand") ? Strand.FWD : Strand.REV;
                 final GenomeInterval trackInterval = new GenomeInterval(internalReferenceDictionary, trackStrand, trackContig, trackBegin, trackEnd);
+                final GenomeInterval queryOnStrand = query.withStrand(trackStrand);
 
                 // 1 - decode fasta track
-                final byte[] fastaBytes = rs.getBytes("fasta");
-                String fasta = new String(fastaBytes, StandardCharsets.UTF_8);
+                /*
+                 The track is stored in the database as
+                 */
+                String fasta = new String(rs.getBytes("fasta"), StandardCharsets.UTF_8);
                 tracks.put(FASTA_TRACK_NAME, SequenceRegion.of(trackInterval, fasta));
 
                 // 2 - decode phylop track with float score per position
-                // we expect to see n*4-long array (n=trackInterval.length()) as each float is encoded as 4 bytes
-                final byte[] phylopBytes = rs.getBytes("phylop");
-                if (phylopBytes.length % 4 != 0) {
-                    LOGGER.warn("Phylop track length is not a multiple of 4 for {}: {}:{}-{}", symbol, trackContig, trackBegin, trackEnd);
-                } else {
-                    List<Float> phylopValues = new ArrayList<>(phylopBytes.length / 4);
-                    try (DataInputStream is = new DataInputStream(new ByteArrayInputStream(phylopBytes))) {
-                        while (is.available() > 0) {
-                            phylopValues.add(is.readFloat());
+                /*
+                 The track is stored in the database in form of a *4-long array (n=trackInterval.length()) where each
+                 float is encoded as 4 bytes.
+                 To save memory, we only get the "relevant" (target) part of the PhyloP track.
+                 */
+                final int targetLength = (queryOnStrand.length() + (PHYLOP_PADDING_N * 2));
+                final int beginOffset = (queryOnStrand.getBeginPos() - trackInterval.getBeginPos()) - PHYLOP_PADDING_N;
+                // in input stream, the data interesting for this query begins at this offset
+                final int byteOffset = beginOffset * 4; // 4 <- n bytes per float
+                final GenomeInterval target = new GenomeInterval(new GenomePosition(internalReferenceDictionary, trackStrand, trackContig, trackBegin + beginOffset), targetLength);
+
+                try (final DataInputStream phylopStream = new DataInputStream(rs.getBinaryStream("phylop"))) {
+                    // first, let's get to the target region
+                    long skipped = phylopStream.skip(byteOffset);
+                    if (skipped == byteOffset) {
+                        // now we are at the right place to start reading target data
+                        try {
+                            List<Float> phylopValues = new ArrayList<>(targetLength);
+                            int i = 0;
+                            while (i < targetLength) {
+                                phylopValues.add(phylopStream.readFloat());
+                                i++;
+                            }
+                            tracks.put(PHYLOP_TRACK_NAME, FloatRegion.of(target, phylopValues));
+                        } catch (EOFException eof) {
+                            // stream ended before finishing reading the target region
+                            LOGGER.warn("Not enough phylop track available for query {}", target);
                         }
-                        tracks.put(PHYLOP_TRACK_NAME, FloatRegion.of(trackInterval, phylopValues));
-                    } catch (IOException e) {
-                        LOGGER.warn("Error decoding phylop track ({}:{}-{}) for {}", trackContig, trackBegin, trackEnd, symbol, e);
+                    } else {
+                        // stream ended before reaching the target region
+                        LOGGER.warn("Not enough phylop track available for query. Track ended at {} before reaching target region {}",
+                                new GenomePosition(internalReferenceDictionary, trackStrand, trackContig, (int) (trackBegin + skipped)), target);
                     }
+                } catch (IOException e) {
+                    LOGGER.warn("Error decoding phylop track ({}:{}-{}) for {}", trackContig, trackBegin, trackEnd, symbol, e);
                 }
 
                 trackMap.put(symbol, tracks);
