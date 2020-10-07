@@ -123,7 +123,7 @@ public class SquirlsAutoConfiguration {
         final Optional<SquirlsClassifier> clfOpt = classifierDataManager.readClassifier(clfVersion);
         final SquirlsClassifier clf;
         if (clfOpt.isPresent()) {
-            LOGGER.debug("Using classifier `{}`", clfVersion);
+            LOGGER.info("Using classifier `{}`", clfVersion);
             clf = clfOpt.get();
         } else {
             String msg = String.format("Error when deserializing classifier `%s` from the database", clfVersion);
@@ -160,7 +160,7 @@ public class SquirlsAutoConfiguration {
                                                DbKMerDao dbKMerDao) throws UndefinedSquirlsResourceException {
         final AnnotatorProperties annotatorProperties = properties.getAnnotator();
         final String version = annotatorProperties.getVersion();
-        LOGGER.debug("Using `{}` splicing annotator", version);
+        LOGGER.info("Using `{}` splicing annotator", version);
         switch (version) {
             case "dense":
                 return new DenseSplicingAnnotator(splicingPwmData, dbKMerDao.getHexamerMap(), dbKMerDao.getSeptamerMap());
@@ -188,6 +188,7 @@ public class SquirlsAutoConfiguration {
     @Bean
     public DataSource squirlsDatasource(SquirlsDataResolver squirlsDataResolver) {
         Path datasourcePath = squirlsDataResolver.getDatasourcePath();
+        LOGGER.info("Initializing connection to SQUIRLS database at `{}`", datasourcePath);
 
         String jdbcUrl = String.format("jdbc:h2:file:%s;ACCESS_MODE_DATA=r", datasourcePath);
         final HikariConfig config = new HikariConfig();

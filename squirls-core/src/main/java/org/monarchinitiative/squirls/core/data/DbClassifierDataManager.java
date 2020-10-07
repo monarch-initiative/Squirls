@@ -189,11 +189,11 @@ public class DbClassifierDataManager implements ClassifierDataManager {
                     final PredictionTransformer transformer;
                     switch (clfType.toLowerCase()) {
                         case "logreg":
-                            LOGGER.debug("Using log reg prediction transformer");
+                            LOGGER.info("Using log reg prediction transformer");
                             transformer = SimpleLogisticRegression.getInstance(parameters.get("slope"), parameters.get("intercept"));
                             break;
                         case "logreg_regular":
-                            LOGGER.debug("Using log reg regular prediction transformer");
+                            LOGGER.info("Using log reg regular prediction transformer");
                             transformer = RegularLogisticRegression.getInstance(
                                     parameters.get("donor_slope"),
                                     parameters.get("acceptor_slope"),
@@ -201,7 +201,7 @@ public class DbClassifierDataManager implements ClassifierDataManager {
                             break;
                         case "identity":
                         default:
-                            LOGGER.debug("Using identity/no-op transformer");
+                            LOGGER.info("Using identity/no-op transformer");
                             transformer = IdentityTransformer.getInstance();
                             break;
                     }
