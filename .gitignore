@@ -2,6 +2,10 @@
 .idea
 *.iml
 
+### The empty Squirls database meant to be used with IDE to provide autocompletion etc.
+1710_splicing_empty.mv.db
+1710_splicing_empty.trace.db
+
 ### Java template
 # Compiled class file
 *.class
