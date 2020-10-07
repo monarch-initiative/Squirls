@@ -25,7 +25,7 @@ class CanonicalDonorTest extends CalculatorTestBase {
     void snpInDonor() {
         GenomeVariant variant = new GenomeVariant(new GenomePosition(rd, Strand.FWD, 1, 1200), "g", "a");
 
-        final double score = scorer.score(variant, st, sequenceInterval);
+        final double score = scorer.score(makeAnnotatable(variant, st));
         assertThat(score, is(closeTo(8.9600, EPSILON)));
     }
 
@@ -33,7 +33,7 @@ class CanonicalDonorTest extends CalculatorTestBase {
     void deletionInDonor() {
         GenomeVariant variant = new GenomeVariant(new GenomePosition(rd, Strand.FWD, 1, 1199), "Ggt", "G");
 
-        final double score = scorer.score(variant, st, sequenceInterval);
+        final double score = scorer.score(makeAnnotatable(variant, st));
         assertThat(score, is(closeTo(15.6686, EPSILON)));
     }
 
@@ -41,7 +41,7 @@ class CanonicalDonorTest extends CalculatorTestBase {
     void insertionInDonor() {
         GenomeVariant variant = new GenomeVariant(new GenomePosition(rd, Strand.FWD, 1, 1200), "gt", "gtgt");
 
-        final double score = scorer.score(variant, st, sequenceInterval);
+        final double score = scorer.score(makeAnnotatable(variant, st));
         assertThat(score, is(closeTo(-0.6725, EPSILON)));
     }
 
@@ -49,7 +49,7 @@ class CanonicalDonorTest extends CalculatorTestBase {
     void snpJustUpstreamFromDonor() {
         GenomeVariant variant = new GenomeVariant(new GenomePosition(rd, Strand.FWD, 1, 1196), "G", "A");
 
-        final double score = scorer.score(variant, st, sequenceInterval);
+        final double score = scorer.score(makeAnnotatable(variant, st));
         assertThat(score, is(closeTo(0.0000, EPSILON)));
     }
 
@@ -57,7 +57,7 @@ class CanonicalDonorTest extends CalculatorTestBase {
     void snpJustDownstreamFromDonor() {
         GenomeVariant variant = new GenomeVariant(new GenomePosition(rd, Strand.FWD, 1, 1206), "a", "c");
 
-        final double score = scorer.score(variant, st, sequenceInterval);
+        final double score = scorer.score(makeAnnotatable(variant, st));
         assertThat(score, is(closeTo(0.0000, EPSILON)));
     }
 }

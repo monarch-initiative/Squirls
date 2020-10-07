@@ -19,6 +19,7 @@ import org.springframework.test.context.jdbc.Sql;
 
 import javax.sql.DataSource;
 import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -73,12 +74,12 @@ public class DbSplicingAnnotationDataSourceTest {
 
         final SequenceRegion fasta = data.getTrack("fasta", SequenceRegion.class);
         assertThat(fasta.getInterval(), is(trackInterval));
-        assertThat(fasta.getValue(), is("ACGT".repeat(3000 / 4)));
+        assertThat(fasta.getValue(), is("ACGT".repeat(3000 / 4).getBytes(StandardCharsets.US_ASCII)));
 
         final FloatRegion phylop = data.getTrack("phylop", FloatRegion.class);
 
         assertThat(phylop.getInterval(), is(new GenomeInterval(rd, Strand.FWD, 1, 1198, 1203)));
-        assertThat(phylop.getValue(), is(List.of(0.7455148f, 0.8550232f, 0.66827893f, 0.23617701f, 0.69727147f)));
+        assertThat(phylop.getValue(), is(new float[]{0.7455148f, 0.8550232f, 0.66827893f, 0.23617701f, 0.69727147f}));
 
         // check transcripts
         final Collection<SplicingTranscript> txs = data.getTranscripts();
@@ -130,11 +131,11 @@ public class DbSplicingAnnotationDataSourceTest {
 
         final SequenceRegion fasta = data.getTrack("fasta", SequenceRegion.class);
         assertThat(fasta.getInterval(), is(trackInterval));
-        assertThat(fasta.getValue(), is("tcga".repeat(3000 / 4)));
+        assertThat(fasta.getValue(), is("tcga".repeat(3000 / 4).getBytes(StandardCharsets.US_ASCII)));
 
         final FloatRegion phylop = data.getTrack("phylop", FloatRegion.class);
         assertThat(phylop.getInterval(), is(new GenomeInterval(rd, Strand.FWD, 1, 1998, 2003).withStrand(Strand.REV)));
-        assertThat(phylop.getValue(), is(List.of(0.8437929f, 0.6994124f, 0.79757345f, 0.1062102f, 0.24914718f)));
+        assertThat(phylop.getValue(), is(new float[]{0.8437929f, 0.6994124f, 0.79757345f, 0.1062102f, 0.24914718f}));
 
         // check transcripts
         final Collection<SplicingTranscript> txs = data.getTranscripts();

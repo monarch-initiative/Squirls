@@ -24,7 +24,7 @@ class SStrengthDiffDonorTest extends CalculatorTestBase {
     void variantInDonorOfTheFirstExon() {
         GenomeVariant variant = new GenomeVariant(new GenomePosition(rd, Strand.FWD, 1, 1200), "g", "a");
 
-        final double score = scorer.score(variant, st, sequenceInterval);
+        final double score = scorer.score(makeAnnotatable(variant));
         assertThat(score, is(closeTo(-8.1511, EPSILON)));
     }
 
@@ -32,7 +32,7 @@ class SStrengthDiffDonorTest extends CalculatorTestBase {
     void variantInDonorOfTheSecondExon() {
         GenomeVariant variant = new GenomeVariant(new GenomePosition(rd, Strand.FWD, 1, 1600), "g", "c");
 
-        final double score = scorer.score(variant, st, sequenceInterval);
+        final double score = scorer.score(makeAnnotatable(variant));
         assertThat(score, is(closeTo(0., EPSILON)));
     }
 }

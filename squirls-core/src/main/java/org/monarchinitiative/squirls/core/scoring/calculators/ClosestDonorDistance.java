@@ -3,9 +3,7 @@ package org.monarchinitiative.squirls.core.scoring.calculators;
 import com.google.common.collect.ComparisonChain;
 import de.charite.compbio.jannovar.reference.GenomeInterval;
 import de.charite.compbio.jannovar.reference.GenomePosition;
-import de.charite.compbio.jannovar.reference.GenomeVariant;
-import org.monarchinitiative.squirls.core.model.SplicingTranscript;
-import xyz.ielis.hyperutil.reference.fasta.SequenceInterval;
+import org.monarchinitiative.squirls.core.scoring.Annotatable;
 
 import java.util.Comparator;
 import java.util.Optional;
@@ -19,8 +17,8 @@ import java.util.Optional;
 public class ClosestDonorDistance extends BaseDistanceCalculator {
 
     @Override
-    public double score(GenomeVariant variant, SplicingTranscript transcript, SequenceInterval sequence) {
-        final GenomeInterval variantInterval = variant.getGenomeInterval();
+    public <T extends Annotatable> double score(T data) {
+        final GenomeInterval variantInterval = data.getVariant().getGenomeInterval();
 
         final Comparator<GenomePosition> findClosestExonIntronBorder = (left, right) -> ComparisonChain.start()
                 .compare(Math.abs(left.differenceTo(variantInterval)),
@@ -28,7 +26,7 @@ public class ClosestDonorDistance extends BaseDistanceCalculator {
                 .result();
 
         // find the closest donor site
-        final Optional<GenomePosition> closestPositionOpt = transcript.getIntrons().stream()
+        final Optional<GenomePosition> closestPositionOpt = data.getTranscript().getIntrons().stream()
                 .map(e -> e.getInterval().getGenomeBeginPos())
                 .min(findClosestExonIntronBorder);
 

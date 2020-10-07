@@ -26,7 +26,7 @@ class WtRiDonorTest extends CalculatorTestBase {
     void snpInDonor() {
         GenomeVariant variant = new GenomeVariant(new GenomePosition(rd, Strand.FWD, 1, 1200), "g", "a");
 
-        final double score = scorer.score(variant, st, sequenceInterval);
+        final double score = scorer.score(makeAnnotatable(variant));
 
         assertThat(score, is(closeTo(3.7028, EPSILON)));
     }
@@ -35,7 +35,7 @@ class WtRiDonorTest extends CalculatorTestBase {
     void notEnoughSequence() {
         GenomeVariant variant = new GenomeVariant(new GenomePosition(rd, Strand.FWD, 1, 1200), "g", "a");
 
-        final double score = scorer.score(variant, st, sequenceOnOtherChrom);
+        final double score = scorer.score(makeAnnotatable(variant, st, sequenceOnOtherChrom));
         assertThat(score, is(notANumber()));
     }
 }

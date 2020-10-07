@@ -11,12 +11,9 @@ import org.monarchinitiative.squirls.core.model.SplicingTranscript;
 import org.monarchinitiative.squirls.core.scoring.FloatRegion;
 import org.monarchinitiative.squirls.core.scoring.SequenceRegion;
 import org.monarchinitiative.squirls.core.scoring.TrackRegion;
-import xyz.ielis.hyperutil.reference.fasta.SequenceInterval;
 
-import java.util.List;
 import java.util.Map;
 import java.util.Random;
-import java.util.stream.Collectors;
 
 /**
  * Class with static method for construction of medium-complicated objects.
@@ -65,11 +62,8 @@ public class PojosForTesting {
         // static utility class
     }
 
-    public static SequenceInterval getSequenceIntervalForTranscriptWithThreeExons(ReferenceDictionary referenceDictionary) {
-        return SequenceInterval.builder()
-                .interval(new GenomeInterval(referenceDictionary, Strand.FWD, 1, 900, 2100))
-                .sequence(THREE_EXON_TX_SEQ)
-                .build();
+    public static SequenceRegion getSequenceIntervalForTranscriptWithThreeExons(ReferenceDictionary referenceDictionary) {
+        return SequenceRegion.of(new GenomeInterval(referenceDictionary, Strand.FWD, 1, 900, 2100), THREE_EXON_TX_SEQ);
     }
 
     public static SplicingTranscript getTranscriptWithThreeExons(ReferenceDictionary referenceDictionary) {
@@ -273,10 +267,13 @@ public class PojosForTesting {
 
     public static Map<String, TrackRegion<?>> getTrackMap(ReferenceDictionary rd) {
         GenomeInterval interval = new GenomeInterval(rd, Strand.FWD, 1, 900, 2100);
-        final List<Float> fakePhylop = new Random(123)
-                .doubles(1200)
-                .mapToObj(j -> (float) j)
-                .collect(Collectors.toList());
+
+        final Random random = new Random(123);
+        final float[] fakePhylop = new float[1200];
+        for (int i = 0; i < 1200; i++) {
+            fakePhylop[i] = random.nextFloat();
+        }
+
         return Map.of(
                 "fasta", SequenceRegion.of(interval, THREE_EXON_TX_SEQ),
                 "phylop", FloatRegion.of(interval, fakePhylop)

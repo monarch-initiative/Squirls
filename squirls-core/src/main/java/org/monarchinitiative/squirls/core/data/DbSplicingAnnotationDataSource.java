@@ -17,7 +17,6 @@ import javax.sql.DataSource;
 import java.io.DataInputStream;
 import java.io.EOFException;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -265,8 +264,7 @@ public class DbSplicingAnnotationDataSource extends BaseDao implements SplicingA
                 /*
                  The track is stored in the database as
                  */
-                String fasta = new String(rs.getBytes("fasta"), StandardCharsets.UTF_8);
-                tracks.put(FASTA_TRACK_NAME, SequenceRegion.of(trackInterval, fasta));
+                tracks.put(FASTA_TRACK_NAME, SequenceRegion.of(trackInterval, rs.getBytes("fasta")));
 
                 // 2 - decode phylop track with float score per position
                 /*
@@ -287,10 +285,10 @@ public class DbSplicingAnnotationDataSource extends BaseDao implements SplicingA
                         if (skipped == byteOffset) {
                             // now we are at the right place to start reading target data
                             try {
-                                List<Float> phylopValues = new ArrayList<>(targetLength);
+                                float[] phylopValues = new float[targetLength];
                                 int i = 0;
                                 while (i < targetLength) {
-                                    phylopValues.add(phylopStream.readFloat());
+                                    phylopValues[i] = phylopStream.readFloat();
                                     i++;
                                 }
                                 tracks.put(PHYLOP_TRACK_NAME, FloatRegion.of(target, phylopValues));

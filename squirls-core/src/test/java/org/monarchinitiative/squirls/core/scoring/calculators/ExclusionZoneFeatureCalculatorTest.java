@@ -38,7 +38,7 @@ public class ExclusionZoneFeatureCalculatorTest extends CalculatorTestBase {
     })
     public void agScore(int pos, String ref, String alt, double expected) {
         final GenomeVariant variant = new GenomeVariant(new GenomePosition(rd, Strand.FWD, 1, pos), ref, alt);
-        final double actual = agCalculator.score(variant, st, sequenceInterval);
+        final double actual = agCalculator.score(makeAnnotatable(variant, st));
 
         assertThat(actual, is(closeTo(expected, EPSILON)));
     }
@@ -60,7 +60,7 @@ public class ExclusionZoneFeatureCalculatorTest extends CalculatorTestBase {
     })
     public void yagScore(int pos, String ref, String alt, double expected) {
         final GenomeVariant variant = new GenomeVariant(new GenomePosition(rd, Strand.FWD, 1, pos), ref, alt);
-        final double actual = yagCalculator.score(variant, st, sequenceInterval);
+        final double actual = yagCalculator.score(makeAnnotatable(variant, st));
 
         assertThat(actual, is(closeTo(expected, EPSILON)));
     }

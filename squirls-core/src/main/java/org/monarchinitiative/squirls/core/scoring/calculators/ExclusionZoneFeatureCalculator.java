@@ -4,7 +4,8 @@ import de.charite.compbio.jannovar.reference.GenomeVariant;
 import org.monarchinitiative.squirls.core.model.SplicingTranscript;
 import org.monarchinitiative.squirls.core.reference.allele.AlleleGenerator;
 import org.monarchinitiative.squirls.core.reference.transcript.SplicingTranscriptLocator;
-import xyz.ielis.hyperutil.reference.fasta.SequenceInterval;
+import org.monarchinitiative.squirls.core.scoring.Annotatable;
+import org.monarchinitiative.squirls.core.scoring.SequenceRegion;
 
 import java.util.regex.Pattern;
 
@@ -70,15 +71,17 @@ public class ExclusionZoneFeatureCalculator extends BaseAgezCalculator {
     /**
      * Calculate feature value for given variant and transcript.
      *
-     * @param variant    variant we calculate the feature for
-     * @param transcript transcript we evaluate the variant against
-     * @param sequence   FASTA sequence for the calculation
+     * @param data with variant, transcript, and FASTA sequence we calculate the feature value for
      * @return <code>1.</code> if variant creates a new <code>AG</code> di-nucleotide within the <em>AG exclusion zone</em>
      * and <code>0.</code> otherwise. Note that {@link Double#NaN} is returned if <code>sequence</code> does not contain
      * sufficient nucleotide sequence
      */
     @Override
-    public double score(GenomeVariant variant, SplicingTranscript transcript, SequenceInterval sequence) {
+    public <T extends Annotatable> double score(T data) {
+        final GenomeVariant variant = data.getVariant();
+        final SplicingTranscript transcript = data.getTranscript();
+        final SequenceRegion sequence = data.getTrack(FeatureCalculator.FASTA_TRACK_NAME, SequenceRegion.class);
+
         if (!overlapsWithAgezRegion(variant, transcript)) {
             return 0.;
         }

@@ -4,11 +4,11 @@ import com.google.common.collect.ImmutableMap;
 import de.charite.compbio.jannovar.reference.GenomeInterval;
 import de.charite.compbio.jannovar.reference.GenomeVariant;
 import org.monarchinitiative.squirls.core.Utils;
-import org.monarchinitiative.squirls.core.model.SplicingTranscript;
 import org.monarchinitiative.squirls.core.reference.allele.AlleleGenerator;
+import org.monarchinitiative.squirls.core.scoring.Annotatable;
+import org.monarchinitiative.squirls.core.scoring.SequenceRegion;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import xyz.ielis.hyperutil.reference.fasta.SequenceInterval;
 
 import java.util.Map;
 
@@ -38,9 +38,12 @@ public abstract class BaseKmer implements FeatureCalculator {
 
     protected abstract int getPadding();
 
+
     @Override
-    public double score(GenomeVariant variant, SplicingTranscript transcript, SequenceInterval sequence) {
+    public <T extends Annotatable> double score(T data) {
+        final GenomeVariant variant = data.getVariant();
         final GenomeInterval variantInterval = variant.getGenomeInterval();
+        final SequenceRegion sequence = data.getTrack(FeatureCalculator.FASTA_TRACK_NAME, SequenceRegion.class);
 
         final String paddedRefAllele = AlleleGenerator.getPaddedAllele(variantInterval, sequence, variant.getRef(), getPadding());
         final String paddedAltAllele = AlleleGenerator.getPaddedAllele(variantInterval, sequence, variant.getAlt(), getPadding());

@@ -7,10 +7,10 @@ import org.monarchinitiative.squirls.core.Utils;
 import org.monarchinitiative.squirls.core.reference.SplicingLocationData;
 import org.monarchinitiative.squirls.core.reference.allele.AlleleGenerator;
 import org.monarchinitiative.squirls.core.reference.transcript.SplicingTranscriptLocator;
+import org.monarchinitiative.squirls.core.scoring.SequenceRegion;
 import org.monarchinitiative.squirls.core.scoring.calculators.ic.SplicingInformationContentCalculator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import xyz.ielis.hyperutil.reference.fasta.SequenceInterval;
 
 public class CrypticAcceptor extends BaseFeatureCalculator {
 
@@ -29,14 +29,14 @@ public class CrypticAcceptor extends BaseFeatureCalculator {
     }
 
     @Override
-    protected double score(GenomeVariant variant, SplicingLocationData locationData, SequenceInterval sequence) {
+    protected double score(GenomeVariant variant, SplicingLocationData locationData, SequenceRegion sequence) {
         return locationData.getAcceptorBoundary()
                 .map(anchor -> score(variant, anchor, sequence))
                 .orElse(0.);
     }
 
 
-    private double score(GenomeVariant variant, GenomePosition anchor, SequenceInterval sequence) {
+    private double score(GenomeVariant variant, GenomePosition anchor, SequenceRegion sequence) {
         final GenomeInterval acceptorInterval = generator.makeAcceptorInterval(anchor);
         final GenomeInterval variantInterval = variant.getGenomeInterval();
 

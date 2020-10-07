@@ -4,9 +4,9 @@ import de.charite.compbio.jannovar.reference.GenomeInterval;
 import de.charite.compbio.jannovar.reference.GenomePosition;
 import de.charite.compbio.jannovar.reference.GenomeVariant;
 import org.monarchinitiative.squirls.core.model.SplicingParameters;
+import org.monarchinitiative.squirls.core.scoring.SequenceRegion;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import xyz.ielis.hyperutil.reference.fasta.SequenceInterval;
 
 import java.util.Optional;
 
@@ -39,7 +39,7 @@ public class AlleleGenerator {
      * @return snippet or <code>null</code> if <code>sequence</code> is on different chromosome that the
      * <code>interval</code>, or if not enough sequence is provided
      */
-    public static String getPaddedAllele(GenomeInterval interval, SequenceInterval sequence, String allele, int padding) {
+    public static String getPaddedAllele(GenomeInterval interval, SequenceRegion sequence, String allele, int padding) {
         if (padding < 0) return null;
 
         final Optional<String> upstream = sequence.getSubsequence(new GenomeInterval(interval.getGenomeBeginPos().shifted(-padding), padding));
@@ -53,13 +53,13 @@ public class AlleleGenerator {
     /**
      * Create nucleotide snippet for splice donor site.
      *
-     * @param anchor           position of `exon|intron` boundary
-     * @param sequenceInterval sequence to use for creating snippet
+     * @param anchor   position of `exon|intron` boundary
+     * @param sequence sequence to use for creating snippet
      * @return wt nucleotide snippet for splice donor site or <code>null</code> if e.g. <code>sequenceInterval</code>
      * on different contig is provided
      */
-    public String getDonorSiteSnippet(GenomePosition anchor, SequenceInterval sequenceInterval) {
-        return sequenceInterval.getSubsequence(splicingParameters.makeDonorRegion(anchor)).orElse(null);
+    public String getDonorSiteSnippet(GenomePosition anchor, SequenceRegion sequence) {
+        return sequence.getSubsequence(splicingParameters.makeDonorRegion(anchor)).orElse(null);
     }
 
     /**
@@ -78,7 +78,7 @@ public class AlleleGenerator {
      * @return wt nucleotide snippet for splice acceptor site or <code>null</code> if e.g. <code>sequenceInterval</code>
      * on different contig is provided
      */
-    public String getAcceptorSiteSnippet(GenomePosition anchor, SequenceInterval sequenceInterval) {
+    public String getAcceptorSiteSnippet(GenomePosition anchor, SequenceRegion sequenceInterval) {
         return sequenceInterval.getSubsequence(splicingParameters.makeAcceptorRegion(anchor)).orElse(null);
     }
 
@@ -98,7 +98,7 @@ public class AlleleGenerator {
      * @param sequenceInterval sequence to use for creating snippet
      * @return nucleotide snippet for splice donor site or <code>null</code> if wrong input is provided
      */
-    public String getDonorSiteWithAltAllele(GenomePosition anchor, GenomeVariant variant, SequenceInterval sequenceInterval) {
+    public String getDonorSiteWithAltAllele(GenomePosition anchor, GenomeVariant variant, SequenceRegion sequenceInterval) {
         try {
             String result; // this method creates the result String in 5' --> 3' direction
 
@@ -190,7 +190,7 @@ public class AlleleGenerator {
      * @param sequenceInterval sequence to use for creating snippet
      * @return nucleotide snippet for splice acceptor site or <code>null</code> if wrong input is provided
      */
-    public String getAcceptorSiteWithAltAllele(GenomePosition anchor, GenomeVariant variant, SequenceInterval sequenceInterval) {
+    public String getAcceptorSiteWithAltAllele(GenomePosition anchor, GenomeVariant variant, SequenceRegion sequenceInterval) {
         String result; // this method creates the result String in 3' --> 5' direction
 
         if (anchor.getChr() != variant.getChr() || anchor.getChr() != sequenceInterval.getInterval().getChr()) {
@@ -274,7 +274,7 @@ public class AlleleGenerator {
      * @return snippet or <code>null</code> if <code>sequence</code> is on different chromosome that the
      * <code>interval</code>, or if not enough sequence is provided
      */
-    public String getDonorNeighborSnippet(GenomeInterval interval, SequenceInterval sequence, String allele) {
+    public String getDonorNeighborSnippet(GenomeInterval interval, SequenceRegion sequence, String allele) {
         return getPaddedAllele(interval, sequence, allele, splicingParameters.getDonorLength() - 1);
     }
 
@@ -288,7 +288,7 @@ public class AlleleGenerator {
      * @return snippet or <code>null</code> if <code>sequence</code> is on different chromosome that the
      * <code>interval</code>, or if not enough sequence is provided
      */
-    public String getAcceptorNeighborSnippet(GenomeInterval interval, SequenceInterval sequence, String allele) {
+    public String getAcceptorNeighborSnippet(GenomeInterval interval, SequenceRegion sequence, String allele) {
         return getPaddedAllele(interval, sequence, allele, splicingParameters.getAcceptorLength() - 1);
     }
 }

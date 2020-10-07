@@ -17,8 +17,8 @@ import org.monarchinitiative.squirls.core.Metadata;
 import org.monarchinitiative.squirls.core.SplicingPredictionData;
 import org.monarchinitiative.squirls.core.classifier.StandardPrediction;
 import org.monarchinitiative.squirls.core.model.SplicingTranscript;
+import org.monarchinitiative.squirls.core.scoring.SequenceRegion;
 import org.monarchinitiative.vmvt.core.VmvtGenerator;
-import xyz.ielis.hyperutil.reference.fasta.SequenceInterval;
 
 import java.util.Collection;
 import java.util.List;
@@ -183,7 +183,7 @@ public class VariantsForTesting {
                                                                   VariantAnnotator annotator,
                                                                   Set<String> seqIds,
                                                                   Collection<SplicingTranscript> transcripts,
-                                                                  SequenceInterval si,
+                                                                  SequenceRegion si,
                                                                   double pathogenicity,
                                                                   Metadata metadata,
                                                                   Map<String, Double> featureMap,
@@ -287,7 +287,7 @@ public class VariantsForTesting {
         final Set<String> seqIds = Set.of("NM_000059.3");
         final double pathogenicity = 0.95;
 
-        final SequenceInterval si = Sequences.getBrca2Exon15Sequence(rd);
+        final SequenceRegion si = Sequences.getBrca2Exon15Sequence(rd);
         final Collection<SplicingTranscript> transcripts = Transcripts.brca2Transcripts(rd);
         final Metadata metadata = Metadata.builder()
                 .putDonorCoordinate("NM_000059.3", new GenomePosition(rd, Strand.FWD, chr, 32_930_747, PositionType.ONE_BASED))
@@ -345,7 +345,7 @@ public class VariantsForTesting {
         final Set<String> seqIds = Set.of("NM_000478.4");
         final double pathogenicity = 0.94;
 
-        final SequenceInterval si = Sequences.getAlplExon7Sequence(rd);
+        final SequenceRegion si = Sequences.getAlplExon7Sequence(rd);
         final Collection<SplicingTranscript> transcripts = Transcripts.alplTranscripts(rd);
         final Metadata metadata = Metadata.builder()
                 .putDonorCoordinate("NM_000478.4", new GenomePosition(rd, Strand.FWD, chr, 21_894_741, PositionType.ONE_BASED))
@@ -397,7 +397,7 @@ public class VariantsForTesting {
         final Set<String> seqIds = Set.of("NM_000518.4");
         final double pathogenicity = 0.93;
 
-        final SequenceInterval si = Sequences.getHbbExon1Sequence(rd);
+        final SequenceRegion si = Sequences.getHbbExon1Sequence(rd);
         final Collection<SplicingTranscript> transcripts = Transcripts.hbbTranscripts(rd);
         final Metadata metadata = Metadata.builder()
                 .putDonorCoordinate("NM_000518.4", new GenomePosition(rd, Strand.FWD, chr, 5_248_159, PositionType.ONE_BASED))
@@ -455,7 +455,7 @@ public class VariantsForTesting {
         final Set<String> seqIds = Set.of("NM_000518.4");
         final double pathogenicity = 0.92;
 
-        final SequenceInterval si = Sequences.getHbbExon1Sequence(rd);
+        final SequenceRegion si = Sequences.getHbbExon1Sequence(rd);
         final Collection<SplicingTranscript> transcripts = Transcripts.hbbTranscripts(rd);
         final Metadata metadata = Metadata.builder()
                 .putDonorCoordinate("NM_000518.4", new GenomePosition(rd, Strand.FWD, chr, 5_248_159, PositionType.ONE_BASED))
@@ -513,7 +513,7 @@ public class VariantsForTesting {
         final Set<String> seqIds = Set.of("NM_000552.3");
         final double pathogenicity = 0.91;
 
-        final SequenceInterval si = Sequences.getVwfExon26Sequence(rd);
+        final SequenceRegion si = Sequences.getVwfExon26Sequence(rd);
         final Collection<SplicingTranscript> transcripts = Transcripts.vwfTranscripts(rd);
         final Metadata metadata = Metadata.builder()
                 .putDonorCoordinate("NM_000552.3", new GenomePosition(rd, Strand.FWD, chr, 6_131_905, PositionType.ONE_BASED).withStrand(Strand.REV))
@@ -571,7 +571,7 @@ public class VariantsForTesting {
         final Set<String> seqIds = Set.of("NM_000548.3");
         final double pathogenicity = 0.90;
 
-        final SequenceInterval si = Sequences.getTsc2Exon11Sequence(rd);
+        final SequenceRegion si = Sequences.getTsc2Exon11Sequence(rd);
         final Collection<SplicingTranscript> transcripts = Transcripts.tsc2Transcripts(rd);
         final Metadata metadata = Metadata.builder()
                 .putDonorCoordinate("NM_000548.3", new GenomePosition(rd, Strand.FWD, chr, 2_110_815, PositionType.ONE_BASED))
@@ -624,7 +624,7 @@ public class VariantsForTesting {
         final Set<String> seqIds = Set.of("NM_000495.4");
         final double pathogenicity = 0.89;
 
-        final SequenceInterval si = Sequences.getCol4a5Exon29Sequence(rd);
+        final SequenceRegion si = Sequences.getCol4a5Exon29Sequence(rd);
         final Collection<SplicingTranscript> transcripts = Transcripts.col4a5Transcripts(rd);
         final Metadata metadata = Metadata.builder()
                 .putDonorCoordinate("NM_000495.4", new GenomePosition(rd, Strand.FWD, chr, 107_850_122, PositionType.ONE_BASED))
@@ -681,7 +681,7 @@ public class VariantsForTesting {
         final Set<String> seqIds = Set.of("NM_000540.2");
         final double pathogenicity = 0.88;
 
-        final SequenceInterval si = Sequences.getRyr1Exon102Sequence(rd);
+        final SequenceRegion si = Sequences.getRyr1Exon102Sequence(rd);
         final Collection<SplicingTranscript> transcripts = Transcripts.ryr1Transcripts(rd);
         final Metadata metadata = Metadata.builder()
                 .putDonorCoordinate("NM_000540.2", new GenomePosition(rd, Strand.FWD, chr, 39_075_583, PositionType.ONE_BASED))
@@ -741,7 +741,7 @@ public class VariantsForTesting {
         final Set<String> seqIds = Set.of("NM_000267.3");
         final double pathogenicity = 0.87;
 
-        final SequenceInterval si = Sequences.getNf1Exon9Sequence(rd);
+        final SequenceRegion si = Sequences.getNf1Exon9Sequence(rd);
         final Collection<SplicingTranscript> transcripts = Transcripts.nf1Transcripts(rd);
         final Metadata metadata = Metadata.builder()
                 .putDonorCoordinate("NM_000267.3", new GenomePosition(rd, Strand.FWD, chr, 29_527_614, PositionType.ONE_BASED))

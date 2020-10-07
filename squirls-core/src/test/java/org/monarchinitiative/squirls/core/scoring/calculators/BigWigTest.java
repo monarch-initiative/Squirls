@@ -11,12 +11,9 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
-import java.util.List;
-
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.number.IsCloseTo.closeTo;
-import static org.mockito.Mockito.when;
 
 class BigWigTest extends CalculatorTestBase {
 
@@ -43,32 +40,24 @@ class BigWigTest extends CalculatorTestBase {
     void annotate() throws Exception {
         // arrange
         GenomeVariant variant = new GenomeVariant(new GenomePosition(referenceDictionary, Strand.FWD, 1, 1201), "t", "g");
-//        when(accessor.getScores(variant.getGenomeInterval())).thenReturn(List.of(6.03700F));
 
         // act
-        final double score = annotator.score(variant, null, null);
+        final double score = annotator.score(makeAnnotatable(variant));
 
         // assert
-        // TODO: 10/2/20 evaluate
-//        assertThat("Expected score 6.037", score, is(closeTo(6.03700, EPSILON)));
+        assertThat("Expected score 0.8862130", score, is(closeTo(0.871396, EPSILON)));
     }
 
     @Test
     void annotateDeletion() throws Exception {
         // arrange
         GenomeVariant variant = new GenomeVariant(new GenomePosition(referenceDictionary, Strand.FWD, 1, 1201), "CTGT", "C");
-//        when(accessor.getScores(variant.getGenomeInterval())).thenReturn(List.of(.459F, -1.851F, -1.181F));
 
         // act
-        final double score = annotator.score(variant, null, null);
+        final double score = annotator.score(makeAnnotatable(variant));
 
         // assert
-        //  chr9:136224582 -  0.459
-        //  chr9:136224583 - -1.851
-        //  chr9:136224584 - -1.181
-        // mean = -0.85766
-        // TODO: 10/2/20 evaluate
-//        assertThat("Expected score -0.857666", score, is(closeTo(-0.85766, EPSILON)));
+        assertThat("Expected score 0.390458", score, is(closeTo(0.496073, EPSILON)));
     }
 
     @Test
@@ -76,10 +65,9 @@ class BigWigTest extends CalculatorTestBase {
         // arrange
         final GenomePosition pos = new GenomePosition(referenceDictionary, Strand.FWD, 3, 1_000_000, PositionType.ONE_BASED);
         final GenomeVariant variant = new GenomeVariant(pos, "G", "C");
-//        when(accessor.getScores(variant.getGenomeInterval())).thenReturn(List.of());
 
         // act
-        final double score = annotator.score(variant, null, null);
+        final double score = annotator.score(makeAnnotatable(variant));
 
         // assert
         assertThat(score, is(Double.NaN));

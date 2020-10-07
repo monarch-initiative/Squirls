@@ -11,10 +11,8 @@ import org.monarchinitiative.squirls.core.TestDataSourceConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
-import java.util.List;
-
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.is;
 
 @SpringBootTest(classes = TestDataSourceConfig.class)
 public class FloatRegionTest {
@@ -28,33 +26,32 @@ public class FloatRegionTest {
     @BeforeEach
     public void setUp() {
         final GenomeInterval interval = new GenomeInterval(rd, Strand.FWD, 1, 10, 15);
-        final List<Float> floats = List.of(.5f, .6f, .7f, .8f, .9f);
-        region = FloatRegion.of(interval, floats);
+        region = FloatRegion.of(interval, new float[]{.5f, .6f, .7f, .8f, .9f});
     }
 
     @Test
     public void getValuesForInterval() {
         GenomeInterval other = new GenomeInterval(rd, Strand.FWD, 1, 10, 13);
-        List<Float> values = region.getValuesForInterval(other);
+        float[] values = region.getValuesForInterval(other);
 
-        assertThat(values, hasSize(3));
-        assertThat(values, hasItems(.5f, .6f, .7f));
+        assertThat(values.length, is(3));
+        assertThat(values, is(new float[]{.5f, .6f, .7f}));
 
         other = new GenomeInterval(rd, Strand.FWD, 1, 10, 15);
         values = region.getValuesForInterval(other);
 
-        assertThat(values, hasSize(5));
-        assertThat(values, hasItems(.5f, .6f, .7f, .8f, .9f));
+        assertThat(values.length, is(5));
+        assertThat(values, is(new float[]{.5f, .6f, .7f, .8f, .9f}));
     }
 
 
     @Test
     public void getValuesForIntervalOppositeStrand() {
         final GenomeInterval other = new GenomeInterval(rd, Strand.FWD, 1, 10, 13).withStrand(Strand.REV);
-        final List<Float> values = region.getValuesForInterval(other);
+        float[] values = region.getValuesForInterval(other);
 
-        assertThat(values, hasSize(3));
-        assertThat(values, hasItems(.7f, .6f, .5f));
+        assertThat(values.length, is(3));
+        assertThat(values, is(new float[]{.7f, .6f, .5f}));
     }
 
     @CsvSource({
@@ -66,8 +63,8 @@ public class FloatRegionTest {
     @ParameterizedTest
     public void getValuesForInvalidInput(int begin, int end, String strand) {
         GenomeInterval other = new GenomeInterval(rd, Strand.FWD, 1, begin, end).withStrand(Strand.valueOf(strand));
-        List<Float> values = region.getValuesForInterval(other);
-        assertThat(values, is(empty()));
+        float[] values = region.getValuesForInterval(other);
+        assertThat(values, is(new float[0]));
 
     }
 }

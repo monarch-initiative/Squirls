@@ -118,7 +118,7 @@ public class StandardVariantSplicingEvaluator implements VariantSplicingEvaluato
                     .map(annotator::annotate)
                     .map(classifier::predict)
                     .map(transformer::transform)
-                    .forEach(k -> predictions.put(k.getTranscript().getAccessionId(), k));
+                    .forEach(k -> predictions.put(k.getTranscript().getAccessionId(), SimpleSplicingPredictionData.copyOf(k)));
         }
         return predictions;
     }

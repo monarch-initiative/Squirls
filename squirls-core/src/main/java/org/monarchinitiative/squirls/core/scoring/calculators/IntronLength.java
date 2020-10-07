@@ -4,7 +4,7 @@ import de.charite.compbio.jannovar.reference.GenomeVariant;
 import org.monarchinitiative.squirls.core.model.SplicingTranscript;
 import org.monarchinitiative.squirls.core.reference.SplicingLocationData;
 import org.monarchinitiative.squirls.core.reference.transcript.SplicingTranscriptLocator;
-import xyz.ielis.hyperutil.reference.fasta.SequenceInterval;
+import org.monarchinitiative.squirls.core.scoring.Annotatable;
 
 public class IntronLength implements FeatureCalculator {
 
@@ -15,7 +15,9 @@ public class IntronLength implements FeatureCalculator {
     }
 
     @Override
-    public double score(GenomeVariant variant, SplicingTranscript transcript, SequenceInterval sequence) {
+    public <T extends Annotatable> double score(T data) {
+        final GenomeVariant variant = data.getVariant();
+        final SplicingTranscript transcript = data.getTranscript();
         final SplicingLocationData locationData = locator.locate(variant, transcript);
 
         final SplicingLocationData.SplicingPosition position = locationData.getPosition();

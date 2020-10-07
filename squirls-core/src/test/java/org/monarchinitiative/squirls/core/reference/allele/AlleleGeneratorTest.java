@@ -6,9 +6,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.monarchinitiative.squirls.core.TestDataSourceConfig;
 import org.monarchinitiative.squirls.core.model.SplicingParameters;
+import org.monarchinitiative.squirls.core.scoring.SequenceRegion;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import xyz.ielis.hyperutil.reference.fasta.SequenceInterval;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
@@ -17,11 +17,11 @@ import static org.hamcrest.MatcherAssert.assertThat;
 @SpringBootTest(classes = {TestDataSourceConfig.class})
 class AlleleGeneratorTest {
 
-    private SequenceInterval sequence;
+    private SequenceRegion sequence;
 
-    private SequenceInterval donorSi;
+    private SequenceRegion donorSi;
 
-    private SequenceInterval acceptorSi;
+    private SequenceRegion acceptorSi;
 
     private GenomePosition anchor;
 
@@ -35,19 +35,10 @@ class AlleleGeneratorTest {
 
     @BeforeEach
     void setUp() {
-        sequence = SequenceInterval.builder()
-                .interval(new GenomeInterval(rd, Strand.FWD, 1, 0, 60))
-                .sequence("aaaaaCCCCCgggggTTTTTaaaaaCCCCCgggggTTTTTaaaaaCCCCCgggggTTTTT")
-                .build();
-        donorSi = SequenceInterval.builder()
-                .interval(new GenomeInterval(rd, Strand.FWD, 1, 93, 110))
-                .sequence("CGTGATGgtaggtgaaa")
-                .build();
+        sequence = SequenceRegion.of(new GenomeInterval(rd, Strand.FWD, 1, 0, 60), "aaaaaCCCCCgggggTTTTTaaaaaCCCCCgggggTTTTTaaaaaCCCCCgggggTTTTT");
+        donorSi = SequenceRegion.of(new GenomeInterval(rd, Strand.FWD, 1, 93, 110), "CGTGATGgtaggtgaaa");
 
-        acceptorSi = SequenceInterval.builder()
-                .interval(new GenomeInterval(rd, Strand.FWD, 1, 70, 110))
-                .sequence("atggcaaacactgttccttctctctttcagGTGGCCCTGC")
-                .build();
+        acceptorSi = SequenceRegion.of(new GenomeInterval(rd, Strand.FWD, 1, 70, 110), "atggcaaacactgttccttctctctttcagGTGGCCCTGC");
 
         anchor = new GenomePosition(rd, Strand.FWD, 1, 100);
         generator = new AlleleGenerator(splicingParameters);
@@ -335,9 +326,7 @@ class AlleleGeneratorTest {
         assertThat(snippet, is(nullValue()));
 
         // not enough sequence returns null
-        final SequenceInterval small = SequenceInterval.builder()
-                .interval(new GenomeInterval(rd, Strand.FWD, 1, 0, 1)).sequence("C")
-                .build();
+        final SequenceRegion small = SequenceRegion.of(new GenomeInterval(rd, Strand.FWD, 1, 0, 1), "C");
         snippet = AlleleGenerator.getPaddedAllele(variant.getGenomeInterval(), small, variant.getRef(), 1);
         assertThat(snippet, is(nullValue()));
     }

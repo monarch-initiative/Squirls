@@ -1,14 +1,16 @@
 package org.monarchinitiative.squirls.core.scoring.calculators;
 
 import de.charite.compbio.jannovar.reference.GenomeVariant;
-import org.monarchinitiative.squirls.core.model.SplicingTranscript;
 import org.monarchinitiative.squirls.core.reference.SplicingLocationData;
 import org.monarchinitiative.squirls.core.reference.allele.AlleleGenerator;
 import org.monarchinitiative.squirls.core.reference.transcript.SplicingTranscriptLocator;
+import org.monarchinitiative.squirls.core.scoring.Annotatable;
+import org.monarchinitiative.squirls.core.scoring.SequenceRegion;
 import org.monarchinitiative.squirls.core.scoring.calculators.ic.SplicingInformationContentCalculator;
-import xyz.ielis.hyperutil.reference.fasta.SequenceInterval;
 
 abstract class BaseFeatureCalculator implements FeatureCalculator {
+
+    private static final String FASTA_TRACK_NAME = "fasta";
 
     protected final SplicingInformationContentCalculator calculator;
 
@@ -24,10 +26,12 @@ abstract class BaseFeatureCalculator implements FeatureCalculator {
     }
 
     @Override
-    public double score(GenomeVariant variant, SplicingTranscript transcript, SequenceInterval sequence) {
-        final SplicingLocationData data = locator.locate(variant, transcript);
-        return score(variant, data, sequence);
+    public <T extends Annotatable> double score(T data) {
+        final SplicingLocationData locationData = locator.locate(data.getVariant(), data.getTranscript());
+        return (data.getTrackNames().contains(FASTA_TRACK_NAME))
+                ? score(data.getVariant(), locationData, data.getTrack(FASTA_TRACK_NAME, SequenceRegion.class))
+                : Double.NaN;
     }
 
-    protected abstract double score(GenomeVariant variant, SplicingLocationData locationData, SequenceInterval sequence);
+    protected abstract double score(GenomeVariant variant, SplicingLocationData locationData, SequenceRegion sequence);
 }

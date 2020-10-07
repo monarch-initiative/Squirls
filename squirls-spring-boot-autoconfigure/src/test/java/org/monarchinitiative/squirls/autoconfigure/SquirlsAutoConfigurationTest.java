@@ -3,10 +3,8 @@ package org.monarchinitiative.squirls.autoconfigure;
 import org.junit.jupiter.api.Test;
 import org.monarchinitiative.squirls.core.VariantSplicingEvaluator;
 import org.monarchinitiative.squirls.core.data.SplicingAnnotationDataSource;
-import org.monarchinitiative.squirls.core.data.SplicingTranscriptSource;
 import org.monarchinitiative.squirls.core.scoring.SplicingAnnotator;
 import org.springframework.beans.factory.BeanCreationException;
-import xyz.ielis.hyperutil.reference.fasta.GenomeSequenceAccessor;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;

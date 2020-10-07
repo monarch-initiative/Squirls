@@ -50,7 +50,7 @@ public class RichSplicingAnnotatorTest extends SplicingAnnotatorTestBase {
         assertThat(ann.getFeature("septamer", Double.class), is(closeTo(-.339600, EPSILON)));
 
         // this value is based from random generator in PojosForTesting
-        assertThat(ann.getFeature("phylop", Double.class), is(closeTo(.85502, EPSILON)));
+        assertThat(ann.getFeature("phylop", Double.class), is(closeTo(.647115, EPSILON)));
 
         assertThat(ann.getFeature("wt_ri_donor", Double.class), is(closeTo(2.8938, EPSILON)));
         assertThat(ann.getFeature("wt_ri_acceptor", Double.class), is(closeTo(4.1148, EPSILON)));

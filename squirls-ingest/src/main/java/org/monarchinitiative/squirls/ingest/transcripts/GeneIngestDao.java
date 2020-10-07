@@ -25,7 +25,7 @@ import java.util.stream.Collectors;
  */
 public class GeneIngestDao {
 
-    static final Charset CHARSET = StandardCharsets.UTF_8;
+    static final Charset CHARSET = StandardCharsets.US_ASCII;
     private static final Logger LOGGER = LoggerFactory.getLogger(GeneIngestDao.class);
     private final DataSource dataSource;
 

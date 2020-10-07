@@ -6,10 +6,12 @@ import de.charite.compbio.jannovar.reference.GenomeVariant;
 import org.monarchinitiative.squirls.core.reference.SplicingLocationData;
 import org.monarchinitiative.squirls.core.reference.allele.AlleleGenerator;
 import org.monarchinitiative.squirls.core.reference.transcript.SplicingTranscriptLocator;
+import org.monarchinitiative.squirls.core.scoring.SequenceRegion;
 import org.monarchinitiative.squirls.core.scoring.calculators.ic.SplicingInformationContentCalculator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import xyz.ielis.hyperutil.reference.fasta.SequenceInterval;
+
+import java.util.Optional;
 
 public class CanonicalDonor extends BaseFeatureCalculator {
 
@@ -22,14 +24,13 @@ public class CanonicalDonor extends BaseFeatureCalculator {
     }
 
     @Override
-    protected double score(GenomeVariant variant, SplicingLocationData locationData, SequenceInterval sequence) {
-        return locationData.getDonorBoundary()
-                .map(anchor -> score(variant, anchor, sequence))
-                .orElse(0.);
-    }
+    protected double score(GenomeVariant variant, SplicingLocationData locationData, SequenceRegion sequence) {
+        final Optional<GenomePosition> db = locationData.getDonorBoundary();
+        if (db.isEmpty()) {
+            return 0.;
+        }
 
-
-    private double score(GenomeVariant variant, GenomePosition anchor, SequenceInterval sequence) {
+        final GenomePosition anchor = db.get();
         final GenomeInterval donorRegion = generator.makeDonorInterval(anchor);
 
         if (!donorRegion.overlapsWith(variant.getGenomeInterval())) {

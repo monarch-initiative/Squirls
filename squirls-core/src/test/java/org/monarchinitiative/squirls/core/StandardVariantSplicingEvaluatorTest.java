@@ -20,13 +20,13 @@ import org.monarchinitiative.squirls.core.scoring.TrackRegion;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.util.Arrays;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.anEmptyMap;
+import static org.hamcrest.Matchers.hasKey;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -89,7 +89,7 @@ class StandardVariantSplicingEvaluatorTest {
         Map<String, SplicingAnnotationData> annData = Map.of("SURF2",
                 new SimpleSplicingAnnotationData(Set.of(stx),
                         Map.of("fasta", SequenceRegion.of(trackInterval, "ACGTacgtAC"),
-                                "phylop", FloatRegion.of(trackInterval, List.of(.1f, .1f, .1f, .1f, .1f, .1f, .1f, .1f, .1f, .1f)))));
+                                "phylop", FloatRegion.of(trackInterval, new float[]{.1f, .1f, .1f, .1f, .1f, .1f, .1f, .1f, .1f, .1f}))));
         final Map<String, ? extends TrackRegion<?>> tracks = annData.get("SURF2").getTracks();
 
         when(annotationDataSource.getAnnotationData("chr9", begin, end))
@@ -106,10 +106,11 @@ class StandardVariantSplicingEvaluatorTest {
         final SplicingPredictionData predicted = StandardSplicingPredictionData.of(variant, stx, tracks);
         predicted.putFeature("donor_offset", 5);
         predicted.putFeature("acceptor_offset", 1234); // not real
-        predicted.setPrediction(StandardPrediction.builder()
+        final StandardPrediction prediction = StandardPrediction.builder()
                 .addProbaThresholdPair("donor", .6, .7)
                 .addProbaThresholdPair("acceptor", .1, .6)
-                .build());
+                .build();
+        predicted.setPrediction(prediction);
         when(classifier.predict(annotated)).thenReturn(predicted);
 
         // act
@@ -118,7 +119,8 @@ class StandardVariantSplicingEvaluatorTest {
         // assert
         assertThat(predictionMap.size(), is(1));
         assertThat(predictionMap, hasKey("NM_017503.5"));
-        assertThat(predictionMap, hasValue(predicted));
+        final SplicingPredictionData data = predictionMap.get("NM_017503.5");
+        assertThat(data.getPrediction(), is(prediction));
 
         verify(annotator).annotate(plain);
     }
@@ -135,7 +137,7 @@ class StandardVariantSplicingEvaluatorTest {
         Map<String, SplicingAnnotationData> annData = Map.of("SURF2",
                 new SimpleSplicingAnnotationData(Set.of(stx),
                         Map.of("fasta", SequenceRegion.of(trackInterval, "ACGTacgtAC"),
-                                "phylop", FloatRegion.of(trackInterval, List.of(.1f, .1f, .1f, .1f, .1f, .1f, .1f, .1f, .1f, .1f)))));
+                                "phylop", FloatRegion.of(trackInterval, new float[]{.1f, .1f, .1f, .1f, .1f, .1f, .1f, .1f, .1f, .1f}))));
         final Map<String, ? extends TrackRegion<?>> tracks = annData.get("SURF2").getTracks();
 
         when(annotationDataSource.getAnnotationData("chr9", begin, end))
@@ -169,7 +171,9 @@ class StandardVariantSplicingEvaluatorTest {
         // assert
         assertThat(predictions.size(), is(1));
         assertThat(predictions, hasKey("NM_017503.5"));
-        assertThat(predictions, hasValue(predicted));
+        final SplicingPredictionData data = predictions.get("NM_017503.5");
+
+        assertThat(data.getPrediction(), is(prediction));
 
         verify(annotator).annotate(plain);
     }
@@ -193,7 +197,7 @@ class StandardVariantSplicingEvaluatorTest {
         Map<String, SplicingAnnotationData> annData = Map.of("SURF2",
                 new SimpleSplicingAnnotationData(Set.of(stx),
                         Map.of("fasta", SequenceRegion.of(trackInterval, "ACGTacgtAC"),
-                                "phylop", FloatRegion.of(trackInterval, List.of(.1f, .1f, .1f, .1f, .1f, .1f, .1f, .1f, .1f, .1f)))));
+                                "phylop", FloatRegion.of(trackInterval, new float[]{.1f, .1f, .1f, .1f, .1f, .1f, .1f, .1f, .1f, .1f}))));
         final Map<String, ? extends TrackRegion<?>> tracks = annData.get("SURF2").getTracks();
 
         when(annotationDataSource.getAnnotationData("chr9", begin, end))

@@ -32,7 +32,7 @@ public class PptIsTruncatedTest extends CalculatorTestBase {
     })
     public void score(int pos, String ref, String alt, double expected) {
         final GenomeVariant variant = new GenomeVariant(new GenomePosition(rd, Strand.FWD, 1, pos), ref, alt);
-        final double actual = calculator.score(variant, st, sequenceInterval);
+        final double actual = calculator.score(makeAnnotatable(variant));
 
         assertThat(actual, is(closeTo(expected, EPSILON)));
     }

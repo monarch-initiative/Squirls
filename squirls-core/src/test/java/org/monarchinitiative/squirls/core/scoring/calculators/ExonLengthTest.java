@@ -9,7 +9,6 @@ import org.junit.jupiter.api.Test;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.closeTo;
-import static org.junit.jupiter.api.Assertions.*;
 
 class ExonLengthTest extends CalculatorTestBase {
 
@@ -25,7 +24,7 @@ class ExonLengthTest extends CalculatorTestBase {
     void scoreDonorVariant() {
         GenomeVariant variant = new GenomeVariant(new GenomePosition(rd, Strand.FWD, 1, 1201), "t", "g");
 
-        final double score = scorer.score(variant, st, sequenceInterval);
+        final double score = scorer.score(makeAnnotatable(variant, st));
         assertThat(score, is(closeTo(200., EPSILON)));
     }
 
@@ -33,7 +32,7 @@ class ExonLengthTest extends CalculatorTestBase {
     void scoreIntronicVariant() {
         GenomeVariant variant = new GenomeVariant(new GenomePosition(rd, Strand.FWD, 1, 1207), "a", "g");
 
-        final double score = scorer.score(variant, st, sequenceInterval);
+        final double score = scorer.score(makeAnnotatable(variant, st));
         assertThat(score, is(closeTo(-1., EPSILON)));
     }
 }

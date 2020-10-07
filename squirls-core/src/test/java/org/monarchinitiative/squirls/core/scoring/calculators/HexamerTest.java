@@ -3,9 +3,9 @@ package org.monarchinitiative.squirls.core.scoring.calculators;
 import de.charite.compbio.jannovar.reference.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.monarchinitiative.squirls.core.scoring.SequenceRegion;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import xyz.ielis.hyperutil.reference.fasta.SequenceInterval;
 
 import java.util.Map;
 
@@ -31,7 +31,7 @@ class HexamerTest extends CalculatorTestBase {
     @Test
     void score() {
         GenomeVariant variant = new GenomeVariant(new GenomePosition(rd, Strand.FWD, 1, 1201), "t", "g");
-        final double score = calculator.score(variant, st, sequenceInterval);
+        final double score = calculator.score(makeAnnotatable(variant, st));
         assertThat(score, is(closeTo(-.837930, EPSILON)));
     }
 
@@ -42,29 +42,27 @@ class HexamerTest extends CalculatorTestBase {
      */
     @Test
     void realVariant() {
-        final SequenceInterval si = SequenceInterval.builder()
-                .interval(new GenomeInterval(rd, Strand.FWD, 1, 0, 125))
-                .sequence("cccagGGT" +
+        final SequenceRegion si = SequenceRegion.of(new GenomeInterval(rd, Strand.FWD, 1, 0, 125),
+                "cccagGGT" +
                         "C" + // c.520C>T
                         "GTCAGACACCAAAACATATTTCTGAAAGTCTAGGAGCTGAGGTGGATCCTGATATGTCTT" +
                         "G" + // c.581G>A
                         "GTCAAGTTCTTTAGCTACACCACCCACCCTTAGTT" +
                         "C" + // c.617C>G
-                        "TACTGTGCTCATAGgtaat")
-                .build();
+                        "TACTGTGCTCATAGgtaat");
         // representing the c.520C>T variant from Figure 3
         final GenomeVariant first = new GenomeVariant(new GenomePosition(rd, Strand.FWD, 1, 9, PositionType.ONE_BASED), "C", "T");
-        double score = calculator.score(first, st, si);
+        double score = calculator.score(makeAnnotatable(first, st, si));
         assertThat(score, is(closeTo(-2.811, EPSILON)));
 
         // representing the c.581G>A variant from Figure 3
         final GenomeVariant second = new GenomeVariant(new GenomePosition(rd, Strand.FWD, 1, 70, PositionType.ONE_BASED), "G", "A");
-        score = calculator.score(second, st, si);
+        score = calculator.score(makeAnnotatable(second, st, si));
         assertThat(score, is(closeTo(-3.006, EPSILON)));
 
         // representing the c.617C>G variant from Figure 3
         final GenomeVariant third = new GenomeVariant(new GenomePosition(rd, Strand.FWD, 1, 106, PositionType.ONE_BASED), "C", "G");
-        score = calculator.score(third, st, si);
+        score = calculator.score(makeAnnotatable(third, st, si));
         assertThat(score, is(closeTo(-1.115, EPSILON)));
     }
 }

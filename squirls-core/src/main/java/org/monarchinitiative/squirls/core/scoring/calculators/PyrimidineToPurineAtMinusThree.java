@@ -6,9 +6,10 @@ import org.monarchinitiative.squirls.core.model.SplicingTranscript;
 import org.monarchinitiative.squirls.core.reference.SplicingLocationData;
 import org.monarchinitiative.squirls.core.reference.allele.AlleleGenerator;
 import org.monarchinitiative.squirls.core.reference.transcript.SplicingTranscriptLocator;
+import org.monarchinitiative.squirls.core.scoring.Annotatable;
+import org.monarchinitiative.squirls.core.scoring.SequenceRegion;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import xyz.ielis.hyperutil.reference.fasta.SequenceInterval;
 
 import java.util.regex.Pattern;
 
@@ -34,15 +35,17 @@ public class PyrimidineToPurineAtMinusThree implements FeatureCalculator {
     /**
      * Calculate feature value for given variant and transcript.
      *
-     * @param variant    variant we calculate the feature for
-     * @param transcript transcript we evaluate the variant against
-     * @param sequence   FASTA sequence for the calculation
+     * @param data with variant, transcript, and sequence we calculate the feature for
      * @return <code>1.</code> if variant converts Y to R at -3 position of the canonical acceptor site and
      * <code>0.</code> otherwise. Note that {@link Double#NaN} is returned in case of inconsistent inputs
      * (e.g. insufficient <code>sequence</code>)
      */
     @Override
-    public double score(GenomeVariant variant, SplicingTranscript transcript, SequenceInterval sequence) {
+    public <T extends Annotatable> double score(T data) {
+        final GenomeVariant variant = data.getVariant();
+        final SplicingTranscript transcript = data.getTranscript();
+        final SequenceRegion sequence = data.getTrack(FeatureCalculator.FASTA_TRACK_NAME, SequenceRegion.class);
+
         final SplicingLocationData locationData = locator.locate(variant, transcript);
 
         if (locationData.getPosition() != SplicingLocationData.SplicingPosition.ACCEPTOR) {

@@ -6,8 +6,9 @@ import org.monarchinitiative.squirls.core.model.SplicingTranscript;
 import org.monarchinitiative.squirls.core.reference.SplicingLocationData;
 import org.monarchinitiative.squirls.core.reference.allele.AlleleGenerator;
 import org.monarchinitiative.squirls.core.reference.transcript.SplicingTranscriptLocator;
+import org.monarchinitiative.squirls.core.scoring.Annotatable;
+import org.monarchinitiative.squirls.core.scoring.SequenceRegion;
 import org.monarchinitiative.squirls.core.scoring.calculators.ic.SplicingInformationContentCalculator;
-import xyz.ielis.hyperutil.reference.fasta.SequenceInterval;
 
 /**
  * This calculator computes the feature <code>sstrength_diff_donor</code> denoting the difference between the donor
@@ -31,7 +32,11 @@ public class SStrengthDiffDonor implements FeatureCalculator {
     }
 
     @Override
-    public double score(GenomeVariant variant, SplicingTranscript transcript, SequenceInterval sequence) {
+    public <T extends Annotatable> double score(T data) {
+        final GenomeVariant variant = data.getVariant();
+        final SplicingTranscript transcript = data.getTranscript();
+        final SequenceRegion sequence = data.getTrack(FeatureCalculator.FASTA_TRACK_NAME, SequenceRegion.class);
+
         final SplicingLocationData locationData = locator.locate(variant, transcript);
         switch (locationData.getPosition()) {
             case EXON:

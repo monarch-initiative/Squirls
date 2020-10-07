@@ -4,7 +4,7 @@ import de.charite.compbio.jannovar.data.ReferenceDictionary;
 import de.charite.compbio.jannovar.reference.GenomeInterval;
 import de.charite.compbio.jannovar.reference.PositionType;
 import de.charite.compbio.jannovar.reference.Strand;
-import xyz.ielis.hyperutil.reference.fasta.SequenceInterval;
+import org.monarchinitiative.squirls.core.scoring.SequenceRegion;
 
 class Sequences {
 
@@ -145,12 +145,9 @@ class Sequences {
      * @param rd {@link ReferenceDictionary} to use
      * @return the sequence interval
      */
-    static SequenceInterval getSurf2Exon3Sequence(ReferenceDictionary rd) {
-        return SequenceInterval.builder()
-                .sequence(SURF2_EXON3)
-                .interval(new GenomeInterval(rd, Strand.FWD,
-                        rd.getContigNameToID().get("chr9"), 136_224_501, 136_224_800, PositionType.ONE_BASED))
-                .build();
+    static SequenceRegion getSurf2Exon3Sequence(ReferenceDictionary rd) {
+        return SequenceRegion.of(new GenomeInterval(rd, Strand.FWD,
+                rd.getContigNameToID().get("chr9"), 136_224_501, 136_224_800, PositionType.ONE_BASED), SURF2_EXON3);
     }
 
     /**
@@ -160,12 +157,9 @@ class Sequences {
      * @param rd {@link ReferenceDictionary} to use
      * @return the sequence interval
      */
-    static SequenceInterval getAlplExon7Sequence(ReferenceDictionary rd) {
-        return SequenceInterval.builder()
-                .sequence(ALPL_EXON7)
-                .interval(new GenomeInterval(rd, Strand.FWD,
-                        rd.getContigNameToID().get("chr1"), 21894401, 21895000, PositionType.ONE_BASED))
-                .build();
+    static SequenceRegion getAlplExon7Sequence(ReferenceDictionary rd) {
+        return SequenceRegion.of(new GenomeInterval(rd, Strand.FWD,
+                rd.getContigNameToID().get("chr1"), 21894401, 21895000, PositionType.ONE_BASED), ALPL_EXON7);
     }
 
     /**
@@ -175,12 +169,9 @@ class Sequences {
      * @param rd {@link ReferenceDictionary} to use
      * @return the sequence interval
      */
-    static SequenceInterval getTsc2Exon11Sequence(ReferenceDictionary rd) {
-        return SequenceInterval.builder()
-                .sequence(TSC2_EXON11)
-                .interval(new GenomeInterval(rd, Strand.FWD,
-                        rd.getContigNameToID().get("chr16"), 2_110_401, 2_111_000, PositionType.ONE_BASED))
-                .build();
+    static SequenceRegion getTsc2Exon11Sequence(ReferenceDictionary rd) {
+        return SequenceRegion.of(new GenomeInterval(rd, Strand.FWD,
+                rd.getContigNameToID().get("chr16"), 2_110_401, 2_111_000, PositionType.ONE_BASED), TSC2_EXON11);
     }
 
     /**
@@ -190,12 +181,9 @@ class Sequences {
      * @param rd {@link ReferenceDictionary} to use
      * @return the sequence interval
      */
-    static SequenceInterval getCol4a5Exon29Sequence(ReferenceDictionary rd) {
-        return SequenceInterval.builder()
-                .sequence(COL4A5_EXON29)
-                .interval(new GenomeInterval(rd, Strand.FWD,
-                        rd.getContigNameToID().get("chr16"), 107_849_601, 107_850_400, PositionType.ONE_BASED))
-                .build();
+    static SequenceRegion getCol4a5Exon29Sequence(ReferenceDictionary rd) {
+        return SequenceRegion.of(new GenomeInterval(rd, Strand.FWD,
+                rd.getContigNameToID().get("chr16"), 107_849_601, 107_850_400, PositionType.ONE_BASED), COL4A5_EXON29);
     }
 
     /**
@@ -205,12 +193,9 @@ class Sequences {
      * @param rd {@link ReferenceDictionary} to use
      * @return the sequence interval
      */
-    static SequenceInterval getRyr1Exon102Sequence(ReferenceDictionary rd) {
-        return SequenceInterval.builder()
-                .sequence(RYR1_EXON102)
-                .interval(new GenomeInterval(rd, Strand.FWD,
-                        rd.getContigNameToID().get("chr19"), 39_075_401, 39_075_900, PositionType.ONE_BASED))
-                .build();
+    static SequenceRegion getRyr1Exon102Sequence(ReferenceDictionary rd) {
+        return SequenceRegion.of(new GenomeInterval(rd, Strand.FWD,
+                rd.getContigNameToID().get("chr19"), 39_075_401, 39_075_900, PositionType.ONE_BASED), RYR1_EXON102);
     }
 
     /**
@@ -220,12 +205,9 @@ class Sequences {
      * @param rd {@link ReferenceDictionary} to use
      * @return the sequence interval
      */
-    static SequenceInterval getHbbExon1Sequence(ReferenceDictionary rd) {
-        return SequenceInterval.builder()
-                .sequence(HBB_EXON1)
-                .interval(new GenomeInterval(rd, Strand.FWD,
-                        rd.getContigNameToID().get("chr11"), 5_248_001, 5_248_400, PositionType.ONE_BASED))
-                .build();
+    static SequenceRegion getHbbExon1Sequence(ReferenceDictionary rd) {
+        return SequenceRegion.of(new GenomeInterval(rd, Strand.FWD,
+                rd.getContigNameToID().get("chr11"), 5_248_001, 5_248_400, PositionType.ONE_BASED), HBB_EXON1);
     }
 
     /**
@@ -235,12 +217,9 @@ class Sequences {
      * @param rd {@link ReferenceDictionary} to use
      * @return the sequence interval
      */
-    static SequenceInterval getBrca2Exon15Sequence(ReferenceDictionary rd) {
-        return SequenceInterval.builder()
-                .sequence(BRCA2_EXON15)
-                .interval(new GenomeInterval(rd, Strand.FWD,
-                        rd.getContigNameToID().get("chr13"), 32_930_401, 32_930_900, PositionType.ONE_BASED))
-                .build();
+    static SequenceRegion getBrca2Exon15Sequence(ReferenceDictionary rd) {
+        return SequenceRegion.of(new GenomeInterval(rd, Strand.FWD,
+                rd.getContigNameToID().get("chr13"), 32_930_401, 32_930_900, PositionType.ONE_BASED), BRCA2_EXON15);
     }
 
     /**
@@ -250,12 +229,9 @@ class Sequences {
      * @param rd {@link ReferenceDictionary} to use
      * @return the sequence interval
      */
-    static SequenceInterval getVwfExon26Sequence(ReferenceDictionary rd) {
-        return SequenceInterval.builder()
-                .sequence(VWF_EXON26)
-                .interval(new GenomeInterval(rd, Strand.FWD,
-                        rd.getContigNameToID().get("chr12"), 6131801, 6132200, PositionType.ONE_BASED))
-                .build();
+    static SequenceRegion getVwfExon26Sequence(ReferenceDictionary rd) {
+        return SequenceRegion.of(new GenomeInterval(rd, Strand.FWD,
+                rd.getContigNameToID().get("chr12"), 6131801, 6132200, PositionType.ONE_BASED), VWF_EXON26);
     }
 
     /**
@@ -265,12 +241,9 @@ class Sequences {
      * @param rd {@link ReferenceDictionary} to use
      * @return the sequence interval
      */
-    static SequenceInterval getNf1Exon9Sequence(ReferenceDictionary rd) {
-        return SequenceInterval.builder()
-                .sequence(NF1_EXON9)
-                .interval(new GenomeInterval(rd, Strand.FWD,
-                        rd.getContigNameToID().get("chr17"), 29527201, 29527800, PositionType.ONE_BASED))
-                .build();
+    static SequenceRegion getNf1Exon9Sequence(ReferenceDictionary rd) {
+        return SequenceRegion.of(new GenomeInterval(rd, Strand.FWD,
+                rd.getContigNameToID().get("chr17"), 29527201, 29527800, PositionType.ONE_BASED), NF1_EXON9);
     }
 
 }

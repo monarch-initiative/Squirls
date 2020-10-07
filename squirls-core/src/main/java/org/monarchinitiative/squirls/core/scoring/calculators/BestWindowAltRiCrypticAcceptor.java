@@ -3,12 +3,12 @@ package org.monarchinitiative.squirls.core.scoring.calculators;
 import de.charite.compbio.jannovar.reference.GenomeInterval;
 import de.charite.compbio.jannovar.reference.GenomeVariant;
 import org.monarchinitiative.squirls.core.Utils;
-import org.monarchinitiative.squirls.core.model.SplicingTranscript;
 import org.monarchinitiative.squirls.core.reference.allele.AlleleGenerator;
+import org.monarchinitiative.squirls.core.scoring.Annotatable;
+import org.monarchinitiative.squirls.core.scoring.SequenceRegion;
 import org.monarchinitiative.squirls.core.scoring.calculators.ic.SplicingInformationContentCalculator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import xyz.ielis.hyperutil.reference.fasta.SequenceInterval;
 
 /**
  * This class calculates <code>alt_ri_acceptor_best_window</code> feature - maximum individual information observed
@@ -29,13 +29,12 @@ public class BestWindowAltRiCrypticAcceptor implements FeatureCalculator {
     }
 
     /**
-     * @param variant    variant we calculate the feature for
-     * @param transcript not used
-     * @param sequence   FASTA sequence for the calculation
+     * @param variant  variant we calculate the feature for
+     * @param sequence FASTA sequence for the calculation
      * @return feature value
      */
-    @Override
-    public double score(GenomeVariant variant, SplicingTranscript transcript, SequenceInterval sequence) {
+
+    private double score(GenomeVariant variant, SequenceRegion sequence) {
         final GenomeInterval variantInterval = variant.getGenomeInterval();
         final String acceptorNeighborSnippet = generator.getAcceptorNeighborSnippet(variantInterval, sequence, variant.getAlt());
 
@@ -48,5 +47,10 @@ public class BestWindowAltRiCrypticAcceptor implements FeatureCalculator {
                 .map(calculator::getSpliceAcceptorScore)
                 .max(Double::compareTo)
                 .orElse(Double.NaN);
+    }
+
+    @Override
+    public <T extends Annotatable> double score(T data) {
+        return score(data.getVariant(), data.getTrack(FeatureCalculator.FASTA_TRACK_NAME, SequenceRegion.class));
     }
 }

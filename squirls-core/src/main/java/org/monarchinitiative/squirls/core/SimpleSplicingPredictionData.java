@@ -1,37 +1,38 @@
-package org.monarchinitiative.squirls.cli;
+package org.monarchinitiative.squirls.core;
 
 import de.charite.compbio.jannovar.reference.GenomeVariant;
-import org.monarchinitiative.squirls.core.Metadata;
-import org.monarchinitiative.squirls.core.Prediction;
-import org.monarchinitiative.squirls.core.SplicingPredictionData;
 import org.monarchinitiative.squirls.core.model.SplicingTranscript;
-import org.monarchinitiative.squirls.core.scoring.SequenceRegion;
 import org.monarchinitiative.squirls.core.scoring.TrackRegion;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
-/**
- * Simple implementation of {@link SplicingPredictionData} for test purposes only.
- */
 public class SimpleSplicingPredictionData implements SplicingPredictionData {
 
     private final GenomeVariant variant;
-    private final SplicingTranscript transcript;
-    private final SequenceRegion sequence;
-    private final Map<String, Object> featureMap = new HashMap<>();
 
+    private final SplicingTranscript transcript;
+    private final Map<String, Object> featureMap;
     private Prediction prediction;
     private Metadata metadata;
 
-    public SimpleSplicingPredictionData(GenomeVariant variant, SplicingTranscript transcript, SequenceRegion sequence) {
+    private SimpleSplicingPredictionData(GenomeVariant variant, SplicingTranscript transcript) {
         this.variant = variant;
         this.transcript = transcript;
-        this.sequence = sequence;
+        this.featureMap = Collections.synchronizedMap(new HashMap<>());
     }
 
+    public static SimpleSplicingPredictionData copyOf(SplicingPredictionData other) {
+        final SimpleSplicingPredictionData data = new SimpleSplicingPredictionData(other.getVariant(), other.getTranscript());
+        data.setMetadata(other.getMetadata());
+        data.setPrediction(other.getPrediction());
+        data.featureMap.putAll(other.getFeatureMap());
+
+        return data;
+    }
+
+    public static SimpleSplicingPredictionData of(GenomeVariant variant, SplicingTranscript transcript) {
+        return new SimpleSplicingPredictionData(variant, transcript);
+    }
 
     @Override
     public Prediction getPrediction() {
@@ -55,12 +56,12 @@ public class SimpleSplicingPredictionData implements SplicingPredictionData {
 
     @Override
     public Set<String> getTrackNames() {
-        return Set.of(); // todo - implement
+        return Set.of();
     }
 
     @Override
     public <T extends TrackRegion<?>> T getTrack(String name, Class<T> clz) {
-        return null;  // todo - implement
+        return null;
     }
 
     @Override
@@ -75,7 +76,7 @@ public class SimpleSplicingPredictionData implements SplicingPredictionData {
 
     @Override
     public Set<String> getFeatureNames() {
-        return featureMap.keySet();
+        return Set.copyOf(featureMap.keySet());
     }
 
     @Override
@@ -95,15 +96,14 @@ public class SimpleSplicingPredictionData implements SplicingPredictionData {
         SimpleSplicingPredictionData that = (SimpleSplicingPredictionData) o;
         return Objects.equals(variant, that.variant) &&
                 Objects.equals(transcript, that.transcript) &&
-                Objects.equals(sequence, that.sequence) &&
-                Objects.equals(featureMap, that.featureMap) &&
                 Objects.equals(prediction, that.prediction) &&
-                Objects.equals(metadata, that.metadata);
+                Objects.equals(metadata, that.metadata) &&
+                Objects.equals(featureMap, that.featureMap);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(variant, transcript, sequence, featureMap, prediction, metadata);
+        return Objects.hash(variant, transcript, prediction, metadata, featureMap);
     }
 
     @Override
@@ -111,10 +111,9 @@ public class SimpleSplicingPredictionData implements SplicingPredictionData {
         return "SimpleSplicingPredictionData{" +
                 "variant=" + variant +
                 ", transcript=" + transcript +
-                ", sequence=" + sequence +
-                ", featureMap=" + featureMap +
                 ", prediction=" + prediction +
                 ", metadata=" + metadata +
+                ", featureMap=" + featureMap +
                 '}';
     }
 }

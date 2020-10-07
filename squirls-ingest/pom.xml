@@ -32,6 +32,22 @@
         </dependency>
 
         <dependency>
+            <groupId>xyz.ielis.hyperutil</groupId>
+            <artifactId>hyperutil-reference</artifactId>
+            <version>${hyperutil.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.google.guava</groupId>
+                    <artifactId>guava</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>de.charite.compbio</groupId>
+                    <artifactId>jannovar-core</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter</artifactId>
         </dependency>

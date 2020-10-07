@@ -25,7 +25,7 @@ class CrypticAcceptorScorerTest extends CalculatorTestBase {
     void snpInAcceptor() {
         GenomeVariant variant = new GenomeVariant(new GenomePosition(rd, Strand.FWD, 1, 1395), "c", "a");
 
-        final double score = scorer.score(variant, st, sequenceInterval);
+        final double score = scorer.score(makeAnnotatable(variant, st));
 
         assertThat(score, is(closeTo(0.0000, EPSILON)));
     }
@@ -34,7 +34,7 @@ class CrypticAcceptorScorerTest extends CalculatorTestBase {
     void snpDownstreamFromAcceptor() {
         GenomeVariant variant = new GenomeVariant(new GenomePosition(rd, Strand.FWD, 1, 1404), "G", "A");
 
-        final double score = scorer.score(variant, st, sequenceInterval);
+        final double score = scorer.score(makeAnnotatable(variant, st));
 
         assertThat(score, is(closeTo(-3.6366, EPSILON)));
     }
@@ -43,7 +43,7 @@ class CrypticAcceptorScorerTest extends CalculatorTestBase {
     void snpUpstreamFromAcceptor() {
         GenomeVariant variant = new GenomeVariant(new GenomePosition(rd, Strand.FWD, 1, 1374), "c", "g");
 
-        final double score = scorer.score(variant, st, sequenceInterval);
+        final double score = scorer.score(makeAnnotatable(variant, st));
 
         assertThat(score, is(closeTo(-2.0725, EPSILON)));
     }

@@ -5,6 +5,10 @@ import de.charite.compbio.jannovar.reference.GenomeVariant;
 import de.charite.compbio.jannovar.reference.Strand;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.monarchinitiative.squirls.core.SimpleAnnotatable;
+import org.monarchinitiative.squirls.core.scoring.FloatRegion;
+
+import java.util.Map;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -25,7 +29,7 @@ class BestWindowAltRiCrypticDonorTest extends CalculatorTestBase {
     void snpInDonor() {
         GenomeVariant variant = new GenomeVariant(new GenomePosition(rd, Strand.FWD, 1, 1200), "g", "a");
 
-        final double score = scorer.score(variant, st, sequenceInterval);
+        final double score = scorer.score(makeAnnotatable(variant, st));
         assertThat(score, is(closeTo(-2.3987, EPSILON)));
     }
 
@@ -33,7 +37,14 @@ class BestWindowAltRiCrypticDonorTest extends CalculatorTestBase {
     void notEnoughSequence() {
         GenomeVariant variant = new GenomeVariant(new GenomePosition(rd, Strand.FWD, 1, 1200), "g", "a");
 
-        final double score = scorer.score(variant, st, sequenceOnOtherChrom);
+        final SimpleAnnotatable ant = new SimpleAnnotatable(variant,
+                st,
+                Map.of(
+                        FeatureCalculator.FASTA_TRACK_NAME, sequenceOnOtherChrom,
+                        FeatureCalculator.PHYLOP_TRACK_NAME, FloatRegion.of(sequenceOnOtherChrom.getInterval(), getRandomScores(sequenceOnOtherChrom.getInterval().length()))
+                )
+        );
+        final double score = scorer.score(ant);
         assertThat(score, is(notANumber()));
     }
 }

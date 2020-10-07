@@ -36,7 +36,6 @@ public class DenseSplicingAnnotatorTest extends SplicingAnnotatorTestBase {
     @Test
     public void secondExonDonor() throws Exception {
         final GenomeVariant variant = new GenomeVariant(new GenomePosition(rd, Strand.FWD, 1, 1599), "C", "A");
-//        when(accessor.getScores(variant.getGenomeInterval())).thenReturn(List.of(.12345F));
 
         Annotatable ann = makeAnnotatable(variant);
         ann = annotator.annotate(ann);
@@ -49,8 +48,7 @@ public class DenseSplicingAnnotatorTest extends SplicingAnnotatorTestBase {
         assertThat(ann.getFeature("hexamer", Double.class), is(closeTo(-1.306309, EPSILON)));
         assertThat(ann.getFeature("septamer", Double.class), is(closeTo(-.339600, EPSILON)));
 
-        // TODO: 10/2/20 evaluate
-//        assertThat(ann.getFeature("phylop", Double.class), is(closeTo(.12345, EPSILON)));
+        assertThat(ann.getFeature("phylop", Double.class), is(closeTo(0.647115, EPSILON)));
     }
 
     @Test

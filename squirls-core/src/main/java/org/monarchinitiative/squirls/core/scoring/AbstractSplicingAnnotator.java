@@ -6,18 +6,11 @@ import org.monarchinitiative.squirls.core.model.SplicingTranscript;
 import org.monarchinitiative.squirls.core.reference.SplicingLocationData;
 import org.monarchinitiative.squirls.core.reference.transcript.SplicingTranscriptLocator;
 import org.monarchinitiative.squirls.core.scoring.calculators.FeatureCalculator;
-import xyz.ielis.hyperutil.reference.fasta.SequenceInterval;
 
 import java.util.Map;
 
 
 abstract class AbstractSplicingAnnotator implements SplicingAnnotator {
-
-    /**
-     * These have to match with whatever is used by {@link org.monarchinitiative.squirls.core.data.SplicingAnnotationData}
-     */
-    private static final String FASTA_TRACK_NAME = "fasta";
-    private static final String PHYLOP_TRACK_NAME = "phylop";
 
     private final SplicingTranscriptLocator locator;
     private final Map<String, FeatureCalculator> calculatorMap;
@@ -31,21 +24,13 @@ abstract class AbstractSplicingAnnotator implements SplicingAnnotator {
     public <T extends Annotatable> T annotate(T data) {
         final GenomeVariant variant = data.getVariant();
         final SplicingTranscript transcript = data.getTranscript();
-        final SequenceRegion seq = data.getTrack(FASTA_TRACK_NAME, SequenceRegion.class);
-        final SequenceInterval sequence = SequenceInterval.builder()
-                .interval(seq.getInterval())
-                .sequence(seq.getValue())
-                .build();
-        final FloatRegion phylop = data.getTrack(PHYLOP_TRACK_NAME, FloatRegion.class);
-
-        final GenomeVariant variantOnStrand = variant.withStrand(transcript.getStrand());
 
         // calculate the features
-        calculatorMap.forEach((name, calculator) -> data.putFeature(name, calculator.score(variantOnStrand, transcript, sequence, phylop)));
+        calculatorMap.forEach((name, calculator) -> data.putFeature(name, calculator.score(data)));
 
-        final SplicingLocationData locationData = locator.locate(variant, transcript);
-
+        // handle metadata
         final Metadata.Builder metadataBuilder = Metadata.builder();
+        final SplicingLocationData locationData = locator.locate(variant, transcript);
         locationData.getDonorBoundary().ifPresent(boundary -> metadataBuilder.putDonorCoordinate(transcript.getAccessionId(), boundary));
         locationData.getAcceptorBoundary().ifPresent(boundary -> metadataBuilder.putAcceptorCoordinate(transcript.getAccessionId(), boundary));
 

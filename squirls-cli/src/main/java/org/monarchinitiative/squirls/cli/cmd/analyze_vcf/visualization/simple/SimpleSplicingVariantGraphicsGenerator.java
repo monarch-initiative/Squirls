@@ -17,7 +17,6 @@ import org.monarchinitiative.squirls.core.scoring.calculators.ic.SplicingInforma
 import org.monarchinitiative.vmvt.core.VmvtGenerator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import xyz.ielis.hyperutil.reference.fasta.SequenceInterval;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -190,10 +189,6 @@ public class SimpleSplicingVariantGraphicsGenerator implements SplicingVariantGr
 
         final GenomeVariant variant = predictionData.getVariant();
         final SequenceRegion fastaTrack = predictionData.getTrack("fasta", SequenceRegion.class);
-        final SequenceInterval sequence = SequenceInterval.builder()
-                .sequence(fastaTrack.getValue())
-                .interval(fastaTrack.getInterval())
-                .build();
         final SplicingTranscript transcript = predictionData.getTranscript();
 
         // Overlaps with canonical donor site?
@@ -202,9 +197,9 @@ public class SimpleSplicingVariantGraphicsGenerator implements SplicingVariantGr
         if (donorAnchor != null) {
             final GenomeInterval canonicalDonorInterval = alleleGenerator.makeDonorInterval(donorAnchor);
             if (variant.getGenomeInterval().overlapsWith(canonicalDonorInterval)) {
-                final String refAllele = alleleGenerator.getDonorSiteSnippet(donorAnchor, sequence);
+                final String refAllele = alleleGenerator.getDonorSiteSnippet(donorAnchor, fastaTrack);
                 if (refAllele != null) {
-                    final String altAllele = alleleGenerator.getDonorSiteWithAltAllele(donorAnchor, variant, sequence);
+                    final String altAllele = alleleGenerator.getDonorSiteWithAltAllele(donorAnchor, variant, fastaTrack);
 
                     final StringBuilder graphics = new StringBuilder();
                     // add title
@@ -262,21 +257,17 @@ public class SimpleSplicingVariantGraphicsGenerator implements SplicingVariantGr
     private String makeCanonicalAcceptorContextGraphics(SplicingPredictionData predictionData) {
         final VisualizationContext context = VisualizationContext.CANONICAL_ACCEPTOR;
         final GenomeVariant variant = predictionData.getVariant();
-        final SequenceRegion fastaTrack = predictionData.getTrack("fasta", SequenceRegion.class);
-        final SequenceInterval sequence = SequenceInterval.builder()
-                .sequence(fastaTrack.getValue())
-                .interval(fastaTrack.getInterval())
-                .build();
         final SplicingTranscript transcript = predictionData.getTranscript();
+        final SequenceRegion fastaTrack = predictionData.getTrack("fasta", SequenceRegion.class);
 
         // Overlaps with canonical acceptor site?
         final GenomePosition acceptorAnchor = predictionData.getMetadata().getAcceptorCoordinateMap().get(transcript.getAccessionId());
         if (acceptorAnchor != null) {
             final GenomeInterval canonicalAcceptorInterval = alleleGenerator.makeAcceptorInterval(acceptorAnchor);
             if (variant.getGenomeInterval().overlapsWith(canonicalAcceptorInterval)) {
-                final String refAllele = alleleGenerator.getAcceptorSiteSnippet(acceptorAnchor, sequence);
+                final String refAllele = alleleGenerator.getAcceptorSiteSnippet(acceptorAnchor, fastaTrack);
                 if (refAllele != null) {
-                    final String altAllele = alleleGenerator.getAcceptorSiteWithAltAllele(acceptorAnchor, variant, sequence);
+                    final String altAllele = alleleGenerator.getAcceptorSiteWithAltAllele(acceptorAnchor, variant, fastaTrack);
 
                     final StringBuilder graphics = new StringBuilder();
                     // add title
@@ -333,18 +324,14 @@ public class SimpleSplicingVariantGraphicsGenerator implements SplicingVariantGr
     private String makeCrypticDonorContextGraphics(SplicingPredictionData predictionData) {
         final VisualizationContext context = VisualizationContext.CRYPTIC_DONOR;
 
-        final SequenceRegion fastaTrack = predictionData.getTrack("fasta", SequenceRegion.class);
-        final SequenceInterval sequence = SequenceInterval.builder()
-                .sequence(fastaTrack.getValue())
-                .interval(fastaTrack.getInterval())
-                .build();
         final GenomeVariant variant = predictionData.getVariant();
+        final SequenceRegion fastaTrack = predictionData.getTrack("fasta", SequenceRegion.class);
         final GenomeInterval variantInterval = variant.getGenomeInterval();
 
         // find index of the position that yields the highest score
         // get the corresponding ref & alt snippets
-        final String refSnippet = alleleGenerator.getDonorNeighborSnippet(variantInterval, sequence, variant.getRef());
-        final String altSnippet = alleleGenerator.getDonorNeighborSnippet(variantInterval, sequence, variant.getAlt());
+        final String refSnippet = alleleGenerator.getDonorNeighborSnippet(variantInterval, fastaTrack, variant.getRef());
+        final String altSnippet = alleleGenerator.getDonorNeighborSnippet(variantInterval, fastaTrack, variant.getAlt());
         if (refSnippet == null || altSnippet == null) {
             // nothing more to be done
             return EMPTY_SVG_IMAGE;
@@ -366,7 +353,7 @@ public class SimpleSplicingVariantGraphicsGenerator implements SplicingVariantGr
         final String walkers;
         if (donorAnchor != null) {
             // we have the anchor, thus let's make the graphics
-            final String canonicalDonorSnippet = alleleGenerator.getDonorSiteWithAltAllele(donorAnchor, variant, sequence);
+            final String canonicalDonorSnippet = alleleGenerator.getDonorSiteWithAltAllele(donorAnchor, variant, fastaTrack);
             walkers = vmvtGenerator.getDonorCanonicalCryptic(canonicalDonorSnippet, altBestWindow);
         } else {
             // there is no anchor, this happens in single-exon transcripts
@@ -405,18 +392,14 @@ public class SimpleSplicingVariantGraphicsGenerator implements SplicingVariantGr
     private String makeCrypticAcceptorContextGraphics(SplicingPredictionData predictionData) {
         final VisualizationContext context = VisualizationContext.CRYPTIC_ACCEPTOR;
 
-        final SequenceRegion fastaTrack = predictionData.getTrack("fasta", SequenceRegion.class);
-        final SequenceInterval sequence = SequenceInterval.builder()
-                .sequence(fastaTrack.getValue())
-                .interval(fastaTrack.getInterval())
-                .build();
         final GenomeVariant variant = predictionData.getVariant();
+        final SequenceRegion fastaTrack = predictionData.getTrack("fasta", SequenceRegion.class);
         final GenomeInterval variantInterval = variant.getGenomeInterval();
 
         // find index of the position that yields the highest score
         // get the corresponding ref & alt snippets
-        final String refSnippet = alleleGenerator.getAcceptorNeighborSnippet(variantInterval, sequence, variant.getRef());
-        final String altSnippet = alleleGenerator.getAcceptorNeighborSnippet(variantInterval, sequence, variant.getAlt());
+        final String refSnippet = alleleGenerator.getAcceptorNeighborSnippet(variantInterval, fastaTrack, variant.getRef());
+        final String altSnippet = alleleGenerator.getAcceptorNeighborSnippet(variantInterval, fastaTrack, variant.getAlt());
         if (refSnippet == null || altSnippet == null) {
             // nothing more to be done
             return EMPTY_SVG_IMAGE;
@@ -438,7 +421,7 @@ public class SimpleSplicingVariantGraphicsGenerator implements SplicingVariantGr
         final String walkers;
         if (acceptorAnchor != null) {
             // we have the anchor, thus let's make the graphics
-            final String canonicalAcceptorSnippet = alleleGenerator.getAcceptorSiteWithAltAllele(acceptorAnchor, variant, sequence);
+            final String canonicalAcceptorSnippet = alleleGenerator.getAcceptorSiteWithAltAllele(acceptorAnchor, variant, fastaTrack);
             walkers = vmvtGenerator.getAcceptorCanonicalCryptic(canonicalAcceptorSnippet, altBestWindow);
         } else {
             // there is no anchor, this happens in single-exon transcripts
@@ -459,21 +442,17 @@ public class SimpleSplicingVariantGraphicsGenerator implements SplicingVariantGr
 
         final GenomeVariant variant = predictionData.getVariant();
         final SequenceRegion fastaTrack = predictionData.getTrack("fasta", SequenceRegion.class);
-        final SequenceInterval sequence = SequenceInterval.builder()
-                .sequence(fastaTrack.getValue())
-                .interval(fastaTrack.getInterval())
-                .build();
 
         // primary - hexamer
-        final String hexamerRefSnippet = AlleleGenerator.getPaddedAllele(variant.getGenomeInterval(), sequence, variant.getRef(), 5);  // 5 because at least one base is REF/ALT
-        final String hexamerAltSnippet = AlleleGenerator.getPaddedAllele(variant.getGenomeInterval(), sequence, variant.getAlt(), 5);
+        final String hexamerRefSnippet = AlleleGenerator.getPaddedAllele(variant.getGenomeInterval(), fastaTrack, variant.getRef(), 5);  // 5 because at least one base is REF/ALT
+        final String hexamerAltSnippet = AlleleGenerator.getPaddedAllele(variant.getGenomeInterval(), fastaTrack, variant.getAlt(), 5);
         final String hexamerGraphics = hexamerRefSnippet != null && hexamerAltSnippet != null
                 ? vmvtGenerator.getHexamerSvg(hexamerRefSnippet, hexamerAltSnippet)
                 : null;
 
         // secondary - heptamer
-        final String heptamerRefSnippet = AlleleGenerator.getPaddedAllele(variant.getGenomeInterval(), sequence, variant.getRef(), 6); // 6 because at least one base is REF/ALT
-        final String heptamerAltSnippet = AlleleGenerator.getPaddedAllele(variant.getGenomeInterval(), sequence, variant.getAlt(), 6);
+        final String heptamerRefSnippet = AlleleGenerator.getPaddedAllele(variant.getGenomeInterval(), fastaTrack, variant.getRef(), 6); // 6 because at least one base is REF/ALT
+        final String heptamerAltSnippet = AlleleGenerator.getPaddedAllele(variant.getGenomeInterval(), fastaTrack, variant.getAlt(), 6);
         final String heptamerGraphics = heptamerRefSnippet != null && heptamerAltSnippet != null
                 ? vmvtGenerator.getHeptamerSvg(heptamerRefSnippet, heptamerAltSnippet)
                 : null;
