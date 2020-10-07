@@ -14,16 +14,20 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.test.context.jdbc.Sql;
 
 import javax.sql.DataSource;
-import java.sql.*;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.hasItems;
+import static org.hamcrest.Matchers.is;
 
 @SpringBootTest(classes = {TestDataSourceConfig.class})
-@Sql(scripts = {"create_gene_tx_data_table.sql"})
+@Sql(scripts = {
+        "create_gene_tx_data_table.sql"
+})
 public class GeneIngestDaoTest {
 
     @Autowired

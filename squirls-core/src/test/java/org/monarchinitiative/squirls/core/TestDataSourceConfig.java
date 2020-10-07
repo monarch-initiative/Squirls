@@ -19,9 +19,8 @@ import org.monarchinitiative.squirls.core.reference.transcript.SplicingTranscrip
 import org.monarchinitiative.squirls.core.scoring.DenseSplicingAnnotator;
 import org.monarchinitiative.squirls.core.scoring.SplicingAnnotator;
 import org.monarchinitiative.squirls.core.scoring.calculators.ic.SplicingInformationContentCalculator;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
+import org.springframework.test.context.ContextConfiguration;
 
 import javax.sql.DataSource;
 import java.io.IOException;
@@ -34,7 +33,7 @@ import java.util.Map;
 /**
  *
  */
-@Configuration
+@ContextConfiguration
 public class TestDataSourceConfig {
 
     /**
@@ -47,7 +46,7 @@ public class TestDataSourceConfig {
      */
     @Bean
     public DataSource dataSource() {
-        String jdbcUrl = "jdbc:h2:mem:threes";
+        String jdbcUrl = "jdbc:h2:mem:squirls";
         final HikariConfig config = new HikariConfig();
         config.setUsername("sa");
         config.setDriverClassName("org.h2.Driver");

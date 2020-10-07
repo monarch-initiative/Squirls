@@ -279,33 +279,36 @@ public class DbSplicingAnnotationDataSource extends BaseDao implements SplicingA
                 // in input stream, the data interesting for this query begins at this offset
                 final int byteOffset = beginOffset * 4; // 4 <- n bytes per float
                 final GenomeInterval target = new GenomeInterval(new GenomePosition(internalReferenceDictionary, trackStrand, trackContig, trackBegin + beginOffset), targetLength);
+                if (trackInterval.contains(target)) {
 
-                try (final DataInputStream phylopStream = new DataInputStream(rs.getBinaryStream("phylop"))) {
-                    // first, let's get to the target region
-                    long skipped = phylopStream.skip(byteOffset);
-                    if (skipped == byteOffset) {
-                        // now we are at the right place to start reading target data
-                        try {
-                            List<Float> phylopValues = new ArrayList<>(targetLength);
-                            int i = 0;
-                            while (i < targetLength) {
-                                phylopValues.add(phylopStream.readFloat());
-                                i++;
+                    try (final DataInputStream phylopStream = new DataInputStream(rs.getBinaryStream("phylop"))) {
+                        // first, let's get to the target region
+                        long skipped = phylopStream.skip(byteOffset);
+                        if (skipped == byteOffset) {
+                            // now we are at the right place to start reading target data
+                            try {
+                                List<Float> phylopValues = new ArrayList<>(targetLength);
+                                int i = 0;
+                                while (i < targetLength) {
+                                    phylopValues.add(phylopStream.readFloat());
+                                    i++;
+                                }
+                                tracks.put(PHYLOP_TRACK_NAME, FloatRegion.of(target, phylopValues));
+                            } catch (EOFException eof) {
+                                // stream ended before finishing reading the target region
+                                LOGGER.warn("Not enough phylop track available for query {}", target);
                             }
-                            tracks.put(PHYLOP_TRACK_NAME, FloatRegion.of(target, phylopValues));
-                        } catch (EOFException eof) {
-                            // stream ended before finishing reading the target region
-                            LOGGER.warn("Not enough phylop track available for query {}", target);
+                        } else {
+                            // stream ended before reaching the target region
+                            LOGGER.warn("Not enough phylop track available for query. Track ended at {} before reaching target region {}",
+                                    new GenomePosition(internalReferenceDictionary, trackStrand, trackContig, (int) (trackBegin + skipped)), target);
                         }
-                    } else {
-                        // stream ended before reaching the target region
-                        LOGGER.warn("Not enough phylop track available for query. Track ended at {} before reaching target region {}",
-                                new GenomePosition(internalReferenceDictionary, trackStrand, trackContig, (int) (trackBegin + skipped)), target);
+                    } catch (IOException e) {
+                        LOGGER.warn("Error decoding phylop track ({}:{}-{}) for {}", trackContig, trackBegin, trackEnd, symbol, e);
                     }
-                } catch (IOException e) {
-                    LOGGER.warn("Error decoding phylop track ({}:{}-{}) for {}", trackContig, trackBegin, trackEnd, symbol, e);
+                } else {
+                    LOGGER.warn("Cannot get phylop track for {} using {}", target, trackInterval);
                 }
-
                 trackMap.put(symbol, tracks);
                 geneToTxMap.put(symbol, new HashSet<>());
             }

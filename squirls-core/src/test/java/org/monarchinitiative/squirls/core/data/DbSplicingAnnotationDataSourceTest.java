@@ -5,6 +5,7 @@ import de.charite.compbio.jannovar.data.ReferenceDictionary;
 import de.charite.compbio.jannovar.reference.GenomeInterval;
 import de.charite.compbio.jannovar.reference.Strand;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.monarchinitiative.squirls.core.TestDataSourceConfig;
 import org.monarchinitiative.squirls.core.model.SplicingExon;
@@ -17,9 +18,12 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.jdbc.Sql;
 
 import javax.sql.DataSource;
+import java.nio.ByteBuffer;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
+import java.util.stream.Collectors;
 
 import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -65,15 +69,16 @@ public class DbSplicingAnnotationDataSourceTest {
 
         // check tracks
         assertThat(data.getTracks().keySet(), hasItems("phylop", "fasta"));
-        final GenomeInterval trackInterval = new GenomeInterval(rd, Strand.FWD, 1, 1000, 1004);
+        final GenomeInterval trackInterval = new GenomeInterval(rd, Strand.FWD, 1, 500, 3500);
 
         final SequenceRegion fasta = data.getTrack("fasta", SequenceRegion.class);
         assertThat(fasta.getInterval(), is(trackInterval));
-        assertThat(fasta.getValue(), is("ACGT"));
+        assertThat(fasta.getValue(), is("ACGT".repeat(3000 / 4)));
 
         final FloatRegion phylop = data.getTrack("phylop", FloatRegion.class);
-        assertThat(phylop.getInterval(), is(trackInterval));
-        assertThat(phylop.getValue(), is(List.of(1.f, 2.f, 3.f, 4.f)));
+
+        assertThat(phylop.getInterval(), is(new GenomeInterval(rd, Strand.FWD, 1, 1198, 1203)));
+        assertThat(phylop.getValue(), is(List.of(0.7455148f, 0.8550232f, 0.66827893f, 0.23617701f, 0.69727147f)));
 
         // check transcripts
         final Collection<SplicingTranscript> txs = data.getTranscripts();
@@ -121,15 +126,15 @@ public class DbSplicingAnnotationDataSourceTest {
 
         // check tracks
         assertThat(data.getTracks().keySet(), hasItems("phylop", "fasta"));
-        final GenomeInterval trackInterval = new GenomeInterval(rd, Strand.REV, 1, 6000, 6004).withStrand(Strand.FWD);
+        final GenomeInterval trackInterval = new GenomeInterval(rd, Strand.REV, 1, 5500, 8500).withStrand(Strand.FWD);
 
         final SequenceRegion fasta = data.getTrack("fasta", SequenceRegion.class);
         assertThat(fasta.getInterval(), is(trackInterval));
-        assertThat(fasta.getValue(), is("tcga"));
+        assertThat(fasta.getValue(), is("tcga".repeat(3000 / 4)));
 
         final FloatRegion phylop = data.getTrack("phylop", FloatRegion.class);
-        assertThat(phylop.getInterval(), is(trackInterval));
-        assertThat(phylop.getValue(), is(List.of(10.f, 20.f, 30.f, 40.f)));
+        assertThat(phylop.getInterval(), is(new GenomeInterval(rd, Strand.FWD, 1, 1998, 2003).withStrand(Strand.REV)));
+        assertThat(phylop.getValue(), is(List.of(0.8437929f, 0.6994124f, 0.79757345f, 0.1062102f, 0.24914718f)));
 
         // check transcripts
         final Collection<SplicingTranscript> txs = data.getTranscripts();
@@ -156,4 +161,22 @@ public class DbSplicingAnnotationDataSourceTest {
     }
 
 
+    @Test
+    @Disabled
+    public void generateFloatsAsHexadecimalStrings() {
+        final List<Float> floats = new Random(456).doubles(3000)
+                .boxed()
+                .map(Double::floatValue)
+                .collect(Collectors.toList());
+
+        StringBuilder sb = new StringBuilder();
+        for (Float f : floats) {
+            final byte[] array = ByteBuffer.allocate(4).putFloat(f).array();
+            for (byte b : array) {
+                sb.append(String.format("%02X", b));
+            }
+        }
+
+        System.err.println(sb.toString());
+    }
 }
