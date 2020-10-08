@@ -134,7 +134,7 @@ public class SquirlsDataBuilderTest {
 
     @Test
     public void buildDatabase() throws Exception {
-        final URL phylopUrl = SquirlsDataBuilderTest.class.getResource("gck_hnf4a_fbn1.bw");
+        final URL phylopUrl = SquirlsDataBuilderTest.class.getResource("small.bw");
         final Path jannovarDbDir = Paths.get(SquirlsDataBuilderTest.class.getResource("transcripts/hg19").getPath());
         final Path yamlPath = Paths.get(SquirlsDataBuilderTest.class.getResource("spliceSites.yaml").getPath());
         final Path hexamerPath = Paths.get(SquirlsDataBuilderTest.class.getResource("hexamer-scores.tsv").getPath());

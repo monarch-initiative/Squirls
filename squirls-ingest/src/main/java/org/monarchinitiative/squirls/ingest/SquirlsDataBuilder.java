@@ -236,9 +236,10 @@ public class SquirlsDataBuilder {
         es.submit(new UrlResourceDownloader(phylopUrl, phyloPPath, false));
         es.shutdown();
         try {
-            while (!es.awaitTermination(1, TimeUnit.SECONDS)) {
-                // no-op
+            while (!es.awaitTermination(5, TimeUnit.SECONDS)) {
+                System.out.print('.');
             }
+            System.out.print('\n');
         } catch (InterruptedException e) {
             LOGGER.info("Interrupting the download");
             es.shutdownNow();

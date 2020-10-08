@@ -18,8 +18,6 @@ squirls:
   genome-assembly:
   # Exomiser-like data version (1902 in examples above)
   data-version:
-  # Path to bigwig file with genome-wide PhyloP scores
-  phylop-bigwig-path:
 
   #classifier:
   # Which classifier to use

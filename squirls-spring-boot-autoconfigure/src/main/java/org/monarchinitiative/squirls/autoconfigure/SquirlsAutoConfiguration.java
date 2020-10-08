@@ -93,26 +93,17 @@ public class SquirlsAutoConfiguration {
         return dataVersion;
     }
 
-    @Bean
-    @ConditionalOnMissingBean(name = "phylopBigwigPath")
-    public Path phylopBigwigPath() throws UndefinedSquirlsResourceException {
-        if (properties.getPhylopBigwigPath() == null) {
-            throw new UndefinedSquirlsResourceException("Path to PhyloP bigwig file is not specified");
-        }
-        return Paths.get(properties.getPhylopBigwigPath());
-    }
-
 
     @Bean
-    public BigWigAccessor phylopBigwigAccessor(Path phylopBigwigPath) throws IOException {
-        LOGGER.debug("Using phyloP bigwig file at `{}`", phylopBigwigPath);
-        return new BigWigAccessor(phylopBigwigPath);
+    public BigWigAccessor phylopBigwigAccessor(SquirlsDataResolver squirlsDataResolver) throws IOException {
+        LOGGER.debug("Using phyloP bigwig file at `{}`", squirlsDataResolver.phylopPath());
+        return new BigWigAccessor(squirlsDataResolver.phylopPath());
     }
 
     @Bean
     public SquirlsDataResolver squirlsDataResolver(Path squirlsDataDirectory,
                                                    String squirlsGenomeAssembly,
-                                                   String squirlsDataVersion) {
+                                                   String squirlsDataVersion) throws MissingSquirlsResourceException {
         return new SquirlsDataResolver(squirlsDataDirectory, squirlsDataVersion, squirlsGenomeAssembly);
     }
 
@@ -219,7 +210,7 @@ public class SquirlsAutoConfiguration {
 
     @Bean
     public DataSource squirlsDatasource(SquirlsDataResolver squirlsDataResolver) {
-        Path datasourcePath = squirlsDataResolver.getDatasourcePath();
+        Path datasourcePath = squirlsDataResolver.dataSourcePath();
 
         String jdbcUrl = String.format("jdbc:h2:file:%s;ACCESS_MODE_DATA=r", datasourcePath);
         final HikariConfig config = new HikariConfig();

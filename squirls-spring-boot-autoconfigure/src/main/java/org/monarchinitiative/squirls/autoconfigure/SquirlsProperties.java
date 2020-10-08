@@ -34,14 +34,6 @@ public class SquirlsProperties {
     @NestedConfigurationProperty // squirls.annotator
     private AnnotatorProperties annotator = new AnnotatorProperties();
 
-    public String getPhylopBigwigPath() {
-        return phylopBigwigPath;
-    }
-
-    public void setPhylopBigwigPath(String phylopBigwigPath) {
-        this.phylopBigwigPath = phylopBigwigPath;
-    }
-
     public String getDataDirectory() {
         return dataDirectory;
     }
