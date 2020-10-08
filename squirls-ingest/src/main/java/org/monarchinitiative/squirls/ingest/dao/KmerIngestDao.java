@@ -1,4 +1,4 @@
-package org.monarchinitiative.squirls.ingest.kmers;
+package org.monarchinitiative.squirls.ingest.dao;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -1,4 +1,4 @@
-package org.monarchinitiative.squirls.ingest.pwm;
+package org.monarchinitiative.squirls.ingest.dao;
 
 import org.jblas.DoubleMatrix;
 import org.slf4j.Logger;

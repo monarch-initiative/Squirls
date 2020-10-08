@@ -6,6 +6,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.monarchinitiative.squirls.core.SquirlsException;
 import org.monarchinitiative.squirls.core.scoring.calculators.ic.SplicingInformationContentCalculator;
+import org.monarchinitiative.squirls.ingest.data.GenomeAssemblyDownloaderTest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.jdbc.Sql;
@@ -27,8 +28,8 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
 
 @SpringBootTest(classes = {TestDataSourceConfig.class})
-@Sql(scripts = {"pwm/create_pwm_tables.sql", "transcripts/create_transcript_intron_exon_tables.sql"})
-class SquirlsDataBuilderTest {
+@Sql(scripts = {"dao/create_pwm_tables.sql", "dao/create_transcript_intron_exon_tables.sql"})
+public class SquirlsDataBuilderTest {
 
     private static final String ASSEMBLY = "hg19";
 
@@ -36,7 +37,7 @@ class SquirlsDataBuilderTest {
 
     private static final String VERSIONED_ASSEMBLY = VERSION + "_" + ASSEMBLY;
 
-    private static final URL FASTA_URL = SquirlsDataBuilderTest.class.getResource("shortHg19ChromFa.tar.gz");
+    private static final URL FASTA_URL = GenomeAssemblyDownloaderTest.class.getResource("shortHg19ChromFa.tar.gz");
 
     private Path buildDir;
 

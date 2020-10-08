@@ -1,4 +1,4 @@
-package org.monarchinitiative.squirls.ingest.config;
+package org.monarchinitiative.squirls.ingest;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 

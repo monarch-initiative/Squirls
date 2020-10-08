@@ -1,4 +1,4 @@
-package org.monarchinitiative.squirls.ingest.reference;
+package org.monarchinitiative.squirls.ingest.dao;
 
 import de.charite.compbio.jannovar.data.ReferenceDictionary;
 import org.slf4j.Logger;

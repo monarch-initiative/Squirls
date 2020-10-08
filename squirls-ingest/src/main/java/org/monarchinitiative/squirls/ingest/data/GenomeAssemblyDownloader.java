@@ -1,4 +1,4 @@
-package org.monarchinitiative.squirls.ingest.reference;
+package org.monarchinitiative.squirls.ingest.data;
 
 import htsjdk.samtools.SAMSequenceDictionary;
 import htsjdk.samtools.SAMSequenceDictionaryCodec;
@@ -14,7 +14,6 @@ import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.net.URL;
-import java.net.URLConnection;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
@@ -31,8 +30,6 @@ public final class GenomeAssemblyDownloader implements Runnable {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(GenomeAssemblyDownloader.class);
 
-    private static final int BUFFER_SIZE = 81920;
-
     private final URL genomeUrl;
 
     private final Path whereToSave;
@@ -47,33 +44,12 @@ public final class GenomeAssemblyDownloader implements Runnable {
 
 
     /**
-     * Download a file from {@link URL} to given location.
-     *
-     * @param whereToSave {@link File} path where the file will be downloaded
-     * @throws IOException if error occurs
-     */
-    private void download(File whereToSave) throws IOException {
-        LOGGER.info("Downloading reference genome file from '{}'", genomeUrl.toExternalForm());
-
-        URLConnection connection = genomeUrl.openConnection();
-        try (FileOutputStream writer = new FileOutputStream(whereToSave);
-             InputStream reader = connection.getInputStream()) {
-            byte[] buffer = new byte[BUFFER_SIZE];
-            int bytesRead;
-            while ((bytesRead = reader.read(buffer)) > 0) {
-                writer.write(buffer, 0, bytesRead);
-            }
-        }
-    }
-
-
-    /**
      * Download the genome tar.gz file, concatenate all chromosomes into a single gzipped file, index the file, and
      * create sequence dictionary.
      */
     @Override
     public void run() {
-        if (Files.exists(whereToSave) && !overwrite) {
+        if (Files.isRegularFile(whereToSave) && !overwrite) {
             LOGGER.info("Skipping download since reference genome FASTA already exists at '{}'", whereToSave);
             return;
         }
@@ -81,7 +57,8 @@ public final class GenomeAssemblyDownloader implements Runnable {
             // 1 - download genome tar.gz archive into a temporary location
             File genomeTarGz = File.createTempFile("threes-genome-downloader", ".tar.gz");
             genomeTarGz.deleteOnExit();
-            download(genomeTarGz);
+            UrlResourceDownloader downloader = new UrlResourceDownloader(genomeUrl, genomeTarGz.toPath());
+            downloader.run(); // on the same thread!
 
             // 2 - concatenate all the files in the tar.gz archive into a single FASTA file
             try (TarArchiveInputStream tarInput = new TarArchiveInputStream(new GzipCompressorInputStream(new FileInputStream(genomeTarGz)));
@@ -93,7 +70,7 @@ public final class GenomeAssemblyDownloader implements Runnable {
 
                 while (tarEntry != null) {
                     LOGGER.info("Appending chromosome {}", tarEntry.getName());
-                    IOUtils.copy(tarInput, os);
+                    IOUtils.copyLarge(tarInput, os);
                     tarEntry = tarInput.getNextTarEntry();
                 }
             }

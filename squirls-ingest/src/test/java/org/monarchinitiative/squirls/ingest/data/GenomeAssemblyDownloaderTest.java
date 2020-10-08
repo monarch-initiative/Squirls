@@ -1,4 +1,4 @@
-package org.monarchinitiative.squirls.ingest.reference;
+package org.monarchinitiative.squirls.ingest.data;
 
 import htsjdk.samtools.reference.FastaSequenceIndex;
 import org.junit.jupiter.api.AfterEach;
@@ -17,25 +17,25 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 @SpringBootTest(classes = TestDataSourceConfig.class)
-class GenomeAssemblyDownloaderTest {
+public class GenomeAssemblyDownloaderTest {
 
     private Path buildDir;
 
 
     @BeforeEach
-    void setUp() throws Exception {
+    public void setUp() throws Exception {
         buildDir = Files.createDirectories(Paths.get(System.getProperty("java.io.tmpdir")).resolve("3S-TEST"));
     }
 
     @AfterEach
-    void tearDown() throws Exception {
+    public void tearDown() throws Exception {
         TestUtils.deleteFolderAndFiles(buildDir);
     }
 
 
     @Test
-    void download() {
-        URL fastaUrl = TestDataSourceConfig.class.getResource("shortHg19ChromFa.tar.gz");
+    public void download() {
+        URL fastaUrl = GenomeAssemblyDownloaderTest.class.getResource("shortHg19ChromFa.tar.gz");
 
 
         Path whereToSave = buildDir.resolve("the-genome.fa");

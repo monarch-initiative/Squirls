@@ -5,7 +5,6 @@ import net.sourceforge.argparse4j.inf.*;
 import org.monarchinitiative.squirls.ingest.cmd.GenerateConfigCommand;
 import org.monarchinitiative.squirls.ingest.cmd.IngestCommand;
 import org.monarchinitiative.squirls.ingest.cmd.RunIngestCommand;
-import org.monarchinitiative.squirls.ingest.config.IngestProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
