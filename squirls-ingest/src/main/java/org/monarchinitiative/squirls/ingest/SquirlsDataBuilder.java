@@ -24,6 +24,7 @@ import org.monarchinitiative.squirls.ingest.dao.PwmIngestDao;
 import org.monarchinitiative.squirls.ingest.dao.ReferenceDictionaryIngestDao;
 import org.monarchinitiative.squirls.ingest.dao.TranscriptIngestDao;
 import org.monarchinitiative.squirls.ingest.data.GenomeAssemblyDownloader;
+import org.monarchinitiative.squirls.ingest.data.UrlResourceDownloader;
 import org.monarchinitiative.squirls.ingest.transcripts.JannovarDataManager;
 import org.monarchinitiative.squirls.ingest.transcripts.SplicingCalculator;
 import org.monarchinitiative.squirls.ingest.transcripts.SplicingCalculatorImpl;
@@ -40,8 +41,13 @@ import java.io.InputStream;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 /**
  * A static class with methods for building splicing database.
@@ -103,10 +109,9 @@ public class SquirlsDataBuilder {
      * @param versionedAssembly a string like `1710_hg19`, etc.
      * @param overwrite         overwrite existing FASTA file if true
      */
-    static void downloadReferenceGenome(URL genomeUrl, Path buildDir, String versionedAssembly, boolean overwrite) {
+    static Runnable downloadReferenceGenome(URL genomeUrl, Path buildDir, String versionedAssembly, boolean overwrite) {
         Path genomeFastaPath = buildDir.resolve(String.format("%s.fa", versionedAssembly));
-        GenomeAssemblyDownloader downloader = new GenomeAssemblyDownloader(genomeUrl, genomeFastaPath, overwrite);
-        downloader.run(); // run on the same thread
+        return new GenomeAssemblyDownloader(genomeUrl, genomeFastaPath, overwrite);
     }
 
     /**
@@ -171,6 +176,17 @@ public class SquirlsDataBuilder {
         LOGGER.info("Updated {} rows", updated);
     }
 
+    private static Map<String, byte[]> readClassifiers(Map<String, String> clfs) throws IOException {
+        final Map<String, byte[]> classifiers = new HashMap<>();
+        for (Map.Entry<String, String> entry : clfs.entrySet()) {
+            LOGGER.info("Reading classifier `{}` from `{}`", entry.getKey(), entry.getValue());
+            try (final InputStream is = Files.newInputStream(Paths.get(entry.getValue()))) {
+                classifiers.put(entry.getKey(), is.readAllBytes());
+            }
+        }
+        return classifiers;
+    }
+
     /**
      * Build the database given inputs.
      *
@@ -181,9 +197,9 @@ public class SquirlsDataBuilder {
      * @param versionedAssembly a string like `1710_hg19`, etc.
      * @throws SquirlsException if anything goes wrong
      */
-    public static void buildDatabase(Path buildDir, URL genomeUrl, Path jannovarDbDir, Path yamlPath,
+    public static void buildDatabase(Path buildDir, URL genomeUrl, URL phylopUrl, Path jannovarDbDir, Path yamlPath,
                                      Path hexamerPath, Path septamerPath,
-                                     Map<String, byte[]> classifiers,
+                                     Map<String, String> classifiers,
                                      String versionedAssembly) throws SquirlsException {
 
         // 0 - deserialize Jannovar transcript databases
@@ -208,18 +224,29 @@ public class SquirlsDataBuilder {
             throw new SquirlsException(e);
         }
 
-        // 2 - download reference genome FASTA file
-        downloadReferenceGenome(genomeUrl, buildDir, versionedAssembly, false);
-
-        // this is where the reference genome will be downloaded by the command above
+        // 2 - download reference genome FASTA file & PhyloP bigwig file
+        // this is where the reference genome will be downloaded by the commands below
         Path genomeFastaPath = buildDir.resolve(String.format("%s.fa", versionedAssembly));
         Path genomeFastaFaiPath = buildDir.resolve(String.format("%s.fa.fai", versionedAssembly));
         Path genomeFastaDictPath = buildDir.resolve(String.format("%s.fa.dict", versionedAssembly));
+        Path phyloPPath = buildDir.resolve(String.format("%s.phylop.bw", versionedAssembly));
 
+        final ExecutorService es = Executors.newFixedThreadPool(2);
+        es.submit(downloadReferenceGenome(genomeUrl, buildDir, versionedAssembly, false));
+        es.submit(new UrlResourceDownloader(phylopUrl, phyloPPath, false));
+        es.shutdown();
+        try {
+            while (!es.awaitTermination(1, TimeUnit.SECONDS)) {
+                // no-op
+            }
+        } catch (InterruptedException e) {
+            LOGGER.info("Interrupting the download");
+            es.shutdownNow();
+        }
 
         // 3 - create and fill the database
         // 3a - initialize database
-        Path databasePath = buildDir.resolve(String.format("%s_splicing", versionedAssembly));
+        Path databasePath = buildDir.resolve(String.format("%s.splicing", versionedAssembly));
         LOGGER.info("Creating database at `{}`", databasePath);
         DataSource dataSource = makeDataSource(databasePath);
 
@@ -254,9 +281,14 @@ public class SquirlsDataBuilder {
         }
 
         // 3f - store classifier
-        LOGGER.info("Inserting classifiers");
-        for (Map.Entry<String, byte[]> entry : classifiers.entrySet()) {
-            processClassifier(dataSource, entry.getKey(), entry.getValue());
+        try {
+            LOGGER.info("Inserting classifiers");
+            final Map<String, byte[]> clfData = readClassifiers(classifiers);
+            for (Map.Entry<String, byte[]> entry : clfData.entrySet()) {
+                processClassifier(dataSource, entry.getKey(), entry.getValue());
+            }
+        } catch (IOException e) {
+            throw new SquirlsException(e);
         }
 
     }

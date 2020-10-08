@@ -10,13 +10,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
-import java.io.InputStream;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Component
 public class RunIngestCommand extends IngestCommand {
@@ -84,6 +83,7 @@ public class RunIngestCommand extends IngestCommand {
 
         // 1 - create build folder
         final URL genomeUrl = new URL(ingestProperties.getFastaUrl());
+        final URL phylopUrl = new URL(ingestProperties.getPhylopUrl());
 
         final String versionedAssembly = getVersionedAssembly(assembly, version);
         final Path versionedAssemblyBuildPath = buildDirPath.resolve(versionedAssembly);
@@ -91,20 +91,15 @@ public class RunIngestCommand extends IngestCommand {
         LOGGER.info("Building resources in `{}`", versionedAssemblyBuildPath);
 
         // 2 - read classifier data
-        Map<String, byte[]> classifiers = new HashMap<>();
-        for (IngestProperties.ClassifierData classifier : ingestProperties.getClassifiers()) {
-            LOGGER.info("Reading classifier `{}` from `{}`", classifier.getVersion(), classifier.getClassifierPath());
-            try (final InputStream is = Files.newInputStream(Paths.get(classifier.getClassifierPath()))) {
-                classifiers.put(classifier.getVersion(), is.readAllBytes());
-            }
-        }
+        final Map<String, String> classifiers = ingestProperties.getClassifiers().stream()
+                .collect(Collectors.toMap(IngestProperties.ClassifierData::getVersion, IngestProperties.ClassifierData::getClassifierPath));
 
         // 3 - build database
-        SquirlsDataBuilder.buildDatabase(genomeBuildDir, genomeUrl, Path.of(ingestProperties.getJannovarTranscriptDbDir()),
+        SquirlsDataBuilder.buildDatabase(genomeBuildDir, genomeUrl, phylopUrl,
+                Path.of(ingestProperties.getJannovarTranscriptDbDir()),
                 Path.of(ingestProperties.getSplicingInformationContentMatrix()),
                 Path.of(ingestProperties.getHexamerTsvPath()),
                 Path.of(ingestProperties.getSeptamerTsvPath()),
-                classifiers,
-                versionedAssembly);
+                classifiers, versionedAssembly);
     }
 }

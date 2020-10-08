@@ -4,7 +4,6 @@ import de.charite.compbio.jannovar.reference.TranscriptModel;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.monarchinitiative.squirls.core.SquirlsException;
 import org.monarchinitiative.squirls.core.scoring.calculators.ic.SplicingInformationContentCalculator;
 import org.monarchinitiative.squirls.ingest.data.GenomeAssemblyDownloaderTest;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -64,11 +63,12 @@ public class SquirlsDataBuilderTest {
     }
 
     @Test
-    void downloadReferenceGenome() throws SquirlsException {
+    void downloadReferenceGenome() {
         // arrange - nothing to be done
 
         // act - download a small reference genome
-        SquirlsDataBuilder.downloadReferenceGenome(FASTA_URL, buildDir, VERSIONED_ASSEMBLY, true);
+        final Runnable rgTask = SquirlsDataBuilder.downloadReferenceGenome(FASTA_URL, buildDir, VERSIONED_ASSEMBLY, true);
+        rgTask.run();
 
         // assert - there should be a FASTA file with index present in the `buildDir`
 
@@ -132,4 +132,26 @@ public class SquirlsDataBuilderTest {
                 "0;16000;18000;adam;ir;DONOR=-4.676134711788632;ACCEPTOR=-14.459319682085656;1"));
     }
 
+    @Test
+    public void buildDatabase() throws Exception {
+        final URL phylopUrl = SquirlsDataBuilderTest.class.getResource("gck_hnf4a_fbn1.bw");
+        final Path jannovarDbDir = Paths.get(SquirlsDataBuilderTest.class.getResource("transcripts/hg19").getPath());
+        final Path yamlPath = Paths.get(SquirlsDataBuilderTest.class.getResource("spliceSites.yaml").getPath());
+        final Path hexamerPath = Paths.get(SquirlsDataBuilderTest.class.getResource("hexamer-scores.tsv").getPath());
+        final Path septamerPath = Paths.get(SquirlsDataBuilderTest.class.getResource("septamer-scores.tsv").getPath());
+
+        assertThat(Files.isRegularFile(buildDir.resolve("1910_hg19.fa")), is(false));
+        assertThat(Files.isRegularFile(buildDir.resolve("1910_hg19.fa.fai")), is(false));
+        assertThat(Files.isRegularFile(buildDir.resolve("1910_hg19.fa.dict")), is(false));
+        assertThat(Files.isRegularFile(buildDir.resolve("1910_hg19.splicing.mv.db")), is(false));
+        assertThat(Files.isRegularFile(buildDir.resolve("1910_hg19.phylop.bw")), is(false));
+
+        SquirlsDataBuilder.buildDatabase(buildDir, FASTA_URL, phylopUrl, jannovarDbDir, yamlPath, hexamerPath, septamerPath, TestDataSourceConfig.MODEL_PATHS, VERSIONED_ASSEMBLY);
+
+        assertThat(Files.isRegularFile(buildDir.resolve("1910_hg19.fa")), is(true));
+        assertThat(Files.isRegularFile(buildDir.resolve("1910_hg19.fa.fai")), is(true));
+        assertThat(Files.isRegularFile(buildDir.resolve("1910_hg19.fa.dict")), is(true));
+        assertThat(Files.isRegularFile(buildDir.resolve("1910_hg19.splicing.mv.db")), is(true));
+        assertThat(Files.isRegularFile(buildDir.resolve("1910_hg19.phylop.bw")), is(true));
+    }
 }

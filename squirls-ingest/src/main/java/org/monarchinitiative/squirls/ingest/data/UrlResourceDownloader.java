@@ -52,7 +52,7 @@ public class UrlResourceDownloader implements Runnable {
             try (InputStream is = connection.getInputStream();
                  FileOutputStream os = new FileOutputStream(destination.toFile())) {
                 long downloaded = IOUtils.copyLarge(is, os);
-                LOGGER.info("Finished the download, transferred {} kb", String.format("%.3f", (double) downloaded / 1024));
+                LOGGER.info("Finished the download, transferred {} kB", String.format("%,.3f", (double) downloaded / 1024));
             }
         } catch (IOException e) {
             LOGGER.warn("Error downloading the resource `{}` to `{}`", source.toExternalForm(), destination, e);

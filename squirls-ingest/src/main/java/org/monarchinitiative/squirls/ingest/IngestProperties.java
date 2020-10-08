@@ -16,6 +16,7 @@ public class IngestProperties {
     private String hexamerTsvPath;
     private String septamerTsvPath;
     private String fastaUrl;
+    private String phylopUrl;
     private List<ClassifierData> classifiers;
 
     public List<ClassifierData> getClassifiers() {
@@ -64,6 +65,14 @@ public class IngestProperties {
 
     public void setFastaUrl(String fastaUrl) {
         this.fastaUrl = fastaUrl;
+    }
+
+    public String getPhylopUrl() {
+        return phylopUrl;
+    }
+
+    public void setPhylopUrl(String phylopUrl) {
+        this.phylopUrl = phylopUrl;
     }
 
     public static class ClassifierData {
