@@ -202,29 +202,7 @@ public class SquirlsDataBuilder {
                                      Map<String, String> classifiers,
                                      String versionedAssembly) throws SquirlsException {
 
-        // 0 - deserialize Jannovar transcript databases
-        JannovarDataManager manager = JannovarDataManager.fromDirectory(jannovarDbDir);
-
-        // 1a - parse YAML with splicing matrices
-        SplicingPwmData splicingPwmData;
-        try (InputStream is = Files.newInputStream(yamlPath)) {
-            SplicingPositionalWeightMatrixParser parser = new InputStreamBasedPositionalWeightMatrixParser(is);
-            splicingPwmData = parser.getSplicingPwmData();
-        } catch (IOException e) {
-            throw new SquirlsException(e);
-        }
-
-        // 1b - parse k-mer maps
-        final Map<String, Double> hexamerMap;
-        final Map<String, Double> septamerMap;
-        try {
-            hexamerMap = new FileKMerParser(hexamerPath).getKmerMap();
-            septamerMap = new FileKMerParser(septamerPath).getKmerMap();
-        } catch (IOException e) {
-            throw new SquirlsException(e);
-        }
-
-        // 2 - download reference genome FASTA file & PhyloP bigwig file
+        // 0 - initiate download of reference genome FASTA file & PhyloP bigwig file
         // this is where the reference genome will be downloaded by the commands below
         Path genomeFastaPath = buildDir.resolve(String.format("%s.fa", versionedAssembly));
         Path genomeFastaFaiPath = buildDir.resolve(String.format("%s.fa.fai", versionedAssembly));
@@ -234,15 +212,27 @@ public class SquirlsDataBuilder {
         final ExecutorService es = Executors.newFixedThreadPool(2);
         es.submit(downloadReferenceGenome(genomeUrl, buildDir, versionedAssembly, false));
         es.submit(new UrlResourceDownloader(phylopUrl, phyloPPath, false));
-        es.shutdown();
+
+        // 1 - deserialize Jannovar transcript databases
+        JannovarDataManager manager = JannovarDataManager.fromDirectory(jannovarDbDir);
+
+        // 2a - parse YAML with splicing matrices
+        SplicingPwmData splicingPwmData;
+        try (InputStream is = Files.newInputStream(yamlPath)) {
+            SplicingPositionalWeightMatrixParser parser = new InputStreamBasedPositionalWeightMatrixParser(is);
+            splicingPwmData = parser.getSplicingPwmData();
+        } catch (IOException e) {
+            throw new SquirlsException(e);
+        }
+
+        // 2b - parse k-mer maps
+        final Map<String, Double> hexamerMap;
+        final Map<String, Double> septamerMap;
         try {
-            while (!es.awaitTermination(5, TimeUnit.SECONDS)) {
-                System.out.print('.');
-            }
-            System.out.print('\n');
-        } catch (InterruptedException e) {
-            LOGGER.info("Interrupting the download");
-            es.shutdownNow();
+            hexamerMap = new FileKMerParser(hexamerPath).getKmerMap();
+            septamerMap = new FileKMerParser(septamerPath).getKmerMap();
+        } catch (IOException e) {
+            throw new SquirlsException(e);
         }
 
         // 3 - create and fill the database
@@ -263,7 +253,30 @@ public class SquirlsDataBuilder {
         LOGGER.info("Inserting k-mer maps");
         processKmers(dataSource, hexamerMap, septamerMap);
 
-        // 3e - store reference dictionary and transcripts
+        // 3e - store classifier
+        try {
+            LOGGER.info("Inserting classifiers");
+            final Map<String, byte[]> clfData = readClassifiers(classifiers);
+            for (Map.Entry<String, byte[]> entry : clfData.entrySet()) {
+                processClassifier(dataSource, entry.getKey(), entry.getValue());
+            }
+        } catch (IOException e) {
+            throw new SquirlsException(e);
+        }
+
+        // now wait until the downloads are finished
+        try {
+            es.shutdown();
+            while (!es.awaitTermination(5, TimeUnit.SECONDS)) {
+                System.out.print('.');
+            }
+            System.out.print('\n');
+        } catch (InterruptedException e) {
+            LOGGER.info("Interrupting the download");
+            es.shutdownNow();
+        }
+
+        // 3f - store reference dictionary and transcripts
         SplicingInformationContentCalculator calculator = new SplicingInformationContentCalculator(splicingPwmData);
         try (GenomeSequenceAccessor accessor = GenomeSequenceAccessorBuilder.builder()
                 .setFastaPath(genomeFastaPath)
@@ -281,16 +294,6 @@ public class SquirlsDataBuilder {
             throw new SquirlsException(e);
         }
 
-        // 3f - store classifier
-        try {
-            LOGGER.info("Inserting classifiers");
-            final Map<String, byte[]> clfData = readClassifiers(classifiers);
-            for (Map.Entry<String, byte[]> entry : clfData.entrySet()) {
-                processClassifier(dataSource, entry.getKey(), entry.getValue());
-            }
-        } catch (IOException e) {
-            throw new SquirlsException(e);
-        }
 
     }
 
