@@ -7,7 +7,8 @@ squirls:
   #  |   |- 1902_hg19.fa
   #  |   |- 1902_hg19.fa.dict
   #  |   |- 1902_hg19.fa.fai
-  #  |   \- 1902_hg19_splicing.mv.db
+  #  |   |- 1902_hg19.phylop.bw
+  #  |   \- 1902_hg19.splicing.mv.db
   #  \- 1902_hg38:
   #      |- 1902_hg38.fa
   #      ...
@@ -21,10 +22,10 @@ squirls:
 
   #classifier:
   # Which classifier to use
-  #version: v1
+  #version: v0.4.4
   # Variant with longer REF allele will not be evaluated
   #max-variant-length: 100
   #annotator:
   # Which annotator to use. Use `agez` with classifier v0.4.1 and `dense` for v1.1
-  #  version: dense
+  #  version: agez
 

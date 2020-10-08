@@ -267,6 +267,7 @@ public class SquirlsDataBuilder {
         // now wait until the downloads are finished
         try {
             es.shutdown();
+            System.out.print("Waiting for the downloads to finish ");
             while (!es.awaitTermination(5, TimeUnit.SECONDS)) {
                 System.out.print('.');
             }
