@@ -1,17 +1,16 @@
 package org.monarchinitiative.squirls.ingest.transcripts;
 
 import de.charite.compbio.jannovar.data.JannovarData;
+import de.charite.compbio.jannovar.data.JannovarDataSerializer;
+import de.charite.compbio.jannovar.data.SerializationException;
 import de.charite.compbio.jannovar.reference.TranscriptModel;
-import org.monarchinitiative.exomiser.core.genome.jannovar.JannovarDataSourceLoader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.nio.file.Path;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Set;
+import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class JannovarDataManager {
@@ -53,9 +52,22 @@ public class JannovarDataManager {
         available in Maven central.
         */
         Set<JannovarData> data = Arrays.stream(paths)
-                .map(JannovarDataSourceLoader::loadJannovarData)
+                .map(loadJannovarData())
+                .filter(Optional::isPresent)
+                .map(Optional::get)
                 .collect(Collectors.toSet());
         return new JannovarDataManager(data);
+    }
+
+    private static Function<Path, Optional<JannovarData>> loadJannovarData() {
+        return path -> {
+            try {
+                return Optional.ofNullable(new JannovarDataSerializer(path.toString()).load());
+            } catch (SerializationException e) {
+                LOGGER.warn("Error when deserializing jannovar data at `{}`: {}", path, e.getMessage());
+                return Optional.empty();
+            }
+        };
     }
 
     public Collection<TranscriptModel> getAllTranscriptModels() {

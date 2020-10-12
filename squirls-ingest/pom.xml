@@ -20,12 +20,6 @@
         </dependency>
 
         <dependency>
-            <groupId>org.monarchinitiative.exomiser</groupId>
-            <artifactId>exomiser-core</artifactId>
-            <version>${exomiser.version}</version>
-        </dependency>
-
-        <dependency>
             <groupId>net.sourceforge.argparse4j</groupId>
             <artifactId>argparse4j</artifactId>
             <version>${argparse.version}</version>
