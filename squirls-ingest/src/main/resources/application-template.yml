@@ -1,0 +1,31 @@
+# Ingest configuration file template
+threes.ingest:
+  # path to YML file with definitions of splice sites
+  splicing-information-content-matrix:
+  # path to directory with serialized Jannovar cache files with `*.ser` suffix
+  jannovar-transcript-db-dir:
+  # path to TSV file with ESRSeq (hexamer) scores
+  hexamer-tsv-path:
+  # path to TSV file with SMS (septamer) scores
+  septamer-tsv-path:
+  classifiers:
+    # a list of classifiers to ingest
+    # an unique version ID, e.g. `v1`
+    - version:
+      # path to YML file with classifier data
+      classifierPath:
+  # we expect to find tarball with FASTA files per-chromosome here
+  fasta-url:
+  #hg19: http://hgdownload.soe.ucsc.edu/goldenPath/hg19/bigZips/chromFa.tar.gz
+  #hg38: http://hgdownload.soe.ucsc.edu/goldenPath/hg38/bigZips/hg38.chromFa.tar.gz
+  phylop-url:
+  #hg19: http://hgdownload.cse.ucsc.edu/goldenpath/hg19/phyloP100way/hg19.100way.phyloP100way.bw
+  #hg38: http://hgdownload.soe.ucsc.edu/goldenPath/hg38/phyloP100way/hg38.phyloP100way.bw
+
+
+# Do not edit anything below
+spring:
+  flyway:
+    enabled: false
+  autoconfigure:
+    exclude: org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration

@@ -1,0 +1,93 @@
+package org.monarchinitiative.squirls.core.classifier;
+
+import org.monarchinitiative.squirls.core.classifier.transform.feature.FeatureTransformer;
+import org.monarchinitiative.squirls.core.classifier.tree.BinaryDecisionTree;
+
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+/**
+ * Pipeline class inspired by scikit-learn. This pipeline consists of an imputer followed by a classifier.
+ */
+public class Pipeline<T extends Classifiable> extends AbstractBinaryClassifier<T> {
+
+    private final FeatureTransformer<T> transformer;
+
+    private final BinaryClassifier<T> classifier;
+
+    private Pipeline(Builder<T> builder) {
+        super(builder);
+        transformer = builder.transformer;
+        classifier = builder.randomForest;
+    }
+
+    public static <T extends Classifiable> Builder<T> builder() {
+        return new Builder<>();
+    }
+
+
+    @Override
+    public Set<String> usedFeatureNames() {
+        return Stream.concat(transformer.usedFeatureNames().stream(), classifier.usedFeatureNames().stream())
+                .collect(Collectors.toSet());
+    }
+
+    @Override
+    public double predictProba(T instance) throws PredictionException {
+        final T transformed = this.transformer.transform(instance);
+        return classifier.predictProba(transformed);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Pipeline<?> pipeline = (Pipeline<?>) o;
+        return Objects.equals(transformer, pipeline.transformer) &&
+                Objects.equals(classifier, pipeline.classifier);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(transformer, classifier);
+    }
+
+    @Override
+    public String toString() {
+        return "Pipeline{" +
+                "transformer=" + transformer +
+                ", classifier=" + classifier +
+                '}';
+    }
+
+
+    public static final class Builder<T extends Classifiable> extends AbstractBinaryClassifier.Builder<Builder<T>> {
+
+        private FeatureTransformer<T> transformer;
+        private BinaryClassifier<T> randomForest;
+
+        private Builder() {
+        }
+
+        public Builder<T> transformer(FeatureTransformer<T> transformer) {
+            this.transformer = transformer;
+            return this;
+        }
+
+        public Builder<T> classifier(BinaryClassifier<T> randomForest) {
+            this.randomForest = randomForest;
+            return this;
+        }
+
+        public Pipeline<T> build() {
+            return new Pipeline<>(this);
+        }
+
+        @Override
+        protected Builder<T> self() {
+            return this;
+        }
+    }
+}
