@@ -35,7 +35,7 @@ import java.util.Map;
 public class TestDataSourceConfig {
 
     public static final Map<String, String> MODEL_PATHS = Map.of(
-            "v0.4.1", FakeUpDatabase.class.getResource("example_model.v0.4.1.yaml").getPath(),
+            "v0.4.4", FakeUpDatabase.class.getResource("example_model.v0.4.4.yaml").getPath(),
             "v1.1", FakeUpDatabase.class.getResource("example_model.v1.1.sklearn-0.23.1-slope-intercept-array.yaml").getPath());
 
     @Bean

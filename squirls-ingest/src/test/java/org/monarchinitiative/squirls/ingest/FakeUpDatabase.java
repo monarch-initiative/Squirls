@@ -31,7 +31,7 @@ class FakeUpDatabase {
     @BeforeAll
     static void beforeAll() {
         Map.of(
-                "v0.4.1", SquirlsDataBuilderTest.class.getResource("example_model.v0.4.1.yaml").getPath(),
+                "v0.4.4", SquirlsDataBuilderTest.class.getResource("example_model.v0.4.4.yaml").getPath(),
                 "v1.1", SquirlsDataBuilderTest.class.getResource("example_model.v1.1.sklearn-0.23.1-slope-intercept-array.yaml").getPath())
                 .forEach(MODEL_DATA::put);
     }

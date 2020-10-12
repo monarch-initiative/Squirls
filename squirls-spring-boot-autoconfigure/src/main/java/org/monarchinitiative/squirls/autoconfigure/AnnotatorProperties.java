@@ -12,7 +12,7 @@ public class AnnotatorProperties {
     /**
      * Which {@link SplicingAnnotator} to use (`dense` by default).
      */
-    private String version = "dense";
+    private String version = "agez";
 
     public String getVersion() {
         return version;

@@ -117,7 +117,7 @@ public class SquirlsAutoConfiguration {
     public VariantSplicingEvaluator variantSplicingEvaluator(GenomeSequenceAccessor genomeSequenceAccessor,
                                                              SplicingTranscriptSource splicingTranscriptSource,
                                                              SplicingAnnotator splicingAnnotator,
-                                                             ClassifierDataManager classifierDataManager) throws InvalidSquirlsResourceException {
+                                                             ClassifierDataManager classifierDataManager) throws InvalidSquirlsResourceException, UndefinedSquirlsResourceException {
         final ClassifierProperties classifierProperties = properties.getClassifier();
 
         final String clfVersion = classifierProperties.getVersion();
@@ -127,7 +127,7 @@ public class SquirlsAutoConfiguration {
                     clfVersion,
                     avail.stream().sorted().collect(Collectors.joining(", ", "[ ", " ]")));
             LOGGER.error(msg);
-            throw new InvalidSquirlsResourceException(msg);
+            throw new UndefinedSquirlsResourceException(msg);
         }
 
         // get classifier
