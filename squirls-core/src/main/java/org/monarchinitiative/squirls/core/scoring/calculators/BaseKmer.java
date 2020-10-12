@@ -1,6 +1,6 @@
 package org.monarchinitiative.squirls.core.scoring.calculators;
 
-import com.google.common.collect.ImmutableMap;
+
 import de.charite.compbio.jannovar.reference.GenomeInterval;
 import de.charite.compbio.jannovar.reference.GenomeVariant;
 import org.monarchinitiative.squirls.core.Utils;
@@ -16,10 +16,10 @@ public abstract class BaseKmer implements FeatureCalculator {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BaseKmer.class);
 
-    protected final ImmutableMap<String, Double> kmerMap;
+    protected final Map<String, Double> kmerMap;
 
     protected BaseKmer(Map<String, Double> kmerMap) {
-        this.kmerMap = ImmutableMap.copyOf(kmerMap);
+        this.kmerMap = Map.copyOf(kmerMap);
     }
 
     /**

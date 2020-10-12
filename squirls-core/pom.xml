@@ -27,12 +27,6 @@
             <groupId>de.charite.compbio</groupId>
             <artifactId>jannovar-core</artifactId>
             <version>${jannovar.version}</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>com.google.guava</groupId>
-                    <artifactId>guava</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
 
         <!--  HTSJDK    -->
@@ -62,12 +56,6 @@
                     <artifactId>jannovar-core</artifactId>
                 </exclusion>
             </exclusions>
-        </dependency>
-
-        <dependency>
-            <groupId>com.google.guava</groupId>
-            <artifactId>guava</artifactId>
-            <version>${guava.version}</version>
         </dependency>
 
         <dependency>

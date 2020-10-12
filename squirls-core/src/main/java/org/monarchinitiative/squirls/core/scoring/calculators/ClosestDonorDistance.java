@@ -1,6 +1,5 @@
 package org.monarchinitiative.squirls.core.scoring.calculators;
 
-import com.google.common.collect.ComparisonChain;
 import de.charite.compbio.jannovar.reference.GenomeInterval;
 import de.charite.compbio.jannovar.reference.GenomePosition;
 import de.charite.compbio.jannovar.reference.GenomeVariant;
@@ -26,15 +25,10 @@ public class ClosestDonorDistance extends BaseDistanceCalculator {
     public double score(GenomeVariant variant, SplicingTranscript transcript, SequenceInterval sequence) {
         final GenomeInterval variantInterval = variant.getGenomeInterval();
 
-        final Comparator<GenomePosition> findClosestExonIntronBorder = (left, right) -> ComparisonChain.start()
-                .compare(Math.abs(left.differenceTo(variantInterval)),
-                        Math.abs(right.differenceTo(variantInterval)))
-                .result();
-
         // find the closest donor site
         final Optional<GenomePosition> closestPositionOpt = transcript.getIntrons().stream()
                 .map(e -> e.getInterval().getGenomeBeginPos())
-                .min(findClosestExonIntronBorder);
+                .min(Comparator.comparingInt(border -> Math.abs(border.differenceTo(variantInterval))));
 
         if (closestPositionOpt.isEmpty()) {
             // this happens only if the transcript has no introns. We should not assess such transcripts in

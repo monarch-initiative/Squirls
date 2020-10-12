@@ -1,6 +1,5 @@
 package org.monarchinitiative.squirls.core.classifier;
 
-import com.google.common.collect.Sets;
 import org.monarchinitiative.squirls.core.Prediction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -71,10 +70,12 @@ public class StandardSquirlsClassifier implements SquirlsClassifier {
             // at least one from the required features is missing. Let's report that, but only once, in order not to
             // flood the console
             if (MISSING_FEATURE_REPORTED.compareAndExchange(false, true)) {
+                Set<String> difference = usedFeatures.stream()
+                        .filter(fname -> !data.getFeatureNames()
+                                .contains(fname)).collect(Collectors.toSet());
                 // report the error
-                String errorMsg = String.format("Missing one or more required features `%s`",
-                        Sets.difference(usedFeatures, data.getFeatureNames()).stream()
-                                .collect(Collectors.joining(",", "[", "]")));
+                String errorMsg = String.format("Missing one or more required features `[%s]`",
+                        String.join(",", difference));
                 LOGGER.warn(errorMsg);
             }
             data.setPrediction(EmptyPrediction.getInstance());
