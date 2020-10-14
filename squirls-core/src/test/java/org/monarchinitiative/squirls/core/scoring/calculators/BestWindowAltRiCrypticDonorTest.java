@@ -11,7 +11,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.closeTo;
 import static org.hamcrest.Matchers.notANumber;
 
-class BestWindowAltRiCrypticDonorTest extends CalculatorTestBase {
+public class BestWindowAltRiCrypticDonorTest extends CalculatorTestBase {
 
     private BestWindowAltRiCrypticDonor scorer;
 
@@ -22,7 +22,7 @@ class BestWindowAltRiCrypticDonorTest extends CalculatorTestBase {
     }
 
     @Test
-    void snpInDonor() {
+    public void snpInDonor() {
         GenomeVariant variant = new GenomeVariant(new GenomePosition(rd, Strand.FWD, 1, 1200), "g", "a");
 
         final double score = scorer.score(variant, st, sequenceInterval);
@@ -30,7 +30,7 @@ class BestWindowAltRiCrypticDonorTest extends CalculatorTestBase {
     }
 
     @Test
-    void notEnoughSequence() {
+    public void notEnoughSequence() {
         GenomeVariant variant = new GenomeVariant(new GenomePosition(rd, Strand.FWD, 1, 1200), "g", "a");
 
         final double score = scorer.score(variant, st, sequenceOnOtherChrom);

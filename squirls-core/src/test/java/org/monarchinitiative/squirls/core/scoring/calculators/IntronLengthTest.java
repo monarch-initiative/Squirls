@@ -11,7 +11,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.closeTo;
 import static org.junit.jupiter.api.Assertions.*;
 
-class IntronLengthTest extends CalculatorTestBase {
+public class IntronLengthTest extends CalculatorTestBase {
 
     private IntronLength scorer;
 
@@ -22,7 +22,7 @@ class IntronLengthTest extends CalculatorTestBase {
     }
 
     @Test
-    void scoreCodingVariantInSecondLastExon() {
+    public void scoreCodingVariantInSecondLastExon() {
         GenomeVariant variant = new GenomeVariant(new GenomePosition(rd, Strand.FWD, 1, 1596), "A", "C");
 
         final double score = scorer.score(variant, st, sequenceInterval);
@@ -30,7 +30,7 @@ class IntronLengthTest extends CalculatorTestBase {
     }
 
     @Test
-    void scoreVariantInLastIntron() {
+    public void scoreVariantInLastIntron() {
         GenomeVariant variant = new GenomeVariant(new GenomePosition(rd, Strand.FWD, 1, 1774), "a", "g");
 
         final double score = scorer.score(variant, st, sequenceInterval);
@@ -38,7 +38,7 @@ class IntronLengthTest extends CalculatorTestBase {
     }
 
     @Test
-    void scoreVariantInLastAcceptor() {
+    public void scoreVariantInLastAcceptor() {
         GenomeVariant variant = new GenomeVariant(new GenomePosition(rd, Strand.FWD, 1, 1775), "c", "g");
 
         final double score = scorer.score(variant, st, sequenceInterval);

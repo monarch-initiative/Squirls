@@ -11,7 +11,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.closeTo;
 import static org.hamcrest.Matchers.notANumber;
 
-class BestWindowAltRiCrypticAcceptorTest extends CalculatorTestBase {
+public class BestWindowAltRiCrypticAcceptorTest extends CalculatorTestBase {
 
     private BestWindowAltRiCrypticAcceptor scorer;
 
@@ -22,7 +22,7 @@ class BestWindowAltRiCrypticAcceptorTest extends CalculatorTestBase {
     }
 
     @Test
-    void snpUpstreamFromAcceptorSite() {
+    public void snpUpstreamFromAcceptorSite() {
         GenomeVariant variant = new GenomeVariant(new GenomePosition(rd, Strand.FWD, 1, 1374), "c", "g");
 
         final double score = scorer.score(variant, st, sequenceInterval);
@@ -31,7 +31,7 @@ class BestWindowAltRiCrypticAcceptorTest extends CalculatorTestBase {
     }
 
     @Test
-    void notEnoughSequence() {
+    public void notEnoughSequence() {
         GenomeVariant variant = new GenomeVariant(new GenomePosition(rd, Strand.FWD, 1, 1374), "c", "g");
         final double score = scorer.score(variant, st, sequenceOnOtherChrom);
         assertThat(score, is(notANumber()));

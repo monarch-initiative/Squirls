@@ -11,7 +11,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.closeTo;
 import static org.hamcrest.Matchers.notANumber;
 
-class WtRiAcceptorTest extends CalculatorTestBase {
+public class WtRiAcceptorTest extends CalculatorTestBase {
 
     private WtRiAcceptor scorer;
 
@@ -22,7 +22,7 @@ class WtRiAcceptorTest extends CalculatorTestBase {
     }
 
     @Test
-    void snpInAcceptor() {
+    public void snpInAcceptor() {
         GenomeVariant variant = new GenomeVariant(new GenomePosition(rd, Strand.FWD, 1, 1399), "g", "a");
 
         final double score = scorer.score(variant, st, sequenceInterval);
@@ -32,7 +32,7 @@ class WtRiAcceptorTest extends CalculatorTestBase {
 
 
     @Test
-    void notEnoughSequence() {
+    public void notEnoughSequence() {
         GenomeVariant variant = new GenomeVariant(new GenomePosition(rd, Strand.FWD, 1, 1399), "g", "a");
 
         final double score = scorer.score(variant, st, sequenceOnOtherChrom);

@@ -22,15 +22,10 @@ import static org.mockito.Mockito.when;
 
 public class BigWigTest extends CalculatorTestBase {
 
-
-    @Autowired
-    @Qualifier("referenceDictionary")
-    public ReferenceDictionary referenceDictionary;
-
     @Mock
     public BigWigAccessor accessor;
 
-    private BigWig annotator;
+    public BigWig annotator;
 
     @BeforeEach
     public void setUp() throws Exception {
@@ -46,7 +41,7 @@ public class BigWigTest extends CalculatorTestBase {
     @Test
     public void annotate() throws Exception {
         // arrange
-        GenomeVariant variant = new GenomeVariant(new GenomePosition(referenceDictionary, Strand.FWD, 1, 1201), "t", "g");
+        GenomeVariant variant = new GenomeVariant(new GenomePosition(rd, Strand.FWD, 1, 1201), "t", "g");
         when(accessor.getScores(variant.getGenomeInterval())).thenReturn(List.of(6.03700F));
 
         // act
@@ -59,7 +54,7 @@ public class BigWigTest extends CalculatorTestBase {
     @Test
     public void annotateDeletion() throws Exception {
         // arrange
-        GenomeVariant variant = new GenomeVariant(new GenomePosition(referenceDictionary, Strand.FWD, 1, 1201), "CTGT", "C");
+        GenomeVariant variant = new GenomeVariant(new GenomePosition(rd, Strand.FWD, 1, 1201), "CTGT", "C");
         when(accessor.getScores(variant.getGenomeInterval())).thenReturn(List.of(.459F, -1.851F, -1.181F));
 
         // act
@@ -76,7 +71,7 @@ public class BigWigTest extends CalculatorTestBase {
     @Test
     public void annotateVariantWhenDataIsNotAvailable() throws Exception {
         // arrange
-        final GenomePosition pos = new GenomePosition(referenceDictionary, Strand.FWD, 3, 1_000_000, PositionType.ONE_BASED);
+        final GenomePosition pos = new GenomePosition(rd, Strand.FWD, 3, 1_000_000, PositionType.ONE_BASED);
         final GenomeVariant variant = new GenomeVariant(pos, "G", "C");
         when(accessor.getScores(variant.getGenomeInterval())).thenReturn(List.of());
 

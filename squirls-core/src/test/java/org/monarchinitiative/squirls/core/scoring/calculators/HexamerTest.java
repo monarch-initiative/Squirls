@@ -13,12 +13,12 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.closeTo;
 
-class HexamerTest extends CalculatorTestBase {
+public class HexamerTest extends CalculatorTestBase {
 
 
     @Autowired
     @Qualifier("hexamerMap")
-    private Map<String, Double> hexamerMap;
+    public Map<String, Double> hexamerMap;
 
     private Hexamer calculator;
 
@@ -29,7 +29,7 @@ class HexamerTest extends CalculatorTestBase {
     }
 
     @Test
-    void score() {
+    public void score() {
         GenomeVariant variant = new GenomeVariant(new GenomePosition(rd, Strand.FWD, 1, 1201), "t", "g");
         final double score = calculator.score(variant, st, sequenceInterval);
         assertThat(score, is(closeTo(-.837930, EPSILON)));
@@ -41,7 +41,7 @@ class HexamerTest extends CalculatorTestBase {
      * Elements</i>
      */
     @Test
-    void realVariant() {
+    public void realVariant() {
         final SequenceInterval si = SequenceInterval.builder()
                 .interval(new GenomeInterval(rd, Strand.FWD, 1, 0, 125))
                 .sequence("cccagGGT" +

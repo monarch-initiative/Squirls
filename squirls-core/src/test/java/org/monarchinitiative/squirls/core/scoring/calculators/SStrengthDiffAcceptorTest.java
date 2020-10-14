@@ -10,7 +10,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.closeTo;
 
-class SStrengthDiffAcceptorTest extends CalculatorTestBase {
+public class SStrengthDiffAcceptorTest extends CalculatorTestBase {
 
     private SStrengthDiffAcceptor scorer;
 
@@ -22,7 +22,7 @@ class SStrengthDiffAcceptorTest extends CalculatorTestBase {
     }
 
     @Test
-    void variantInAcceptorOfTheSecondExon() {
+    public void variantInAcceptorOfTheSecondExon() {
         GenomeVariant variant = new GenomeVariant(new GenomePosition(rd, Strand.FWD, 1, 1399), "g", "a");
 
         final double score = scorer.score(variant, st, sequenceInterval);
@@ -30,7 +30,7 @@ class SStrengthDiffAcceptorTest extends CalculatorTestBase {
     }
 
     @Test
-    void variantInAcceptorOfTheLastExon() {
+    public void variantInAcceptorOfTheLastExon() {
         GenomeVariant variant = new GenomeVariant(new GenomePosition(rd, Strand.FWD, 1, 1799), "g", "c");
 
         final double score = scorer.score(variant, st, sequenceInterval);

@@ -30,7 +30,7 @@ import static org.hamcrest.Matchers.hasItems;
 @SpringBootTest(classes = TestDataSourceConfig.class)
 public class AGEZSplicingAnnotatorTest {
 
-    private static final double EPSILON = 0.0005;
+    public static final double EPSILON = 0.0005;
 
     @Autowired
     public ReferenceDictionary rd;
@@ -49,11 +49,11 @@ public class AGEZSplicingAnnotatorTest {
     @Mock
     public BigWigAccessor accessor;
 
-    private SplicingTranscript st;
+    public SplicingTranscript st;
 
-    private SequenceInterval sequence;
+    public SequenceInterval sequence;
 
-    private AGEZSplicingAnnotator annotator;
+    public AGEZSplicingAnnotator annotator;
 
 
     @BeforeEach

@@ -27,42 +27,42 @@ import static org.hamcrest.Matchers.closeTo;
 import static org.mockito.Mockito.when;
 
 @SpringBootTest(classes = TestDataSourceConfig.class)
-class RichSplicingAnnotatorTest {
+public class RichSplicingAnnotatorTest {
 
-    private static final double EPSILON = 0.0005;
-
-    @Autowired
-    private ReferenceDictionary rd;
+    public static final double EPSILON = 0.0005;
 
     @Autowired
-    private SplicingPwmData splicingPwmData;
+    public ReferenceDictionary rd;
+
+    @Autowired
+    public SplicingPwmData splicingPwmData;
 
     @Qualifier("hexamerMap")
     @Autowired
-    private Map<String, Double> hexamerMap;
+    public Map<String, Double> hexamerMap;
 
     @Qualifier("septamerMap")
     @Autowired
-    private Map<String, Double> septamerMap;
+    public Map<String, Double> septamerMap;
 
     @Mock
-    private BigWigAccessor accessor;
+    public BigWigAccessor accessor;
 
-    private SplicingTranscript st;
+    public SplicingTranscript st;
 
-    private SequenceInterval sequence;
+    public SequenceInterval sequence;
 
-    private RichSplicingAnnotator annotator;
+    public RichSplicingAnnotator annotator;
 
     @BeforeEach
-    void setUp() {
+    public void setUp() {
         st = PojosForTesting.getTranscriptWithThreeExons(rd);
         sequence = PojosForTesting.getSequenceIntervalForTranscriptWithThreeExons(rd);
         annotator = new RichSplicingAnnotator(splicingPwmData, hexamerMap, septamerMap, accessor);
     }
 
     @Test
-    void firstExonDonor() {
+    public void firstExonDonor() {
         final GenomeVariant variant = new GenomeVariant(new GenomePosition(rd, Strand.FWD, 1, 1199), "G", "A");
 
         SimpleAnnotatable ann = new SimpleAnnotatable(variant, st, sequence);
@@ -74,7 +74,7 @@ class RichSplicingAnnotatorTest {
 
 
     @Test
-    void secondExonDonor() throws Exception {
+    public void secondExonDonor() throws Exception {
         final GenomeVariant variant = new GenomeVariant(new GenomePosition(rd, Strand.FWD, 1, 1599), "C", "A");
         when(accessor.getScores(variant.getGenomeInterval())).thenReturn(List.of(.12345F));
 

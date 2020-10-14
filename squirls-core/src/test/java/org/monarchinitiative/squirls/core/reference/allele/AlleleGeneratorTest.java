@@ -57,7 +57,7 @@ public class AlleleGeneratorTest {
 
     @Test
     public void simpleSnp() {
-        final GenomePosition position = new GenomePosition(referenceDictionary, Strand.FWD, 1, 100);
+        final GenomePosition position = new GenomePosition(rd, Strand.FWD, 1, 100);
         final GenomeVariant variant = new GenomeVariant(position, "g", "t");
 
         // reference is CGTGATGgtaggtgaaa
@@ -70,7 +70,7 @@ public class AlleleGeneratorTest {
      * Check that a sequence of the donor site is returned when variant is outside the site
      */
     @Test
-    void variantOutsideOfTheSite() {
+    public void variantOutsideOfTheSite() {
         final GenomePosition position = new GenomePosition(rd, Strand.FWD, 1, 97, PositionType.ONE_BASED);
         final GenomeVariant variant = new GenomeVariant(position, "G", "C");
 

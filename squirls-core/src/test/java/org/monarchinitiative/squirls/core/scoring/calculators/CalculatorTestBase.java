@@ -40,11 +40,9 @@ public class CalculatorTestBase {
     @Autowired
     public SplicingTranscriptLocator locator;
 
-    protected SplicingTranscript st;
-
     public SequenceInterval sequenceInterval;
 
-    protected SequenceInterval sequenceOnOtherChrom;
+    public SequenceInterval sequenceOnOtherChrom;
 
 
     @BeforeEach
