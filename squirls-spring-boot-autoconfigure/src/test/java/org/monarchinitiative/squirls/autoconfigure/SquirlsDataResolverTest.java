@@ -2,6 +2,7 @@ package org.monarchinitiative.squirls.autoconfigure;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.monarchinitiative.squirls.autoconfigure.exception.MissingSquirlsResourceException;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;

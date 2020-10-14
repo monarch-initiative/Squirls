@@ -1,5 +1,7 @@
 package org.monarchinitiative.squirls.autoconfigure;
 
+import org.monarchinitiative.squirls.autoconfigure.exception.MissingSquirlsResourceException;
+
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;

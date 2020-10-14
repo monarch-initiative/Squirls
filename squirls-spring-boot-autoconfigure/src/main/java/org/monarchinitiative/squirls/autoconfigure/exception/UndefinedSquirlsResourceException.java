@@ -1,4 +1,4 @@
-package org.monarchinitiative.squirls.autoconfigure;
+package org.monarchinitiative.squirls.autoconfigure.exception;
 
 /**
  * This exception is thrown during auto-configuration, if an information that should have been provided by the user

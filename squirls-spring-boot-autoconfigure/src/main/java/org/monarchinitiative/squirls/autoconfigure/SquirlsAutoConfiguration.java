@@ -3,6 +3,9 @@ package org.monarchinitiative.squirls.autoconfigure;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
+import org.monarchinitiative.squirls.autoconfigure.exception.InvalidSquirlsResourceException;
+import org.monarchinitiative.squirls.autoconfigure.exception.MissingSquirlsResourceException;
+import org.monarchinitiative.squirls.autoconfigure.exception.UndefinedSquirlsResourceException;
 import org.monarchinitiative.squirls.core.StandardVariantSplicingEvaluator;
 import org.monarchinitiative.squirls.core.VariantSplicingEvaluator;
 import org.monarchinitiative.squirls.core.classifier.SquirlsClassifier;
