@@ -2,6 +2,7 @@ package org.monarchinitiative.squirls.ingest.transcripts;
 
 import de.charite.compbio.jannovar.reference.TranscriptModel;
 import org.monarchinitiative.squirls.ingest.ProgressLogger;
+import org.monarchinitiative.squirls.ingest.dao.TranscriptIngestDao;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -1,6 +1,5 @@
 package org.monarchinitiative.squirls.core.classifier;
 
-import com.google.common.collect.Sets;
 import org.monarchinitiative.squirls.core.Prediction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,7 +37,7 @@ public class StandardSquirlsClassifier implements SquirlsClassifier {
 
         usedFeatures = Stream.concat(donorClf.usedFeatureNames().stream(), acceptorClf.usedFeatureNames().stream())
                 .collect(Collectors.toUnmodifiableSet());
-        LOGGER.debug("initialized classifier with the following features: {}",
+        LOGGER.debug("Initialized classifier with the following features: {}",
                 usedFeatures.stream().sorted().collect(Collectors.joining(", ", "[", "]")));
     }
 
@@ -60,8 +59,8 @@ public class StandardSquirlsClassifier implements SquirlsClassifier {
                 final double donorProba = donorClf.predictProba(data);
                 final double acceptorProba = acceptorClf.predictProba(data);
                 data.setPrediction(StandardPrediction.builder()
-                        .addProbaThresholdPair(donorProba, donorThreshold)
-                        .addProbaThresholdPair(acceptorProba, acceptorThreshold)
+                        .addProbaThresholdPair(donorClf.getName(), donorProba, donorThreshold)
+                        .addProbaThresholdPair(acceptorClf.getName(), acceptorProba, acceptorThreshold)
                         .build());
             } catch (PredictionException e) {
                 LOGGER.debug("Error: ", e);
@@ -71,16 +70,46 @@ public class StandardSquirlsClassifier implements SquirlsClassifier {
             // at least one from the required features is missing. Let's report that, but only once, in order not to
             // flood the console
             if (MISSING_FEATURE_REPORTED.compareAndExchange(false, true)) {
+                Set<String> difference = usedFeatures.stream()
+                        .filter(fname -> !data.getFeatureNames()
+                                .contains(fname)).collect(Collectors.toSet());
                 // report the error
-                String errorMsg = String.format("Missing one or more required features `%s`",
-                        Sets.difference(usedFeatures, data.getFeatureNames()).stream()
-                                .collect(Collectors.joining(",", "[", "]")));
+                String errorMsg = String.format("Missing one or more required features `[%s]`",
+                        String.join(",", difference));
                 LOGGER.warn(errorMsg);
             }
             data.setPrediction(EmptyPrediction.getInstance());
         }
 
         return data;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        StandardSquirlsClassifier that = (StandardSquirlsClassifier) o;
+        return Objects.equals(donorClf, that.donorClf) &&
+                Objects.equals(acceptorClf, that.acceptorClf) &&
+                Objects.equals(usedFeatures, that.usedFeatures) &&
+                Objects.equals(donorThreshold, that.donorThreshold) &&
+                Objects.equals(acceptorThreshold, that.acceptorThreshold);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(donorClf, acceptorClf, usedFeatures, donorThreshold, acceptorThreshold);
+    }
+
+    @Override
+    public String toString() {
+        return "StandardSquirlsClassifier{" +
+                "donorClf=" + donorClf +
+                ", acceptorClf=" + acceptorClf +
+                ", usedFeatures=" + usedFeatures +
+                ", donorThreshold=" + donorThreshold +
+                ", acceptorThreshold=" + acceptorThreshold +
+                '}';
     }
 
     public static final class Builder {

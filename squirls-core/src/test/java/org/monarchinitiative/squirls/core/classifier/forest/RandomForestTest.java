@@ -20,6 +20,7 @@ public class RandomForestTest extends TestBasedOnIrisInstances {
     public void setUp() {
         // this test consists of two trees only
         forest = RandomForest.builder()
+                .name("iris_rf")
                 .classes(List.of(1, 2))
                 .addTrees(List.of(TestTreeInstances.getRandomForestTreeOne(),
                         TestTreeInstances.getRandomForestTreeTwo()))

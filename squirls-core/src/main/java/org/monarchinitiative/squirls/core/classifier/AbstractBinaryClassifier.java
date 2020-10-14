@@ -11,6 +11,8 @@ public abstract class AbstractBinaryClassifier<T extends Classifiable> implement
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractBinaryClassifier.class);
 
+    protected final String name;
+
     /**
      * Array with class labels, e.g. [0,1] for binary classification.
      */
@@ -19,6 +21,7 @@ public abstract class AbstractBinaryClassifier<T extends Classifiable> implement
 
     protected AbstractBinaryClassifier(Builder<?> builder) {
         this.classes = toIntArray(builder.classes);
+        this.name = builder.name;
         check();
     }
 
@@ -34,6 +37,11 @@ public abstract class AbstractBinaryClassifier<T extends Classifiable> implement
             array[i] = integers.get(i);
         }
         return array;
+    }
+
+    @Override
+    public String getName() {
+        return name;
     }
 
     /**
@@ -63,14 +71,46 @@ public abstract class AbstractBinaryClassifier<T extends Classifiable> implement
             LOGGER.warn("The `classes` attribute must contain exactly 2 class labels");
             throw new RuntimeException(String.format("The `classes` attribute must contain exactly 2 class labels. Found `%d`", classes.length));
         }
+        if (name == null) {
+            LOGGER.warn("The `name` attribute must not be null");
+            throw new RuntimeException("The `name` attribute must not be null");
+        }
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        AbstractBinaryClassifier<?> that = (AbstractBinaryClassifier<?>) o;
+        return Arrays.equals(classes, that.classes);
+    }
+
+    @Override
+    public int hashCode() {
+        return Arrays.hashCode(classes);
+    }
+
+    @Override
+    public String toString() {
+        return "AbstractBinaryClassifier{" +
+                "classes=" + Arrays.toString(classes) +
+                '}';
     }
 
     public abstract static class Builder<A extends Builder<A>> {
+
+        private String name;
+
 
         private final List<Integer> classes = new ArrayList<>();
 
         protected Builder() {
             // protected no-op
+        }
+
+        public A name(String name) {
+            this.name = name;
+            return self();
         }
 
         public A classes(List<Integer> classes) {

@@ -9,8 +9,10 @@ import java.util.Objects;
  */
 public class SplicingIntron extends SplicingRegion {
 
+    // TODO: 15. 7. 2020 is this field really used/necessary?
     private final double donorScore;
 
+    // TODO: 15. 7. 2020 is this field really used/necessary?
     private final double acceptorScore;
 
     private SplicingIntron(Builder builder) {

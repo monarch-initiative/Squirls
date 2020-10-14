@@ -16,9 +16,10 @@ import org.monarchinitiative.squirls.core.data.ic.CorruptedPwmException;
 import org.monarchinitiative.squirls.core.data.ic.DbSplicingPositionalWeightMatrixParser;
 import org.monarchinitiative.squirls.core.data.ic.SplicingPwmData;
 import org.monarchinitiative.squirls.core.data.kmer.DbKMerDao;
+import org.monarchinitiative.squirls.core.scoring.AGEZSplicingAnnotator;
 import org.monarchinitiative.squirls.core.scoring.DenseSplicingAnnotator;
 import org.monarchinitiative.squirls.core.scoring.SplicingAnnotator;
-import org.monarchinitiative.squirls.core.scoring.conservation.BigWigAccessor;
+import org.monarchinitiative.squirls.core.scoring.calculators.conservation.BigWigAccessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -46,7 +47,7 @@ import java.util.stream.Collectors;
  * @author Daniel Danis <daniel.danis@jax.org>
  */
 @Configuration
-@EnableConfigurationProperties({SquirlsProperties.class, ClassifierProperties.class})
+@EnableConfigurationProperties({SquirlsProperties.class, ClassifierProperties.class, AnnotatorProperties.class})
 public class SquirlsAutoConfiguration {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SquirlsAutoConfiguration.class);
@@ -92,26 +93,17 @@ public class SquirlsAutoConfiguration {
         return dataVersion;
     }
 
-    @Bean
-    @ConditionalOnMissingBean(name = "phylopBigwigPath")
-    public Path phylopBigwigPath() throws UndefinedSquirlsResourceException {
-        if (properties.getPhylopBigwigPath() == null) {
-            throw new UndefinedSquirlsResourceException("Path to PhyloP bigwig file is not specified");
-        }
-        return Paths.get(properties.getPhylopBigwigPath());
-    }
-
 
     @Bean
-    public BigWigAccessor phylopBigwigAccessor(Path phylopBigwigPath) throws IOException {
-        LOGGER.debug("Using phyloP bigwig file at `{}`", phylopBigwigPath);
-        return new BigWigAccessor(phylopBigwigPath);
+    public BigWigAccessor phylopBigwigAccessor(SquirlsDataResolver squirlsDataResolver) throws IOException {
+        LOGGER.debug("Using phyloP bigwig file at `{}`", squirlsDataResolver.phylopPath());
+        return new BigWigAccessor(squirlsDataResolver.phylopPath());
     }
 
     @Bean
     public SquirlsDataResolver squirlsDataResolver(Path squirlsDataDirectory,
                                                    String squirlsGenomeAssembly,
-                                                   String squirlsDataVersion) {
+                                                   String squirlsDataVersion) throws MissingSquirlsResourceException {
         return new SquirlsDataResolver(squirlsDataDirectory, squirlsDataVersion, squirlsGenomeAssembly);
     }
 
@@ -125,15 +117,17 @@ public class SquirlsAutoConfiguration {
     public VariantSplicingEvaluator variantSplicingEvaluator(GenomeSequenceAccessor genomeSequenceAccessor,
                                                              SplicingTranscriptSource splicingTranscriptSource,
                                                              SplicingAnnotator splicingAnnotator,
-                                                             ClassifierDataManager classifierDataManager) throws InvalidSquirlsResourceException {
-        final String clfVersion = properties.getClassifier().getVersion();
+                                                             ClassifierDataManager classifierDataManager) throws InvalidSquirlsResourceException, UndefinedSquirlsResourceException {
+        final ClassifierProperties classifierProperties = properties.getClassifier();
+
+        final String clfVersion = classifierProperties.getVersion();
         final Collection<String> avail = classifierDataManager.getAvailableClassifiers();
         if (!avail.contains(clfVersion)) {
             String msg = String.format("Classifier version `%s` is not available, choose one from `%s`",
                     clfVersion,
                     avail.stream().sorted().collect(Collectors.joining(", ", "[ ", " ]")));
             LOGGER.error(msg);
-            throw new InvalidSquirlsResourceException(msg);
+            throw new UndefinedSquirlsResourceException(msg);
         }
 
         // get classifier
@@ -164,7 +158,7 @@ public class SquirlsAutoConfiguration {
                 .annotator(splicingAnnotator)
                 .classifier(clf)
                 .transformer(transformer)
-                .maxVariantLength(properties.getClassifier().getMaxVariantLength())
+                .maxVariantLength(classifierProperties.getMaxVariantLength())
                 .build();
     }
 
@@ -176,9 +170,18 @@ public class SquirlsAutoConfiguration {
     @Bean
     public SplicingAnnotator splicingAnnotator(SplicingPwmData splicingPwmData,
                                                DbKMerDao dbKMerDao,
-                                               BigWigAccessor phylopBigwigAccessor) {
-        LOGGER.debug("Using dense splicing annotator");
-        return new DenseSplicingAnnotator(splicingPwmData, dbKMerDao.getHexamerMap(), dbKMerDao.getSeptamerMap(), phylopBigwigAccessor);
+                                               BigWigAccessor phylopBigwigAccessor) throws UndefinedSquirlsResourceException {
+        final AnnotatorProperties annotatorProperties = properties.getAnnotator();
+        final String version = annotatorProperties.getVersion();
+        LOGGER.debug("Using `{}` splicing annotator", version);
+        switch (version) {
+            case "dense":
+                return new DenseSplicingAnnotator(splicingPwmData, dbKMerDao.getHexamerMap(), dbKMerDao.getSeptamerMap(), phylopBigwigAccessor);
+            case "agez":
+                return new AGEZSplicingAnnotator(splicingPwmData, dbKMerDao.getHexamerMap(), dbKMerDao.getSeptamerMap(), phylopBigwigAccessor);
+            default:
+                throw new UndefinedSquirlsResourceException(String.format("invalid 'squirls.annotator.version' property value: `%s`", version));
+        }
     }
 
     @Bean
@@ -207,7 +210,7 @@ public class SquirlsAutoConfiguration {
 
     @Bean
     public DataSource squirlsDatasource(SquirlsDataResolver squirlsDataResolver) {
-        Path datasourcePath = squirlsDataResolver.getDatasourcePath();
+        Path datasourcePath = squirlsDataResolver.dataSourcePath();
 
         String jdbcUrl = String.format("jdbc:h2:file:%s;ACCESS_MODE_DATA=r", datasourcePath);
         final HikariConfig config = new HikariConfig();

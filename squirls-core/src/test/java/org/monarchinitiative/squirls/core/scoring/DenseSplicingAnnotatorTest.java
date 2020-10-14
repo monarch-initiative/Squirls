@@ -12,7 +12,7 @@ import org.monarchinitiative.squirls.core.SimpleAnnotatable;
 import org.monarchinitiative.squirls.core.TestDataSourceConfig;
 import org.monarchinitiative.squirls.core.data.ic.SplicingPwmData;
 import org.monarchinitiative.squirls.core.model.SplicingTranscript;
-import org.monarchinitiative.squirls.core.scoring.conservation.BigWigAccessor;
+import org.monarchinitiative.squirls.core.scoring.calculators.conservation.BigWigAccessor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -32,7 +32,7 @@ public class DenseSplicingAnnotatorTest {
     public static final double EPSILON = 0.0005;
 
     @Autowired
-    public ReferenceDictionary referenceDictionary;
+    public ReferenceDictionary rd;
 
     @Autowired
     public SplicingPwmData splicingPwmData;
@@ -48,26 +48,26 @@ public class DenseSplicingAnnotatorTest {
     @Mock
     public BigWigAccessor accessor;
 
-    public SplicingTranscript transcript;
+    public SplicingTranscript st;
 
-    public SequenceInterval sequenceInterval;
+    public SequenceInterval sequence;
 
-    public DenseSplicingAnnotator evaluator;
+    public DenseSplicingAnnotator annotator;
 
 
     @BeforeEach
     public void setUp() {
-        transcript = PojosForTesting.getTranscriptWithThreeExons(referenceDictionary);
-        sequenceInterval = PojosForTesting.getSequenceIntervalForTranscriptWithThreeExons(referenceDictionary);
-        evaluator = new DenseSplicingAnnotator(splicingPwmData, hexamerMap, septamerMap, accessor);
+        st = PojosForTesting.getTranscriptWithThreeExons(rd);
+        sequence = PojosForTesting.getSequenceIntervalForTranscriptWithThreeExons(rd);
+        annotator = new DenseSplicingAnnotator(splicingPwmData, hexamerMap, septamerMap, accessor);
     }
 
     @Test
     public void firstExonDonor() {
-        final GenomeVariant variant = new GenomeVariant(new GenomePosition(referenceDictionary, Strand.FWD, 1, 1199), "G", "A");
+        final GenomeVariant variant = new GenomeVariant(new GenomePosition(rd, Strand.FWD, 1, 1199), "G", "A");
 
-        SimpleAnnotatable ann = new SimpleAnnotatable(variant, transcript, sequenceInterval);
-        ann = evaluator.annotate(ann);
+        SimpleAnnotatable ann = new SimpleAnnotatable(variant, st, sequence);
+        ann = annotator.annotate(ann);
 
         assertThat(ann.getFeature("cryptic_donor", Double.class), is(closeTo(0., EPSILON)));
         assertThat(ann.getFeature("canonical_donor", Double.class), is(closeTo(3.0547, EPSILON)));
@@ -75,29 +75,28 @@ public class DenseSplicingAnnotatorTest {
 
     @Test
     public void secondExonDonor() throws Exception {
-        final GenomeVariant variant = new GenomeVariant(new GenomePosition(referenceDictionary, Strand.FWD, 1, 1599), "C", "A");
+        final GenomeVariant variant = new GenomeVariant(new GenomePosition(rd, Strand.FWD, 1, 1599), "C", "A");
         when(accessor.getScores(variant.getGenomeInterval())).thenReturn(List.of(.12345F));
 
-        SimpleAnnotatable ann = new SimpleAnnotatable(variant, transcript, sequenceInterval);
-        ann = evaluator.annotate(ann);
+        SimpleAnnotatable ann = new SimpleAnnotatable(variant, st, sequence);
+        ann = annotator.annotate(ann);
 
         assertThat(ann.getFeature("cryptic_donor", Double.class), is(closeTo(0., EPSILON)));
         assertThat(ann.getFeature("canonical_donor", Double.class), is(closeTo(-1.7926, EPSILON)));
         assertThat(ann.getFeature("cryptic_acceptor", Double.class), is(closeTo(-8.1159, EPSILON)));
         assertThat(ann.getFeature("canonical_acceptor", Double.class), is(closeTo(0., EPSILON)));
 
-        assertThat(ann.getFeature("hexamer", Double.class), is(closeTo(1.306309, EPSILON)));
-        assertThat(ann.getFeature("septamer", Double.class), is(closeTo(.339600, EPSILON)));
+        assertThat(ann.getFeature("hexamer", Double.class), is(closeTo(-1.306309, EPSILON)));
+        assertThat(ann.getFeature("septamer", Double.class), is(closeTo(-.339600, EPSILON)));
 
         assertThat(ann.getFeature("phylop", Double.class), is(closeTo(.12345, EPSILON)));
-
     }
 
     @Test
     public void secondExonAcceptor() {
-        final GenomeVariant variant = new GenomeVariant(new GenomePosition(referenceDictionary, Strand.FWD, 1, 1399), "g", "a");
-        SimpleAnnotatable ann = new SimpleAnnotatable(variant, transcript, sequenceInterval);
-        ann = evaluator.annotate(ann);
+        final GenomeVariant variant = new GenomeVariant(new GenomePosition(rd, Strand.FWD, 1, 1399), "g", "a");
+        SimpleAnnotatable ann = new SimpleAnnotatable(variant, st, sequence);
+        ann = annotator.annotate(ann);
 
         assertThat(ann.getFeature("canonical_acceptor", Double.class), is(closeTo(9.9600, EPSILON)));
         assertThat(ann.getFeature("canonical_donor", Double.class), is(closeTo(0., EPSILON)));
@@ -107,9 +106,9 @@ public class DenseSplicingAnnotatorTest {
 
     @Test
     public void thirdExonAcceptor() {
-        final GenomeVariant variant = new GenomeVariant(new GenomePosition(referenceDictionary, Strand.FWD, 1, 1804), "C", "T");
-        SimpleAnnotatable ann = new SimpleAnnotatable(variant, transcript, sequenceInterval);
-        ann = evaluator.annotate(ann);
+        final GenomeVariant variant = new GenomeVariant(new GenomePosition(rd, Strand.FWD, 1, 1804), "C", "T");
+        SimpleAnnotatable ann = new SimpleAnnotatable(variant, st, sequence);
+        ann = annotator.annotate(ann);
 
         assertThat(ann.getFeature("canonical_acceptor", Double.class), is(closeTo(0., EPSILON)));
         assertThat(ann.getFeature("cryptic_acceptor", Double.class), is(closeTo(-8.9753, EPSILON)));

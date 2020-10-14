@@ -44,17 +44,23 @@ public interface Prediction {
      * which calculated pathogenicity probability.
      */
     class PartialPrediction {
-        private final double pathoProba;
 
+        private final String name;
+        private final double pathoProba;
         private final double threshold;
 
-        private PartialPrediction(double pathoProba, double threshold) {
+        private PartialPrediction(String name, double pathoProba, double threshold) {
+            this.name = name;
             this.pathoProba = pathoProba;
             this.threshold = threshold;
         }
 
-        public static PartialPrediction of(double pathoProba, double threshold) {
-            return new PartialPrediction(pathoProba, threshold);
+        public static PartialPrediction of(String name, double pathoProba, double threshold) {
+            return new PartialPrediction(name, pathoProba, threshold);
+        }
+
+        public String getName() {
+            return name;
         }
 
         public double getThreshold() {
@@ -73,20 +79,22 @@ public interface Prediction {
         public boolean equals(Object o) {
             if (this == o) return true;
             if (o == null || getClass() != o.getClass()) return false;
-            PartialPrediction partialPrediction = (PartialPrediction) o;
-            return Double.compare(partialPrediction.pathoProba, pathoProba) == 0 &&
-                    Double.compare(partialPrediction.threshold, threshold) == 0;
+            PartialPrediction that = (PartialPrediction) o;
+            return Double.compare(that.pathoProba, pathoProba) == 0 &&
+                    Double.compare(that.threshold, threshold) == 0 &&
+                    Objects.equals(name, that.name);
         }
 
         @Override
         public int hashCode() {
-            return Objects.hash(pathoProba, threshold);
+            return Objects.hash(name, pathoProba, threshold);
         }
 
         @Override
         public String toString() {
-            return "Fragment{" +
-                    "pathoProba=" + pathoProba +
+            return "PartialPrediction{" +
+                    "name='" + name + '\'' +
+                    ", pathoProba=" + pathoProba +
                     ", threshold=" + threshold +
                     '}';
         }

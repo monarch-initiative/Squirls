@@ -4,16 +4,22 @@ import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import de.charite.compbio.jannovar.data.ReferenceDictionary;
 import de.charite.compbio.jannovar.data.ReferenceDictionaryBuilder;
+import org.monarchinitiative.squirls.core.classifier.SquirlsClassifier;
+import org.monarchinitiative.squirls.core.classifier.io.Deserializer;
+import org.monarchinitiative.squirls.core.classifier.transform.prediction.PredictionTransformer;
+import org.monarchinitiative.squirls.core.classifier.transform.prediction.SimpleLogisticRegression;
 import org.monarchinitiative.squirls.core.data.ic.InputStreamBasedPositionalWeightMatrixParser;
 import org.monarchinitiative.squirls.core.data.ic.SplicingPositionalWeightMatrixParser;
 import org.monarchinitiative.squirls.core.data.ic.SplicingPwmData;
 import org.monarchinitiative.squirls.core.data.kmer.FileKMerParser;
 import org.monarchinitiative.squirls.core.model.SplicingParameters;
 import org.monarchinitiative.squirls.core.reference.allele.AlleleGenerator;
+import org.monarchinitiative.squirls.core.reference.transcript.NaiveSplicingTranscriptLocator;
+import org.monarchinitiative.squirls.core.reference.transcript.SplicingTranscriptLocator;
 import org.monarchinitiative.squirls.core.scoring.DenseSplicingAnnotator;
 import org.monarchinitiative.squirls.core.scoring.SplicingAnnotator;
+import org.monarchinitiative.squirls.core.scoring.calculators.conservation.BigWigAccessor;
 import org.monarchinitiative.squirls.core.scoring.calculators.ic.SplicingInformationContentCalculator;
-import org.monarchinitiative.squirls.core.scoring.conservation.BigWigAccessor;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.test.context.ContextConfiguration;
@@ -33,6 +39,11 @@ import java.util.Map;
 public class TestDataSourceConfig {
 
     /**
+     * Path to real-life Squirls v1.1 YAML model.
+     */
+    public static final Path SQUIRLS_MODEL_PATH = Paths.get(TestDataSourceConfig.class.getResource("classifier/io/example_model.v1.1.sklearn-0.23.1-slope-intercept-array.yaml").getPath());
+
+    /**
      * @return in-memory database for testing
      */
     @Bean
@@ -44,6 +55,26 @@ public class TestDataSourceConfig {
         config.setJdbcUrl(jdbcUrl);
 
         return new HikariDataSource(config);
+    }
+
+    /**
+     * Real life {@link SquirlsClassifier} for model v1.1.
+     */
+    @Bean
+    public SquirlsClassifier squirlsClassifier() throws IOException {
+        try (InputStream is = Files.newInputStream(SQUIRLS_MODEL_PATH)) {
+            return Deserializer.deserialize(is);
+        }
+    }
+
+    /**
+     * Real life logistic regression {@link PredictionTransformer} for model v1.1.
+     */
+    @Bean
+    public PredictionTransformer predictionTransformer() {
+        final double slope = 13.648422;
+        final double intercept = -4.909676;
+        return SimpleLogisticRegression.getInstance(slope, intercept);
     }
 
     @Bean
@@ -92,6 +123,11 @@ public class TestDataSourceConfig {
     }
 
     @Bean
+    public SplicingTranscriptLocator splicingTranscriptLocator(SplicingParameters splicingParameters) {
+        return new NaiveSplicingTranscriptLocator(splicingParameters);
+    }
+
+    @Bean
     public SplicingAnnotator denseSplicingEvaluator(SplicingPwmData splicingPwmData,
                                                     Map<String, Double> hexamerMap,
                                                     Map<String, Double> septamerMap,
@@ -113,7 +149,7 @@ public class TestDataSourceConfig {
 
     @Bean
     public BigWigAccessor phylopAccessor() throws IOException {
-        Path path = Paths.get(TestDataSourceConfig.class.getResource("scoring/conservation/small.bw").getPath());
+        Path path = Paths.get(TestDataSourceConfig.class.getResource("scoring/calculators/conservation/small.bw").getPath());
         return new BigWigAccessor(path);
     }
 }

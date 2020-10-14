@@ -1,5 +1,8 @@
 package org.monarchinitiative.squirls.core.scoring;
 
+/**
+ * Implementors calculate a set of features for each {@link Annotatable}.
+ */
 public interface SplicingAnnotator {
 
     /**

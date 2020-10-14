@@ -31,13 +31,8 @@ public class SquirlsProperties {
     @NestedConfigurationProperty // squirls.classifier
     private ClassifierProperties classifier = new ClassifierProperties();
 
-    public String getPhylopBigwigPath() {
-        return phylopBigwigPath;
-    }
-
-    public void setPhylopBigwigPath(String phylopBigwigPath) {
-        this.phylopBigwigPath = phylopBigwigPath;
-    }
+    @NestedConfigurationProperty // squirls.annotator
+    private AnnotatorProperties annotator = new AnnotatorProperties();
 
     public String getDataDirectory() {
         return dataDirectory;
@@ -69,5 +64,13 @@ public class SquirlsProperties {
 
     public void setClassifier(ClassifierProperties classifier) {
         this.classifier = classifier;
+    }
+
+    public AnnotatorProperties getAnnotator() {
+        return annotator;
+    }
+
+    public void setAnnotator(AnnotatorProperties annotator) {
+        this.annotator = annotator;
     }
 }

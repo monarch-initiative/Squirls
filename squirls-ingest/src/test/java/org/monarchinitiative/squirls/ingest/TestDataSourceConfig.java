@@ -26,6 +26,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  *
@@ -33,6 +34,9 @@ import java.util.List;
 @Configuration
 public class TestDataSourceConfig {
 
+    public static final Map<String, String> MODEL_PATHS = Map.of(
+            "v0.4.4", FakeUpDatabase.class.getResource("example_model.v0.4.4.yaml").getPath(),
+            "v1.1", FakeUpDatabase.class.getResource("example_model.v1.1.sklearn-0.23.1-slope-intercept-array.yaml").getPath());
 
     @Bean
     public SplicingPwmData splicingPwmData() {

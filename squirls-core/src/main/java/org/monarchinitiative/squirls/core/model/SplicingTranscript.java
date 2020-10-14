@@ -1,6 +1,5 @@
 package org.monarchinitiative.squirls.core.model;
 
-import com.google.common.collect.ImmutableList;
 import de.charite.compbio.jannovar.reference.GenomeInterval;
 import de.charite.compbio.jannovar.reference.Strand;
 
@@ -23,14 +22,14 @@ public class SplicingTranscript {
 
     private final String accessionId;
 
-    private final ImmutableList<SplicingExon> exons;
+    private final List<SplicingExon> exons;
 
-    private final ImmutableList<SplicingIntron> introns;
+    private final List<SplicingIntron> introns;
 
     private SplicingTranscript(Builder builder) {
         txRegionCoordinates = builder.coordinates;
-        exons = ImmutableList.copyOf(builder.exons);
-        introns = ImmutableList.copyOf(builder.introns);
+        exons = List.copyOf(builder.exons);
+        introns = List.copyOf(builder.introns);
         accessionId = builder.accessionId;
     }
 
@@ -46,11 +45,11 @@ public class SplicingTranscript {
         return txRegionCoordinates;
     }
 
-    public ImmutableList<SplicingExon> getExons() {
+    public List<SplicingExon> getExons() {
         return exons;
     }
 
-    public ImmutableList<SplicingIntron> getIntrons() {
+    public List<SplicingIntron> getIntrons() {
         return introns;
     }
 

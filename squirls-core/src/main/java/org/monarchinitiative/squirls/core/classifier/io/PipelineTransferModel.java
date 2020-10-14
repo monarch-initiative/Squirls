@@ -1,7 +1,12 @@
 package org.monarchinitiative.squirls.core.classifier.io;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+
 
 public class PipelineTransferModel {
 
@@ -15,6 +20,12 @@ public class PipelineTransferModel {
 
     public void setFeatureNames(List<String> featureNames) {
         this.featureNames = featureNames;
+    }
+
+    public Map<Integer, String> getFeatureIndices() {
+        return IntStream.range(0, featureNames.size())
+                .boxed()
+                .collect(Collectors.toMap(Function.identity(), i -> featureNames.get(i)));
     }
 
     public List<Double> getFeatureStatistics() {

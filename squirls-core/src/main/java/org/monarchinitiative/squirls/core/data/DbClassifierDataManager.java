@@ -4,8 +4,9 @@ import org.apache.commons.io.IOUtils;
 import org.monarchinitiative.squirls.core.classifier.SquirlsClassifier;
 import org.monarchinitiative.squirls.core.classifier.io.Deserializer;
 import org.monarchinitiative.squirls.core.classifier.transform.prediction.IdentityTransformer;
-import org.monarchinitiative.squirls.core.classifier.transform.prediction.LogisticRegressionPredictionTransformer;
 import org.monarchinitiative.squirls.core.classifier.transform.prediction.PredictionTransformer;
+import org.monarchinitiative.squirls.core.classifier.transform.prediction.RegularLogisticRegression;
+import org.monarchinitiative.squirls.core.classifier.transform.prediction.SimpleLogisticRegression;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -134,11 +135,20 @@ public class DbClassifierDataManager implements ClassifierDataManager {
 
         final String type;
         final Map<String, Double> parameters;
-        if (transformer instanceof LogisticRegressionPredictionTransformer) {
+        if (transformer instanceof SimpleLogisticRegression) {
             // we store slope and intercept parameters here
-            LogisticRegressionPredictionTransformer transfm = (LogisticRegressionPredictionTransformer) transformer;
+            SimpleLogisticRegression transfm = (SimpleLogisticRegression) transformer;
             type = "logreg";
-            parameters = Map.of("slope", transfm.getSlope(), "intercept", transfm.getIntercept());
+            parameters = Map.of(
+                    "slope", transfm.getSlope(),
+                    "intercept", transfm.getIntercept());
+        } else if (transformer instanceof RegularLogisticRegression) {
+            RegularLogisticRegression transfm = (RegularLogisticRegression) transformer;
+            type = "logreg_regular";
+            parameters = Map.of(
+                    "donor_slope", transfm.getDonorSlope(),
+                    "acceptor_slope", transfm.getAcceptorSlope(),
+                    "intercept", transfm.getIntercept());
         } else {
             // no parameters to store
             type = "identity";
@@ -180,7 +190,14 @@ public class DbClassifierDataManager implements ClassifierDataManager {
                     switch (clfType.toLowerCase()) {
                         case "logreg":
                             LOGGER.debug("Using log reg prediction transformer");
-                            transformer = LogisticRegressionPredictionTransformer.getInstance(parameters.get("slope"), parameters.get("intercept"));
+                            transformer = SimpleLogisticRegression.getInstance(parameters.get("slope"), parameters.get("intercept"));
+                            break;
+                        case "logreg_regular":
+                            LOGGER.debug("Using log reg regular prediction transformer");
+                            transformer = RegularLogisticRegression.getInstance(
+                                    parameters.get("donor_slope"),
+                                    parameters.get("acceptor_slope"),
+                                    parameters.get("intercept"));
                             break;
                         case "identity":
                         default:

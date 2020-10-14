@@ -61,8 +61,8 @@ public class StandardPrediction implements Prediction {
             // private no-op
         }
 
-        public Builder addProbaThresholdPair(double proba, double threshold) {
-            scores.add(PartialPrediction.of(proba, threshold));
+        public Builder addProbaThresholdPair(String name, double proba, double threshold) {
+            scores.add(PartialPrediction.of(name, proba, threshold));
             return this;
         }
 

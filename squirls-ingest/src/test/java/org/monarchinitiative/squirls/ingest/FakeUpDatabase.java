@@ -4,9 +4,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
-import java.io.InputStream;
 import java.net.URL;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
@@ -28,32 +26,29 @@ class FakeUpDatabase {
     private static final Path HEXAMER_TSV_PATH = Paths.get(FakeUpDatabase.class.getResource("hexamer-scores.tsv").getPath());
     private static final Path SEPTAMER_TSV_PATH = Paths.get(FakeUpDatabase.class.getResource("septamer-scores.tsv").getPath());
 
-    private static final Map<String, Path> MODEL_PATHS = Map.of(
-            "v1", Paths.get(FakeUpDatabase.class.getResource("ensemble_model.v1.yaml").getPath()),
-            "v1.1", Paths.get(FakeUpDatabase.class.getResource("ensemble_model.v1.1.yaml").getPath()));
-
-    private static final Map<String, byte[]> MODEL_DATA = new HashMap<>();
+    private static final Map<String, String> MODEL_DATA = new HashMap<>();
 
     @BeforeAll
-    static void beforeAll() throws Exception {
-        for (Map.Entry<String, Path> entry : MODEL_PATHS.entrySet()) {
-            try (InputStream is = Files.newInputStream(entry.getValue())) {
-                MODEL_DATA.put(entry.getKey(), is.readAllBytes());
-            }
-        }
+    static void beforeAll() {
+        Map.of(
+                "v0.4.4", SquirlsDataBuilderTest.class.getResource("example_model.v0.4.4.yaml").getPath(),
+                "v1.1", SquirlsDataBuilderTest.class.getResource("example_model.v1.1.sklearn-0.23.1-slope-intercept-array.yaml").getPath())
+                .forEach(MODEL_DATA::put);
     }
 
     @Test
     void makeHg19Database() throws Exception {
         URL genomeUrl = new URL("http://hgdownload.soe.ucsc.edu/goldenPath/hg19/bigZips/chromFa.tar.gz");
-        SquirlsDataBuilder.buildDatabase(BUILD_DIR, genomeUrl, HG19_JANNOVAR_DB_DIR, SPLICING_IC_MATRIX_PATH,
+        URL phylopUrl = new URL("http://hgdownload.cse.ucsc.edu/goldenpath/hg19/phyloP100way/hg19.100way.phyloP100way.bw");
+        SquirlsDataBuilder.buildDatabase(BUILD_DIR, genomeUrl, phylopUrl, HG19_JANNOVAR_DB_DIR, SPLICING_IC_MATRIX_PATH,
                 HEXAMER_TSV_PATH, SEPTAMER_TSV_PATH, MODEL_DATA, "1710_hg19");
     }
 
     @Test
     void makeHg38Database() throws Exception {
         URL genomeUrl = new URL("http://hgdownload.soe.ucsc.edu/goldenPath/hg38/bigZips/hg38.chromFa.tar.gz");
-        SquirlsDataBuilder.buildDatabase(BUILD_DIR, genomeUrl, HG38_JANNOVAR_DB_DIR, SPLICING_IC_MATRIX_PATH,
+        URL phylopUrl = new URL("http://hgdownload.soe.ucsc.edu/goldenPath/hg38/phyloP100way/hg38.phyloP100way.bw");
+        SquirlsDataBuilder.buildDatabase(BUILD_DIR, genomeUrl, phylopUrl, HG38_JANNOVAR_DB_DIR, SPLICING_IC_MATRIX_PATH,
                 HEXAMER_TSV_PATH, SEPTAMER_TSV_PATH, MODEL_DATA, "1710_hg38");
     }
 }

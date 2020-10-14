@@ -17,19 +17,13 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 class SquirlsAutoConfigurationTest extends AbstractAutoConfigurationTest {
 
     /**
-     * Small bigWig file containing phyloP scores for region chr9:100,000-101,000 (0-based).
-     */
-    private static final Path SMALL_BW = TEST_DATA.getParent().resolve("small.bw");
-
-    /**
      * Test how the normal configuration should look like and beans that should be available
      */
     @Test
     void testAllPropertiesSupplied() {
         load(SquirlsAutoConfiguration.class, "squirls.data-directory=" + TEST_DATA,
                 "squirls.genome-assembly=hg19",
-                "squirls.data-version=1710",
-                "squirls.phylop-bigwig-path=" + SMALL_BW);
+                "squirls.data-version=1710");
         /*
          * Data we expect to get from the user
          */
@@ -42,14 +36,11 @@ class SquirlsAutoConfigurationTest extends AbstractAutoConfigurationTest {
         String squirlsDataVersion = context.getBean("squirlsDataVersion", String.class);
         assertThat(squirlsDataVersion, is("1710"));
 
-        Path phylopBigwigPath = context.getBean("phylopBigwigPath", Path.class);
-        assertThat(phylopBigwigPath, is(SMALL_BW));
-
         /*
          * Optional - default values
          */
         SquirlsProperties properties = context.getBean(SquirlsProperties.class);
-        assertThat(properties.getClassifier().getVersion(), is("v1"));
+        assertThat(properties.getClassifier().getVersion(), is("v0.4.4"));
 
         /*
          * High-level beans
@@ -72,13 +63,15 @@ class SquirlsAutoConfigurationTest extends AbstractAutoConfigurationTest {
         load(SquirlsAutoConfiguration.class, "squirls.data-directory=" + TEST_DATA,
                 "squirls.genome-assembly=hg19",
                 "squirls.data-version=1710",
-                "squirls.phylop-bigwig-path=" + SMALL_BW,
                 "squirls.classifier.version=v1.1",
-                "squirls.classifier.max-variant-length=50");
+                "squirls.classifier.max-variant-length=50",
+                "squirls.annotator.version=agez"
+        );
 
         SquirlsProperties properties = context.getBean(SquirlsProperties.class);
         assertThat(properties.getClassifier().getVersion(), is("v1.1"));
         assertThat(properties.getClassifier().getMaxVariantLength(), is(50));
+        assertThat(properties.getAnnotator().getVersion(), is("agez"));
     }
 
     @Test
@@ -119,23 +112,22 @@ class SquirlsAutoConfigurationTest extends AbstractAutoConfigurationTest {
     }
 
     @Test
-    void testMissingPhylopPath() {
-        Throwable thrown = assertThrows(BeanCreationException.class, () -> load(SquirlsAutoConfiguration.class,
-                "squirls.data-directory=" + TEST_DATA,
-                "squirls.genome-assembly=hg19",
-                "squirls.data-version=1710"
-        ));
-        assertThat(thrown.getMessage(), containsString("Path to PhyloP bigwig file is not specified"));
-    }
-
-    @Test
     void testNonExistingClassifier() {
         Throwable thrown = assertThrows(BeanCreationException.class, () -> load(SquirlsAutoConfiguration.class,
                 "squirls.data-directory=" + TEST_DATA,
                 "squirls.genome-assembly=hg19",
                 "squirls.data-version=1710",
-                "squirls.phylop-bigwig-path=" + SMALL_BW,
                 "squirls.classifier.version=puddle"));
         assertThat(thrown.getMessage(), containsString("Classifier version `puddle` is not available, choose one from "));
+    }
+
+    @Test
+    void testNonExistingSplicingAnnotator() {
+        Throwable thrown = assertThrows(BeanCreationException.class, () -> load(SquirlsAutoConfiguration.class,
+                "squirls.data-directory=" + TEST_DATA,
+                "squirls.genome-assembly=hg19",
+                "squirls.data-version=1710",
+                "squirls.annotator.version=non-existing"));
+        assertThat(thrown.getMessage(), containsString("invalid 'squirls.annotator.version' property value: `non-existing`"));
     }
 }

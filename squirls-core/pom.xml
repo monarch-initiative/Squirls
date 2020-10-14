@@ -5,7 +5,7 @@
     <parent>
         <artifactId>Squirls</artifactId>
         <groupId>org.monarchinitiative.squirls</groupId>
-        <version>1.3.0-SNAPSHOT</version>
+        <version>1.3.0-RC3</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -27,12 +27,6 @@
             <groupId>de.charite.compbio</groupId>
             <artifactId>jannovar-core</artifactId>
             <version>${jannovar.version}</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>com.google.guava</groupId>
-                    <artifactId>guava</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
 
         <!--  HTSJDK    -->
@@ -66,12 +60,6 @@
                     <artifactId>htsjdk</artifactId>
                 </exclusion>
             </exclusions>
-        </dependency>
-
-        <dependency>
-            <groupId>com.google.guava</groupId>
-            <artifactId>guava</artifactId>
-            <version>${guava.version}</version>
         </dependency>
 
         <dependency>
