@@ -11,7 +11,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
-import java.util.Locale;
 
 /**
  * This class takes {@link AnalysisResults}, processes the content into HTML format using the appropriate template and
@@ -24,7 +23,6 @@ public class HtmlResultWriter {
     private final TemplateEngine templateEngine;
 
     public HtmlResultWriter() {
-        Locale.setDefault(Locale.US);
         ClassLoaderTemplateResolver templateResolver = new ClassLoaderTemplateResolver();
         templateResolver.setTemplateMode(TemplateMode.HTML);
         templateResolver.setPrefix("templates/");
