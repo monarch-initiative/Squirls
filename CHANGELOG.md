@@ -1,8 +1,27 @@
 # Changelog
 
+## ✈ v1.0.0-RC1
+- `squirls-core`
+  - implement the final prediction model
+  - include AGEZ features
+  - use full logistic regression (not *max*-dependent)
+  - simplify dependencies  
+- `squirls-ingest`
+  - optimize the database building process
+  - include PhyloP bigwig file into data directory
+- `squirls-spring-boot-autoconfigure`
+  - improve error reporting 
+  - include PhyloP into autoconfiguration
+ 
+---
+**The versions below were used in development only, and they are not available anymore. 
+Please see `VERSIONING.md` to see the details regarding the new versioning scheme** 
+
 ## v1.3.0
 ✈ re-brand to Squirls, restructure code
+
 ✈ implement prototype SVG graphics generation using VMVT
+
 ✈ add splicing features 
 
 ## v1.2.0
