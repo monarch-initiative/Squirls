@@ -1,6 +1,7 @@
 package org.monarchinitiative.squirls.core.classifier;
 
 import org.monarchinitiative.squirls.core.Prediction;
+import org.monarchinitiative.squirls.core.StandardPrediction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -77,7 +78,7 @@ public class StandardSquirlsClassifier implements SquirlsClassifier {
                         String.join(",", difference));
                 LOGGER.warn(errorMsg);
             }
-            data.setPrediction(EmptyPrediction.getInstance());
+            data.setPrediction(Prediction.emptyPrediction());
         }
 
         return data;

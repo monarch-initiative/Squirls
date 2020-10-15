@@ -1,7 +1,6 @@
 package org.monarchinitiative.squirls.core;
 
 import org.monarchinitiative.squirls.core.classifier.BinaryClassifier;
-import org.monarchinitiative.squirls.core.classifier.EmptyPrediction;
 
 import java.util.Collection;
 import java.util.Objects;

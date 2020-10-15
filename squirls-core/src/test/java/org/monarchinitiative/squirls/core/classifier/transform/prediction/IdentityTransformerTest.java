@@ -3,7 +3,7 @@ package org.monarchinitiative.squirls.core.classifier.transform.prediction;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.monarchinitiative.squirls.core.Prediction;
-import org.monarchinitiative.squirls.core.classifier.StandardPrediction;
+import org.monarchinitiative.squirls.core.StandardPrediction;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasItems;
