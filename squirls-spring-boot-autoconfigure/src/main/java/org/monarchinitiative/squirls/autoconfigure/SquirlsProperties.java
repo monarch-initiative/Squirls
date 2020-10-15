@@ -1,5 +1,6 @@
 package org.monarchinitiative.squirls.autoconfigure;
 
+import org.monarchinitiative.squirls.core.scoring.SplicingAnnotator;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.NestedConfigurationProperty;
 
@@ -21,10 +22,6 @@ public class SquirlsProperties {
      */
     private String dataVersion;
 
-    /**
-     * Path to bigwig file with genome-wide PhyloP scores.
-     */
-    private String phylopBigwigPath;
     /**
      * Version of the classifier to use.
      */
@@ -72,5 +69,52 @@ public class SquirlsProperties {
 
     public void setAnnotator(AnnotatorProperties annotator) {
         this.annotator = annotator;
+    }
+
+    /**
+     * Properties for specifying which classifier to use.
+     */
+    @ConfigurationProperties(prefix = "squirls.classifier")
+    public static class ClassifierProperties {
+
+        private String version = "v0.4.4";
+
+        private int maxVariantLength = 100;
+
+        public String getVersion() {
+            return version;
+        }
+
+        public void setVersion(String version) {
+            this.version = version;
+        }
+
+        public int getMaxVariantLength() {
+            return maxVariantLength;
+        }
+
+        public void setMaxVariantLength(int maxVariantLength) {
+            this.maxVariantLength = maxVariantLength;
+        }
+    }
+
+    /**
+     * Properties for tweaking the annotator.
+     */
+    @ConfigurationProperties(prefix = "squirls.annotator")
+    public static class AnnotatorProperties {
+
+        /**
+         * Which {@link SplicingAnnotator} to use (`dense` by default).
+         */
+        private String version = "agez";
+
+        public String getVersion() {
+            return version;
+        }
+
+        public void setVersion(String version) {
+            this.version = version;
+        }
     }
 }

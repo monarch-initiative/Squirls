@@ -45,25 +45,31 @@ import java.util.stream.Collectors;
 
 
 /**
- * Auto-configuration of of the Squirls code.
+ * This class assembles Squirls high-level classes from the inputs.
+ * <p>
+ * The autoconfiguration requires specification of the following properties:
+ *     <ul>
+ *         <li><code>squirls.data-directory</code></li>
+ *         <li><code>squirls.genome-assembly</code></li>
+ *         <li><code>squirls.data-version</code></li>
+ *     </ul>
+ * </p>
  *
  * @author Daniel Danis <daniel.danis@jax.org>
+ * @see SquirlsProperties
  */
 @Configuration
-@EnableConfigurationProperties({SquirlsProperties.class, ClassifierProperties.class, AnnotatorProperties.class})
+@EnableConfigurationProperties({
+        SquirlsProperties.class,
+        SquirlsProperties.ClassifierProperties.class,
+        SquirlsProperties.AnnotatorProperties.class})
 public class SquirlsAutoConfiguration {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SquirlsAutoConfiguration.class);
 
-    private final SquirlsProperties properties;
-
-    public SquirlsAutoConfiguration(SquirlsProperties properties) {
-        this.properties = properties;
-    }
-
     @Bean
     @ConditionalOnMissingBean(name = "squirlsDataDirectory")
-    public Path squirlsDataDirectory() throws UndefinedSquirlsResourceException {
+    public Path squirlsDataDirectory(SquirlsProperties properties) throws UndefinedSquirlsResourceException {
         final String dataDir = properties.getDataDirectory();
         if (dataDir == null || dataDir.isEmpty()) {
             throw new UndefinedSquirlsResourceException("Path to Squirls data directory (`--squirls.data-directory`) is not specified");
@@ -78,7 +84,7 @@ public class SquirlsAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean(name = "squirlsGenomeAssembly")
-    public String squirlsGenomeAssembly() throws UndefinedSquirlsResourceException {
+    public String squirlsGenomeAssembly(SquirlsProperties properties) throws UndefinedSquirlsResourceException {
         final String assembly = properties.getGenomeAssembly();
         if (assembly == null) {
             throw new UndefinedSquirlsResourceException("Genome assembly (`--squirls.genome-assembly`) is not specified");
@@ -88,7 +94,7 @@ public class SquirlsAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean(name = "squirlsDataVersion")
-    public String squirlsDataVersion() throws UndefinedSquirlsResourceException {
+    public String squirlsDataVersion(SquirlsProperties properties) throws UndefinedSquirlsResourceException {
         final String dataVersion = properties.getDataVersion();
         if (dataVersion == null) {
             throw new UndefinedSquirlsResourceException("Data version (`--squirls.data-version`) is not specified");
@@ -117,11 +123,12 @@ public class SquirlsAutoConfiguration {
     }
 
     @Bean
-    public VariantSplicingEvaluator variantSplicingEvaluator(GenomeSequenceAccessor genomeSequenceAccessor,
+    public VariantSplicingEvaluator variantSplicingEvaluator(SquirlsProperties properties,
+                                                             GenomeSequenceAccessor genomeSequenceAccessor,
                                                              SplicingTranscriptSource splicingTranscriptSource,
                                                              SplicingAnnotator splicingAnnotator,
                                                              ClassifierDataManager classifierDataManager) throws InvalidSquirlsResourceException, UndefinedSquirlsResourceException {
-        final ClassifierProperties classifierProperties = properties.getClassifier();
+        final SquirlsProperties.ClassifierProperties classifierProperties = properties.getClassifier();
 
         final String clfVersion = classifierProperties.getVersion();
         final Collection<String> avail = classifierDataManager.getAvailableClassifiers();
@@ -171,10 +178,11 @@ public class SquirlsAutoConfiguration {
     }
 
     @Bean
-    public SplicingAnnotator splicingAnnotator(SplicingPwmData splicingPwmData,
+    public SplicingAnnotator splicingAnnotator(SquirlsProperties properties,
+                                               SplicingPwmData splicingPwmData,
                                                DbKMerDao dbKMerDao,
                                                BigWigAccessor phylopBigwigAccessor) throws UndefinedSquirlsResourceException {
-        final AnnotatorProperties annotatorProperties = properties.getAnnotator();
+        final SquirlsProperties.AnnotatorProperties annotatorProperties = properties.getAnnotator();
         final String version = annotatorProperties.getVersion();
         LOGGER.debug("Using `{}` splicing annotator", version);
         switch (version) {
