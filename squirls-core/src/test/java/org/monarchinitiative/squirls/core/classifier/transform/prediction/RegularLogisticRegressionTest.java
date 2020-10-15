@@ -40,10 +40,9 @@ public class RegularLogisticRegressionTest {
         double expectedThreshold = 0.9984295;
 
         final MutablePrediction mutablePrediction = new SimpleMutablePrediction();
-        final StandardPrediction sp = StandardPrediction.builder()
-                .addProbaThresholdPair("donor", donor, threshold)
-                .addProbaThresholdPair("acceptor", acceptor, threshold)
-                .build();
+        final StandardPrediction sp = StandardPrediction.of(
+                Prediction.PartialPrediction.of("donor", donor, threshold),
+                Prediction.PartialPrediction.of("acceptor", acceptor, threshold));
         mutablePrediction.setPrediction(sp);
         final MutablePrediction transformed = transformer.transform(mutablePrediction);
 
@@ -61,10 +60,9 @@ public class RegularLogisticRegressionTest {
     })
     public void predictionWithMissingProbaThresholdIsNotTransformed(String one, String two) {
         final MutablePrediction mutablePrediction = new SimpleMutablePrediction();
-        final StandardPrediction prediction = StandardPrediction.builder()
-                .addProbaThresholdPair(one, .5, .5)
-                .addProbaThresholdPair(two, .6, .6)
-                .build();
+        final StandardPrediction prediction = StandardPrediction.of(
+                Prediction.PartialPrediction.of(one, .5, .5),
+                Prediction.PartialPrediction.of(two, .6, .6));
         mutablePrediction.setPrediction(prediction);
 
         final MutablePrediction transformed = transformer.transform(mutablePrediction);

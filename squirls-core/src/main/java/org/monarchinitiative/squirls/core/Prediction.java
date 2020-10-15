@@ -33,10 +33,18 @@ public interface Prediction {
      * @return the maximum pathogenicity prediction value
      */
     default double getMaxPathogenicity() {
-        return getPartialPredictions().stream()
-                .mapToDouble(PartialPrediction::getPathoProba)
-                .max()
-                .orElse(Double.NaN);
+        double max = Double.NaN;
+        for (PartialPrediction pp : getPartialPredictions()) {
+            final double proba = pp.getPathoProba();
+            if (Double.isNaN(max)) {
+                max = proba;
+            } else {
+                if (max < proba) {
+                    max = proba;
+                }
+            }
+        }
+        return max;
     }
 
     /**

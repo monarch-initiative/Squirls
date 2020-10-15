@@ -20,7 +20,7 @@ public class StandardSquirlsClassifier implements SquirlsClassifier {
 
     private final Set<String> usedFeatures;
 
-    private final Double donorThreshold, acceptorThreshold;
+    private final double donorThreshold, acceptorThreshold;
 
     public StandardSquirlsClassifier(Builder builder) {
         donorClf = Objects.requireNonNull(builder.donorClf, "Donor classifier cannot be null");
@@ -58,10 +58,9 @@ public class StandardSquirlsClassifier implements SquirlsClassifier {
             try {
                 final double donorProba = donorClf.predictProba(data);
                 final double acceptorProba = acceptorClf.predictProba(data);
-                data.setPrediction(StandardPrediction.builder()
-                        .addProbaThresholdPair(donorClf.getName(), donorProba, donorThreshold)
-                        .addProbaThresholdPair(acceptorClf.getName(), acceptorProba, acceptorThreshold)
-                        .build());
+                data.setPrediction(StandardPrediction.of(
+                        Prediction.PartialPrediction.of(donorClf.getName(), donorProba, donorThreshold),
+                        Prediction.PartialPrediction.of(acceptorClf.getName(), acceptorProba, acceptorThreshold)));
             } catch (PredictionException e) {
                 LOGGER.debug("Error: ", e);
                 data.setPrediction(Prediction.emptyPrediction());

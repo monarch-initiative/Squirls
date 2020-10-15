@@ -7,7 +7,6 @@ import org.slf4j.LoggerFactory;
 
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 /**
  * An implementation of a decision tree that only supports prediction, not training.
@@ -163,9 +162,6 @@ public class BinaryDecisionTree<T extends Classifiable> extends AbstractBinaryCl
         return predictProba(instance, ROOT_IDX);
     }
 
-//
-//    protected abstract Map<Integer, String> getFeatureIndices();
-
     /**
      * Get class probabilities of this instance.
      *
@@ -202,8 +198,14 @@ public class BinaryDecisionTree<T extends Classifiable> extends AbstractBinaryCl
              */
             // how many samples of each class do we have in this particular node?
             final int[] classCounts = this.classCounts[nodeIdx];
-            double sum = IntStream.of(classCounts).sum();
-            // calculate probability as a fraction of samples existing in this node for each class
+            double sum = 0;
+            for (int count : classCounts) {
+                sum += count;
+            }
+            /*
+             Calculate probability as a fraction of positive samples existing in this node. The number of positive
+             samples is stored under idx 1
+             */
             int nPathogenicSamples = classCounts[1];
 
             return nPathogenicSamples / sum;

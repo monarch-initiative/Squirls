@@ -3,7 +3,6 @@ package org.monarchinitiative.squirls.core.classifier;
 import org.monarchinitiative.squirls.core.Prediction;
 
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
@@ -14,12 +13,13 @@ public class StandardPrediction implements Prediction {
      */
     protected final Set<PartialPrediction> partialPredictions;
 
-    private StandardPrediction(Builder builder) {
-        this.partialPredictions = Set.copyOf(builder.scores);
+    private StandardPrediction(Set<PartialPrediction> partialPredictions) {
+        this.partialPredictions = partialPredictions;
     }
 
-    public static Builder builder() {
-        return new Builder();
+
+    public static StandardPrediction of(PartialPrediction... partialPrediction) {
+        return new StandardPrediction(Set.of(partialPrediction));
     }
 
     @Override
@@ -54,20 +54,4 @@ public class StandardPrediction implements Prediction {
                 '}';
     }
 
-    public static class Builder {
-        protected final Set<PartialPrediction> scores = new HashSet<>();
-
-        private Builder() {
-            // private no-op
-        }
-
-        public Builder addProbaThresholdPair(String name, double proba, double threshold) {
-            scores.add(PartialPrediction.of(name, proba, threshold));
-            return this;
-        }
-
-        public StandardPrediction build() {
-            return new StandardPrediction(this);
-        }
-    }
 }

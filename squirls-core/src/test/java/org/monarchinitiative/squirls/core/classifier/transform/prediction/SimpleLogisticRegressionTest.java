@@ -43,9 +43,7 @@ public class SimpleLogisticRegressionTest {
         double expectedThreshold = 0.871527;
 
         MutablePrediction mp = new SimpleMutablePrediction();
-        mp.setPrediction(StandardPrediction.builder()
-                .addProbaThresholdPair("bla", proba, threshold)
-                .build());
+        mp.setPrediction(StandardPrediction.of(Prediction.PartialPrediction.of("bla", proba, threshold)));
 
         Prediction transformed = transformer.transform(mp).getPrediction();
         assertThat(transformed.getPartialPredictions(), hasSize(1));

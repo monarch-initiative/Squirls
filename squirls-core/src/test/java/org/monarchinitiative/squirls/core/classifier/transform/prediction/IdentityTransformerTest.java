@@ -20,9 +20,7 @@ class IdentityTransformerTest {
 
     @Test
     void transform() {
-        final Prediction prediction = StandardPrediction.builder()
-                .addProbaThresholdPair("anything", .500000000, .123456)
-                .build();
+        final Prediction prediction = StandardPrediction.of(Prediction.PartialPrediction.of("anything", .500000000, .123456));
 
         SimpleMutablePrediction prd = new SimpleMutablePrediction();
         prd.setPrediction(prediction);

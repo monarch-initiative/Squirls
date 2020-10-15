@@ -79,10 +79,7 @@ public class RegularLogisticRegression implements PredictionTransformer {
 
         // then scale the threshold
         double threshold = logistic(donor.getThreshold(), acceptor.getThreshold());
-
-        return StandardPrediction.builder()
-                .addProbaThresholdPair(getName(), patho, threshold)
-                .build();
+        return StandardPrediction.of(Prediction.PartialPrediction.of(getName(), patho, threshold));
     }
 
     private double logistic(double donor, double acceptor) {

@@ -3,6 +3,7 @@ package org.monarchinitiative.squirls.core.classifier.transform.prediction;
 import org.monarchinitiative.squirls.core.Prediction;
 import org.monarchinitiative.squirls.core.classifier.StandardPrediction;
 
+import java.util.Iterator;
 import java.util.Objects;
 
 /**
@@ -56,14 +57,19 @@ public class SimpleLogisticRegression implements PredictionTransformer {
 
     @Override
     public <T extends MutablePrediction> T transform(T data) {
-        final StandardPrediction.Builder builder = StandardPrediction.builder();
-        for (Prediction.PartialPrediction partialPrediction : data.getPrediction().getPartialPredictions()) {
-            final double pathoProba = transform(partialPrediction.getPathoProba(), slope, intercept);
-            final double threshold = transform(partialPrediction.getThreshold(), slope, intercept);
-            builder.addProbaThresholdPair(getName(), pathoProba, threshold);
-        }
+        Prediction.PartialPrediction[] predictions = new Prediction.PartialPrediction[data.getPrediction().getPartialPredictions().size()];
 
-        data.setPrediction(builder.build());
+        final Iterator<Prediction.PartialPrediction> iterator = data.getPrediction().getPartialPredictions().iterator();
+        int i = 0;
+        while (iterator.hasNext()) {
+            final Prediction.PartialPrediction pp = iterator.next();
+            final Prediction.PartialPrediction transformed = Prediction.PartialPrediction.of(getName(),
+                    transform(pp.getPathoProba(), slope, intercept),
+                    transform(pp.getThreshold(), slope, intercept));
+            predictions[i] = transformed;
+            i++;
+        }
+        data.setPrediction(StandardPrediction.of(predictions));
 
         return data;
     }
