@@ -8,6 +8,7 @@ import org.monarchinitiative.squirls.core.model.SplicingExon;
 import org.monarchinitiative.squirls.core.model.SplicingIntron;
 import org.monarchinitiative.squirls.core.model.SplicingTranscript;
 
+import java.util.List;
 import java.util.Set;
 
 class Transcripts {
@@ -89,8 +90,8 @@ class Transcripts {
      *      real transcript
      *  </ul>
      */
-    static Set<SplicingTranscript> brca2Transcripts(ReferenceDictionary rd) {
-        return Set.of(reduced_brca2_NM_000059_3(rd));
+    static List<SplicingTranscript> brca2Transcripts(ReferenceDictionary rd) {
+        return List.of(reduced_brca2_NM_000059_3(rd));
     }
 
 

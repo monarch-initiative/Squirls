@@ -20,10 +20,7 @@ import org.monarchinitiative.squirls.core.model.SplicingTranscript;
 import org.monarchinitiative.vmvt.core.VmvtGenerator;
 import xyz.ielis.hyperutil.reference.fasta.SequenceInterval;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -293,16 +290,30 @@ public class VariantsForTesting {
                 .putDonorCoordinate("NM_000059.3", new GenomePosition(rd, Strand.FWD, chr, 32_930_747, PositionType.ONE_BASED))
                 .putAcceptorCoordinate("NM_000059.3", new GenomePosition(rd, Strand.FWD, chr, 32_930_565, PositionType.ONE_BASED))
                 .build();
-        final Map<String, Double> featureMap = Map.of(
-                "donor_offset", 2.,
-                "canonical_donor", 9.94544383637791,
-                "cryptic_donor", 1.3473990820467,
-                "acceptor_offset", 184.,
-                "canonical_acceptor", 0.,
-                "cryptic_acceptor", -2.52195449384599,
-                "phylop", 4.01000022888184,
-                "hexamer", 1.8216685,
-                "septamer", 2.1036);
+        final String featurePayload = "acceptor_offset=184.0\n" +
+                "alt_ri_best_window_acceptor=6.24199227902568\n" +
+                "alt_ri_best_window_donor=1.6462531025600458\n" +
+                "canonical_acceptor=0.0\n" +
+                "canonical_donor=9.945443836377912\n" +
+                "creates_ag_in_agez=0.0\n" +
+                "creates_yag_in_agez=0.0\n" +
+                "cryptic_acceptor=-2.5219544938459935\n" +
+                "cryptic_donor=1.3473990820467006\n" +
+                "donor_offset=2.0\n" +
+                "exon_length=182.0\n" +
+                "hexamer=1.8216685\n" +
+                "intron_length=41552.0\n" +
+                "phylop=4.010000228881836\n" +
+                "ppt_is_truncated=0.0\n" +
+                "s_strength_diff_acceptor=0.0\n" +
+                "s_strength_diff_donor=0.0\n" +
+                "septamer=2.1036\n" +
+                "wt_ri_acceptor=8.763946772871673\n" +
+                "wt_ri_donor=10.244297856891256\n" +
+                "yag_at_acceptor_minus_three=0.0";
+        final Map<String, Double> featureMap = Arrays.stream(featurePayload.split("\n"))
+                .map(line -> line.split("="))
+                .collect(Collectors.toMap(v -> v[0], v -> Double.parseDouble(v[1])));
 
         // generate graphics using Vmvt
         final String ruler = GENERATOR.getDonorSequenceRuler(
