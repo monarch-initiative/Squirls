@@ -12,7 +12,7 @@ import htsjdk.variant.variantcontext.Allele;
 import htsjdk.variant.variantcontext.VariantContext;
 import htsjdk.variant.variantcontext.VariantContextBuilder;
 import org.monarchinitiative.squirls.cli.SimpleSplicingPredictionData;
-import org.monarchinitiative.squirls.cli.cmd.analyze_vcf.SplicingVariantAlleleEvaluation;
+import org.monarchinitiative.squirls.cli.cmd.analyze_vcf.data.SplicingVariantAlleleEvaluation;
 import org.monarchinitiative.squirls.core.Metadata;
 import org.monarchinitiative.squirls.core.Prediction;
 import org.monarchinitiative.squirls.core.SplicingPredictionData;
@@ -583,17 +583,31 @@ public class VariantsForTesting {
                 .putDonorCoordinate("NM_000548.3", new GenomePosition(rd, Strand.FWD, chr, 2_110_815, PositionType.ONE_BASED))
                 .putAcceptorCoordinate("NM_000548.3", new GenomePosition(rd, Strand.FWD, chr, 2_110_671, PositionType.ONE_BASED))
                 .build();
-        final Map<String, Double> featureMap = Map.of(
-                "donor_offset", -147.,
-                "canonical_donor", 0.,
-                "cryptic_donor", -10.1188705692249,
-                "acceptor_offset", -3.,
-                "canonical_acceptor", 6.74595437739346,
-                "cryptic_acceptor", 0.,
-                "phylop", 1.12600004673004,
-                "hexamer", 2.10609255,
-                "septamer", 1.6312
-        );
+
+        final String featurePayload = "acceptor_offset=-3.0\n" +
+                "alt_ri_best_window_acceptor=-2.95580052736842\n" +
+                "alt_ri_best_window_donor=-1.9417000079717732\n" +
+                "canonical_acceptor=6.745954377393462\n" +
+                "canonical_donor=0.0\n" +
+                "creates_ag_in_agez=0.0\n" +
+                "creates_yag_in_agez=0.0\n" +
+                "cryptic_acceptor=0.0\n" +
+                "cryptic_donor=-10.118870569224883\n" +
+                "donor_offset=-147.0\n" +
+                "exon_length=144.0\n" +
+                "hexamer=2.1060925499999996\n" +
+                "intron_length=27632.0\n" +
+                "phylop=1.1260000467300415\n" +
+                "ppt_is_truncated=0.0\n" +
+                "s_strength_diff_acceptor=0.0\n" +
+                "s_strength_diff_donor=0.0\n" +
+                "septamer=1.6312000000000002\n" +
+                "wt_ri_acceptor=3.7901538500250416\n" +
+                "wt_ri_donor=8.17717056125311\n" +
+                "yag_at_acceptor_minus_three=1.0";
+        final Map<String, Double> featureMap = Arrays.stream(featurePayload.split("\n"))
+                .map(line -> line.split("="))
+                .collect(Collectors.toMap(v -> v[0], v -> Double.parseDouble(v[1])));
 
         // generate graphics using Vmvt
         final String logo = GENERATOR.getAcceptorSequenceRuler("tgtgctggccgggctcgtgttccagGC", "tgtgctggccgggctcgtgttcgagGC");

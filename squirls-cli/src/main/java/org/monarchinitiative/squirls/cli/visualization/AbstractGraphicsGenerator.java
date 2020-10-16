@@ -1,11 +1,8 @@
-package org.monarchinitiative.squirls.cli.cmd.analyze_vcf.visualization.simple;
+package org.monarchinitiative.squirls.cli.visualization;
 
 import de.charite.compbio.jannovar.reference.GenomeInterval;
 import de.charite.compbio.jannovar.reference.GenomePosition;
 import de.charite.compbio.jannovar.reference.GenomeVariant;
-import org.monarchinitiative.squirls.cli.cmd.analyze_vcf.SplicingVariantAlleleEvaluation;
-import org.monarchinitiative.squirls.cli.cmd.analyze_vcf.visualization.MissingFeatureException;
-import org.monarchinitiative.squirls.cli.cmd.analyze_vcf.visualization.SplicingVariantGraphicsGenerator;
 import org.monarchinitiative.squirls.core.SplicingPredictionData;
 import org.monarchinitiative.squirls.core.Utils;
 import org.monarchinitiative.squirls.core.data.ic.SplicingPwmData;
@@ -19,30 +16,15 @@ import org.slf4j.LoggerFactory;
 import xyz.ielis.hyperutil.reference.fasta.SequenceInterval;
 
 import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
-/**
- * The first approach for generating SVG graphics. The class applies a set of rules to generate the best SVG graphics
- * for given variant.
- * <p>
- * The generator only works for SNVs.
- */
-public class SimpleSplicingVariantGraphicsGenerator implements SplicingVariantGraphicsGenerator {
+public abstract class AbstractGraphicsGenerator implements SplicingVariantGraphicsGenerator {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(SimpleSplicingVariantGraphicsGenerator.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractGraphicsGenerator.class);
 
-    /**
-     * The image returned if unable to generate the normal SVG.
-     */
-    private static final String EMPTY_SVG_IMAGE = "<svg width=\"100\" height=\"5\" xmlns=\"http://www.w3.org/2000/svg\"></svg>";
+    protected final VmvtGenerator vmvtGenerator;
 
-    /**
-     * Field used to ensure that we log a missing feature only once.
-     */
-    private static final AtomicBoolean LOGGED_MISSING_FEATURE = new AtomicBoolean();
-
-    private final VmvtGenerator vmvtGenerator = new VmvtGenerator();
+    protected final VisualizationContextSelector contextSelector;
 
     private final AlleleGenerator alleleGenerator;
 
@@ -50,86 +32,15 @@ public class SimpleSplicingVariantGraphicsGenerator implements SplicingVariantGr
 
     private final SplicingInformationContentCalculator icCalculator;
 
-    private final VisualizationContextSelector selector;
+    protected AbstractGraphicsGenerator(VmvtGenerator vmvtGenerator,
+                                        SplicingPwmData splicingPwmData,
+                                        VisualizationContextSelector contextSelector) {
 
-    public SimpleSplicingVariantGraphicsGenerator(SplicingPwmData splicingPwmData) {
-        this.alleleGenerator = new AlleleGenerator(splicingPwmData.getParameters());
+        this.vmvtGenerator = vmvtGenerator;
         this.splicingParameters = splicingPwmData.getParameters();
+        this.alleleGenerator = new AlleleGenerator(splicingPwmData.getParameters());
         this.icCalculator = new SplicingInformationContentCalculator(splicingPwmData);
-        this.selector = new VisualizationContextSelector();
-    }
-
-    /**
-     * Put together the figures into a single titled <code>div</code> element.
-     *
-     * @param context visualization context for which the figures were created
-     * @param figures SVG strings, <code>null</code>s are ignored
-     * @return string with titled div containing all figures
-     */
-    private static String assembleFigures(VisualizationContext context, String... figures) {
-        final StringBuilder graphics = new StringBuilder();
-        // add title
-        graphics.append("<div class=\"graphics-container\">")
-                .append("<div class=\"graphics-title\">").append(context.getTitle()).append("</div>")
-                .append("<div class=\"graphics-content\">");
-        // add figures
-        for (String figure : figures) {
-            if (figure != null) {
-                graphics.append("<div>").append(figure).append("</div>");
-            }
-        }
-
-        // close tags
-        return graphics.append("</div>") // graphics-content
-                .append("</div>") // graphics-container
-                .toString();
-    }
-
-    /**
-     * @param variant {@link SplicingVariantAlleleEvaluation} to be visualized
-     * @return String with SVG image or the default/empty SVG if any required information is missing
-     */
-    @Override
-    public String generateGraphics(SplicingVariantAlleleEvaluation variant) {
-        if (!variant.getBase().isSNP()) {
-            // this class only supports SNVs
-            return EMPTY_SVG_IMAGE;
-        }
-
-        /*
-        Select the prediction data that we use to create the SVG. This is the data that corresponds to transcript with
-        respect to which the variant has the maximum predicted pathogenicity.
-         */
-        final SplicingPredictionData predictionData = variant.getPrimaryPrediction();
-        if (predictionData == null) {
-            LOGGER.debug("Unable to find transcript with maximum pathogenicity score for variant `{}`",
-                    variant.getRepresentation());
-            return EMPTY_SVG_IMAGE;
-        }
-
-        try {
-            final VisualizationContext ctx = selector.selectContext(predictionData);
-            switch (ctx) {
-                case CANONICAL_DONOR:
-                    return makeCanonicalDonorContextGraphics(predictionData);
-                case CANONICAL_ACCEPTOR:
-                    return makeCanonicalAcceptorContextGraphics(predictionData);
-                case CRYPTIC_DONOR:
-                    return makeCrypticDonorContextGraphics(predictionData);
-                case CRYPTIC_ACCEPTOR:
-                    return makeCrypticAcceptorContextGraphics(predictionData);
-                case SRE:
-                    return makeSreContextGraphics(predictionData);
-                case UNKNOWN:
-                default:
-            }
-        } catch (MissingFeatureException e) {
-            if (LOGGED_MISSING_FEATURE.compareAndSet(false, true)) {
-                LOGGER.warn("{} : {}", e.getMessage(), variant.getRepresentation());
-            }
-        }
-
-        return EMPTY_SVG_IMAGE;
+        this.contextSelector = contextSelector;
     }
 
     /**
@@ -164,6 +75,32 @@ public class SimpleSplicingVariantGraphicsGenerator implements SplicingVariantGr
     }
 
     /**
+     * Put together the figures into a single titled <code>div</code> element.
+     *
+     * @param context visualization context for which the figures were created
+     * @param figures SVG strings, <code>null</code>s are ignored
+     * @return string with titled div containing all figures
+     */
+    private static String assembleFigures(VisualizationContext context, String... figures) {
+        final StringBuilder graphics = new StringBuilder();
+        // add title
+        graphics.append("<div class=\"graphics-container\">")
+                .append("<div class=\"graphics-title\">").append(context.getTitle()).append("</div>")
+                .append("<div class=\"graphics-content\">");
+        // add figures
+        for (String figure : figures) {
+            if (figure != null) {
+                graphics.append("<div>").append(figure).append("</div>");
+            }
+        }
+
+        // close tags
+        return graphics.append("</div>") // graphics-content
+                .append("</div>") // graphics-container
+                .toString();
+    }
+
+    /**
      * Generate graphics for variants affecting canonical donor.
      * <p>
      * We show:
@@ -184,7 +121,7 @@ public class SimpleSplicingVariantGraphicsGenerator implements SplicingVariantGr
      * @param predictionData data to generate the graphics for
      * @return String with content in HTML format containing SVG with graphics
      */
-    private String makeCanonicalDonorContextGraphics(SplicingPredictionData predictionData) {
+    protected String makeCanonicalDonorContextGraphics(SplicingPredictionData predictionData) {
         final VisualizationContext context = VisualizationContext.CANONICAL_DONOR;
 
         final GenomeVariant variant = predictionData.getVariant();
@@ -254,7 +191,7 @@ public class SimpleSplicingVariantGraphicsGenerator implements SplicingVariantGr
      * @param predictionData data to generate the graphics for
      * @return String with content in HTML format containing SVG with graphics
      */
-    private String makeCanonicalAcceptorContextGraphics(SplicingPredictionData predictionData) {
+    protected String makeCanonicalAcceptorContextGraphics(SplicingPredictionData predictionData) {
         final VisualizationContext context = VisualizationContext.CANONICAL_ACCEPTOR;
         final GenomeVariant variant = predictionData.getVariant();
         final SequenceInterval sequence = predictionData.getSequence();
@@ -321,7 +258,7 @@ public class SimpleSplicingVariantGraphicsGenerator implements SplicingVariantGr
      * @param predictionData data to generate the graphics for
      * @return String with content in HTML format containing SVG with graphics
      */
-    private String makeCrypticDonorContextGraphics(SplicingPredictionData predictionData) {
+    protected String makeCrypticDonorContextGraphics(SplicingPredictionData predictionData) {
         final VisualizationContext context = VisualizationContext.CRYPTIC_DONOR;
 
         final SequenceInterval sequence = predictionData.getSequence();
@@ -389,7 +326,7 @@ public class SimpleSplicingVariantGraphicsGenerator implements SplicingVariantGr
      * @param predictionData data to generate the graphics for
      * @return String with content in HTML format containing SVG with graphics
      */
-    private String makeCrypticAcceptorContextGraphics(SplicingPredictionData predictionData) {
+    protected String makeCrypticAcceptorContextGraphics(SplicingPredictionData predictionData) {
         final VisualizationContext context = VisualizationContext.CRYPTIC_ACCEPTOR;
 
         final SequenceInterval sequence = predictionData.getSequence();
@@ -436,8 +373,7 @@ public class SimpleSplicingVariantGraphicsGenerator implements SplicingVariantGr
         return makeCrypticContextGraphics(context.getTitle(), trekker, walkers);
     }
 
-    @Deprecated // this is not being used anymore
-    private String makeSreContextGraphics(SplicingPredictionData predictionData) {
+    protected String makeSreContextGraphics(SplicingPredictionData predictionData) {
         final VisualizationContext context = VisualizationContext.SRE;
 
         final GenomeVariant variant = predictionData.getVariant();
@@ -463,4 +399,6 @@ public class SimpleSplicingVariantGraphicsGenerator implements SplicingVariantGr
         }
         return EMPTY_SVG_IMAGE;
     }
+
+
 }

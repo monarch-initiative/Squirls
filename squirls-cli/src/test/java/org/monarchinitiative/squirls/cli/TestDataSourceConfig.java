@@ -4,6 +4,8 @@ import de.charite.compbio.jannovar.data.JannovarData;
 import de.charite.compbio.jannovar.data.JannovarDataSerializer;
 import de.charite.compbio.jannovar.data.ReferenceDictionary;
 import de.charite.compbio.jannovar.data.SerializationException;
+import org.monarchinitiative.squirls.cli.visualization.SimpleVisualizationContextSelector;
+import org.monarchinitiative.squirls.cli.visualization.VisualizationContextSelector;
 import org.monarchinitiative.squirls.core.data.ic.InputStreamBasedPositionalWeightMatrixParser;
 import org.monarchinitiative.squirls.core.data.ic.SplicingPwmData;
 import org.monarchinitiative.squirls.core.data.kmer.FileKMerParser;
@@ -20,6 +22,11 @@ import java.util.Map;
 @Configuration
 public class TestDataSourceConfig {
 
+
+    @Bean
+    public VisualizationContextSelector visualizationContextSelector() {
+        return new SimpleVisualizationContextSelector();
+    }
 
     /**
      * Small Jannovar cache containing RefSeq transcripts of several genes only:

@@ -1,10 +1,11 @@
-package org.monarchinitiative.squirls.cli.cmd.analyze_vcf;
+package org.monarchinitiative.squirls.cli.cmd.analyze_vcf.data;
 
 import de.charite.compbio.jannovar.annotation.Annotation;
 import de.charite.compbio.jannovar.annotation.VariantAnnotations;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 import htsjdk.variant.variantcontext.Allele;
 import htsjdk.variant.variantcontext.VariantContext;
+import org.monarchinitiative.squirls.cli.visualization.VisualizedVariant;
 import org.monarchinitiative.squirls.core.Prediction;
 import org.monarchinitiative.squirls.core.SplicingPredictionData;
 
@@ -22,7 +23,8 @@ import java.util.*;
  * The second dictionary comes from SQUIRLS database and is used by all objects present within
  * {@link SplicingPredictionData}.
  */
-public class SplicingVariantAlleleEvaluation {
+// TODO: 16. 10. 2020 simplify - get rid of the variant context, allele, etc, when work on SplicingVariantGraphicsGenerator is finished
+public class SplicingVariantAlleleEvaluation implements VisualizedVariant {
 
     /**
      * The base variant context that is being analyzed.
@@ -62,10 +64,6 @@ public class SplicingVariantAlleleEvaluation {
         this.graphics = graphics;
     }
 
-    public Map<String, SplicingPredictionData> getPredictionData() {
-        return predictionData;
-    }
-
     public void putPredictionData(String transcriptAccession, SplicingPredictionData predictionData) {
         // TODO: 1. 7. 2020 this is the place where we effectively decide about the transcript that is affected by variant the most
         //  Revise if necessary.
@@ -80,6 +78,7 @@ public class SplicingVariantAlleleEvaluation {
         predictionData.forEach(this::putPredictionData);
     }
 
+    @Override
     public VariantAnnotations getAnnotations() {
         return annotations;
     }
@@ -117,6 +116,7 @@ public class SplicingVariantAlleleEvaluation {
                 : primaryPrediction.getPrediction().getMaxPathogenicity();
     }
 
+    @Override
     public SplicingPredictionData getPrimaryPrediction() {
         return primaryPrediction;
     }

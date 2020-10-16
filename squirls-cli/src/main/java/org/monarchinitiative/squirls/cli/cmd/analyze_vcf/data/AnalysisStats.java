@@ -1,4 +1,4 @@
-package org.monarchinitiative.squirls.cli.cmd.analyze_vcf;
+package org.monarchinitiative.squirls.cli.cmd.analyze_vcf.data;
 
 /**
  * Container for storing statistics of the analysis.

@@ -9,7 +9,6 @@ import org.monarchinitiative.squirls.core.model.SplicingIntron;
 import org.monarchinitiative.squirls.core.model.SplicingTranscript;
 
 import java.util.List;
-import java.util.Set;
 
 class Transcripts {
 
@@ -25,8 +24,8 @@ class Transcripts {
      *     <li>NM_001278928.1</li>
      * </ul>
      */
-    static Set<SplicingTranscript> surf2Transcripts(ReferenceDictionary rd) {
-        return Set.of(surf2_NM_017503_4(rd), surf2_NM_001278928_1(rd));
+    static List<SplicingTranscript> surf2Transcripts(ReferenceDictionary rd) {
+        return List.of(surf2_NM_017503_4(rd), surf2_NM_001278928_1(rd));
     }
 
     /**
@@ -35,8 +34,8 @@ class Transcripts {
      *     <li>NM_000478.4</li>
      * </ul>
      */
-    static Set<SplicingTranscript> alplTranscripts(ReferenceDictionary rd) {
-        return Set.of(alpl_NM_000478_4(rd));
+    static List<SplicingTranscript> alplTranscripts(ReferenceDictionary rd) {
+        return List.of(alpl_NM_000478_4(rd));
     }
 
     /**
@@ -45,8 +44,8 @@ class Transcripts {
      *      <li>NM_000548.3</li> - the transcript only contains the first, the 11th and the last exon of the real transcript
      *  </ul>
      */
-    static Set<SplicingTranscript> tsc2Transcripts(ReferenceDictionary rd) {
-        return Set.of(reduced_tsc2_NM000548_3(rd));
+    static List<SplicingTranscript> tsc2Transcripts(ReferenceDictionary rd) {
+        return List.of(reduced_tsc2_NM000548_3(rd));
     }
 
     /**
@@ -55,8 +54,8 @@ class Transcripts {
      *      <li>NM_000495.4</li> - the transcript only contains the first, the 29th and the last exon of the real transcript
      *  </ul>
      */
-    static Set<SplicingTranscript> col4a5Transcripts(ReferenceDictionary rd) {
-        return Set.of(reduced_col4a5_NM_000495_4(rd));
+    static List<SplicingTranscript> col4a5Transcripts(ReferenceDictionary rd) {
+        return List.of(reduced_col4a5_NM_000495_4(rd));
     }
 
     /**
@@ -66,8 +65,8 @@ class Transcripts {
      *      real transcript
      *  </ul>
      */
-    static Set<SplicingTranscript> ryr1Transcripts(ReferenceDictionary rd) {
-        return Set.of(reduced_ryr1_NM_000540_2(rd));
+    static List<SplicingTranscript> ryr1Transcripts(ReferenceDictionary rd) {
+        return List.of(reduced_ryr1_NM_000540_2(rd));
     }
 
 
@@ -78,8 +77,8 @@ class Transcripts {
      *      real transcript
      *  </ul>
      */
-    static Set<SplicingTranscript> hbbTranscripts(ReferenceDictionary rd) {
-        return Set.of(hbb_NM_000518_4(rd));
+    static List<SplicingTranscript> hbbTranscripts(ReferenceDictionary rd) {
+        return List.of(hbb_NM_000518_4(rd));
     }
 
 
@@ -102,8 +101,8 @@ class Transcripts {
      *      real transcript
      *  </ul>
      */
-    static Set<SplicingTranscript> vwfTranscripts(ReferenceDictionary rd) {
-        return Set.of(reduced_vwf_NM_000552_3(rd));
+    static List<SplicingTranscript> vwfTranscripts(ReferenceDictionary rd) {
+        return List.of(reduced_vwf_NM_000552_3(rd));
     }
 
     /**
@@ -113,8 +112,8 @@ class Transcripts {
      *      real transcript
      *  </ul>
      */
-    static Set<SplicingTranscript> nf1Transcripts(ReferenceDictionary rd) {
-        return Set.of(reduced_nf1_NM_000267_3(rd));
+    static List<SplicingTranscript> nf1Transcripts(ReferenceDictionary rd) {
+        return List.of(reduced_nf1_NM_000267_3(rd));
     }
 
     /**

@@ -18,7 +18,11 @@ import net.sourceforge.argparse4j.inf.Subparser;
 import net.sourceforge.argparse4j.inf.Subparsers;
 import org.monarchinitiative.squirls.cli.cmd.Command;
 import org.monarchinitiative.squirls.cli.cmd.CommandException;
-import org.monarchinitiative.squirls.cli.cmd.analyze_vcf.visualization.SplicingVariantGraphicsGenerator;
+import org.monarchinitiative.squirls.cli.cmd.analyze_vcf.data.AnalysisResults;
+import org.monarchinitiative.squirls.cli.cmd.analyze_vcf.data.AnalysisStats;
+import org.monarchinitiative.squirls.cli.cmd.analyze_vcf.data.SettingsData;
+import org.monarchinitiative.squirls.cli.cmd.analyze_vcf.data.SplicingVariantAlleleEvaluation;
+import org.monarchinitiative.squirls.cli.visualization.SplicingVariantGraphicsGenerator;
 import org.monarchinitiative.squirls.core.SplicingPredictionData;
 import org.monarchinitiative.squirls.core.VariantSplicingEvaluator;
 import org.slf4j.Logger;
@@ -134,12 +138,11 @@ public class AnalyzeVcfCommand extends Command {
      * @param generator use the generator to make the graphics
      * @return variant with graphics
      */
-    private static UnaryOperator<SplicingVariantAlleleEvaluation> generateGraphics(SplicingVariantGraphicsGenerator generator) {
-        return variant -> {
-            final String graphics = generator.generateGraphics(variant);
-            variant.setGraphics(graphics);
-            return variant;
-        };
+    private static Function<SplicingVariantAlleleEvaluation, PresentableVariant> generatePresentableVariant(SplicingVariantGraphicsGenerator generator) {
+        return variant -> PresentableVariant.of(variant.getRepresentation(),
+                variant.getAnnotations().getHighestImpactAnnotation().getGeneSymbol(),
+                variant.getPrimaryPrediction().getPrediction().getMaxPathogenicity(),
+                generator.generateGraphics(variant));
     }
 
     /**
@@ -205,7 +208,7 @@ public class AnalyzeVcfCommand extends Command {
 
         final ProgressReporter progressReporter = new ProgressReporter();
         final List<String> sampleNames;
-        final Collection<SplicingVariantAlleleEvaluation> annotated = Collections.synchronizedList(new LinkedList<>());
+        final Collection<PresentableVariant> variants = Collections.synchronizedList(new LinkedList<>());
 
         try (final VCFFileReader reader = new VCFFileReader(inputPath, false);
              final Stream<VariantContext> stream = StreamSupport.stream(reader.spliterator(), false)) { // TODO - make true
@@ -226,15 +229,15 @@ public class AnalyzeVcfCommand extends Command {
                     .peek(progressReporter::logEligibleAllele)
 
                     // graphics generation for predicted deleterious variants
-                    .map(generateGraphics(graphicsGenerator))
+                    .map(generatePresentableVariant(graphicsGenerator))
 
                     .onClose(progressReporter.summarize())
-                    .forEach(annotated::add);
+                    .forEach(variants::add);
         }
 
         final AnalysisResults results = AnalysisResults.builder()
                 .addAllSampleNames(sampleNames)
-                .variantData(annotated)
+                .variants(variants)
                 .analysisStats(progressReporter.getAnalysisStats())
                 .settingsData(SettingsData.builder()
                         .threshold(threshold)

@@ -6,12 +6,14 @@ import net.sourceforge.argparse4j.inf.*;
 import org.monarchinitiative.squirls.cli.cmd.Command;
 import org.monarchinitiative.squirls.cli.cmd.GenerateConfigCommand;
 import org.monarchinitiative.squirls.cli.cmd.analyze_vcf.AnalyzeVcfCommand;
-import org.monarchinitiative.squirls.cli.cmd.analyze_vcf.visualization.SplicingVariantGraphicsGenerator;
-import org.monarchinitiative.squirls.cli.cmd.analyze_vcf.visualization.simple.SimpleSplicingVariantGraphicsGenerator;
 import org.monarchinitiative.squirls.cli.cmd.annotate_csv.AnnotateCsvCommand;
 import org.monarchinitiative.squirls.cli.cmd.annotate_pos.AnnotatePosCommand;
 import org.monarchinitiative.squirls.cli.cmd.annotate_vcf.AnnotateVcfCommand;
+import org.monarchinitiative.squirls.cli.visualization.SimpleVisualizationContextSelector;
+import org.monarchinitiative.squirls.cli.visualization.SplicingVariantGraphicsGenerator;
+import org.monarchinitiative.squirls.cli.visualization.panel.PanelGraphicsGenerator;
 import org.monarchinitiative.squirls.core.data.ic.SplicingPwmData;
+import org.monarchinitiative.vmvt.core.VmvtGenerator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -135,7 +137,11 @@ public class Main {
 
     @Bean
     public SplicingVariantGraphicsGenerator graphicsGenerator(SplicingPwmData splicingPwmData) {
-        return new SimpleSplicingVariantGraphicsGenerator(splicingPwmData);
+        //        return new SimpleSplicingVariantGraphicsGenerator(splicingPwmData);
+
+        final VmvtGenerator generator = new VmvtGenerator();
+        final SimpleVisualizationContextSelector selector = new SimpleVisualizationContextSelector();
+        return new PanelGraphicsGenerator(generator, splicingPwmData, selector);
     }
 
     /**

@@ -1,5 +1,6 @@
 package org.monarchinitiative.squirls.cli.cmd.analyze_vcf;
 
+import org.monarchinitiative.squirls.cli.cmd.analyze_vcf.data.AnalysisResults;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.thymeleaf.TemplateEngine;
@@ -40,7 +41,7 @@ public class HtmlResultWriter {
             context.setVariable("sampleName", String.join(", ", results.getSampleNames()));
             context.setVariable("settings", results.getSettingsData());
             context.setVariable("stats", results.getAnalysisStats());
-            context.setVariable("variants", results.getVariantData());
+            context.setVariable("variants", results.getVariants());
 
             templateEngine.process("results", context, writer);
         }

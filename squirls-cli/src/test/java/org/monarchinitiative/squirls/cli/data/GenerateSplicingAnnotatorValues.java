@@ -71,4 +71,17 @@ public class GenerateSplicingAnnotatorValues {
                 .stream().sorted(Map.Entry.comparingByKey())
                 .forEach(e -> System.err.printf("%s=%s\n", e.getKey(), e.getValue()));
     }
+
+    @Test
+    public void annotateTSC2AcceptorExon11Minus3Variant() {
+        final GenomeVariant variant = new GenomeVariant(new GenomePosition(RD, Strand.FWD, 16, 2_110_668, PositionType.ONE_BASED),
+                "C", "G");
+
+        final SimpleAnnotatable ann = new SimpleAnnotatable(variant, Transcripts.tsc2Transcripts(RD).get(0), Sequences.getTsc2Exon11Sequence(RD));
+
+        final SimpleAnnotatable annotate = annotator.annotate(ann);
+        annotate.getFeatureMap().entrySet()
+                .stream().sorted(Map.Entry.comparingByKey())
+                .forEach(e -> System.err.printf("%s=%s\n", e.getKey(), e.getValue()));
+    }
 }
