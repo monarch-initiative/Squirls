@@ -2,7 +2,7 @@ package org.monarchinitiative.squirls.core.classifier.transform.prediction;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.monarchinitiative.squirls.core.Prediction;
+import org.monarchinitiative.squirls.core.classifier.Prediction;
 import org.monarchinitiative.squirls.core.classifier.StandardPrediction;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -20,9 +20,7 @@ class IdentityTransformerTest {
 
     @Test
     void transform() {
-        final Prediction prediction = StandardPrediction.builder()
-                .addProbaThresholdPair("anything", .500000000, .123456)
-                .build();
+        final Prediction prediction = StandardPrediction.of(Prediction.PartialPrediction.of("anything", .500000000, .123456));
 
         SimpleMutablePrediction prd = new SimpleMutablePrediction();
         prd.setPrediction(prediction);

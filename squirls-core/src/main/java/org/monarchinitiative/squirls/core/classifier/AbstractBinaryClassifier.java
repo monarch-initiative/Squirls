@@ -6,6 +6,7 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 public abstract class AbstractBinaryClassifier<T extends Classifiable> implements BinaryClassifier<T> {
 
@@ -21,7 +22,7 @@ public abstract class AbstractBinaryClassifier<T extends Classifiable> implement
 
     protected AbstractBinaryClassifier(Builder<?> builder) {
         this.classes = toIntArray(builder.classes);
-        this.name = builder.name;
+        this.name = Objects.requireNonNull(builder.name, "Name cannot be null");
         check();
     }
 
@@ -71,10 +72,6 @@ public abstract class AbstractBinaryClassifier<T extends Classifiable> implement
             LOGGER.warn("The `classes` attribute must contain exactly 2 class labels");
             throw new RuntimeException(String.format("The `classes` attribute must contain exactly 2 class labels. Found `%d`", classes.length));
         }
-        if (name == null) {
-            LOGGER.warn("The `name` attribute must not be null");
-            throw new RuntimeException("The `name` attribute must not be null");
-        }
     }
 
     @Override
@@ -100,7 +97,6 @@ public abstract class AbstractBinaryClassifier<T extends Classifiable> implement
     public abstract static class Builder<A extends Builder<A>> {
 
         private String name;
-
 
         private final List<Integer> classes = new ArrayList<>();
 

@@ -15,6 +15,7 @@ import org.monarchinitiative.squirls.cli.SimpleSplicingPredictionData;
 import org.monarchinitiative.squirls.cli.cmd.analyze_vcf.SplicingVariantAlleleEvaluation;
 import org.monarchinitiative.squirls.core.Metadata;
 import org.monarchinitiative.squirls.core.SplicingPredictionData;
+import org.monarchinitiative.squirls.core.classifier.Prediction;
 import org.monarchinitiative.squirls.core.classifier.StandardPrediction;
 import org.monarchinitiative.squirls.core.model.SplicingTranscript;
 import org.monarchinitiative.vmvt.core.VmvtGenerator;
@@ -77,9 +78,7 @@ public class VariantsForTesting {
          */
         final Map<String, SplicingPredictionData> predictions = Transcripts.surf2Transcripts(rd).stream()
                 .map(transcript -> new SimpleSplicingPredictionData(variant, transcript, Sequences.getSurf2Exon3Sequence(rd)))
-                .peek(data -> data.setPrediction(StandardPrediction.builder()
-                        .addProbaThresholdPair("fake", 0.93, FAKE_THRESHOLD)
-                        .build()))
+                .peek(data -> data.setPrediction(StandardPrediction.of(Prediction.PartialPrediction.of("fake", 0.93, FAKE_THRESHOLD))))
                 .peek(data -> data.setMetadata(Metadata.builder()
                         .putDonorCoordinate("NM_017503.4", new GenomePosition(rd, Strand.FWD, 9, 136_224_691, PositionType.ONE_BASED))
                         .putAcceptorCoordinate("NM_017503.4", new GenomePosition(rd, Strand.FWD, 9, 136_224_587, PositionType.ONE_BASED))
@@ -147,9 +146,7 @@ public class VariantsForTesting {
          */
         final Map<String, SplicingPredictionData> predictions = Transcripts.surf2Transcripts(rd).stream()
                 .map(transcript -> new SimpleSplicingPredictionData(variant, transcript, Sequences.getSurf2Exon3Sequence(rd)))
-                .peek(data -> data.setPrediction(StandardPrediction.builder()
-                        .addProbaThresholdPair("fake", 0.94, FAKE_THRESHOLD)
-                        .build()))
+                .peek(data -> data.setPrediction(StandardPrediction.of(Prediction.PartialPrediction.of("fake", 0.94, FAKE_THRESHOLD))))
                 .peek(data -> data.setMetadata(Metadata.builder()
                         .putDonorCoordinate("NM_017503.4", new GenomePosition(rd, Strand.FWD, chr, 136_224_691, PositionType.ONE_BASED))
                         .putAcceptorCoordinate("NM_017503.4", new GenomePosition(rd, Strand.FWD, chr, 136_224_587, PositionType.ONE_BASED))
@@ -223,9 +220,7 @@ public class VariantsForTesting {
          */
         final Map<String, SplicingPredictionData> predictions = transcripts.stream()
                 .map(transcript -> new SimpleSplicingPredictionData(variant, transcript, si))
-                .peek(data -> data.setPrediction(StandardPrediction.builder()
-                        .addProbaThresholdPair("fake", pathogenicity, FAKE_THRESHOLD)
-                        .build()))
+                .peek(data -> data.setPrediction(StandardPrediction.of(Prediction.PartialPrediction.of("fake", pathogenicity, FAKE_THRESHOLD))))
                 .peek(data -> data.setMetadata(metadata))
                 .peek(data -> featureMap.forEach(data::putFeature))
                 .collect(Collectors.toMap(k -> k.getTranscript().getAccessionId(), Function.identity()));

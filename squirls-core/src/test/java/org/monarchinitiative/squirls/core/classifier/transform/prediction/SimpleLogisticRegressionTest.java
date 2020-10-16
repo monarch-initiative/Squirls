@@ -3,12 +3,13 @@ package org.monarchinitiative.squirls.core.classifier.transform.prediction;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
-import org.monarchinitiative.squirls.core.Prediction;
+import org.monarchinitiative.squirls.core.classifier.Prediction;
 import org.monarchinitiative.squirls.core.classifier.StandardPrediction;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 
+@Deprecated
 public class SimpleLogisticRegressionTest {
 
     private static final double EPSILON = 5E-6;
@@ -43,9 +44,7 @@ public class SimpleLogisticRegressionTest {
         double expectedThreshold = 0.871527;
 
         MutablePrediction mp = new SimpleMutablePrediction();
-        mp.setPrediction(StandardPrediction.builder()
-                .addProbaThresholdPair("bla", proba, threshold)
-                .build());
+        mp.setPrediction(StandardPrediction.of(Prediction.PartialPrediction.of("bla", proba, threshold)));
 
         Prediction transformed = transformer.transform(mp).getPrediction();
         assertThat(transformed.getPartialPredictions(), hasSize(1));

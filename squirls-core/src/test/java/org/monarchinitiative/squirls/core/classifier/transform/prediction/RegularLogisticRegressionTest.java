@@ -3,7 +3,8 @@ package org.monarchinitiative.squirls.core.classifier.transform.prediction;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
-import org.monarchinitiative.squirls.core.Prediction;
+import org.monarchinitiative.squirls.core.classifier.Constants;
+import org.monarchinitiative.squirls.core.classifier.Prediction;
 import org.monarchinitiative.squirls.core.classifier.StandardPrediction;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -13,9 +14,12 @@ public class RegularLogisticRegressionTest {
 
     private static final double EPSILON = 5E-8;
 
-    private static final double DONOR_SLOPE = 10.58023823, ACCEPTOR_SLOPE = 18.25294229;
+    /*
+     Real parameters from the v0.4.4 model
+     */
+    private static final double DONOR_SLOPE = 10.580238234976031, ACCEPTOR_SLOPE = 18.252942293891184;
 
-    private static final double INTERCEPT = -5.07846126;
+    private static final double INTERCEPT = -5.07846126079626;
 
     private RegularLogisticRegression transformer;
 
@@ -30,20 +34,25 @@ public class RegularLogisticRegressionTest {
      */
     @ParameterizedTest
     @CsvSource({
-            "0.,0.,.00619092",
-            ".3,.3,.97265492",
-            ".5,.5,.999912",
-            ".7,.7,.99999972",
-            "1.,1.,1."})
+            "0.0,0.0,0.00619090",
+            "0.0,0.3,0.59806797",
+            "0.0,0.5,0.98284240",
+            "0.0,0.7,0.99954670",
+            "0.1,0.0,0.01762876",
+            "0.5,0.0,0.55271780",
+            "0.7,0.0,0.91114575",
+            "1.0,1.0,1.0"
+    })
     public void transformSpan(double donor, double acceptor, double expectedProba) {
-        double threshold = .4;
-        double expectedThreshold = 0.9984295;
+        // real thresholds from the v0.4.4 model
+        double donorThreshold = .051658395087546785;
+        double acceptorThreshold = .012734158718713364;
+        double expectedThreshold = .01339395;
 
         final MutablePrediction mutablePrediction = new SimpleMutablePrediction();
-        final StandardPrediction sp = StandardPrediction.builder()
-                .addProbaThresholdPair("donor", donor, threshold)
-                .addProbaThresholdPair("acceptor", acceptor, threshold)
-                .build();
+        final StandardPrediction sp = StandardPrediction.of(
+                Prediction.PartialPrediction.of(Constants.DONOR_PIPE_NAME, donor, donorThreshold),
+                Prediction.PartialPrediction.of(Constants.ACCEPTOR_PIPE_NAME, acceptor, acceptorThreshold));
         mutablePrediction.setPrediction(sp);
         final MutablePrediction transformed = transformer.transform(mutablePrediction);
 
@@ -61,10 +70,9 @@ public class RegularLogisticRegressionTest {
     })
     public void predictionWithMissingProbaThresholdIsNotTransformed(String one, String two) {
         final MutablePrediction mutablePrediction = new SimpleMutablePrediction();
-        final StandardPrediction prediction = StandardPrediction.builder()
-                .addProbaThresholdPair(one, .5, .5)
-                .addProbaThresholdPair(two, .6, .6)
-                .build();
+        final StandardPrediction prediction = StandardPrediction.of(
+                Prediction.PartialPrediction.of(one, .5, .5),
+                Prediction.PartialPrediction.of(two, .6, .6));
         mutablePrediction.setPrediction(prediction);
 
         final MutablePrediction transformed = transformer.transform(mutablePrediction);
