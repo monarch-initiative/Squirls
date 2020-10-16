@@ -4,19 +4,26 @@ import net.sourceforge.argparse4j.inf.Namespace;
 import net.sourceforge.argparse4j.inf.Subparser;
 import net.sourceforge.argparse4j.inf.Subparsers;
 import org.monarchinitiative.squirls.cli.cmd.Command;
-import org.monarchinitiative.squirls.cli.cmd.CommandException;
+import org.monarchinitiative.squirls.core.SplicingPredictionData;
 import org.monarchinitiative.squirls.core.VariantSplicingEvaluator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
 /**
- * TODO - implement
+ * This command takes a bunch of strings like `chr1:1234C>G` and prints out Squirls predictions.
  */
 @Component
 public class AnnotatePosCommand extends Command {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AnnotatePosCommand.class);
+
+    private static final String DELIMITER = "\t";
 
     private final VariantSplicingEvaluator variantSplicingEvaluator;
 
@@ -27,7 +34,7 @@ public class AnnotatePosCommand extends Command {
     public static void setupSubparsers(Subparsers subparsers) {
         Subparser ic = subparsers.addParser("annotate-pos")
                 .setDefault("cmd", "annotate-pos")
-                .help("annotate variants using 3S");
+                .help("annotate variants with Squirls");
 
         ic.addArgument("-c", "--change")
                 .nargs("+")
@@ -37,30 +44,25 @@ public class AnnotatePosCommand extends Command {
 
 
     @Override
-    public void run(Namespace namespace) throws CommandException {
-        // TODO: 26. 5. 2020 implement
-        throw new CommandException("Not yet implemented");
+    public void run(Namespace namespace) {
+        final List<String> rawChanges = namespace.getList("change");
+        LOGGER.info("Analyzing {} changes: `{}`", rawChanges.size(), String.join(", ", rawChanges));
 
-//        final List<String> rawChanges = namespace.getList("change");
-//        LOGGER.info("Analyzing {} changes: `{}`", rawChanges.size(), String.join(", ", rawChanges));
-//
-//        final List<VariantChange> changes = rawChanges.stream()
-//                .map(VariantChange::fromString)
-//                .filter(Optional::isPresent)
-//                .map(Optional::get)
-//                .collect(Collectors.toUnmodifiableList());
-//
-//        for (VariantChange change : changes) {
-//            final Map<String, Prediction> dataMap = variantSplicingEvaluator.evaluate(change.getContig(), change.getPos(), change.getRef(), change.getAlt());
-//            final List<String> transcripts = dataMap.keySet().stream().sorted().collect(Collectors.toUnmodifiableList());
-//            for (String tx : transcripts) {
-//                final Prediction data = dataMap.get(tx);
-//                final List<String> scoresNames = data.getScoresMap().keySet().stream().sorted().collect(Collectors.toUnmodifiableList());
-//                String scores = scoresNames.stream()
-//                        .map(name -> name + "=" + data.getOrDefault(name, Double.NaN))
-//                        .collect(Collectors.joining(";"));
-//                System.out.println(String.join("\t", change.getVariantChange(), tx, scores));
-//            }
-//        }
+        // parse changes (input)
+        final List<VariantChange> changes = rawChanges.stream()
+                .map(VariantChange::fromString)
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .collect(Collectors.toUnmodifiableList());
+
+        for (VariantChange change : changes) {
+            final Map<String, SplicingPredictionData> predictionByTx = variantSplicingEvaluator.evaluate(change.getContig(), change.getPos(), change.getRef(), change.getAlt());
+            final String scores = predictionByTx.keySet().stream()
+                    .sorted()
+                    .map(tx -> String.format("%s=%f", tx, predictionByTx.get(tx).getPrediction().getMaxPathogenicity()))
+                    .collect(Collectors.joining(";"));
+
+            System.out.println(String.join(DELIMITER, change.getVariantChange(), scores));
+        }
     }
 }
