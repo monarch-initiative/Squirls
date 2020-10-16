@@ -28,19 +28,29 @@ public class Deserializer {
         // private no-op
     }
 
+    /**
+     * Construct {@link SquirlsClassifier} from the YAML content that is read from the input stream.
+     *
+     * @param is input stream with YAML content
+     * @return classifier
+     */
     public static SquirlsClassifier deserialize(InputStream is) {
         return deserialize(deserializeOverallModelData(is));
     }
 
     public static SquirlsClassifier deserialize(OverallModelData data) {
-        return StandardSquirlsClassifier.builder()
-                .donorClf(deserializeDonorPipeline(data.getDonorClf()))
-                .donorThreshold(data.getDonorThreshold())
-                .acceptorClf(deserializeAcceptorPipeline(data.getAcceptorClf()))
-                .acceptorThreshold(data.getAcceptorThreshold())
-                .build();
+        return StandardSquirlsClassifier.of(
+                ThresholdingBinaryClassifier.of(deserializeDonorPipeline(data.getDonorClf()), data.getDonorThreshold()),
+                ThresholdingBinaryClassifier.of(deserializeAcceptorPipeline(data.getAcceptorClf()), data.getAcceptorThreshold())
+        );
     }
 
+    /**
+     * Deserialize YAML content from the input stream to {@link OverallModelData} format.
+     *
+     * @param is input stream
+     * @return deserialized data
+     */
     public static OverallModelData deserializeOverallModelData(InputStream is) {
         Yaml yaml = new Yaml(new Constructor(OverallModelDataV041.class));
         return yaml.load(is);
