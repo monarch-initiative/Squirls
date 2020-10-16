@@ -1,6 +1,5 @@
 package org.monarchinitiative.squirls.core.classifier;
 
-import org.monarchinitiative.squirls.core.Prediction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

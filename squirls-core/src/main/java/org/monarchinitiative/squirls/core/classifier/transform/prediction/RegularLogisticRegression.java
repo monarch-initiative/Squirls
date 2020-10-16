@@ -1,7 +1,7 @@
 package org.monarchinitiative.squirls.core.classifier.transform.prediction;
 
-import org.monarchinitiative.squirls.core.Prediction;
 import org.monarchinitiative.squirls.core.classifier.Constants;
+import org.monarchinitiative.squirls.core.classifier.Prediction;
 import org.monarchinitiative.squirls.core.classifier.StandardPrediction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

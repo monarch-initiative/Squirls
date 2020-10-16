@@ -3,7 +3,6 @@ package org.monarchinitiative.squirls.core.classifier;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
-import org.monarchinitiative.squirls.core.Prediction;
 import org.monarchinitiative.squirls.core.SimpleClassifiable;
 import org.monarchinitiative.squirls.core.TestDataSourceConfig;
 import org.springframework.boot.test.context.SpringBootTest;
