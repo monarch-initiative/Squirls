@@ -1,6 +1,7 @@
 package org.monarchinitiative.squirls.core.classifier.transform.prediction;
 
 import org.monarchinitiative.squirls.core.Prediction;
+import org.monarchinitiative.squirls.core.classifier.Constants;
 import org.monarchinitiative.squirls.core.classifier.StandardPrediction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -59,7 +60,7 @@ public class RegularLogisticRegression implements PredictionTransformer {
                 .collect(Collectors.toMap(Prediction.PartialPrediction::getName, Function.identity()));
 
         // this currently matches the strings set to Pipelines when deserializing donor and acceptor pipelines
-        if (!predictions.containsKey("donor") || !predictions.containsKey("acceptor")) {
+        if (!predictions.containsKey(Constants.DONOR_PIPE_NAME) || !predictions.containsKey(Constants.ACCEPTOR_PIPE_NAME)) {
             // cannot perform transformation
             if (reportMissingPrediction.compareAndSet(true, false)) {
                 LOGGER.warn("Missing prediction for `donor` or `acceptor` site in `{}`. Other missing predictions will not be reported.", data);
@@ -67,7 +68,7 @@ public class RegularLogisticRegression implements PredictionTransformer {
             return data;
         }
 
-        final Prediction transformed = transform(predictions.get("donor"), predictions.get("acceptor"));
+        final Prediction transformed = transform(predictions.get(Constants.DONOR_PIPE_NAME), predictions.get(Constants.ACCEPTOR_PIPE_NAME));
 
         data.setPrediction(transformed);
         return data;

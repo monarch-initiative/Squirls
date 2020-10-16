@@ -4,6 +4,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.monarchinitiative.squirls.core.Prediction;
+import org.monarchinitiative.squirls.core.classifier.Constants;
 import org.monarchinitiative.squirls.core.classifier.StandardPrediction;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -30,19 +31,24 @@ public class RegularLogisticRegressionTest {
      */
     @ParameterizedTest
     @CsvSource({
-            "0.,0.,.00619092",
-            ".3,.3,.97265492",
-            ".5,.5,.999912",
-            ".7,.7,.99999972",
-            "1.,1.,1."})
+            "0.,0.,.00619090",
+            "0.,.3,.59806797",
+            "0.,.5,.98284240",
+            "0.,.7,.99954670",
+            ".1,0.,.01762876",
+            ".5,0.,.55271780",
+            ".7,0.,.91114575",
+            "1.,1.,1."
+    })
     public void transformSpan(double donor, double acceptor, double expectedProba) {
-        double threshold = .4;
-        double expectedThreshold = 0.9984295;
+        double donorThreshold = .1;
+        double acceptorThreshold = .25;
+        double expectedThreshold = .63246309;
 
         final MutablePrediction mutablePrediction = new SimpleMutablePrediction();
         final StandardPrediction sp = StandardPrediction.of(
-                Prediction.PartialPrediction.of("donor", donor, threshold),
-                Prediction.PartialPrediction.of("acceptor", acceptor, threshold));
+                Prediction.PartialPrediction.of(Constants.DONOR_PIPE_NAME, donor, donorThreshold),
+                Prediction.PartialPrediction.of(Constants.ACCEPTOR_PIPE_NAME, acceptor, acceptorThreshold));
         mutablePrediction.setPrediction(sp);
         final MutablePrediction transformed = transformer.transform(mutablePrediction);
 

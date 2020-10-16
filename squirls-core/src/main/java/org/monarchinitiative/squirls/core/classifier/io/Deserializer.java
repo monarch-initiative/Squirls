@@ -58,7 +58,7 @@ public class Deserializer {
 
     static <T extends Classifiable> BinaryClassifier<T> deserializeDonorPipeline(PipelineTransferModel ptm) {
         return Pipeline.<T>builder()
-                .name("donor")
+                .name(Constants.DONOR_PIPE_NAME)
                 .classes(ptm.getRf().getClasses())
                 .transformer(deserializeImputer(ptm.getFeatureNames(), ptm.getFeatureStatistics()))
                 .classifier(deserializeDonorClassifier(ptm))
@@ -71,7 +71,7 @@ public class Deserializer {
 
     public static <T extends Classifiable> RandomForest<T> deserializeDonorClassifier(PipelineTransferModel ptm) {
         return RandomForest.<T>builder()
-                .name("donor_rf")
+                .name(Constants.DONOR_RF_NAME)
                 .classes(ptm.getRf().getClasses())
                 .addTrees(ptm.getRf().getTrees().values().stream()
                         .map(Deserializer.<T>toDonorClassifierTree(ptm))
@@ -95,7 +95,7 @@ public class Deserializer {
 
     static <T extends Classifiable> BinaryClassifier<T> deserializeAcceptorPipeline(PipelineTransferModel ptm) {
         return Pipeline.<T>builder()
-                .name("acceptor")
+                .name(Constants.ACCEPTOR_PIPE_NAME)
                 .classes(ptm.getRf().getClasses())
                 .transformer(deserializeImputer(ptm.getFeatureNames(), ptm.getFeatureStatistics()))
                 .classifier(deserializeAcceptorClassifier(ptm))
@@ -104,7 +104,7 @@ public class Deserializer {
 
     public static <T extends Classifiable> RandomForest<T> deserializeAcceptorClassifier(PipelineTransferModel ptm) {
         return RandomForest.<T>builder()
-                .name("acceptor_rf")
+                .name(Constants.ACCEPTOR_RF_NAME)
                 .classes(ptm.getRf().getClasses())
                 .addTrees(ptm.getRf().getTrees().values().stream()
                         .map(Deserializer.<T>toAcceptorClassifierTree(ptm))
