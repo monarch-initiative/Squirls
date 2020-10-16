@@ -15,8 +15,6 @@ import java.util.List;
  */
 public class BigWig implements FeatureCalculator {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(BigWig.class);
-
     private final BigWigAccessor accessor;
 
     public BigWig(BigWigAccessor accessor) {
@@ -34,15 +32,10 @@ public class BigWig implements FeatureCalculator {
      */
     @Override
     public double score(GenomeVariant variant, SplicingTranscript transcript, SequenceInterval sequence) {
-        try {
-            final List<Float> scores = accessor.getScores(variant.getGenomeInterval());
-            return scores.stream()
-                    .mapToDouble(Float::doubleValue)
-                    .average()
-                    .orElse(Double.NaN);
-        } catch (SquirlsWigException e) {
-            LOGGER.debug("Unable to find scores for variant `{}`", variant);
-            return Double.NaN;
-        }
+        final List<Float> scores = accessor.getScores(variant.getGenomeInterval());
+        return scores.stream()
+                .mapToDouble(Float::doubleValue)
+                .average()
+                .orElse(Double.NaN);
     }
 }
