@@ -1,5 +1,6 @@
 package org.monarchinitiative.squirls.cli.cmd.annotate_pos;
 
+import net.sourceforge.argparse4j.impl.Arguments;
 import net.sourceforge.argparse4j.inf.Namespace;
 import net.sourceforge.argparse4j.inf.Subparser;
 import net.sourceforge.argparse4j.inf.Subparsers;
@@ -10,6 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -37,8 +39,9 @@ public class AnnotatePosCommand extends Command {
                 .help("annotate variants with Squirls");
 
         ic.addArgument("-c", "--change")
-                .nargs("+")
+//                .nargs("+")
                 .metavar("chr1:1234C>G")
+                .action(Arguments.append()).required(true)
                 .help("nucleotide change(s) to annotate");
     }
 
@@ -46,7 +49,7 @@ public class AnnotatePosCommand extends Command {
     @Override
     public void run(Namespace namespace) {
         final List<String> rawChanges = namespace.getList("change");
-        LOGGER.info("Analyzing {} changes: `{}`", rawChanges.size(), String.join(", ", rawChanges));
+        LOGGER.info("Analyzing {} change(s): `{}`", rawChanges.size(), String.join(", ", rawChanges));
 
         // parse changes (input)
         final List<VariantChange> changes = rawChanges.stream()
@@ -55,14 +58,28 @@ public class AnnotatePosCommand extends Command {
                 .map(Optional::get)
                 .collect(Collectors.toUnmodifiableList());
 
+        System.out.println();
         for (VariantChange change : changes) {
-            final Map<String, SplicingPredictionData> predictionByTx = variantSplicingEvaluator.evaluate(change.getContig(), change.getPos(), change.getRef(), change.getAlt());
-            final String scores = predictionByTx.keySet().stream()
-                    .sorted()
-                    .map(tx -> String.format("%s=%f", tx, predictionByTx.get(tx).getPrediction().getMaxPathogenicity()))
-                    .collect(Collectors.joining(";"));
+            final Map<String, SplicingPredictionData> predictionData = variantSplicingEvaluator.evaluate(change.getContig(), change.getPos(), change.getRef(), change.getAlt());
+            List<String> columns = new ArrayList<>();
 
-            System.out.println(String.join(DELIMITER, change.getVariantChange(), scores));
+            // variant
+            columns.add(change.getVariantChange());
+
+            // is pathogenic
+            boolean isPathogenic = predictionData.values().stream()
+                    .anyMatch(spd -> spd.getPrediction().isPositive());
+            columns.add(isPathogenic ? "pathogenic" : "neutral");
+
+            // predictions per transcript
+            final String scores = predictionData.keySet().stream()
+                    .sorted()
+                    .map(tx -> String.format("%s=%f", tx, predictionData.get(tx).getPrediction().getMaxPathogenicity()))
+                    .collect(Collectors.joining(";"));
+            columns.add(scores);
+
+            System.out.println(String.join(DELIMITER, columns));
         }
+        System.out.println();
     }
 }
