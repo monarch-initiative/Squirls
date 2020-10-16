@@ -14,6 +14,7 @@ import java.util.Objects;
  * @see PredictionTransformer
  * @see RegularLogisticRegression
  */
+@Deprecated // in favor of RegularLogisticRegression
 public class SimpleLogisticRegression implements PredictionTransformer {
 
     private final double slope;

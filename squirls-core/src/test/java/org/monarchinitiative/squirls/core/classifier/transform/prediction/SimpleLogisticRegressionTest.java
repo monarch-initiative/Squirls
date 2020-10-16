@@ -9,6 +9,7 @@ import org.monarchinitiative.squirls.core.classifier.StandardPrediction;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 
+@Deprecated
 public class SimpleLogisticRegressionTest {
 
     private static final double EPSILON = 5E-6;
