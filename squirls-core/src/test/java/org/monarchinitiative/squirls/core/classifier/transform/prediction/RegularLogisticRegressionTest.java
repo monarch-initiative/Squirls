@@ -14,9 +14,12 @@ public class RegularLogisticRegressionTest {
 
     private static final double EPSILON = 5E-8;
 
-    private static final double DONOR_SLOPE = 10.58023823, ACCEPTOR_SLOPE = 18.25294229;
+    /*
+     Real parameters from the v0.4.4 model
+     */
+    private static final double DONOR_SLOPE = 10.580238234976031, ACCEPTOR_SLOPE = 18.252942293891184;
 
-    private static final double INTERCEPT = -5.07846126;
+    private static final double INTERCEPT = -5.07846126079626;
 
     private RegularLogisticRegression transformer;
 
@@ -31,19 +34,20 @@ public class RegularLogisticRegressionTest {
      */
     @ParameterizedTest
     @CsvSource({
-            "0.,0.,.00619090",
-            "0.,.3,.59806797",
-            "0.,.5,.98284240",
-            "0.,.7,.99954670",
-            ".1,0.,.01762876",
-            ".5,0.,.55271780",
-            ".7,0.,.91114575",
-            "1.,1.,1."
+            "0.0,0.0,0.00619090",
+            "0.0,0.3,0.59806797",
+            "0.0,0.5,0.98284240",
+            "0.0,0.7,0.99954670",
+            "0.1,0.0,0.01762876",
+            "0.5,0.0,0.55271780",
+            "0.7,0.0,0.91114575",
+            "1.0,1.0,1.0"
     })
     public void transformSpan(double donor, double acceptor, double expectedProba) {
-        double donorThreshold = .1;
-        double acceptorThreshold = .25;
-        double expectedThreshold = .63246309;
+        // real thresholds from the v0.4.4 model
+        double donorThreshold = .051658395087546785;
+        double acceptorThreshold = .012734158718713364;
+        double expectedThreshold = .01339395;
 
         final MutablePrediction mutablePrediction = new SimpleMutablePrediction();
         final StandardPrediction sp = StandardPrediction.of(
