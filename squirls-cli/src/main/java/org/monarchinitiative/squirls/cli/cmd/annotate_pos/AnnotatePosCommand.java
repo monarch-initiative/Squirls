@@ -72,10 +72,7 @@ public class AnnotatePosCommand extends Command {
             columns.add(isPathogenic ? "pathogenic" : "neutral");
 
             // predictions per transcript
-            final String scores = predictionData.keySet().stream()
-                    .sorted()
-                    .map(tx -> String.format("%s=%f", tx, predictionData.get(tx).getPrediction().getMaxPathogenicity()))
-                    .collect(Collectors.joining(";"));
+            final String scores = processScores(predictionData);
             columns.add(scores);
 
             System.out.println(String.join(DELIMITER, columns));
