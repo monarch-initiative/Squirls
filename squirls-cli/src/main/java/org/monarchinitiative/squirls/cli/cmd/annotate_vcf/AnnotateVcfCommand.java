@@ -21,6 +21,7 @@ import org.springframework.stereotype.Component;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.function.UnaryOperator;
@@ -122,40 +123,43 @@ public class AnnotateVcfCommand extends Command {
 
     @Override
     public void run(Namespace namespace) {
-        /*
-        - open VCF file
-        - extend header
-        - iterate
-         */
         final Path inputPath = Paths.get(namespace.getString("input"));
         LOGGER.info("Reading variants from `{}`", inputPath);
         final Path outputPath = Paths.get(namespace.getString("output"));
         LOGGER.info("Writing annotated variants to `{}`", outputPath);
 
-        // initialize progress logging
         // TODO: 29. 5. 2020 improve behavior & logging
         // e.g. report progress in % if variant index and thus count is available
         final ProgressReporter<VariantContext> progressReporter = new ProgressReporter<>();
         try (final VCFFileReader reader = new VCFFileReader(inputPath, false);
              final CloseableIterator<VariantContext> variantIterator = reader.iterator();
              final VariantContextWriter writer = new VariantContextWriterBuilder()
-                     .setOption(Options.ALLOW_MISSING_FIELDS_IN_HEADER)
-                     .unsetOption(Options.INDEX_ON_THE_FLY)
+                     .setReferenceDictionary(reader.getFileHeader().getSequenceDictionary())
                      .setOutputPath(outputPath)
                      .setOutputFileType(VariantContextWriterBuilder.OutputType.VCF)
+                     .setOption(Options.ALLOW_MISSING_FIELDS_IN_HEADER)
+//                     .unsetOption(Options.INDEX_ON_THE_FLY)
                      .build()) {
-            final VCFHeader header = reader.getFileHeader();
-            // extend header and write it out
-            final VCFHeader extended = extendHeader(header);
 
+            // extend the header from the input VCF and write it out
+            final VCFHeader header = reader.getFileHeader();
+            final VCFHeader extended = extendHeader(header);
             writer.writeHeader(extended);
+
+            // annotate the variants
+            final List<VariantContext> annotated = Collections.synchronizedList(new ArrayList<>());
             try (final Stream<VariantContext> stream = variantIterator.stream()) {
                 stream.parallel()
                         .map(annotateVariant(evaluator))
                         .peek(progressReporter::logEntry)
                         .onClose(progressReporter.summarize())
-                        .forEach(writer::add);
+                        .forEach(annotated::add);
             }
+
+            // write out the annotated variants
+            annotated.stream()
+                    .sorted(header.getVCFRecordComparator())
+                    .forEach(writer::add);
         }
     }
 }
