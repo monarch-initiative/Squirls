@@ -71,6 +71,13 @@ public class AnnotatePosCommand extends Command {
                     .anyMatch(spd -> spd.getPrediction().isPositive());
             columns.add(isPathogenic ? "pathogenic" : "neutral");
 
+            // max pathogenicity
+            double maxScore = predictionData.values().stream()
+                    .mapToDouble(e -> e.getPrediction().getMaxPathogenicity())
+                    .max()
+                    .orElse(Double.NaN);
+            columns.add(String.format("%.3f", maxScore));
+
             // predictions per transcript
             final String scores = processScores(predictionData);
             columns.add(scores);
