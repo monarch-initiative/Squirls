@@ -40,7 +40,7 @@ public class AnnotatePosCommand extends Command {
 
         ic.addArgument("-c", "--change")
 //                .nargs("+")
-                .metavar("chr1:1234C>G")
+                .metavar("chr3:165504107A>C")
                 .action(Arguments.append()).required(true)
                 .help("nucleotide change(s) to annotate");
     }
