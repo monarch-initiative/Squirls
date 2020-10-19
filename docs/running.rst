@@ -66,7 +66,7 @@ Annotate variant positions (``annotate-pos``)
 
 The easiest way to quickly calculate Squirls scores for a couple of variants is to use the ``annotate-pos`` command ::
 
-  $java -jar squirls-cli.jar run -c squirls_config.yml annotate-pos -c chr
+  $java -jar squirls-cli.jar run -c squirls_config.yml annotate-pos -c "chr9:136224694A>T" -c "chr3:52676065CA>C"
 
 An output similar to this is produced ::
 
