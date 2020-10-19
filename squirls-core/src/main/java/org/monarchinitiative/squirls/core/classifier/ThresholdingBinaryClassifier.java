@@ -30,8 +30,8 @@ public class ThresholdingBinaryClassifier<T extends Classifiable> {
         return classifier.usedFeatureNames();
     }
 
-    public Prediction.PartialPrediction runPrediction(T data) throws PredictionException {
-        return Prediction.PartialPrediction.of(classifier.getName(), classifier.predictProba(data), threshold);
+    public PartialPrediction runPrediction(T data) throws PredictionException {
+        return PartialPrediction.of(classifier.getName(), classifier.predictProba(data), threshold);
     }
 
     @Override

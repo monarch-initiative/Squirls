@@ -2,8 +2,9 @@ package org.monarchinitiative.squirls.core.classifier.transform.prediction;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.monarchinitiative.squirls.core.classifier.PartialPrediction;
 import org.monarchinitiative.squirls.core.classifier.Prediction;
-import org.monarchinitiative.squirls.core.StandardPrediction;
+import org.monarchinitiative.squirls.core.classifier.StandardPrediction;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasItems;
@@ -20,7 +21,7 @@ class IdentityTransformerTest {
 
     @Test
     void transform() {
-        final Prediction prediction = StandardPrediction.of(Prediction.PartialPrediction.of("anything", .500000000, .123456));
+        final Prediction prediction = StandardPrediction.of(PartialPrediction.of("anything", .500000000, .123456));
 
         SimpleMutablePrediction prd = new SimpleMutablePrediction();
         prd.setPrediction(prediction);
@@ -28,7 +29,7 @@ class IdentityTransformerTest {
         SimpleMutablePrediction transPrd = transformer.transform(prd);
 
         assertThat(transPrd.getPrediction().getPartialPredictions(), hasSize(1));
-        assertThat(transPrd.getPrediction().getPartialPredictions(), hasItems(Prediction.PartialPrediction.of("anything", .500000000, .123456)));
+        assertThat(transPrd.getPrediction().getPartialPredictions(), hasItems(PartialPrediction.of("anything", .500000000, .123456)));
     }
 
 }

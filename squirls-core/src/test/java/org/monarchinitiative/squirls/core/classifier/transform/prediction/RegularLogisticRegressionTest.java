@@ -4,8 +4,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.monarchinitiative.squirls.core.classifier.Constants;
-import org.monarchinitiative.squirls.core.classifier.Prediction;
-import org.monarchinitiative.squirls.core.StandardPrediction;
+import org.monarchinitiative.squirls.core.classifier.PartialPrediction;
+import org.monarchinitiative.squirls.core.classifier.StandardPrediction;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
@@ -51,12 +51,12 @@ public class RegularLogisticRegressionTest {
 
         final MutablePrediction mutablePrediction = new SimpleMutablePrediction();
         final StandardPrediction sp = StandardPrediction.of(
-                Prediction.PartialPrediction.of(Constants.DONOR_PIPE_NAME, donor, donorThreshold),
-                Prediction.PartialPrediction.of(Constants.ACCEPTOR_PIPE_NAME, acceptor, acceptorThreshold));
+                PartialPrediction.of(Constants.DONOR_PIPE_NAME, donor, donorThreshold),
+                PartialPrediction.of(Constants.ACCEPTOR_PIPE_NAME, acceptor, acceptorThreshold));
         mutablePrediction.setPrediction(sp);
         final MutablePrediction transformed = transformer.transform(mutablePrediction);
 
-        @SuppressWarnings("OptionalGetWithoutIsPresent") final Prediction.PartialPrediction partial = transformed.getPrediction().getPartialPredictions().stream().findFirst().get();
+        @SuppressWarnings("OptionalGetWithoutIsPresent") final PartialPrediction partial = transformed.getPrediction().getPartialPredictions().stream().findFirst().get();
         assertThat(partial.getPathoProba(), is(closeTo(expectedProba, EPSILON)));
         assertThat(partial.getThreshold(), is(closeTo(expectedThreshold, EPSILON)));
 
@@ -71,8 +71,8 @@ public class RegularLogisticRegressionTest {
     public void predictionWithMissingProbaThresholdIsNotTransformed(String one, String two) {
         final MutablePrediction mutablePrediction = new SimpleMutablePrediction();
         final StandardPrediction prediction = StandardPrediction.of(
-                Prediction.PartialPrediction.of(one, .5, .5),
-                Prediction.PartialPrediction.of(two, .6, .6));
+                PartialPrediction.of(one, .5, .5),
+                PartialPrediction.of(two, .6, .6));
         mutablePrediction.setPrediction(prediction);
 
         final MutablePrediction transformed = transformer.transform(mutablePrediction);

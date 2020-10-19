@@ -1,10 +1,11 @@
-package org.monarchinitiative.squirls.cli.cmd.analyze_vcf;
+package org.monarchinitiative.squirls.cli.cmd.analyze_vcf.data;
 
 import de.charite.compbio.jannovar.annotation.Annotation;
 import de.charite.compbio.jannovar.annotation.VariantAnnotations;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 import htsjdk.variant.variantcontext.Allele;
 import htsjdk.variant.variantcontext.VariantContext;
+import org.monarchinitiative.squirls.cli.visualization.VisualizedVariant;
 import org.monarchinitiative.squirls.core.SplicingPredictionData;
 import org.monarchinitiative.squirls.core.classifier.Prediction;
 
@@ -54,6 +55,9 @@ public class SplicingVariantAlleleEvaluation implements VisualizedVariant {
         this.altAllele = altAllele;
     }
 
+    public Map<String, SplicingPredictionData> getPredictionData() {
+        return predictionData;
+    }
 
     public String getGraphics() {
         return graphics;
