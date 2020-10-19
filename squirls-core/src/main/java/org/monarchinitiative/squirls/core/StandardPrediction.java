@@ -1,4 +1,4 @@
-package org.monarchinitiative.squirls.core;
+package org.monarchinitiative.squirls.core.classifier;
 
 import java.util.Collection;
 import java.util.Objects;

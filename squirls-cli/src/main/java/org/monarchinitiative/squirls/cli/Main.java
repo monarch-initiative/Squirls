@@ -97,8 +97,9 @@ public class Main {
             command = new GenerateConfigCommand();
         } else {
             final String configPath = namespace.getString("config");
+            // TODO: 16. 10. 2020 make the logging system work
             final LogLevel level = namespace.get("log_level");
-            LOGGER.info("Reading 3S configuration from `{}`", configPath);
+            LOGGER.info("Reading Squirls configuration from `{}`", configPath);
             if (!unknownArgsList.isEmpty()) {
                 LOGGER.debug("Passing the following args to Spring: '{}'",
                         String.join(", ", unknownArgsList));

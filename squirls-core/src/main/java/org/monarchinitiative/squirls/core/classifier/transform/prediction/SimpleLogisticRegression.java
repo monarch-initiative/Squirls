@@ -1,6 +1,6 @@
 package org.monarchinitiative.squirls.core.classifier.transform.prediction;
 
-import org.monarchinitiative.squirls.core.Prediction;
+import org.monarchinitiative.squirls.core.classifier.Prediction;
 import org.monarchinitiative.squirls.core.StandardPrediction;
 
 import java.util.Iterator;
@@ -14,6 +14,7 @@ import java.util.Objects;
  * @see PredictionTransformer
  * @see RegularLogisticRegression
  */
+@Deprecated // in favor of RegularLogisticRegression
 public class SimpleLogisticRegression implements PredictionTransformer {
 
     private final double slope;

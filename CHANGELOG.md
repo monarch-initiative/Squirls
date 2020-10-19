@@ -1,5 +1,12 @@
 # Changelog
 
+## ✈ the latest
+- `squirls-cli`
+  - implement commands `annotate-csv`, `annotate-vcf`, and `annotate-pos`
+- `squirls-core`
+  - performance improvements, increase test coverage
+  - improve handling of positions with missing conservation scores
+
 ## ✈ v1.0.0-RC1
 - `squirls-core`
   - implement the final prediction model

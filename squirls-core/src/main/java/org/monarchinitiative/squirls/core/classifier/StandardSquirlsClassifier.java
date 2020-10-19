@@ -1,7 +1,5 @@
 package org.monarchinitiative.squirls.core.classifier;
 
-import org.monarchinitiative.squirls.core.Prediction;
-import org.monarchinitiative.squirls.core.StandardPrediction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,24 +15,14 @@ public class StandardSquirlsClassifier implements SquirlsClassifier {
 
     private static final AtomicBoolean MISSING_FEATURE_REPORTED = new AtomicBoolean(false);
 
-    private final BinaryClassifier<Classifiable> donorClf, acceptorClf;
+    private final ThresholdingBinaryClassifier<Classifiable> donorClf, acceptorClf;
 
     private final Set<String> usedFeatures;
 
-    private final double donorThreshold, acceptorThreshold;
-
-    public StandardSquirlsClassifier(Builder builder) {
-        donorClf = Objects.requireNonNull(builder.donorClf, "Donor classifier cannot be null");
-        acceptorClf = Objects.requireNonNull(builder.acceptorClf, "Acceptor classifier cannot be null");
-        if (builder.donorThreshold == null || builder.donorThreshold.isNaN()) {
-            throw new IllegalArgumentException("donor threshold must be specified");
-        }
-        donorThreshold = builder.donorThreshold;
-
-        if (builder.acceptorThreshold == null || builder.acceptorThreshold.isNaN()) {
-            throw new IllegalArgumentException("acceptor threshold must be specified");
-        }
-        acceptorThreshold = builder.acceptorThreshold;
+    private StandardSquirlsClassifier(ThresholdingBinaryClassifier<Classifiable> donorClf,
+                                      ThresholdingBinaryClassifier<Classifiable> acceptorClf) {
+        this.donorClf = Objects.requireNonNull(donorClf, "Donor classifier cannot be null");
+        this.acceptorClf = Objects.requireNonNull(acceptorClf, "Acceptor classifier cannot be null");
 
         usedFeatures = Stream.concat(donorClf.usedFeatureNames().stream(), acceptorClf.usedFeatureNames().stream())
                 .collect(Collectors.toUnmodifiableSet());
@@ -42,9 +30,8 @@ public class StandardSquirlsClassifier implements SquirlsClassifier {
                 usedFeatures.stream().sorted().collect(Collectors.joining(", ", "[", "]")));
     }
 
-
-    public static Builder builder() {
-        return new Builder();
+    public static StandardSquirlsClassifier of(ThresholdingBinaryClassifier<Classifiable> donorClf, ThresholdingBinaryClassifier<Classifiable> acceptorClf) {
+        return new StandardSquirlsClassifier(donorClf, acceptorClf);
     }
 
     @Override
@@ -57,11 +44,7 @@ public class StandardSquirlsClassifier implements SquirlsClassifier {
         if (data.getFeatureNames().containsAll(usedFeatures)) {
             // we have all the features we need for making a prediction here
             try {
-                final double donorProba = donorClf.predictProba(data);
-                final double acceptorProba = acceptorClf.predictProba(data);
-                data.setPrediction(StandardPrediction.of(
-                        Prediction.PartialPrediction.of(donorClf.getName(), donorProba, donorThreshold),
-                        Prediction.PartialPrediction.of(acceptorClf.getName(), acceptorProba, acceptorThreshold)));
+                data.setPrediction(StandardPrediction.of(donorClf.runPrediction(data), acceptorClf.runPrediction(data)));
             } catch (PredictionException e) {
                 LOGGER.debug("Error: ", e);
                 data.setPrediction(Prediction.emptyPrediction());
@@ -78,7 +61,7 @@ public class StandardSquirlsClassifier implements SquirlsClassifier {
                         String.join(",", difference));
                 LOGGER.warn(errorMsg);
             }
-            data.setPrediction(Prediction.emptyPrediction());
+            data.setPrediction(EmptyPrediction.getInstance());
         }
 
         return data;
@@ -91,14 +74,12 @@ public class StandardSquirlsClassifier implements SquirlsClassifier {
         StandardSquirlsClassifier that = (StandardSquirlsClassifier) o;
         return Objects.equals(donorClf, that.donorClf) &&
                 Objects.equals(acceptorClf, that.acceptorClf) &&
-                Objects.equals(usedFeatures, that.usedFeatures) &&
-                Objects.equals(donorThreshold, that.donorThreshold) &&
-                Objects.equals(acceptorThreshold, that.acceptorThreshold);
+                Objects.equals(usedFeatures, that.usedFeatures);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(donorClf, acceptorClf, usedFeatures, donorThreshold, acceptorThreshold);
+        return Objects.hash(donorClf, acceptorClf, usedFeatures);
     }
 
     @Override
@@ -107,42 +88,6 @@ public class StandardSquirlsClassifier implements SquirlsClassifier {
                 "donorClf=" + donorClf +
                 ", acceptorClf=" + acceptorClf +
                 ", usedFeatures=" + usedFeatures +
-                ", donorThreshold=" + donorThreshold +
-                ", acceptorThreshold=" + acceptorThreshold +
                 '}';
-    }
-
-    public static final class Builder {
-        private BinaryClassifier<Classifiable> donorClf;
-        private BinaryClassifier<Classifiable> acceptorClf;
-        private Double donorThreshold = Double.NaN;
-        private Double acceptorThreshold = Double.NaN;
-
-        private Builder() {
-        }
-
-        public Builder donorClf(BinaryClassifier<Classifiable> donorClf) {
-            this.donorClf = donorClf;
-            return this;
-        }
-
-        public Builder acceptorClf(BinaryClassifier<Classifiable> acceptorClf) {
-            this.acceptorClf = acceptorClf;
-            return this;
-        }
-
-        public Builder donorThreshold(double donorThreshold) {
-            this.donorThreshold = donorThreshold;
-            return this;
-        }
-
-        public Builder acceptorThreshold(double acceptorThreshold) {
-            this.acceptorThreshold = acceptorThreshold;
-            return this;
-        }
-
-        public StandardSquirlsClassifier build() {
-            return new StandardSquirlsClassifier(this);
-        }
     }
 }

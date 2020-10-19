@@ -1,13 +1,12 @@
-package org.monarchinitiative.squirls.cli.cmd.analyze_vcf.data;
+package org.monarchinitiative.squirls.cli.cmd.analyze_vcf;
 
 import de.charite.compbio.jannovar.annotation.Annotation;
 import de.charite.compbio.jannovar.annotation.VariantAnnotations;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 import htsjdk.variant.variantcontext.Allele;
 import htsjdk.variant.variantcontext.VariantContext;
-import org.monarchinitiative.squirls.cli.visualization.VisualizedVariant;
-import org.monarchinitiative.squirls.core.Prediction;
 import org.monarchinitiative.squirls.core.SplicingPredictionData;
+import org.monarchinitiative.squirls.core.classifier.Prediction;
 
 import java.util.*;
 

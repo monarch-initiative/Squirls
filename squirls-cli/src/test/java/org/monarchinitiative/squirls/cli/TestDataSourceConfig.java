@@ -1,5 +1,7 @@
 package org.monarchinitiative.squirls.cli;
 
+import de.charite.compbio.jannovar.annotation.VariantAnnotator;
+import de.charite.compbio.jannovar.annotation.builders.AnnotationBuilderOptions;
 import de.charite.compbio.jannovar.data.JannovarData;
 import de.charite.compbio.jannovar.data.JannovarDataSerializer;
 import de.charite.compbio.jannovar.data.ReferenceDictionary;
@@ -58,6 +60,11 @@ public class TestDataSourceConfig {
     @Bean
     public ReferenceDictionary referenceDictionary(JannovarData jannovarData) {
         return jannovarData.getRefDict();
+    }
+
+    @Bean
+    public VariantAnnotator variantAnnotator(JannovarData jannovarData) {
+        return new VariantAnnotator(jannovarData.getRefDict(), jannovarData.getChromosomes(), new AnnotationBuilderOptions());
     }
 
     @Bean

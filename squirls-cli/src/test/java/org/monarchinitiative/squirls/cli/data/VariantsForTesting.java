@@ -16,6 +16,7 @@ import org.monarchinitiative.squirls.cli.cmd.analyze_vcf.data.SplicingVariantAll
 import org.monarchinitiative.squirls.core.Metadata;
 import org.monarchinitiative.squirls.core.Prediction;
 import org.monarchinitiative.squirls.core.SplicingPredictionData;
+import org.monarchinitiative.squirls.core.classifier.Prediction;
 import org.monarchinitiative.squirls.core.StandardPrediction;
 import org.monarchinitiative.squirls.core.model.SplicingTranscript;
 import org.monarchinitiative.vmvt.core.VmvtGenerator;

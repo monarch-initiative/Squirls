@@ -44,7 +44,16 @@
                     <groupId>org.testng</groupId>
                     <artifactId>testng</artifactId>
                 </exclusion>
+                <exclusion>
+                    <groupId>com.github.samtools</groupId>
+                    <artifactId>htsjdk</artifactId>
+                </exclusion>
             </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-csv</artifactId>
+            <version>1.7</version>
         </dependency>
 
         <dependency>
