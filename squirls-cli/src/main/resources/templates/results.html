@@ -23,39 +23,65 @@
         }
 
         .graphics-title {
-            color: black;
             text-align: center;
-            top: 5px;
-            left: 35%;
-            position: absolute;
-            padding: 0 15px 0 15px;
-            background: white;
+            text-transform: uppercase;
+            font-weight: bold;
         }
 
         /* Individual figures are wrapped in a div of this class. */
         .graphics-subcontent {
             text-align: center;
-            padding: 20px 10px 20px 10px;
-            border: 2px dashed lightcyan;
+            padding: 2rem;
             display: table-cell;
             vertical-align: middle;
+        }
+
+        .doner .graphics-subcontent:nth-child(1) svg:nth-child(1) {
+            display: block;
+        }
+
+        .doner .graphics-content {
+            margin: 0 auto;
+            padding: 2rem;
+            display: table;
         }
 
         /* All figures wrapped within `.graphics-subcontent` are wrapped within this element. */
         .graphics-content {
             max-width: available;
-            padding: 20px 10px 20px 10px;
-            border: 2px dashed lightblue;
-            /*display: inline-block;*/
+            padding: 2rem;
         }
 
         div svg {
             object-fit: contain;
-            border: 1px solid black;
         }
 
         ul.bottomspace {
             margin-bottom: 1cm;
+        }
+
+        .effects-title{
+            text-transform: uppercase;
+            font-weight: bold;
+            margin: 5px 0 0 0;
+        }
+
+        .transcript-list {
+            margin: 0 0 15px 0;
+        }
+
+        .feature-table tr {
+            display: block;
+            float: left;
+        }
+
+        .feature-table th, .feature-table td {
+            display: block;
+        }
+
+        .feature-table td {
+            text-align: center;
+            border: solid .5px #ddd;
         }
     </style>
 </head>
@@ -141,12 +167,8 @@
                 </div>
             </div>
             <div class="panel-body">
-                <div class="row">
-                    <div class="col-md-4">
-                        <div th:utext="${variant.getContent()}">
-                            <!-- CONTENT  -->
-                        </div>
-                    </div>
+                <div th:remove="tag" th:utext="${variant.getContent()}">
+                    <!-- CONTENT  -->
                 </div>
             </div>
         </div>
