@@ -148,6 +148,7 @@ public abstract class AbstractGraphicsGenerator implements SplicingVariantGraphi
                     graphics.append("<div class=\"graphics-subcontent\">")
                             .append(vmvtGenerator.getDonorSequenceRuler(refAllele, altAllele))
                             .append(vmvtGenerator.getDonorTrekkerSvg(refAllele, altAllele))
+//                            .append(vmvtGenerator.getDonorWithRi(refAllele, altAllele))
                             .append("</div>");
 
                     // secondary - add distribution
@@ -216,6 +217,7 @@ public abstract class AbstractGraphicsGenerator implements SplicingVariantGraphi
                     graphics.append("<div class=\"graphics-subcontent\">")
                             .append(vmvtGenerator.getAcceptorSequenceRuler(refAllele, altAllele))
                             .append(vmvtGenerator.getAcceptorTrekkerSvg(refAllele, altAllele))
+//                            .append(vmvtGenerator.getAcceptorWithRi(refAllele, altAllele))
                             .append("</div>");
 
                     // secondary - add distribution

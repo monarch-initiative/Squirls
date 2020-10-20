@@ -38,6 +38,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
@@ -256,21 +257,36 @@ public class AnalyzeVcfCommand extends Command {
 
     private static class ProgressReporter {
 
+        /**
+         * We report each n-th instance
+         */
+        private final int tick;
         private final Instant begin;
+        private final AtomicReference<Instant> localBegin;
         private final AtomicInteger allVariantCount = new AtomicInteger();
         private final AtomicInteger altAlleleCount = new AtomicInteger();
         private final AtomicInteger annotatedAltAlleleCount = new AtomicInteger();
         private final AtomicInteger pathogenicAltAlleleCount = new AtomicInteger();
 
-        private ProgressReporter() {
+        private ProgressReporter(int tick) {
+            this.tick = tick;
             begin = Instant.now();
+            localBegin = new AtomicReference<>(begin);
             LOGGER.info("Starting the analysis");
+        }
+
+        private ProgressReporter() {
+            this(5_000);
         }
 
         public void logVariant(Object context) {
             final int current = allVariantCount.incrementAndGet();
-            if (current % 10_000 == 0) {
-                LOGGER.info("Processed {} variants", current);
+            if (current % tick == 0) {
+                final Instant end = Instant.now();
+                final Instant begin = localBegin.getAndSet(end);
+                final Duration duration = Duration.between(begin, end);
+                final long ms = duration.toMillis();
+                LOGGER.info("Processed {} items at {} items/s", current, String.format("%.2f", ((double) tick * 1000) / ms));
             }
         }
 

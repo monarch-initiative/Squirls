@@ -4,7 +4,6 @@ import org.monarchinitiative.squirls.cli.visualization.*;
 import org.monarchinitiative.squirls.core.SplicingPredictionData;
 import org.monarchinitiative.squirls.core.data.ic.SplicingPwmData;
 import org.monarchinitiative.vmvt.core.VmvtGenerator;
-import org.monarchinitiative.vmvt.core.except.VmvtRuntimeException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.thymeleaf.TemplateEngine;
@@ -79,10 +78,6 @@ public class PanelGraphicsGenerator extends AbstractGraphicsGenerator {
             }
         } catch (MissingFeatureException e) {
             LOGGER.warn("Missing feature "); // TODO: 15. 10. 2020 add info
-            return EMPTY_SVG_IMAGE;
-        } catch (VmvtRuntimeException e) {
-            // TODO: 20. 10. 2020 make sure this exception is actually never thrown
-            LOGGER.warn("Bad data for variant {} - {}", data.getAnnotations().getGenomeVariant(), e.getMessage());
             return EMPTY_SVG_IMAGE;
         }
 

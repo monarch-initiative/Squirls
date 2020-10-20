@@ -34,11 +34,11 @@ public class PanelGraphicsGeneratorTest extends GraphicsGeneratorTestBase {
         System.err.println(content);
     }
 
-    @Test
     @Disabled
+    @Test
     public void canonicalDonorExtremeCase() {
         // this case represents variant `chr3:10088407AG>A` that deletes G from GT in the donor site
-        // TODO: 20. 10. 2020 make sure that the VMVT code works
+        // the test might be discarded if is not necessary in future
         final String svg = vmvtGenerator.getDonorDistributionSvg("TTAgtaagt", "TTAtaagtg");
         System.out.println(svg);
     }

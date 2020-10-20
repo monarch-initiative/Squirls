@@ -28,7 +28,6 @@ import java.util.stream.Collectors;
 @SpringBootTest(classes = TestDataSourceConfig.class)
 class HtmlResultWriterTest {
 
-    // TODO: 3. 6. 2020 remove
     private static final Path OUTPATH = Paths.get("target/SQUIRLS.html");
 
     @Autowired
