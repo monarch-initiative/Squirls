@@ -4,6 +4,7 @@ import org.monarchinitiative.squirls.cli.visualization.*;
 import org.monarchinitiative.squirls.core.SplicingPredictionData;
 import org.monarchinitiative.squirls.core.data.ic.SplicingPwmData;
 import org.monarchinitiative.vmvt.core.VmvtGenerator;
+import org.monarchinitiative.vmvt.core.except.VmvtRuntimeException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.thymeleaf.TemplateEngine;
@@ -14,7 +15,8 @@ import org.thymeleaf.templateresolver.ClassLoaderTemplateResolver;
 import java.util.Map;
 
 /**
- * This graphics generator makes graphics for splice variant.
+ * This graphics generator makes graphics for the splice variant. The graphics generation is delegated to the
+ * appropriate method of {@link AbstractGraphicsGenerator}.
  */
 public class PanelGraphicsGenerator extends AbstractGraphicsGenerator {
 
@@ -78,6 +80,10 @@ public class PanelGraphicsGenerator extends AbstractGraphicsGenerator {
         } catch (MissingFeatureException e) {
             LOGGER.warn("Missing feature "); // TODO: 15. 10. 2020 add info
             return EMPTY_SVG_IMAGE;
+        } catch (VmvtRuntimeException e) {
+            // TODO: 20. 10. 2020 make sure this exception is actually never thrown
+            LOGGER.warn("Bad data for variant {} - {}", data.getAnnotations().getGenomeVariant(), e.getMessage());
+            return EMPTY_SVG_IMAGE;
         }
 
         // 1 - prepare context for the template
@@ -86,8 +92,6 @@ public class PanelGraphicsGenerator extends AbstractGraphicsGenerator {
         context.setVariable("variantData", data);
         context.setVariable("annotations", data.getAnnotations());
         context.setVariable("graphics", graphics);
-//        context.setVariable("primary", ""); // TODO: 15. 10. 2020 continue
-//        context.setVariable("secondary", ""); // TODO: 15. 10. 2020 continue
 
         return templateEngine.process(templateName, context);
     }

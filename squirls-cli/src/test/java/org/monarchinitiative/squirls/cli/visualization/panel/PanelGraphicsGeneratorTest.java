@@ -2,6 +2,7 @@ package org.monarchinitiative.squirls.cli.visualization.panel;
 
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.monarchinitiative.squirls.cli.data.VariantsForTesting;
@@ -31,6 +32,15 @@ public class PanelGraphicsGeneratorTest extends GraphicsGeneratorTestBase {
         final String content = generator.generateGraphics(VariantsForTesting.BRCA2DonorExon15plus2QUID(jannovarData.getRefDict(), annotator));
 
         System.err.println(content);
+    }
+
+    @Test
+    @Disabled
+    public void canonicalDonorExtremeCase() {
+        // this case represents variant `chr3:10088407AG>A` that deletes G from GT in the donor site
+        // TODO: 20. 10. 2020 make sure that the VMVT code works
+        final String svg = vmvtGenerator.getDonorDistributionSvg("TTAgtaagt", "TTAtaagtg");
+        System.out.println(svg);
     }
 
     @Test
