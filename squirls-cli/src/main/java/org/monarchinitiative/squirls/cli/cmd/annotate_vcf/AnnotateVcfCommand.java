@@ -130,7 +130,7 @@ public class AnnotateVcfCommand extends Command {
 
         // TODO: 29. 5. 2020 improve behavior & logging
         // e.g. report progress in % if variant index and thus count is available
-        final ProgressReporter<VariantContext> progressReporter = new ProgressReporter<>();
+        final ProgressReporter progressReporter = new ProgressReporter(5_000);
         try (final VCFFileReader reader = new VCFFileReader(inputPath, false);
              final CloseableIterator<VariantContext> variantIterator = reader.iterator();
              final VariantContextWriter writer = new VariantContextWriterBuilder()
@@ -151,7 +151,7 @@ public class AnnotateVcfCommand extends Command {
             try (final Stream<VariantContext> stream = variantIterator.stream()) {
                 stream.parallel()
                         .map(annotateVariant(evaluator))
-                        .peek(progressReporter::logEntry)
+                        .peek(progressReporter::logItem)
                         .onClose(progressReporter.summarize())
                         .forEach(annotated::add);
             }

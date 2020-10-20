@@ -34,11 +34,8 @@ import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.time.Duration;
-import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
@@ -207,14 +204,14 @@ public class AnalyzeVcfCommand extends Command {
 
         final VariantAnnotator annotator = new VariantAnnotator(jannovarData.getRefDict(), jannovarData.getChromosomes(), new AnnotationBuilderOptions());
 
-        final ProgressReporter progressReporter = new ProgressReporter();
+        final ProgressReporter progressReporter = new ProgressReporter(5_000);
         final List<String> sampleNames;
         final Collection<PresentableVariant> variants = Collections.synchronizedList(new LinkedList<>());
 
         try (final VCFFileReader reader = new VCFFileReader(inputPath, false);
              final Stream<VariantContext> stream = StreamSupport.stream(reader.spliterator(), false)) { // TODO - make true
             sampleNames = new ArrayList<>(reader.getFileHeader().getSampleNamesInOrder());
-            stream.peek(progressReporter::logVariant)
+            stream.peek(progressReporter::logItem)
                     .flatMap(meltToAltAlleles())
                     .peek(progressReporter::logAltAllele)
 
@@ -255,59 +252,30 @@ public class AnalyzeVcfCommand extends Command {
         }
     }
 
-    private static class ProgressReporter {
+    private static class ProgressReporter extends Command.ProgressReporter {
 
         /**
          * We report each n-th instance
          */
-        private final int tick;
-        private final Instant begin;
-        private final AtomicReference<Instant> localBegin;
         private final AtomicInteger allVariantCount = new AtomicInteger();
         private final AtomicInteger altAlleleCount = new AtomicInteger();
         private final AtomicInteger annotatedAltAlleleCount = new AtomicInteger();
         private final AtomicInteger pathogenicAltAlleleCount = new AtomicInteger();
 
         private ProgressReporter(int tick) {
-            this.tick = tick;
-            begin = Instant.now();
-            localBegin = new AtomicReference<>(begin);
-            LOGGER.info("Starting the analysis");
-        }
-
-        private ProgressReporter() {
-            this(5_000);
-        }
-
-        public void logVariant(Object context) {
-            final int current = allVariantCount.incrementAndGet();
-            if (current % tick == 0) {
-                final Instant end = Instant.now();
-                final Instant begin = localBegin.getAndSet(end);
-                final Duration duration = Duration.between(begin, end);
-                final long ms = duration.toMillis();
-                LOGGER.info("Processed {} items at {} items/s", current, String.format("%.2f", ((double) tick * 1000) / ms));
-            }
+            super(tick);
         }
 
         public void logAltAllele(Object variantDataBox) {
             altAlleleCount.incrementAndGet();
         }
 
-        public void logAnnotatedAllele(Object variantDataBox) {
+        public <T> void logAnnotatedAllele(T variantDataBox) {
             annotatedAltAlleleCount.incrementAndGet();
         }
 
-        public void logEligibleAllele(Object variantDataBox) {
+        public <T> void logEligibleAllele(T variantDataBox) {
             pathogenicAltAlleleCount.incrementAndGet();
-        }
-
-        public Runnable summarize() {
-            return () -> {
-                Duration duration = Duration.between(begin, Instant.now());
-                long ms = duration.toMillis();
-                LOGGER.info("Processed {} items in {}m {}s ({} ms)", allVariantCount.get(), (ms / 1000) / 60 % 60, ms / 1000 % 60, ms);
-            };
         }
 
         public AnalysisStats getAnalysisStats() {

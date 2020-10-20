@@ -9,6 +9,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 public abstract class Command {
@@ -28,28 +29,34 @@ public abstract class Command {
 
     public abstract void run(Namespace namespace) throws CommandException;
 
-    public static class ProgressReporter<T> {
+    public static class ProgressReporter {
 
         private static final Logger LOGGER = LoggerFactory.getLogger(ProgressReporter.class);
 
+        protected final Instant begin;
         /**
          * We report each n-th instance
          */
-        private static final int NOTCH = 5_000;
-
-        private final Instant begin;
+        private final int tick;
+        private final AtomicReference<Instant> localBegin;
 
         private final AtomicInteger count = new AtomicInteger(0);
 
-        public ProgressReporter() {
+        public ProgressReporter(int tick) {
+            this.tick = tick;
             begin = Instant.now();
+            localBegin = new AtomicReference<>(begin);
             LOGGER.info("Starting the analysis");
         }
 
-        public void logEntry(T entry) {
+        public <T> void logItem(T entry) {
             int current = count.incrementAndGet();
-            if (current % NOTCH == 0) {
-                LOGGER.info("Processed {} items", current);
+            if (current % tick == 0) {
+                final Instant end = Instant.now();
+                final Instant begin = localBegin.getAndSet(end);
+                final Duration duration = Duration.between(begin, end);
+                final long ms = duration.toMillis();
+                LOGGER.info("Processed {} items at {} items/s", current, String.format("%.2f", ((double) tick * 1000) / ms));
             }
         }
 
