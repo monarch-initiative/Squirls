@@ -12,18 +12,16 @@ import htsjdk.variant.variantcontext.Allele;
 import htsjdk.variant.variantcontext.VariantContext;
 import htsjdk.variant.variantcontext.VariantContextBuilder;
 import org.monarchinitiative.squirls.cli.SimpleSplicingPredictionData;
-import org.monarchinitiative.squirls.cli.cmd.analyze_vcf.SplicingVariantAlleleEvaluation;
+import org.monarchinitiative.squirls.cli.cmd.analyze_vcf.data.SplicingVariantAlleleEvaluation;
 import org.monarchinitiative.squirls.core.Metadata;
 import org.monarchinitiative.squirls.core.SplicingPredictionData;
+import org.monarchinitiative.squirls.core.classifier.PartialPrediction;
 import org.monarchinitiative.squirls.core.classifier.StandardPrediction;
 import org.monarchinitiative.squirls.core.model.SplicingTranscript;
 import org.monarchinitiative.vmvt.core.VmvtGenerator;
 import xyz.ielis.hyperutil.reference.fasta.SequenceInterval;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -77,9 +75,7 @@ public class VariantsForTesting {
          */
         final Map<String, SplicingPredictionData> predictions = Transcripts.surf2Transcripts(rd).stream()
                 .map(transcript -> new SimpleSplicingPredictionData(variant, transcript, Sequences.getSurf2Exon3Sequence(rd)))
-                .peek(data -> data.setPrediction(StandardPrediction.builder()
-                        .addProbaThresholdPair("fake", 0.93, FAKE_THRESHOLD)
-                        .build()))
+                .peek(data -> data.setPrediction(StandardPrediction.of(PartialPrediction.of("fake", 0.93, FAKE_THRESHOLD))))
                 .peek(data -> data.setMetadata(Metadata.builder()
                         .putDonorCoordinate("NM_017503.4", new GenomePosition(rd, Strand.FWD, 9, 136_224_691, PositionType.ONE_BASED))
                         .putAcceptorCoordinate("NM_017503.4", new GenomePosition(rd, Strand.FWD, 9, 136_224_587, PositionType.ONE_BASED))
@@ -147,9 +143,7 @@ public class VariantsForTesting {
          */
         final Map<String, SplicingPredictionData> predictions = Transcripts.surf2Transcripts(rd).stream()
                 .map(transcript -> new SimpleSplicingPredictionData(variant, transcript, Sequences.getSurf2Exon3Sequence(rd)))
-                .peek(data -> data.setPrediction(StandardPrediction.builder()
-                        .addProbaThresholdPair("fake", 0.94, FAKE_THRESHOLD)
-                        .build()))
+                .peek(data -> data.setPrediction(StandardPrediction.of(PartialPrediction.of("fake", 0.94, FAKE_THRESHOLD))))
                 .peek(data -> data.setMetadata(Metadata.builder()
                         .putDonorCoordinate("NM_017503.4", new GenomePosition(rd, Strand.FWD, chr, 136_224_691, PositionType.ONE_BASED))
                         .putAcceptorCoordinate("NM_017503.4", new GenomePosition(rd, Strand.FWD, chr, 136_224_587, PositionType.ONE_BASED))
@@ -223,9 +217,7 @@ public class VariantsForTesting {
          */
         final Map<String, SplicingPredictionData> predictions = transcripts.stream()
                 .map(transcript -> new SimpleSplicingPredictionData(variant, transcript, si))
-                .peek(data -> data.setPrediction(StandardPrediction.builder()
-                        .addProbaThresholdPair("fake", pathogenicity, FAKE_THRESHOLD)
-                        .build()))
+                .peek(data -> data.setPrediction(StandardPrediction.of(PartialPrediction.of("fake", pathogenicity, FAKE_THRESHOLD))))
                 .peek(data -> data.setMetadata(metadata))
                 .peek(data -> featureMap.forEach(data::putFeature))
                 .collect(Collectors.toMap(k -> k.getTranscript().getAccessionId(), Function.identity()));
@@ -293,16 +285,30 @@ public class VariantsForTesting {
                 .putDonorCoordinate("NM_000059.3", new GenomePosition(rd, Strand.FWD, chr, 32_930_747, PositionType.ONE_BASED))
                 .putAcceptorCoordinate("NM_000059.3", new GenomePosition(rd, Strand.FWD, chr, 32_930_565, PositionType.ONE_BASED))
                 .build();
-        final Map<String, Double> featureMap = Map.of(
-                "donor_offset", 2.,
-                "canonical_donor", 9.94544383637791,
-                "cryptic_donor", 1.3473990820467,
-                "acceptor_offset", 184.,
-                "canonical_acceptor", 0.,
-                "cryptic_acceptor", -2.52195449384599,
-                "phylop", 4.01000022888184,
-                "hexamer", 1.8216685,
-                "septamer", 2.1036);
+        final String featurePayload = "acceptor_offset=184.0\n" +
+                "alt_ri_best_window_acceptor=6.24199227902568\n" +
+                "alt_ri_best_window_donor=1.6462531025600458\n" +
+                "canonical_acceptor=0.0\n" +
+                "canonical_donor=9.945443836377912\n" +
+                "creates_ag_in_agez=0.0\n" +
+                "creates_yag_in_agez=0.0\n" +
+                "cryptic_acceptor=-2.5219544938459935\n" +
+                "cryptic_donor=1.3473990820467006\n" +
+                "donor_offset=2.0\n" +
+                "exon_length=182.0\n" +
+                "hexamer=1.8216685\n" +
+                "intron_length=41552.0\n" +
+                "phylop=4.010000228881836\n" +
+                "ppt_is_truncated=0.0\n" +
+                "s_strength_diff_acceptor=0.0\n" +
+                "s_strength_diff_donor=0.0\n" +
+                "septamer=2.1036\n" +
+                "wt_ri_acceptor=8.763946772871673\n" +
+                "wt_ri_donor=10.244297856891256\n" +
+                "yag_at_acceptor_minus_three=0.0";
+        final Map<String, Double> featureMap = Arrays.stream(featurePayload.split("\n"))
+                .map(line -> line.split("="))
+                .collect(Collectors.toMap(v -> v[0], v -> Double.parseDouble(v[1])));
 
         // generate graphics using Vmvt
         final String ruler = GENERATOR.getDonorSequenceRuler(
@@ -577,17 +583,31 @@ public class VariantsForTesting {
                 .putDonorCoordinate("NM_000548.3", new GenomePosition(rd, Strand.FWD, chr, 2_110_815, PositionType.ONE_BASED))
                 .putAcceptorCoordinate("NM_000548.3", new GenomePosition(rd, Strand.FWD, chr, 2_110_671, PositionType.ONE_BASED))
                 .build();
-        final Map<String, Double> featureMap = Map.of(
-                "donor_offset", -147.,
-                "canonical_donor", 0.,
-                "cryptic_donor", -10.1188705692249,
-                "acceptor_offset", -3.,
-                "canonical_acceptor", 6.74595437739346,
-                "cryptic_acceptor", 0.,
-                "phylop", 1.12600004673004,
-                "hexamer", 2.10609255,
-                "septamer", 1.6312
-        );
+
+        final String featurePayload = "acceptor_offset=-3.0\n" +
+                "alt_ri_best_window_acceptor=-2.95580052736842\n" +
+                "alt_ri_best_window_donor=-1.9417000079717732\n" +
+                "canonical_acceptor=6.745954377393462\n" +
+                "canonical_donor=0.0\n" +
+                "creates_ag_in_agez=0.0\n" +
+                "creates_yag_in_agez=0.0\n" +
+                "cryptic_acceptor=0.0\n" +
+                "cryptic_donor=-10.118870569224883\n" +
+                "donor_offset=-147.0\n" +
+                "exon_length=144.0\n" +
+                "hexamer=2.1060925499999996\n" +
+                "intron_length=27632.0\n" +
+                "phylop=1.1260000467300415\n" +
+                "ppt_is_truncated=0.0\n" +
+                "s_strength_diff_acceptor=0.0\n" +
+                "s_strength_diff_donor=0.0\n" +
+                "septamer=1.6312000000000002\n" +
+                "wt_ri_acceptor=3.7901538500250416\n" +
+                "wt_ri_donor=8.17717056125311\n" +
+                "yag_at_acceptor_minus_three=1.0";
+        final Map<String, Double> featureMap = Arrays.stream(featurePayload.split("\n"))
+                .map(line -> line.split("="))
+                .collect(Collectors.toMap(v -> v[0], v -> Double.parseDouble(v[1])));
 
         // generate graphics using Vmvt
         final String logo = GENERATOR.getAcceptorSequenceRuler("tgtgctggccgggctcgtgttccagGC", "tgtgctggccgggctcgtgttcgagGC");

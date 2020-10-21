@@ -12,8 +12,7 @@ import net.sourceforge.argparse4j.inf.Namespace;
 import net.sourceforge.argparse4j.inf.Subparser;
 import net.sourceforge.argparse4j.inf.Subparsers;
 import org.monarchinitiative.squirls.cli.cmd.Command;
-import org.monarchinitiative.squirls.cli.cmd.CommandException;
-import org.monarchinitiative.squirls.core.Prediction;
+import org.monarchinitiative.squirls.cli.cmd.ProgressReporter;
 import org.monarchinitiative.squirls.core.SplicingPredictionData;
 import org.monarchinitiative.squirls.core.VariantSplicingEvaluator;
 import org.slf4j.Logger;
@@ -22,6 +21,9 @@ import org.springframework.stereotype.Component;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
@@ -59,15 +61,11 @@ public class AnnotateVcfCommand extends Command {
         // `annotate-vcf` command
         Subparser annotateVcfParser = subparsers.addParser("annotate-vcf")
                 .setDefault("cmd", "annotate-vcf")
-                .help("annotate VCF file with splicing scores");
+                .help("annotate VCF file with Squirls scores");
         annotateVcfParser.addArgument("input")
                 .help("path to VCF file");
         annotateVcfParser.addArgument("output")
                 .help("where to write the output VCF file");
-        annotateVcfParser.addArgument("-t", "--threshold")
-                .type(Double.class)
-                .setDefault(.2)
-                .help("add `SQUIRLS` flag to variants with predicted pathogenicity above this value");
     }
 
     /**
@@ -88,71 +86,87 @@ public class AnnotateVcfCommand extends Command {
      * Annotate and return a single {@link VariantContext}.
      *
      * @param evaluator variant splicing evaluator to use
-     * @param threshold flag variants with predicted pathogenicity value above this threshold with `SQUIRLS` field
      * @return annotated {@link VariantContext}
      */
-    private static UnaryOperator<VariantContext> annotateVariant(VariantSplicingEvaluator evaluator, double threshold) {
+    private static UnaryOperator<VariantContext> annotateVariant(VariantSplicingEvaluator evaluator) {
         return vc -> {
+            // variant labeled as pathogenic if at least one ALT allele is pathogenic
             boolean isPathogenic = false;
-            String annotation = null;
+
+            // get prediction
+            final List<String> annotations = new ArrayList<>(vc.getAlternateAlleles().size());
             for (Allele allele : vc.getAlternateAlleles()) {
                 final Map<String, SplicingPredictionData> predictionData = evaluator.evaluate(vc.getContig(), vc.getStart(), vc.getReference().getBaseString(), allele.getBaseString());
                 if (predictionData.isEmpty()) {
                     continue;
                 }
-                isPathogenic = predictionData.values().stream()
-                        .map(SplicingPredictionData::getPrediction)
-                        .mapToDouble(Prediction::getMaxPathogenicity)
-                        .anyMatch(pathogenicity -> pathogenicity > threshold);
-                annotation = predictionData.entrySet().stream()
+                // is the ALT allele pathogenic wrt any overlapping transcript?
+                isPathogenic = isPathogenic || predictionData.values().stream()
+                        .anyMatch(spd -> spd.getPrediction().isPositive());
+
+                // prediction string wrt all overlapping transcripts
+                String txPredictions = predictionData.entrySet().stream()
+                        // tx_accession=score
                         .map(entry -> String.format("%s=%f", entry.getKey(), entry.getValue().getPrediction().getMaxPathogenicity()))
                         .collect(Collectors.joining("|", String.format("%s|", allele.getBaseString()), ""));
+                annotations.add(txPredictions);
             }
+
+            // join predictions for individual ALT alleles
+            final String annotationLine = String.join("&", annotations);
 
             return new VariantContextBuilder(vc)
                     .attribute("SQUIRLS", isPathogenic)
-                    .attribute("SQUIRLS_SCORE", annotation)
+                    .attribute("SQUIRLS_SCORE", annotationLine)
                     .make();
         };
     }
 
     @Override
-    public void run(Namespace namespace) throws CommandException {
-        /*
-        - open VCF file
-        - extend header
-        - iterate
-         */
+    public void run(Namespace namespace) {
         final Path inputPath = Paths.get(namespace.getString("input"));
-        LOGGER.debug("Reading variants from `{}`", inputPath);
+        LOGGER.info("Reading variants from `{}`", inputPath);
         final Path outputPath = Paths.get(namespace.getString("output"));
-        LOGGER.debug("Writing annotated variants to `{}`", outputPath);
-        final double threshold = namespace.getDouble("threshold");
-        LOGGER.debug("Adding `SQUIRLS` label to variants with predicted pathogenicity value above `{}`", threshold);
+        LOGGER.info("Writing annotated variants to `{}`", outputPath);
 
-        // initialize progress logging
         // TODO: 29. 5. 2020 improve behavior & logging
         // e.g. report progress in % if variant index and thus count is available
-        final ProgressReporter<VariantContext> progressReporter = new ProgressReporter<>();
-        try (final VCFFileReader reader = new VCFFileReader(inputPath, false);
-             final CloseableIterator<VariantContext> variantIterator = reader.iterator();
-             final VariantContextWriter writer = new VariantContextWriterBuilder()
-                     .setOption(Options.ALLOW_MISSING_FIELDS_IN_HEADER)
-                     .unsetOption(Options.INDEX_ON_THE_FLY)
-                     .setOutputPath(outputPath)
-                     .setOutputFileType(VariantContextWriterBuilder.OutputType.VCF)
-                     .build()) {
-            final VCFHeader header = reader.getFileHeader();
-            // extend header and write it out
-            final VCFHeader extended = extendHeader(header);
+        final VCFHeader header;
+        final ProgressReporter progressReporter = new ProgressReporter(5_000);
+        final List<VariantContext> annotated = Collections.synchronizedList(new ArrayList<>());
 
-            writer.writeHeader(extended);
+        try (final VCFFileReader reader = new VCFFileReader(inputPath, false);
+             final CloseableIterator<VariantContext> variantIterator = reader.iterator()) {
+
+            // extend the header from the input VCF
+            header = reader.getFileHeader();
+
+            // annotate the variants
             try (final Stream<VariantContext> stream = variantIterator.stream()) {
-                stream.map(annotateVariant(evaluator, threshold))
-                        .peek(progressReporter::logEntry)
+                stream.parallel()
+                        .map(annotateVariant(evaluator))
+                        .peek(progressReporter::logItem)
                         .onClose(progressReporter.summarize())
-                        .forEach(writer::add);
+                        .forEach(annotated::add);
             }
+        }
+
+        // write out the results
+        LOGGER.info("Writing out the results");
+        try (final VariantContextWriter writer = new VariantContextWriterBuilder()
+                .setReferenceDictionary(header.getSequenceDictionary())
+                .setOutputPath(outputPath)
+                .setOutputFileType(VariantContextWriterBuilder.OutputType.VCF)
+                .setOption(Options.ALLOW_MISSING_FIELDS_IN_HEADER)
+//                     .unsetOption(Options.INDEX_ON_THE_FLY)
+                .build()) {
+            // extend header with Squirls fields and write it out
+            writer.writeHeader(extendHeader(header));
+
+            // write out the annotated variants
+            annotated.stream()
+                    .sorted(header.getVCFRecordComparator())
+                    .forEach(writer::add);
         }
     }
 }

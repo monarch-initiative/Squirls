@@ -1,6 +1,8 @@
 package org.monarchinitiative.squirls.core.classifier.transform.prediction;
 
-import org.monarchinitiative.squirls.core.Prediction;
+import org.monarchinitiative.squirls.core.classifier.Constants;
+import org.monarchinitiative.squirls.core.classifier.PartialPrediction;
+import org.monarchinitiative.squirls.core.classifier.Prediction;
 import org.monarchinitiative.squirls.core.classifier.StandardPrediction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,11 +57,11 @@ public class RegularLogisticRegression implements PredictionTransformer {
 
     @Override
     public <T extends MutablePrediction> T transform(T data) {
-        final Map<String, Prediction.PartialPrediction> predictions = data.getPrediction().getPartialPredictions().stream()
-                .collect(Collectors.toMap(Prediction.PartialPrediction::getName, Function.identity()));
+        final Map<String, PartialPrediction> predictions = data.getPrediction().getPartialPredictions().stream()
+                .collect(Collectors.toMap(PartialPrediction::getName, Function.identity()));
 
         // this currently matches the strings set to Pipelines when deserializing donor and acceptor pipelines
-        if (!predictions.containsKey("donor") || !predictions.containsKey("acceptor")) {
+        if (!predictions.containsKey(Constants.DONOR_PIPE_NAME) || !predictions.containsKey(Constants.ACCEPTOR_PIPE_NAME)) {
             // cannot perform transformation
             if (reportMissingPrediction.compareAndSet(true, false)) {
                 LOGGER.warn("Missing prediction for `donor` or `acceptor` site in `{}`. Other missing predictions will not be reported.", data);
@@ -67,22 +69,19 @@ public class RegularLogisticRegression implements PredictionTransformer {
             return data;
         }
 
-        final Prediction transformed = transform(predictions.get("donor"), predictions.get("acceptor"));
+        final Prediction transformed = transform(predictions.get(Constants.DONOR_PIPE_NAME), predictions.get(Constants.ACCEPTOR_PIPE_NAME));
 
         data.setPrediction(transformed);
         return data;
     }
 
-    private Prediction transform(Prediction.PartialPrediction donor, Prediction.PartialPrediction acceptor) {
+    private Prediction transform(PartialPrediction donor, PartialPrediction acceptor) {
         // scale the pathogenicity
         double patho = logistic(donor.getPathoProba(), acceptor.getPathoProba());
 
         // then scale the threshold
         double threshold = logistic(donor.getThreshold(), acceptor.getThreshold());
-
-        return StandardPrediction.builder()
-                .addProbaThresholdPair(getName(), patho, threshold)
-                .build();
+        return StandardPrediction.of(PartialPrediction.of(getName(), patho, threshold));
     }
 
     private double logistic(double donor, double acceptor) {

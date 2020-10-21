@@ -27,9 +27,9 @@
 ##contig=<ID=chrX,length=155270560>
 ##contig=<ID=chrY,length=59373566>
 #CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO	FORMAT	Example
-chr13	32930748	BRCA2_donor_2bp_downstream_exon15_quid	T	G	1000	.	AC=2;AF=2	GT	1/1
-chr9	136224694	SURF2_donor_4bp_downstream_exon3	A	T	1000	.	AC=2;AF=2	GT	1/1
 chr3	165504107	BCHE_acceptor_8bp_upstream	A	C	1000	.	AC=2;AF=2	GT	1/1
-chr12	6132066	VWF_acceptor_2bp_upstream_exon26_quid	T	C	1000	.	AC=2;AF=2	GT	1/1
 chrX	107849964	COL4A5_acceptor_8bp_upstream_exon29	T	A	1000	.	AC=2;AF=2	GT	1/1
+chr9	136224694	SURF2_donor_4bp_downstream_exon3	A	T	1000	.	AC=2;AF=2	GT	1/1
+chr12	6132066	VWF_acceptor_2bp_upstream_exon26_quid	T	C	1000	.	AC=2;AF=2	GT	1/1
+chr13	32930748	BRCA2_donor_2bp_downstream_exon15_quid	T	G	1000	.	AC=2;AF=2	GT	1/1
 chr2	47702319	MSH2_cryptic_donor_SORT	C	T	1000	.	AC=2;AF=2	GT	1/1

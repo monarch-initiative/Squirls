@@ -9,6 +9,10 @@ import org.monarchinitiative.squirls.core.scoring.Annotatable;
  */
 public interface SplicingPredictionData extends Annotatable, Classifiable {
 
+    static SplicingPredictionData emptyPredictionData() {
+        return EmptySplicingPredictionData.getInstance();
+    }
+
     /**
      * Get the feature value after casting the value to double.
      *

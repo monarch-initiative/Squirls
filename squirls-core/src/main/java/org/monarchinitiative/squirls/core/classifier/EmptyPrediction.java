@@ -1,14 +1,12 @@
 package org.monarchinitiative.squirls.core.classifier;
 
-import org.monarchinitiative.squirls.core.Prediction;
-
 import java.util.Collection;
 import java.util.Collections;
 
 /**
  * Class representing N/A prediction.
  */
-public class EmptyPrediction implements Prediction {
+class EmptyPrediction implements Prediction {
 
     private static final EmptyPrediction INSTANCE = new EmptyPrediction();
 
@@ -17,7 +15,7 @@ public class EmptyPrediction implements Prediction {
     }
 
 
-    public static EmptyPrediction getInstance() {
+    static EmptyPrediction getInstance() {
         return INSTANCE;
     }
 

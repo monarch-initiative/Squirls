@@ -2,7 +2,6 @@ package org.monarchinitiative.squirls.core.classifier;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.monarchinitiative.squirls.core.Prediction;
 import org.monarchinitiative.squirls.core.TestDataSourceConfig;
 import org.monarchinitiative.squirls.core.classifier.forest.RandomForest;
 import org.monarchinitiative.squirls.core.classifier.io.DecisionTreeTransferModel;

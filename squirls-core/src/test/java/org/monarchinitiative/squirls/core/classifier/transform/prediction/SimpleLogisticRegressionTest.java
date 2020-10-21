@@ -3,12 +3,14 @@ package org.monarchinitiative.squirls.core.classifier.transform.prediction;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
-import org.monarchinitiative.squirls.core.Prediction;
+import org.monarchinitiative.squirls.core.classifier.PartialPrediction;
+import org.monarchinitiative.squirls.core.classifier.Prediction;
 import org.monarchinitiative.squirls.core.classifier.StandardPrediction;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 
+@Deprecated
 public class SimpleLogisticRegressionTest {
 
     private static final double EPSILON = 5E-6;
@@ -43,14 +45,12 @@ public class SimpleLogisticRegressionTest {
         double expectedThreshold = 0.871527;
 
         MutablePrediction mp = new SimpleMutablePrediction();
-        mp.setPrediction(StandardPrediction.builder()
-                .addProbaThresholdPair("bla", proba, threshold)
-                .build());
+        mp.setPrediction(StandardPrediction.of(PartialPrediction.of("bla", proba, threshold)));
 
         Prediction transformed = transformer.transform(mp).getPrediction();
         assertThat(transformed.getPartialPredictions(), hasSize(1));
 
-        @SuppressWarnings("OptionalGetWithoutIsPresent") final Prediction.PartialPrediction partial = transformed.getPartialPredictions().stream().findFirst().get();
+        @SuppressWarnings("OptionalGetWithoutIsPresent") final PartialPrediction partial = transformed.getPartialPredictions().stream().findFirst().get();
         assertThat(partial.getPathoProba(), is(closeTo(expectedProba, EPSILON)));
         assertThat(partial.getThreshold(), is(closeTo(expectedThreshold, EPSILON)));
     }

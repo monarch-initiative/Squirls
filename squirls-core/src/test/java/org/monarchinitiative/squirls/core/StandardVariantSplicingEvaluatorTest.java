@@ -7,6 +7,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
+import org.monarchinitiative.squirls.core.classifier.PartialPrediction;
 import org.monarchinitiative.squirls.core.classifier.SquirlsClassifier;
 import org.monarchinitiative.squirls.core.classifier.StandardPrediction;
 import org.monarchinitiative.squirls.core.classifier.transform.prediction.IdentityTransformer;
@@ -107,10 +108,9 @@ class StandardVariantSplicingEvaluatorTest {
         when(annotator.annotate(plain)).thenReturn(annotated);
 
         // 3 - classifier
-        StandardPrediction prediction = StandardPrediction.builder()
-                .addProbaThresholdPair("donor", .6, .7)
-                .addProbaThresholdPair("acceptor", .1, .6)
-                .build();
+        StandardPrediction prediction = StandardPrediction.of(
+                PartialPrediction.of("donor", .6, .7),
+                PartialPrediction.of("acceptor", .1, .6));
         final StandardSplicingPredictionData predicted = StandardSplicingPredictionData.of(variant, stx, SI);
         predicted.putFeature("donor_offset", 5);
         predicted.putFeature("acceptor_offset", 1234); // not real
@@ -197,10 +197,9 @@ class StandardVariantSplicingEvaluatorTest {
         final SplicingPredictionData predicted = StandardSplicingPredictionData.of(variant, stx, SI);
         predicted.putFeature("donor_offset", 5);
         predicted.putFeature("acceptor_offset", 1234); // not real
-        predicted.setPrediction(StandardPrediction.builder()
-                .addProbaThresholdPair("donor", .6, .7)
-                .addProbaThresholdPair("acceptor", .1, .6)
-                .build());
+        predicted.setPrediction(StandardPrediction.of(
+                PartialPrediction.of("donor", .6, .7),
+                PartialPrediction.of("acceptor", .1, .6)));
 
         when(classifier.predict(annotated)).thenReturn(predicted);
 

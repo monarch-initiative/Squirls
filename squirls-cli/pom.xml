@@ -5,11 +5,15 @@
     <parent>
         <artifactId>Squirls</artifactId>
         <groupId>org.monarchinitiative.squirls</groupId>
-        <version>1.0.0-RC1</version>
+        <version>1.0.0-RC2</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>squirls-cli</artifactId>
+
+    <properties>
+        <vmvt.version>0.9.1</vmvt.version>
+    </properties>
 
     <build>
         <plugins>
@@ -40,7 +44,16 @@
                     <groupId>org.testng</groupId>
                     <artifactId>testng</artifactId>
                 </exclusion>
+                <exclusion>
+                    <groupId>com.github.samtools</groupId>
+                    <artifactId>htsjdk</artifactId>
+                </exclusion>
             </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-csv</artifactId>
+            <version>1.7</version>
         </dependency>
 
         <dependency>
