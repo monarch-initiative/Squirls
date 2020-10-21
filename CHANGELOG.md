@@ -1,9 +1,11 @@
 # Changelog
 
 ## ✈ the latest
+
+## ✈ v1.0.0-RC2
 - `squirls-cli`
   - implement commands `annotate-csv`, `annotate-vcf`, and `annotate-pos`
-  - prettify the HTML report
+  - prettify the HTML report produced by `analyze-vcf` command
 - `squirls-core`
   - performance improvements, increase test coverage
   - improve handling of positions with missing conservation scores
