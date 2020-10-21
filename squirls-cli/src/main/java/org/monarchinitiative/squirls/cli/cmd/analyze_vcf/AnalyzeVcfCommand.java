@@ -72,8 +72,8 @@ public class AnalyzeVcfCommand extends Command {
                 .help("path to Jannovar transcript database");
         annotateVcfParser.addArgument("-t", "--threshold")
                 .type(Double.class)
-                .setDefault(.2)
-                .help("include variants with predicted pathogenicity above this value into the report");
+                .setDefault(.0)
+                .help("the variants with predicted pathogenicity above the threshold are included into the report");
         annotateVcfParser.addArgument("input")
                 .help("path to input VCF file");
         annotateVcfParser.addArgument("-o", "--output")
