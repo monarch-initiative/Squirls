@@ -7,7 +7,7 @@
     <groupId>org.monarchinitiative.squirls</groupId>
     <artifactId>Squirls</artifactId>
     <packaging>pom</packaging>
-    <version>1.0.0-RC1</version>
+    <version>1.0.0-RC2</version>
     <modules>
         <module>squirls-core</module>
         <module>squirls-ingest</module>
@@ -44,6 +44,14 @@
             <organizationUrl>https://www.jax.org</organizationUrl>
         </developer>
     </developers>
+
+
+    <scm>
+        <connection>scm:git:git@github.com:TheJacksonLaboratory/Squirls.git</connection>
+        <developerConnection>scm:git:git@github.com:TheJacksonLaboratory/Squirls.git</developerConnection>
+        <url>scm:git:git@github.com:TheJacksonLaboratory/Squirls.git</url>
+        <tag>v${project.version}</tag>
+    </scm>
 
     <parent>
         <groupId>org.springframework.boot</groupId>
