@@ -18,7 +18,10 @@ import net.sourceforge.argparse4j.inf.Subparser;
 import net.sourceforge.argparse4j.inf.Subparsers;
 import org.monarchinitiative.squirls.cli.cmd.Command;
 import org.monarchinitiative.squirls.cli.cmd.CommandException;
-import org.monarchinitiative.squirls.cli.cmd.analyze_vcf.visualization.SplicingVariantGraphicsGenerator;
+import org.monarchinitiative.squirls.cli.cmd.analyze_vcf.data.AnalysisResults;
+import org.monarchinitiative.squirls.cli.cmd.analyze_vcf.data.SettingsData;
+import org.monarchinitiative.squirls.cli.cmd.analyze_vcf.data.SplicingVariantAlleleEvaluation;
+import org.monarchinitiative.squirls.cli.visualization.SplicingVariantGraphicsGenerator;
 import org.monarchinitiative.squirls.core.SplicingPredictionData;
 import org.monarchinitiative.squirls.core.VariantSplicingEvaluator;
 import org.slf4j.Logger;
@@ -30,10 +33,7 @@ import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.time.Duration;
-import java.time.Instant;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
@@ -72,8 +72,8 @@ public class AnalyzeVcfCommand extends Command {
                 .help("path to Jannovar transcript database");
         annotateVcfParser.addArgument("-t", "--threshold")
                 .type(Double.class)
-                .setDefault(.2)
-                .help("include variants with predicted pathogenicity above this value into the report");
+                .setDefault(.0)
+                .help("the variants with predicted pathogenicity above the threshold are included into the report");
         annotateVcfParser.addArgument("input")
                 .help("path to input VCF file");
         annotateVcfParser.addArgument("-o", "--output")
@@ -134,12 +134,11 @@ public class AnalyzeVcfCommand extends Command {
      * @param generator use the generator to make the graphics
      * @return variant with graphics
      */
-    private static UnaryOperator<SplicingVariantAlleleEvaluation> generateGraphics(SplicingVariantGraphicsGenerator generator) {
-        return variant -> {
-            final String graphics = generator.generateGraphics(variant);
-            variant.setGraphics(graphics);
-            return variant;
-        };
+    private static Function<SplicingVariantAlleleEvaluation, PresentableVariant> generatePresentableVariant(SplicingVariantGraphicsGenerator generator) {
+        return variant -> PresentableVariant.of(variant.getRepresentation(),
+                variant.getAnnotations().getHighestImpactAnnotation().getGeneSymbol(),
+                variant.getPrimaryPrediction().getPrediction().getMaxPathogenicity(),
+                generator.generateGraphics(variant));
     }
 
     /**
@@ -203,14 +202,14 @@ public class AnalyzeVcfCommand extends Command {
 
         final VariantAnnotator annotator = new VariantAnnotator(jannovarData.getRefDict(), jannovarData.getChromosomes(), new AnnotationBuilderOptions());
 
-        final ProgressReporter progressReporter = new ProgressReporter();
+        final AnalyzeVcfProgressReporter progressReporter = new AnalyzeVcfProgressReporter(5_000);
         final List<String> sampleNames;
-        final Collection<SplicingVariantAlleleEvaluation> annotated = Collections.synchronizedList(new LinkedList<>());
+        final Collection<PresentableVariant> variants = Collections.synchronizedList(new LinkedList<>());
 
         try (final VCFFileReader reader = new VCFFileReader(inputPath, false);
-             final Stream<VariantContext> stream = StreamSupport.stream(reader.spliterator(), false)) { // TODO - make true
+             final Stream<VariantContext> stream = StreamSupport.stream(reader.spliterator(), true)) { // TODO - make true
             sampleNames = new ArrayList<>(reader.getFileHeader().getSampleNamesInOrder());
-            stream.peek(progressReporter::logVariant)
+            stream.peek(progressReporter::logItem)
                     .flatMap(meltToAltAlleles())
                     .peek(progressReporter::logAltAllele)
 
@@ -226,15 +225,15 @@ public class AnalyzeVcfCommand extends Command {
                     .peek(progressReporter::logEligibleAllele)
 
                     // graphics generation for predicted deleterious variants
-                    .map(generateGraphics(graphicsGenerator))
+                    .map(generatePresentableVariant(graphicsGenerator))
 
                     .onClose(progressReporter.summarize())
-                    .forEach(annotated::add);
+                    .forEach(variants::add);
         }
 
         final AnalysisResults results = AnalysisResults.builder()
                 .addAllSampleNames(sampleNames)
-                .variantData(annotated)
+                .variants(variants)
                 .analysisStats(progressReporter.getAnalysisStats())
                 .settingsData(SettingsData.builder()
                         .threshold(threshold)
@@ -251,53 +250,4 @@ public class AnalyzeVcfCommand extends Command {
         }
     }
 
-    private static class ProgressReporter {
-
-        private final Instant begin;
-        private final AtomicInteger allVariantCount = new AtomicInteger();
-        private final AtomicInteger altAlleleCount = new AtomicInteger();
-        private final AtomicInteger annotatedAltAlleleCount = new AtomicInteger();
-        private final AtomicInteger pathogenicAltAlleleCount = new AtomicInteger();
-
-        private ProgressReporter() {
-            begin = Instant.now();
-            LOGGER.info("Starting the analysis");
-        }
-
-        public void logVariant(Object context) {
-            final int current = allVariantCount.incrementAndGet();
-            if (current % 10_000 == 0) {
-                LOGGER.info("Processed {} variants", current);
-            }
-        }
-
-        public void logAltAllele(Object variantDataBox) {
-            altAlleleCount.incrementAndGet();
-        }
-
-        public void logAnnotatedAllele(Object variantDataBox) {
-            annotatedAltAlleleCount.incrementAndGet();
-        }
-
-        public void logEligibleAllele(Object variantDataBox) {
-            pathogenicAltAlleleCount.incrementAndGet();
-        }
-
-        public Runnable summarize() {
-            return () -> {
-                Duration duration = Duration.between(begin, Instant.now());
-                long ms = duration.toMillis();
-                LOGGER.info("Processed {} items in {}m {}s ({} ms)", allVariantCount.get(), (ms / 1000) / 60 % 60, ms / 1000 % 60, ms);
-            };
-        }
-
-        public AnalysisStats getAnalysisStats() {
-            return AnalysisStats.builder()
-                    .allVariants(allVariantCount.get())
-                    .alleleCount(altAlleleCount.get())
-                    .annotatedAlleleCount(annotatedAltAlleleCount.get())
-                    .pathogenicAlleleCount(pathogenicAltAlleleCount.get())
-                    .build();
-        }
-    }
 }

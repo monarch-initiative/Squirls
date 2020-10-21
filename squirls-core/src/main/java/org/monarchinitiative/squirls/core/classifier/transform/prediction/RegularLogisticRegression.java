@@ -1,6 +1,7 @@
 package org.monarchinitiative.squirls.core.classifier.transform.prediction;
 
 import org.monarchinitiative.squirls.core.classifier.Constants;
+import org.monarchinitiative.squirls.core.classifier.PartialPrediction;
 import org.monarchinitiative.squirls.core.classifier.Prediction;
 import org.monarchinitiative.squirls.core.classifier.StandardPrediction;
 import org.slf4j.Logger;
@@ -56,8 +57,8 @@ public class RegularLogisticRegression implements PredictionTransformer {
 
     @Override
     public <T extends MutablePrediction> T transform(T data) {
-        final Map<String, Prediction.PartialPrediction> predictions = data.getPrediction().getPartialPredictions().stream()
-                .collect(Collectors.toMap(Prediction.PartialPrediction::getName, Function.identity()));
+        final Map<String, PartialPrediction> predictions = data.getPrediction().getPartialPredictions().stream()
+                .collect(Collectors.toMap(PartialPrediction::getName, Function.identity()));
 
         // this currently matches the strings set to Pipelines when deserializing donor and acceptor pipelines
         if (!predictions.containsKey(Constants.DONOR_PIPE_NAME) || !predictions.containsKey(Constants.ACCEPTOR_PIPE_NAME)) {
@@ -74,13 +75,13 @@ public class RegularLogisticRegression implements PredictionTransformer {
         return data;
     }
 
-    private Prediction transform(Prediction.PartialPrediction donor, Prediction.PartialPrediction acceptor) {
+    private Prediction transform(PartialPrediction donor, PartialPrediction acceptor) {
         // scale the pathogenicity
         double patho = logistic(donor.getPathoProba(), acceptor.getPathoProba());
 
         // then scale the threshold
         double threshold = logistic(donor.getThreshold(), acceptor.getThreshold());
-        return StandardPrediction.of(Prediction.PartialPrediction.of(getName(), patho, threshold));
+        return StandardPrediction.of(PartialPrediction.of(getName(), patho, threshold));
     }
 
     private double logistic(double donor, double acceptor) {

@@ -3,6 +3,7 @@
 ## ✈ the latest
 - `squirls-cli`
   - implement commands `annotate-csv`, `annotate-vcf`, and `annotate-pos`
+  - prettify the HTML report
 - `squirls-core`
   - performance improvements, increase test coverage
   - improve handling of positions with missing conservation scores

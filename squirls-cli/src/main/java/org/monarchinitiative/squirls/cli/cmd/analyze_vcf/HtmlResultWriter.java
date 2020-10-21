@@ -1,5 +1,6 @@
 package org.monarchinitiative.squirls.cli.cmd.analyze_vcf;
 
+import org.monarchinitiative.squirls.cli.cmd.analyze_vcf.data.AnalysisResults;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.thymeleaf.TemplateEngine;
@@ -11,7 +12,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
-import java.util.Locale;
 
 /**
  * This class takes {@link AnalysisResults}, processes the content into HTML format using the appropriate template and
@@ -24,7 +24,6 @@ public class HtmlResultWriter {
     private final TemplateEngine templateEngine;
 
     public HtmlResultWriter() {
-        Locale.setDefault(Locale.US);
         ClassLoaderTemplateResolver templateResolver = new ClassLoaderTemplateResolver();
         templateResolver.setTemplateMode(TemplateMode.HTML);
         templateResolver.setPrefix("templates/");
@@ -42,7 +41,7 @@ public class HtmlResultWriter {
             context.setVariable("sampleName", String.join(", ", results.getSampleNames()));
             context.setVariable("settings", results.getSettingsData());
             context.setVariable("stats", results.getAnalysisStats());
-            context.setVariable("variants", results.getVariantData());
+            context.setVariable("variants", results.getVariants());
 
             templateEngine.process("results", context, writer);
         }

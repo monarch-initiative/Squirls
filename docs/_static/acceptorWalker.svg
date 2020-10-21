@@ -1,0 +1,99 @@
+<svg width="420" height="180" xmlns="http://www.w3.org/2000/svg">
+    <!-- Created by vmvt -->
+    <style>
+        text { font: 24px courier, monospace; }
+        text.t20 { font: 20px courier, monospace; }
+        text.t14 { font: 14px courier, monospace; }
+    </style>
+    <g>
+        <g transform='translate(370.000000,51)  scale(1,7.965784)  rotate(180)'>
+            <text x="0" y="0" fill="#ff9900" opacity="0.8" style="text-shadow: 1px 1px #000000;">g</text>
+        </g>
+        <g transform='translate(25.000000,51)  scale(1,0.046921)  rotate(180)'>
+            <text x="0" y="0" fill="#4dbbd5">c</text>
+        </g>
+        <g transform='translate(40.000000,51)  scale(1,0.017417)  rotate(180)'>
+            <text x="0" y="0" fill="#4dbbd5">c</text>
+        </g>
+        <g transform='translate(40,50) scale(1,0.518031)'>
+            <text x="0" y="0" fill="#e64b35">t</text>
+        </g>
+        <g transform='translate(70.000000,51)  scale(1,0.727380)  rotate(180)'>
+            <text x="0" y="0" fill="#ff9900">g</text>
+        </g>
+        <g transform='translate(85.000000,51)  scale(1,0.727380)  rotate(180)'>
+            <text x="0" y="0" fill="#ff9900">g</text>
+        </g>
+        <g transform='translate(85,50) scale(1,0.028569)'>
+            <text x="0" y="0" fill="#4dbbd5">c</text>
+        </g>
+        <g transform='translate(100,50) scale(1,0.710173)'>
+            <text x="0" y="0" fill="#e64b35">t</text>
+        </g>
+        <g transform='translate(130.000000,51)  scale(1,0.816037)  rotate(180)'>
+            <text x="0" y="0" fill="#ff9900">g</text>
+        </g>
+        <g transform='translate(145.000000,51)  scale(1,0.857260)  rotate(180)'>
+            <text x="0" y="0" fill="#ff9900">g</text>
+        </g>
+        <g transform='translate(145,50) scale(1,0.132248)'>
+            <text x="0" y="0" fill="#4dbbd5">c</text>
+        </g>
+        <g transform='translate(175.000000,51)  scale(1,0.965784)  rotate(180)'>
+            <text x="0" y="0" fill="#ff9900">g</text>
+        </g>
+        <g transform='translate(190.000000,51)  scale(1,1.035047)  rotate(180)'>
+            <text x="0" y="0" fill="#ff9900">g</text>
+        </g>
+        <g transform='translate(190,50) scale(1,0.132248)'>
+            <text x="0" y="0" fill="#4dbbd5">c</text>
+        </g>
+        <g transform='translate(220.000000,51)  scale(1,1.365871)  rotate(180)'>
+            <text x="0" y="0" fill="#00A087">a</text>
+        </g>
+        <g transform='translate(220,50) scale(1,0.051024)'>
+            <text x="0" y="0" fill="#4dbbd5">c</text>
+        </g>
+        <g transform='translate(235,50) scale(1,0.168642)'>
+            <text x="0" y="0" fill="#4dbbd5">c</text>
+        </g>
+        <g transform='translate(265.000000,51)  scale(1,1.132894)  rotate(180)'>
+            <text x="0" y="0" fill="#ff9900">g</text>
+        </g>
+        <g transform='translate(280.000000,51)  scale(1,1.265345)  rotate(180)'>
+            <text x="0" y="0" fill="#ff9900">g</text>
+        </g>
+        <g transform='translate(295.000000,51)  scale(1,1.426625)  rotate(180)'>
+            <text x="0" y="0" fill="#ff9900">g</text>
+        </g>
+        <g transform='translate(295,50) scale(1,1.011496)'>
+            <text x="0" y="0" fill="#e64b35">t</text>
+        </g>
+        <g transform='translate(325.000000,51)  scale(1,1.921390)  rotate(180)'>
+            <text x="0" y="0" fill="#ff9900">g</text>
+        </g>
+        <g transform='translate(325,50) scale(1,0.121679)'>
+            <text x="0" y="0" fill="#4dbbd5">c</text>
+        </g>
+        <g transform='translate(340,50) scale(1,1.365133)'>
+            <text x="0" y="0" fill="#4dbbd5">c</text>
+        </g>
+        <g transform='translate(355,50) scale(1,1.995665)'>
+            <text x="0" y="0" fill="#00A087">a</text>
+        </g>
+        <g transform='translate(370,50) scale(1,1.994218)'>
+            <text x="0" y="0" fill="#ff9900">g</text>
+        </g>
+        <g transform='translate(385,50) scale(1,0.935083)'>
+            <text x="0" y="0" fill="#ff9900">g</text>
+        </g>
+        <g transform='translate(400,50) scale(1,0.545968)'>
+            <text x="0" y="0" fill="#e64b35">t</text>
+        </g>
+        <g fill="none" stroke="black" stroke-width="1">
+            <path stroke-dasharray="2,2" d="M10 50 L420 50"/>
+        </g>
+        <rect x="355.000000" y="26" width="15" height="119" rx="2" fill-opacity="0.1"
+              style="stroke-width:1; stroke:rgb(4, 12, 4);"/>
+    </g>
+</svg>

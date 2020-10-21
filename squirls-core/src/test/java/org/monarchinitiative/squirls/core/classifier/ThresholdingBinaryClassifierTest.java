@@ -37,7 +37,7 @@ public class ThresholdingBinaryClassifierTest {
         when(classifier.getName()).thenReturn(clfName);
         when(classifier.predictProba(data)).thenReturn(.5);
 
-        final Prediction.PartialPrediction prediction = instance.runPrediction(data);
+        final PartialPrediction prediction = instance.runPrediction(data);
 
         assertThat(prediction.getName(), is(clfName));
         assertThat(prediction.getPathoProba(), is(.5));

@@ -6,19 +6,29 @@ import de.charite.compbio.jannovar.data.JannovarData;
 import de.charite.compbio.jannovar.data.JannovarDataSerializer;
 import de.charite.compbio.jannovar.data.ReferenceDictionary;
 import de.charite.compbio.jannovar.data.SerializationException;
+import org.monarchinitiative.squirls.cli.visualization.SimpleVisualizationContextSelector;
+import org.monarchinitiative.squirls.cli.visualization.VisualizationContextSelector;
 import org.monarchinitiative.squirls.core.data.ic.InputStreamBasedPositionalWeightMatrixParser;
 import org.monarchinitiative.squirls.core.data.ic.SplicingPwmData;
+import org.monarchinitiative.squirls.core.data.kmer.FileKMerParser;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Map;
 
 @Configuration
 public class TestDataSourceConfig {
 
+
+    @Bean
+    public VisualizationContextSelector visualizationContextSelector() {
+        return new SimpleVisualizationContextSelector();
+    }
 
     /**
      * Small Jannovar cache containing RefSeq transcripts of several genes only:
@@ -63,5 +73,17 @@ public class TestDataSourceConfig {
             final InputStreamBasedPositionalWeightMatrixParser parser = new InputStreamBasedPositionalWeightMatrixParser(is);
             return parser.getSplicingPwmData();
         }
+    }
+
+    @Bean
+    public Map<String, Double> hexamerMap() throws IOException {
+        Path path = Paths.get(TestDataSourceConfig.class.getResource("hexamer-scores-full.tsv").getPath());
+        return new FileKMerParser(path).getKmerMap();
+    }
+
+    @Bean
+    public Map<String, Double> septamerMap() throws IOException {
+        Path path = Paths.get(TestDataSourceConfig.class.getResource("septamer-scores.tsv").getPath());
+        return new FileKMerParser(path).getKmerMap();
     }
 }

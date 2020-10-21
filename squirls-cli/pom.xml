@@ -11,6 +11,10 @@
 
     <artifactId>squirls-cli</artifactId>
 
+    <properties>
+        <vmvt.version>0.9.1</vmvt.version>
+    </properties>
+
     <build>
         <plugins>
             <plugin>

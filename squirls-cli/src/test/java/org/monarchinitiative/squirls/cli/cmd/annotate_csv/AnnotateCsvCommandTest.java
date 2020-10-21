@@ -64,9 +64,9 @@ public class AnnotateCsvCommandTest {
         assertThat(outputPath.toFile().exists(), is(false));
 
         when(evaluator.evaluate("chr1", 21_894_739, "A", "G"))
-                .thenReturn(VariantsForTesting.ALPLDonorExon7Minus2(jannovarData.getRefDict(), annotator).getPredictionData());
+                .thenReturn(VariantsForTesting.ALPLDonorExon7Minus2(jannovarData.getRefDict(), annotator).getSplicingPredictions());
         when(evaluator.evaluate("chr13", 32_930_748, "T", "G"))
-                .thenReturn(VariantsForTesting.BRCA2DonorExon15plus2QUID(jannovarData.getRefDict(), annotator).getPredictionData());
+                .thenReturn(VariantsForTesting.BRCA2DonorExon15plus2QUID(jannovarData.getRefDict(), annotator).getSplicingPredictions());
 
         cmd.run(namespace);
 

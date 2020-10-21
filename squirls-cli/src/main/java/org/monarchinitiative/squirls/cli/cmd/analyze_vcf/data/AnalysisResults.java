@@ -1,4 +1,6 @@
-package org.monarchinitiative.squirls.cli.cmd.analyze_vcf;
+package org.monarchinitiative.squirls.cli.cmd.analyze_vcf.data;
+
+import org.monarchinitiative.squirls.cli.cmd.analyze_vcf.IPresentableVariant;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -11,12 +13,12 @@ public class AnalysisResults {
     private final List<String> sampleNames;
     private final SettingsData settingsData;
     private final AnalysisStats analysisStats;
-    private final List<SplicingVariantAlleleEvaluation> variantData;
+    private final List<? extends IPresentableVariant> variants;
 
     private AnalysisResults(Builder builder) {
         sampleNames = List.copyOf(builder.sampleNames);
-        variantData = builder.variantData.stream()
-                .sorted(Comparator.comparing(SplicingVariantAlleleEvaluation::getMaxScore).reversed())
+        variants = builder.variants.stream()
+                .sorted(Comparator.comparing(IPresentableVariant::getMaxPathogenicity).reversed())
                 .collect(Collectors.toList());
         analysisStats = Objects.requireNonNull(builder.analysisStats);
         settingsData = Objects.requireNonNull(builder.settingsData);
@@ -38,13 +40,13 @@ public class AnalysisResults {
         return sampleNames;
     }
 
-    public List<SplicingVariantAlleleEvaluation> getVariantData() {
-        return variantData;
+    public List<? extends IPresentableVariant> getVariants() {
+        return variants;
     }
 
     public static final class Builder {
         private final List<String> sampleNames = new ArrayList<>();
-        private Collection<SplicingVariantAlleleEvaluation> variantData;
+        private Collection<? extends IPresentableVariant> variants;
         private AnalysisStats analysisStats;
         private SettingsData settingsData;
 
@@ -56,8 +58,8 @@ public class AnalysisResults {
             return this;
         }
 
-        public Builder variantData(Collection<SplicingVariantAlleleEvaluation> variantData) {
-            this.variantData = variantData;
+        public Builder variants(Collection<? extends IPresentableVariant> variantData) {
+            this.variants = variantData;
             return this;
         }
 

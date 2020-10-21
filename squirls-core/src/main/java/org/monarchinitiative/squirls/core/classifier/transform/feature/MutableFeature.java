@@ -36,9 +36,9 @@ public interface MutableFeature {
      *
      * @return {@link Map} with all available features
      */
-    default Map<String, Object> getFeatureMap() {
+    default Map<String, Double> getFeatureMap() {
         return getFeatureNames().stream()
-                .collect(Collectors.toMap(Function.identity(), name -> getFeature(name, Object.class)));
+                .collect(Collectors.toMap(Function.identity(), name -> getFeature(name, Double.class)));
     }
 
 }

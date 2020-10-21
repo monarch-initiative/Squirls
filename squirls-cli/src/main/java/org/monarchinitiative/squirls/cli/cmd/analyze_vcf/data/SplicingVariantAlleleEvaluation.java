@@ -1,10 +1,11 @@
-package org.monarchinitiative.squirls.cli.cmd.analyze_vcf;
+package org.monarchinitiative.squirls.cli.cmd.analyze_vcf.data;
 
 import de.charite.compbio.jannovar.annotation.Annotation;
 import de.charite.compbio.jannovar.annotation.VariantAnnotations;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 import htsjdk.variant.variantcontext.Allele;
 import htsjdk.variant.variantcontext.VariantContext;
+import org.monarchinitiative.squirls.cli.visualization.VisualizedVariant;
 import org.monarchinitiative.squirls.core.SplicingPredictionData;
 import org.monarchinitiative.squirls.core.classifier.Prediction;
 
@@ -22,7 +23,8 @@ import java.util.*;
  * The second dictionary comes from SQUIRLS database and is used by all objects present within
  * {@link SplicingPredictionData}.
  */
-public class SplicingVariantAlleleEvaluation {
+// TODO: 16. 10. 2020 simplify - get rid of the variant context, allele, etc, when work on SplicingVariantGraphicsGenerator is finished
+public class SplicingVariantAlleleEvaluation implements VisualizedVariant {
 
     /**
      * The base variant context that is being analyzed.
@@ -46,13 +48,11 @@ public class SplicingVariantAlleleEvaluation {
      * The primary graphics presented to the user for this variant.
      */
     private String graphics;
-    private SplicingPredictionData primaryPrediction;
 
     public SplicingVariantAlleleEvaluation(VariantContext base, Allele altAllele) {
         this.base = base;
         this.altAllele = altAllele;
     }
-
 
     public String getGraphics() {
         return graphics;
@@ -62,24 +62,15 @@ public class SplicingVariantAlleleEvaluation {
         this.graphics = graphics;
     }
 
-    public Map<String, SplicingPredictionData> getPredictionData() {
-        return predictionData;
-    }
-
     public void putPredictionData(String transcriptAccession, SplicingPredictionData predictionData) {
-        // TODO: 1. 7. 2020 this is the place where we effectively decide about the transcript that is affected by variant the most
-        //  Revise if necessary.
-
         this.predictionData.put(transcriptAccession, predictionData);
-        primaryPrediction = this.predictionData.values().stream()
-                .max(Comparator.comparing(spd -> spd.getPrediction().getMaxPathogenicity()))
-                .orElse(null);
     }
 
     public void putAllPredictionData(Map<String, SplicingPredictionData> predictionData) {
         predictionData.forEach(this::putPredictionData);
     }
 
+    @Override
     public VariantAnnotations getAnnotations() {
         return annotations;
     }
@@ -97,6 +88,7 @@ public class SplicingVariantAlleleEvaluation {
     }
 
     public Prediction getPredictionForTranscript(String accessionId) {
+        // TODO: 20. 10. 2020 evaluate usefulness
         return predictionData.get(accessionId).getPrediction();
     }
 
@@ -111,26 +103,39 @@ public class SplicingVariantAlleleEvaluation {
         return effectMap;
     }
 
+    /**
+     * @return pathogenicity value of the primary transcript or {@link Double#NaN} if data wrt. no transcript is present (hence no primary transcript)
+     */
     public Double getMaxScore() {
-        return primaryPrediction == null
+        final SplicingPredictionData primary = getPrimaryPrediction();
+        return primary.equals(SplicingPredictionData.emptyPredictionData())
                 ? Double.NaN
-                : primaryPrediction.getPrediction().getMaxPathogenicity();
+                : primary.getPrediction().getMaxPathogenicity();
     }
 
+    @Override
     public SplicingPredictionData getPrimaryPrediction() {
-        return primaryPrediction;
+        return predictionData.values().stream()
+                .max(Comparator.comparing(spd -> spd.getPrediction().getMaxPathogenicity()))
+                .orElse(SplicingPredictionData.emptyPredictionData());
+    }
+
+    @Override
+    public Map<String, SplicingPredictionData> getSplicingPredictions() {
+        return predictionData;
     }
 
     /**
      * Get accession ID of the <em>primary</em> transcript - the transcript with the highest reported pathogenicity.
      * We create the graphics with respect to this transcript.
      *
-     * @return String with transcript accession ID or <code>null</code>
+     * @return String with transcript accession ID or <code>null</code> if data wrt. no transcript is present (hence no primary transcript)
      */
     public String getPrimaryTxId() {
-        return primaryPrediction == null
+        final SplicingPredictionData primary = getPrimaryPrediction();
+        return primary.equals(SplicingPredictionData.emptyPredictionData())
                 ? null
-                : primaryPrediction.getTranscript().getAccessionId();
+                : primary.getTranscript().getAccessionId();
     }
 
     public String getRepresentation() {

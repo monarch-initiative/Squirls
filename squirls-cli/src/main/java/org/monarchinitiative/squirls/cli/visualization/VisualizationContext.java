@@ -1,9 +1,9 @@
-package org.monarchinitiative.squirls.cli.cmd.analyze_vcf.visualization.simple;
+package org.monarchinitiative.squirls.cli.visualization;
 
 /**
- * Members of this enum define which figures to show for a given variant.
+ * Members of this enum define what type of visualization we make for splice variants.
  */
-enum VisualizationContext {
+public enum VisualizationContext {
 
     /**
      * For canonical donor variant we show:

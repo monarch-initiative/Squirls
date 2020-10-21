@@ -1,4 +1,4 @@
-package org.monarchinitiative.squirls.cli.cmd.analyze_vcf.visualization;
+package org.monarchinitiative.squirls.cli.visualization;
 
 import org.monarchinitiative.squirls.core.SquirlsException;
 
