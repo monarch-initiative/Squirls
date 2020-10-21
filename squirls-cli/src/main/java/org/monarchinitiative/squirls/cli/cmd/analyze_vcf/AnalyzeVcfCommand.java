@@ -19,7 +19,6 @@ import net.sourceforge.argparse4j.inf.Subparsers;
 import org.monarchinitiative.squirls.cli.cmd.Command;
 import org.monarchinitiative.squirls.cli.cmd.CommandException;
 import org.monarchinitiative.squirls.cli.cmd.analyze_vcf.data.AnalysisResults;
-import org.monarchinitiative.squirls.cli.cmd.analyze_vcf.data.AnalysisStats;
 import org.monarchinitiative.squirls.cli.cmd.analyze_vcf.data.SettingsData;
 import org.monarchinitiative.squirls.cli.cmd.analyze_vcf.data.SplicingVariantAlleleEvaluation;
 import org.monarchinitiative.squirls.cli.visualization.SplicingVariantGraphicsGenerator;
@@ -35,7 +34,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
@@ -204,12 +202,12 @@ public class AnalyzeVcfCommand extends Command {
 
         final VariantAnnotator annotator = new VariantAnnotator(jannovarData.getRefDict(), jannovarData.getChromosomes(), new AnnotationBuilderOptions());
 
-        final ProgressReporter progressReporter = new ProgressReporter(5_000);
+        final AnalyzeVcfProgressReporter progressReporter = new AnalyzeVcfProgressReporter(5_000);
         final List<String> sampleNames;
         final Collection<PresentableVariant> variants = Collections.synchronizedList(new LinkedList<>());
 
         try (final VCFFileReader reader = new VCFFileReader(inputPath, false);
-             final Stream<VariantContext> stream = StreamSupport.stream(reader.spliterator(), false)) { // TODO - make true
+             final Stream<VariantContext> stream = StreamSupport.stream(reader.spliterator(), true)) { // TODO - make true
             sampleNames = new ArrayList<>(reader.getFileHeader().getSampleNamesInOrder());
             stream.peek(progressReporter::logItem)
                     .flatMap(meltToAltAlleles())
@@ -252,39 +250,4 @@ public class AnalyzeVcfCommand extends Command {
         }
     }
 
-    private static class ProgressReporter extends Command.ProgressReporter {
-
-        /**
-         * We report each n-th instance
-         */
-        private final AtomicInteger allVariantCount = new AtomicInteger();
-        private final AtomicInteger altAlleleCount = new AtomicInteger();
-        private final AtomicInteger annotatedAltAlleleCount = new AtomicInteger();
-        private final AtomicInteger pathogenicAltAlleleCount = new AtomicInteger();
-
-        private ProgressReporter(int tick) {
-            super(tick);
-        }
-
-        public void logAltAllele(Object variantDataBox) {
-            altAlleleCount.incrementAndGet();
-        }
-
-        public <T> void logAnnotatedAllele(T variantDataBox) {
-            annotatedAltAlleleCount.incrementAndGet();
-        }
-
-        public <T> void logEligibleAllele(T variantDataBox) {
-            pathogenicAltAlleleCount.incrementAndGet();
-        }
-
-        public AnalysisStats getAnalysisStats() {
-            return AnalysisStats.builder()
-                    .allVariants(allVariantCount.get())
-                    .alleleCount(altAlleleCount.get())
-                    .annotatedAlleleCount(annotatedAltAlleleCount.get())
-                    .pathogenicAlleleCount(pathogenicAltAlleleCount.get())
-                    .build();
-        }
-    }
 }

@@ -12,6 +12,7 @@ import net.sourceforge.argparse4j.inf.Namespace;
 import net.sourceforge.argparse4j.inf.Subparser;
 import net.sourceforge.argparse4j.inf.Subparsers;
 import org.monarchinitiative.squirls.cli.cmd.Command;
+import org.monarchinitiative.squirls.cli.cmd.ProgressReporter;
 import org.monarchinitiative.squirls.core.SplicingPredictionData;
 import org.monarchinitiative.squirls.core.VariantSplicingEvaluator;
 import org.slf4j.Logger;
@@ -130,24 +131,17 @@ public class AnnotateVcfCommand extends Command {
 
         // TODO: 29. 5. 2020 improve behavior & logging
         // e.g. report progress in % if variant index and thus count is available
+        final VCFHeader header;
         final ProgressReporter progressReporter = new ProgressReporter(5_000);
-        try (final VCFFileReader reader = new VCFFileReader(inputPath, false);
-             final CloseableIterator<VariantContext> variantIterator = reader.iterator();
-             final VariantContextWriter writer = new VariantContextWriterBuilder()
-                     .setReferenceDictionary(reader.getFileHeader().getSequenceDictionary())
-                     .setOutputPath(outputPath)
-                     .setOutputFileType(VariantContextWriterBuilder.OutputType.VCF)
-                     .setOption(Options.ALLOW_MISSING_FIELDS_IN_HEADER)
-//                     .unsetOption(Options.INDEX_ON_THE_FLY)
-                     .build()) {
+        final List<VariantContext> annotated = Collections.synchronizedList(new ArrayList<>());
 
-            // extend the header from the input VCF and write it out
-            final VCFHeader header = reader.getFileHeader();
-            final VCFHeader extended = extendHeader(header);
-            writer.writeHeader(extended);
+        try (final VCFFileReader reader = new VCFFileReader(inputPath, false);
+             final CloseableIterator<VariantContext> variantIterator = reader.iterator()) {
+
+            // extend the header from the input VCF
+            header = reader.getFileHeader();
 
             // annotate the variants
-            final List<VariantContext> annotated = Collections.synchronizedList(new ArrayList<>());
             try (final Stream<VariantContext> stream = variantIterator.stream()) {
                 stream.parallel()
                         .map(annotateVariant(evaluator))
@@ -155,6 +149,19 @@ public class AnnotateVcfCommand extends Command {
                         .onClose(progressReporter.summarize())
                         .forEach(annotated::add);
             }
+        }
+
+        // write out the results
+        LOGGER.info("Writing out the results");
+        try (final VariantContextWriter writer = new VariantContextWriterBuilder()
+                .setReferenceDictionary(header.getSequenceDictionary())
+                .setOutputPath(outputPath)
+                .setOutputFileType(VariantContextWriterBuilder.OutputType.VCF)
+                .setOption(Options.ALLOW_MISSING_FIELDS_IN_HEADER)
+//                     .unsetOption(Options.INDEX_ON_THE_FLY)
+                .build()) {
+            // extend header with Squirls fields and write it out
+            writer.writeHeader(extendHeader(header));
 
             // write out the annotated variants
             annotated.stream()
