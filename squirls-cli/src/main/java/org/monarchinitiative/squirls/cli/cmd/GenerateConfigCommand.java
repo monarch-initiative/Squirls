@@ -1,50 +1,36 @@
 package org.monarchinitiative.squirls.cli.cmd;
 
-
-import net.sourceforge.argparse4j.inf.Namespace;
-import net.sourceforge.argparse4j.inf.Subparser;
-import net.sourceforge.argparse4j.inf.Subparsers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import picocli.CommandLine;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.concurrent.Callable;
 
-/**
- * This class generates an empty config file in YML format.
- */
-public class GenerateConfigCommand extends Command {
-
+@CommandLine.Command(name = "generate-config", aliases = {"G"}, mixinStandardHelpOptions = true,
+        description = "generate a configuration YAML file")
+public class GenerateConfigCommand implements Callable<Integer> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(GenerateConfigCommand.class);
 
-    /**
-     * Setup subparser for {@code generate-config} command.
-     *
-     * @param subparsers {@link Subparsers}
-     */
-    public static void setupSubparsers(Subparsers subparsers) {
-        // `generate-config` command
-        final Subparser configParser = subparsers.addParser("generate-config")
-                .setDefault("cmd", "generate-config")
-                .help("generate a configuration YAML file");
-        configParser.addArgument("output")
-                .help("configuration file path");
-    }
+    @CommandLine.Parameters(arity = "1",
+            description = "configuration file path",
+            defaultValue = "squirls-config.yml")
+    public Path outputPath;
 
     @Override
-    public void run(Namespace namespace) throws CommandException {
-        final Path output = Paths.get(namespace.getString("output"));
-        LOGGER.info("Generating config template to `{}`", output.toAbsolutePath());
+    public Integer call() throws Exception {
+        LOGGER.info("Generating config template to `{}`", outputPath.toAbsolutePath());
         try (InputStream is = GenerateConfigCommand.class.getResourceAsStream("/application-template.yml")) {
-            Files.copy(is, output, StandardCopyOption.REPLACE_EXISTING);
+            Files.copy(is, outputPath, StandardCopyOption.REPLACE_EXISTING);
         } catch (IOException e) {
             LOGGER.warn("Error: ", e);
-            throw new CommandException(e);
+            throw new SquirlsCommandException(e);
         }
+        return 0;
     }
 }

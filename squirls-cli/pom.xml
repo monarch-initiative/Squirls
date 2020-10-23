@@ -35,6 +35,14 @@
             <version>${project.parent.version}</version>
         </dependency>
 
+        <!-- VMVT is a library for visualisation of variant impact on splice donor/acceptor sites in form of
+        SVG images. -->
+        <dependency>
+            <groupId>org.monarchinitiative.vmvt</groupId>
+            <artifactId>vmvt-core</artifactId>
+            <version>${vmvt.version}</version>
+        </dependency>
+
         <dependency>
             <groupId>de.charite.compbio</groupId>
             <artifactId>jannovar-htsjdk</artifactId>
@@ -62,13 +70,6 @@
             <version>4.5.2</version>
         </dependency>
 
-        <!--TODO - remove-->
-        <dependency>
-            <groupId>net.sourceforge.argparse4j</groupId>
-            <artifactId>argparse4j</artifactId>
-            <version>${argparse.version}</version>
-        </dependency>
-
         <!--Thymeleaf is a templating engine used for creating the HTML results pages -->
         <dependency>
             <groupId>org.thymeleaf</groupId>
@@ -77,14 +78,6 @@
         <dependency>
             <groupId>org.thymeleaf</groupId>
             <artifactId>thymeleaf-spring5</artifactId>
-        </dependency>
-
-        <!-- VMVT is a library for visualisation of variant impact on splice donor/acceptor sites in form of
-        SVG images. -->
-        <dependency>
-            <groupId>org.monarchinitiative.vmvt</groupId>
-            <artifactId>vmvt-core</artifactId>
-            <version>${vmvt.version}</version>
         </dependency>
 
         <!--  TEST DEPENDENCIES  -->

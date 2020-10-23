@@ -1,6 +1,5 @@
 package org.monarchinitiative.squirls.cli.visualization;
 
-import org.monarchinitiative.squirls.cli.cmd.analyze_vcf.data.SplicingVariantAlleleEvaluation;
 
 /**
  * The implementing classes generate an appropriate SVG graphics for any given {@link SplicingVariantAlleleEvaluation}.

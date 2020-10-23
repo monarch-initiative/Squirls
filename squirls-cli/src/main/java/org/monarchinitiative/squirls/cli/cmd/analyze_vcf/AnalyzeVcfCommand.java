@@ -13,11 +13,8 @@ import de.charite.compbio.jannovar.reference.PositionType;
 import de.charite.compbio.jannovar.reference.TranscriptModel;
 import htsjdk.variant.variantcontext.VariantContext;
 import htsjdk.variant.vcf.VCFFileReader;
-import net.sourceforge.argparse4j.inf.Namespace;
-import net.sourceforge.argparse4j.inf.Subparser;
-import net.sourceforge.argparse4j.inf.Subparsers;
-import org.monarchinitiative.squirls.cli.cmd.Command;
-import org.monarchinitiative.squirls.cli.cmd.CommandException;
+import org.monarchinitiative.squirls.cli.cmd.SquirlsCommand;
+import org.monarchinitiative.squirls.cli.cmd.SquirlsCommandException;
 import org.monarchinitiative.squirls.cli.cmd.analyze_vcf.data.AnalysisResults;
 import org.monarchinitiative.squirls.cli.cmd.analyze_vcf.data.SettingsData;
 import org.monarchinitiative.squirls.cli.cmd.analyze_vcf.data.SplicingVariantAlleleEvaluation;
@@ -26,7 +23,8 @@ import org.monarchinitiative.squirls.core.SplicingPredictionData;
 import org.monarchinitiative.squirls.core.VariantSplicingEvaluator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Component;
+import org.springframework.context.ConfigurableApplicationContext;
+import picocli.CommandLine;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -40,48 +38,32 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
-/**
- * This command takes a VCF file, runs the splicing annotation and writes out the results as HTML file.
- */
-@Component
-public class AnalyzeVcfCommand extends Command {
+@CommandLine.Command(name = "analyze-vcf", aliases = {"Z"}, mixinStandardHelpOptions = true,
+        description = "make HTML report for variants in VCF file")
+public class AnalyzeVcfCommand extends SquirlsCommand {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AnalyzeVcfCommand.class);
 
-    private final VariantSplicingEvaluator evaluator;
+    @CommandLine.Option(names = {"-d", "--jannovar-database"}, required = true,
+            description = "path to Jannovar transcript database")
+    public Path jannovarDb;
 
-    private final SplicingVariantGraphicsGenerator graphicsGenerator;
+    @CommandLine.Option(names = {"-t", "--threshold"},
+            defaultValue = "0.",
+            description = "variants with Squirls score above the threshold are included into the report")
+    public double threshold;
 
-    public AnalyzeVcfCommand(VariantSplicingEvaluator evaluator, SplicingVariantGraphicsGenerator graphicsGenerator) {
-        this.evaluator = evaluator;
-        this.graphicsGenerator = graphicsGenerator;
-    }
+    @CommandLine.Option(names = {"-o", "--output"},
+            description = "where to write the HTML report")
+    public String output;
 
-    /**
-     * Setup subparser for {@code analyze-vcf} command.
-     *
-     * @param subparsers {@link Subparsers}
-     */
-    public static void setupSubparsers(Subparsers subparsers) {
-        // `analyze-vcf` command
-        Subparser annotateVcfParser = subparsers.addParser("analyze-vcf")
-                .setDefault("cmd", "analyze-vcf")
-                .help("analyze variants in VCF file and make HTML report");
-        annotateVcfParser.addArgument("-d", "--jannovar-database")
-                .required(true)
-                .help("path to Jannovar transcript database");
-        annotateVcfParser.addArgument("-t", "--threshold")
-                .type(Double.class)
-                .setDefault(.0)
-                .help("the variants with predicted pathogenicity above the threshold are included into the report");
-        annotateVcfParser.addArgument("input")
-                .help("path to input VCF file");
-        annotateVcfParser.addArgument("-o", "--output")
-                .type(String.class)
-                .help("where to write the HTML report");
-    }
+    @CommandLine.Parameters(index = "0", arity = "0",
+            paramLabel = "input.vcf",
+            description = "path to input VCF file")
+    public Path inputPath;
 
-    private static Path resolveOutputPath(String output, Path inputPath) throws CommandException {
+
+    private static Path resolveOutputPath(String output, Path inputPath) throws SquirlsCommandException {
         if (output == null) {
             final Path parent = inputPath.getParent();
             final Path fileName = inputPath.getFileName();
@@ -90,7 +72,7 @@ public class AnalyzeVcfCommand extends Command {
             } else if (fileName.toString().endsWith(".vcf")) {
                 return parent.resolve(fileName.toString().replace(".vcf", ".html"));
             } else {
-                throw new CommandException("File name must end with `.vcf` or `.vcf.gz`");
+                throw new SquirlsCommandException("File name must end with `.vcf` or `.vcf.gz`");
             }
         } else {
             return Paths.get(output);
@@ -178,76 +160,75 @@ public class AnalyzeVcfCommand extends Command {
     }
 
     @Override
-    public void run(Namespace namespace) throws CommandException {
-        final Path inputPath = Paths.get(namespace.getString("input"));
-        LOGGER.debug("Reading variants from `{}`", inputPath);
+    public Integer call() throws Exception {
+        try (final ConfigurableApplicationContext context = getContext()) {
+            LOGGER.info("Reading variants from `{}`", inputPath);
+            Path output = resolveOutputPath(this.output, inputPath);
+            LOGGER.info("Writing report to `{}`", output);
+            LOGGER.info("Reporting variants with predicted pathogenicity above `{}`", threshold);
 
-        final Path output = resolveOutputPath(namespace.getString("output"), inputPath);
-        LOGGER.debug("Writing report to `{}`", output);
+            // no need to make a log announcement for Jannovar, jannovar announces instead
 
-        final double threshold = namespace.getDouble("threshold");
-        LOGGER.debug("Reporting variants with predicted pathogenicity above `{}`", threshold);
+            final VariantSplicingEvaluator evaluator = context.getBean(VariantSplicingEvaluator.class);
+            final SplicingVariantGraphicsGenerator graphicsGenerator = context.getBean(SplicingVariantGraphicsGenerator.class);
 
-        final Path jannovarDb = Paths.get(namespace.getString("jannovar_database"));
-        // no need to make a log announcement, jannovar announces instead
+            final JannovarData jannovarData;
+            try {
+                jannovarData = new JannovarDataSerializer(jannovarDb.toAbsolutePath().toString()).load();
+            } catch (SerializationException e) {
+                LOGGER.error("Error deserializing Jannovar database at `{}`:", jannovarDb.toAbsolutePath());
+                throw new SquirlsCommandException(e);
+            }
 
+            final VariantAnnotator annotator = new VariantAnnotator(jannovarData.getRefDict(), jannovarData.getChromosomes(), new AnnotationBuilderOptions());
 
-        final JannovarData jannovarData;
-        try {
-            jannovarData = new JannovarDataSerializer(jannovarDb.toAbsolutePath().toString()).load();
-        } catch (SerializationException e) {
-            LOGGER.error("Error deserializing Jannovar database at `{}`:", jannovarDb.toAbsolutePath());
-            throw new CommandException(e);
+            final AnalyzeVcfProgressReporter progressReporter = new AnalyzeVcfProgressReporter(5_000);
+            final List<String> sampleNames;
+            final Collection<PresentableVariant> variants = Collections.synchronizedList(new LinkedList<>());
+
+            try (final VCFFileReader reader = new VCFFileReader(inputPath, false);
+                 final Stream<VariantContext> stream = StreamSupport.stream(reader.spliterator(), true)) { // TODO - make true
+                sampleNames = new ArrayList<>(reader.getFileHeader().getSampleNamesInOrder());
+                stream.peek(progressReporter::logItem)
+                        .flatMap(meltToAltAlleles())
+                        .peek(progressReporter::logAltAllele)
+
+                        // functional annotation with Jannovar
+                        .map(functionalAnnotation(jannovarData.getRefDict(), annotator))
+                        .filter(Optional::isPresent)
+                        .map(Optional::get)
+                        .peek(progressReporter::logAnnotatedAllele)
+
+                        // splicing prediction and removing of non-deleterious alleles
+                        .map(splicingAnnotation(evaluator))
+                        .filter(variant -> !variant.getMaxScore().isNaN() && variant.getMaxScore() > threshold)
+                        .peek(progressReporter::logEligibleAllele)
+
+                        // graphics generation for predicted deleterious variants
+                        .map(generatePresentableVariant(graphicsGenerator))
+
+                        .onClose(progressReporter.summarize())
+                        .forEach(variants::add);
+            }
+
+            final AnalysisResults results = AnalysisResults.builder()
+                    .addAllSampleNames(sampleNames)
+                    .variants(variants)
+                    .analysisStats(progressReporter.getAnalysisStats())
+                    .settingsData(SettingsData.builder()
+                            .threshold(threshold)
+                            .inputPath(inputPath.toString())
+                            .transcriptDb(jannovarDb.toString())
+                            .build())
+                    .build();
+            LOGGER.info("Writing the report to {}", output);
+            final HtmlResultWriter writer = new HtmlResultWriter();
+            try (final OutputStream os = Files.newOutputStream(output)) {
+                writer.writeResults(os, results);
+            } catch (IOException e) {
+                throw new SquirlsCommandException(e);
+            }
         }
-
-        final VariantAnnotator annotator = new VariantAnnotator(jannovarData.getRefDict(), jannovarData.getChromosomes(), new AnnotationBuilderOptions());
-
-        final AnalyzeVcfProgressReporter progressReporter = new AnalyzeVcfProgressReporter(5_000);
-        final List<String> sampleNames;
-        final Collection<PresentableVariant> variants = Collections.synchronizedList(new LinkedList<>());
-
-        try (final VCFFileReader reader = new VCFFileReader(inputPath, false);
-             final Stream<VariantContext> stream = StreamSupport.stream(reader.spliterator(), true)) { // TODO - make true
-            sampleNames = new ArrayList<>(reader.getFileHeader().getSampleNamesInOrder());
-            stream.peek(progressReporter::logItem)
-                    .flatMap(meltToAltAlleles())
-                    .peek(progressReporter::logAltAllele)
-
-                    // functional annotation with Jannovar
-                    .map(functionalAnnotation(jannovarData.getRefDict(), annotator))
-                    .filter(Optional::isPresent)
-                    .map(Optional::get)
-                    .peek(progressReporter::logAnnotatedAllele)
-
-                    // splicing prediction and removing of non-deleterious alleles
-                    .map(splicingAnnotation(evaluator))
-                    .filter(variant -> !variant.getMaxScore().isNaN() && variant.getMaxScore() > threshold)
-                    .peek(progressReporter::logEligibleAllele)
-
-                    // graphics generation for predicted deleterious variants
-                    .map(generatePresentableVariant(graphicsGenerator))
-
-                    .onClose(progressReporter.summarize())
-                    .forEach(variants::add);
-        }
-
-        final AnalysisResults results = AnalysisResults.builder()
-                .addAllSampleNames(sampleNames)
-                .variants(variants)
-                .analysisStats(progressReporter.getAnalysisStats())
-                .settingsData(SettingsData.builder()
-                        .threshold(threshold)
-                        .inputPath(inputPath.toString())
-                        .transcriptDb(jannovarDb.toString())
-                        .build())
-                .build();
-        LOGGER.info("Writing the report to {}", output);
-        final HtmlResultWriter writer = new HtmlResultWriter();
-        try (final OutputStream os = Files.newOutputStream(output)) {
-            writer.writeResults(os, results);
-        } catch (IOException e) {
-            throw new CommandException(e);
-        }
+        return 0;
     }
-
 }

@@ -8,19 +8,16 @@ import htsjdk.variant.variantcontext.writer.Options;
 import htsjdk.variant.variantcontext.writer.VariantContextWriter;
 import htsjdk.variant.variantcontext.writer.VariantContextWriterBuilder;
 import htsjdk.variant.vcf.*;
-import net.sourceforge.argparse4j.inf.Namespace;
-import net.sourceforge.argparse4j.inf.Subparser;
-import net.sourceforge.argparse4j.inf.Subparsers;
-import org.monarchinitiative.squirls.cli.cmd.Command;
 import org.monarchinitiative.squirls.cli.cmd.ProgressReporter;
+import org.monarchinitiative.squirls.cli.cmd.SquirlsCommand;
 import org.monarchinitiative.squirls.core.SplicingPredictionData;
 import org.monarchinitiative.squirls.core.VariantSplicingEvaluator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Component;
+import org.springframework.context.ConfigurableApplicationContext;
+import picocli.CommandLine;
 
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -29,8 +26,9 @@ import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-@Component
-public class AnnotateVcfCommand extends Command {
+@CommandLine.Command(name = "annotate-vcf", aliases = {"A"}, mixinStandardHelpOptions = true,
+        description = "annotate VCF file")
+public class AnnotateVcfCommand extends SquirlsCommand {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AnnotateVcfCommand.class);
 
@@ -46,27 +44,10 @@ public class AnnotateVcfCommand extends Command {
             VCFHeaderLineType.String,
             "Squirls pathogenicity score");
 
-    private final VariantSplicingEvaluator evaluator;
-
-    public AnnotateVcfCommand(VariantSplicingEvaluator variantSplicingEvaluator) {
-        this.evaluator = variantSplicingEvaluator;
-    }
-
-    /**
-     * Setup subparser for {@code annotate-vcf} command.
-     *
-     * @param subparsers {@link Subparsers}
-     */
-    public static void setupSubparsers(Subparsers subparsers) {
-        // `annotate-vcf` command
-        Subparser annotateVcfParser = subparsers.addParser("annotate-vcf")
-                .setDefault("cmd", "annotate-vcf")
-                .help("annotate VCF file with Squirls scores");
-        annotateVcfParser.addArgument("input")
-                .help("path to VCF file");
-        annotateVcfParser.addArgument("output")
-                .help("where to write the output VCF file");
-    }
+    @CommandLine.Parameters(index = "0", description = "path to the input VCF file")
+    public Path inputPath;
+    @CommandLine.Parameters(index = "1", description = "where to write the output VCF file")
+    public Path outputPath;
 
     /**
      * Extend the <code>header</code> with INFO fields that are being added in this command.
@@ -123,50 +104,54 @@ public class AnnotateVcfCommand extends Command {
     }
 
     @Override
-    public void run(Namespace namespace) {
-        final Path inputPath = Paths.get(namespace.getString("input"));
-        LOGGER.info("Reading variants from `{}`", inputPath);
-        final Path outputPath = Paths.get(namespace.getString("output"));
-        LOGGER.info("Writing annotated variants to `{}`", outputPath);
+    public Integer call() {
+        try (final ConfigurableApplicationContext context = getContext()) {
+            LOGGER.info("Reading variants from `{}`", inputPath);
+            LOGGER.info("Writing annotated variants to `{}`", outputPath);
 
-        // TODO: 29. 5. 2020 improve behavior & logging
-        // e.g. report progress in % if variant index and thus count is available
-        final VCFHeader header;
-        final ProgressReporter progressReporter = new ProgressReporter(5_000);
-        final List<VariantContext> annotated = Collections.synchronizedList(new ArrayList<>());
+            final VariantSplicingEvaluator evaluator = context.getBean(VariantSplicingEvaluator.class);
 
-        try (final VCFFileReader reader = new VCFFileReader(inputPath, false);
-             final CloseableIterator<VariantContext> variantIterator = reader.iterator()) {
+            // TODO: 29. 5. 2020 improve behavior & logging
+            // e.g. report progress in % if variant index and thus count is available
+            final VCFHeader header;
+            final ProgressReporter progressReporter = new ProgressReporter(5_000);
+            final List<VariantContext> annotated = Collections.synchronizedList(new ArrayList<>());
 
-            // extend the header from the input VCF
-            header = reader.getFileHeader();
+            try (final VCFFileReader reader = new VCFFileReader(inputPath, false);
+                 final CloseableIterator<VariantContext> variantIterator = reader.iterator()) {
 
-            // annotate the variants
-            try (final Stream<VariantContext> stream = variantIterator.stream()) {
-                stream.parallel()
-                        .map(annotateVariant(evaluator))
-                        .peek(progressReporter::logItem)
-                        .onClose(progressReporter.summarize())
-                        .forEach(annotated::add);
+                // extend the header from the input VCF
+                header = reader.getFileHeader();
+
+                // annotate the variants
+                try (final Stream<VariantContext> stream = variantIterator.stream()) {
+                    stream.parallel()
+                            .map(annotateVariant(evaluator))
+                            .peek(progressReporter::logItem)
+                            .onClose(progressReporter.summarize())
+                            .forEach(annotated::add);
+                }
+            }
+
+            // write out the results
+            LOGGER.info("Writing out the results");
+            try (final VariantContextWriter writer = new VariantContextWriterBuilder()
+                    .setReferenceDictionary(header.getSequenceDictionary())
+                    .setOutputPath(outputPath)
+                    .setOutputFileType(VariantContextWriterBuilder.OutputType.VCF)
+                    .setOption(Options.ALLOW_MISSING_FIELDS_IN_HEADER)
+//                     .unsetOption(Options.INDEX_ON_THE_FLY)
+                    .build()) {
+                // extend header with Squirls fields and write it out
+                writer.writeHeader(extendHeader(header));
+
+                // write out the annotated variants
+                annotated.stream()
+                        .sorted(header.getVCFRecordComparator())
+                        .forEach(writer::add);
             }
         }
 
-        // write out the results
-        LOGGER.info("Writing out the results");
-        try (final VariantContextWriter writer = new VariantContextWriterBuilder()
-                .setReferenceDictionary(header.getSequenceDictionary())
-                .setOutputPath(outputPath)
-                .setOutputFileType(VariantContextWriterBuilder.OutputType.VCF)
-                .setOption(Options.ALLOW_MISSING_FIELDS_IN_HEADER)
-//                     .unsetOption(Options.INDEX_ON_THE_FLY)
-                .build()) {
-            // extend header with Squirls fields and write it out
-            writer.writeHeader(extendHeader(header));
-
-            // write out the annotated variants
-            annotated.stream()
-                    .sorted(header.getVCFRecordComparator())
-                    .forEach(writer::add);
-        }
+        return 0;
     }
 }

@@ -1,10 +1,15 @@
-package org.monarchinitiative.squirls.cli.picocmd;
+package org.monarchinitiative.squirls.cli.cmd;
 
-import org.monarchinitiative.squirls.cli.Main;
+import org.monarchinitiative.squirls.cli.visualization.SimpleVisualizationContextSelector;
+import org.monarchinitiative.squirls.cli.visualization.SplicingVariantGraphicsGenerator;
+import org.monarchinitiative.squirls.cli.visualization.panel.PanelGraphicsGenerator;
 import org.monarchinitiative.squirls.core.SplicingPredictionData;
+import org.monarchinitiative.squirls.core.data.ic.SplicingPwmData;
+import org.monarchinitiative.vmvt.core.VmvtGenerator;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.context.annotation.Bean;
 import picocli.CommandLine;
 
 import java.nio.file.Path;
@@ -13,8 +18,7 @@ import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
 
 @SpringBootApplication
-// TODO - consider adding @ParentCommand here or to PicoMain
-public abstract class PicoCommand implements Callable<Integer> {
+public abstract class SquirlsCommand implements Callable<Integer> {
 
     @CommandLine.Option(names = {"-c", "--config-file"},
             paramLabel = "squirls-config.yml",
@@ -24,7 +28,7 @@ public abstract class PicoCommand implements Callable<Integer> {
 
     protected ConfigurableApplicationContext getContext() {
         // bootstrap Spring application context
-        return new SpringApplicationBuilder(Main.class)
+        return new SpringApplicationBuilder(SquirlsCommand.class)
                 .properties(Map.of("spring.config.location", configFile.toString()))
                 .run();
     }
@@ -40,5 +44,14 @@ public abstract class PicoCommand implements Callable<Integer> {
                 .sorted()
                 .map(tx -> String.format("%s=%f", tx, predictionData.get(tx).getPrediction().getMaxPathogenicity()))
                 .collect(Collectors.joining(";"));
+    }
+
+    @Bean
+    public SplicingVariantGraphicsGenerator splicingVariantGraphicsGenerator(SplicingPwmData splicingPwmData) {
+        //        return new SimpleSplicingVariantGraphicsGenerator(splicingPwmData);
+
+        final VmvtGenerator generator = new VmvtGenerator();
+        final SimpleVisualizationContextSelector selector = new SimpleVisualizationContextSelector();
+        return new PanelGraphicsGenerator(generator, splicingPwmData, selector);
     }
 }
