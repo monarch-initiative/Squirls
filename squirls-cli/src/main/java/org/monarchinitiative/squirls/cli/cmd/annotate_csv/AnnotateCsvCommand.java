@@ -69,7 +69,7 @@ public class AnnotateCsvCommand extends SquirlsCommand {
                     try {
                         pos = Integer.parseInt(record.get("POS"));
                     } catch (NumberFormatException e) {
-                        LOGGER.warn("Invalid pos `{}` in record #{}: {}", record.get("POS"), record.getRecordNumber(), e.getMessage());
+                        LOGGER.warn("Invalid pos `{}` in record #{}", record.get("POS"), record.getRecordNumber());
                         continue;
                     }
                     final Map<String, SplicingPredictionData> predictionData = evaluator.evaluate(chrom, pos, ref, alt);
