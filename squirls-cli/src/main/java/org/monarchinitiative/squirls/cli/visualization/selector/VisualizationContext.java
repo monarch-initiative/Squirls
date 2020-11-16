@@ -1,4 +1,4 @@
-package org.monarchinitiative.squirls.cli.visualization;
+package org.monarchinitiative.squirls.cli.visualization.selector;
 
 /**
  * Members of this enum define what type of visualization we make for splice variants.

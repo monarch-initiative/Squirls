@@ -1,4 +1,6 @@
-package org.monarchinitiative.squirls.cli.visualization;
+package org.monarchinitiative.squirls.cli.visualization.selector;
+
+import org.monarchinitiative.squirls.cli.visualization.MissingFeatureException;
 
 import java.util.Map;
 import java.util.Set;

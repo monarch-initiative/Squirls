@@ -1,8 +1,8 @@
 package org.monarchinitiative.squirls.cli.cmd;
 
-import org.monarchinitiative.squirls.cli.visualization.SimpleVisualizationContextSelector;
 import org.monarchinitiative.squirls.cli.visualization.SplicingVariantGraphicsGenerator;
 import org.monarchinitiative.squirls.cli.visualization.panel.PanelGraphicsGenerator;
+import org.monarchinitiative.squirls.cli.visualization.selector.SimpleVisualizationContextSelector;
 import org.monarchinitiative.squirls.core.SplicingPredictionData;
 import org.monarchinitiative.squirls.core.data.ic.SplicingPwmData;
 import org.monarchinitiative.vmvt.core.VmvtGenerator;

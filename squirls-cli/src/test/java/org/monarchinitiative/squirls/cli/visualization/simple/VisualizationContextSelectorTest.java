@@ -6,11 +6,11 @@ import de.charite.compbio.jannovar.data.ReferenceDictionary;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.monarchinitiative.squirls.cli.TestDataSourceConfig;
-import org.monarchinitiative.squirls.cli.data.VariantsForTesting;
 import org.monarchinitiative.squirls.cli.cmd.analyze_vcf.data.SplicingVariantAlleleEvaluation;
-import org.monarchinitiative.squirls.cli.visualization.SimpleVisualizationContextSelector;
-import org.monarchinitiative.squirls.cli.visualization.VisualizationContext;
-import org.monarchinitiative.squirls.cli.visualization.VisualizationContextSelector;
+import org.monarchinitiative.squirls.cli.data.VariantsForTesting;
+import org.monarchinitiative.squirls.cli.visualization.selector.SimpleVisualizationContextSelector;
+import org.monarchinitiative.squirls.cli.visualization.selector.VisualizationContext;
+import org.monarchinitiative.squirls.cli.visualization.selector.VisualizationContextSelector;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 

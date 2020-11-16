@@ -3,6 +3,8 @@ package org.monarchinitiative.squirls.cli.visualization;
 import de.charite.compbio.jannovar.reference.GenomeInterval;
 import de.charite.compbio.jannovar.reference.GenomePosition;
 import de.charite.compbio.jannovar.reference.GenomeVariant;
+import org.monarchinitiative.squirls.cli.visualization.selector.VisualizationContext;
+import org.monarchinitiative.squirls.cli.visualization.selector.VisualizationContextSelector;
 import org.monarchinitiative.squirls.core.SplicingPredictionData;
 import org.monarchinitiative.squirls.core.Utils;
 import org.monarchinitiative.squirls.core.data.ic.SplicingPwmData;

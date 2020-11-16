@@ -3,11 +3,11 @@ package org.monarchinitiative.squirls.cli.visualization.simple;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
-import org.monarchinitiative.squirls.cli.data.VariantsForTesting;
 import org.monarchinitiative.squirls.cli.cmd.analyze_vcf.data.SplicingVariantAlleleEvaluation;
+import org.monarchinitiative.squirls.cli.data.VariantsForTesting;
 import org.monarchinitiative.squirls.cli.visualization.GraphicsGeneratorTestBase;
-import org.monarchinitiative.squirls.cli.visualization.VisualizationContext;
-import org.monarchinitiative.squirls.cli.visualization.VisualizationContextSelector;
+import org.monarchinitiative.squirls.cli.visualization.selector.VisualizationContext;
+import org.monarchinitiative.squirls.cli.visualization.selector.VisualizationContextSelector;
 
 import static org.mockito.ArgumentMatchers.anyMap;
 import static org.mockito.Mockito.when;

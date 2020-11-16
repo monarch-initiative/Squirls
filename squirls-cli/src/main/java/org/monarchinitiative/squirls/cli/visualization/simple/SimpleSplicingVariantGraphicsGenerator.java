@@ -1,7 +1,11 @@
 package org.monarchinitiative.squirls.cli.visualization.simple;
 
 import de.charite.compbio.jannovar.reference.GenomeVariantType;
-import org.monarchinitiative.squirls.cli.visualization.*;
+import org.monarchinitiative.squirls.cli.visualization.AbstractGraphicsGenerator;
+import org.monarchinitiative.squirls.cli.visualization.MissingFeatureException;
+import org.monarchinitiative.squirls.cli.visualization.VisualizedVariant;
+import org.monarchinitiative.squirls.cli.visualization.selector.VisualizationContext;
+import org.monarchinitiative.squirls.cli.visualization.selector.VisualizationContextSelector;
 import org.monarchinitiative.squirls.core.SplicingPredictionData;
 import org.monarchinitiative.squirls.core.data.ic.SplicingPwmData;
 import org.monarchinitiative.vmvt.core.VmvtGenerator;

@@ -167,12 +167,12 @@ public class AnalyzeVcfCommand extends SquirlsCommand {
             LOGGER.info("Writing report to `{}`", output);
             LOGGER.info("Reporting variants with predicted pathogenicity above `{}`", threshold);
 
-            // no need to make a log announcement for Jannovar, jannovar announces instead
+            // no need to make a log announcement for Jannovar, jannovar does the announcement instead
 
-            final VariantSplicingEvaluator evaluator = context.getBean(VariantSplicingEvaluator.class);
-            final SplicingVariantGraphicsGenerator graphicsGenerator = context.getBean(SplicingVariantGraphicsGenerator.class);
+            VariantSplicingEvaluator evaluator = context.getBean(VariantSplicingEvaluator.class);
+            SplicingVariantGraphicsGenerator graphicsGenerator = context.getBean(SplicingVariantGraphicsGenerator.class);
 
-            final JannovarData jannovarData;
+            JannovarData jannovarData;
             try {
                 jannovarData = new JannovarDataSerializer(jannovarDb.toAbsolutePath().toString()).load();
             } catch (SerializationException e) {
@@ -180,14 +180,14 @@ public class AnalyzeVcfCommand extends SquirlsCommand {
                 throw new SquirlsCommandException(e);
             }
 
-            final VariantAnnotator annotator = new VariantAnnotator(jannovarData.getRefDict(), jannovarData.getChromosomes(), new AnnotationBuilderOptions());
+            VariantAnnotator annotator = new VariantAnnotator(jannovarData.getRefDict(), jannovarData.getChromosomes(), new AnnotationBuilderOptions());
 
-            final AnalyzeVcfProgressReporter progressReporter = new AnalyzeVcfProgressReporter(5_000);
-            final List<String> sampleNames;
-            final Collection<PresentableVariant> variants = Collections.synchronizedList(new LinkedList<>());
+            AnalyzeVcfProgressReporter progressReporter = new AnalyzeVcfProgressReporter(5_000);
+            List<String> sampleNames;
+            Collection<PresentableVariant> variants = Collections.synchronizedList(new LinkedList<>());
 
-            try (final VCFFileReader reader = new VCFFileReader(inputPath, false);
-                 final Stream<VariantContext> stream = StreamSupport.stream(reader.spliterator(), true)) { // TODO - make true
+            try (VCFFileReader reader = new VCFFileReader(inputPath, false);
+                 Stream<VariantContext> stream = StreamSupport.stream(reader.spliterator(), true)) { // TODO - make true
                 sampleNames = new ArrayList<>(reader.getFileHeader().getSampleNamesInOrder());
                 stream.peek(progressReporter::logItem)
                         .flatMap(meltToAltAlleles())
@@ -211,7 +211,7 @@ public class AnalyzeVcfCommand extends SquirlsCommand {
                         .forEach(variants::add);
             }
 
-            final AnalysisResults results = AnalysisResults.builder()
+            AnalysisResults results = AnalysisResults.builder()
                     .addAllSampleNames(sampleNames)
                     .variants(variants)
                     .analysisStats(progressReporter.getAnalysisStats())
@@ -222,8 +222,8 @@ public class AnalyzeVcfCommand extends SquirlsCommand {
                             .build())
                     .build();
             LOGGER.info("Writing the report to {}", output);
-            final HtmlResultWriter writer = new HtmlResultWriter();
-            try (final OutputStream os = Files.newOutputStream(output)) {
+            HtmlResultWriter writer = new HtmlResultWriter();
+            try (OutputStream os = Files.newOutputStream(output)) {
                 writer.writeResults(os, results);
             } catch (IOException e) {
                 throw new SquirlsCommandException(e);
