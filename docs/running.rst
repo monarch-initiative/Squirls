@@ -31,12 +31,12 @@ Squirls annotates variants using the following commands:
 All the commands require path to the YAML configuration file prepared in the :ref:`rstsetup` section.
 To indicate the location of the YAML configuration file, we use ``squirls_config.yml`` placeholder in all command examples below.
 
-Annotate variants in a VCF file (``annotate-vcf``)
+``annotate-vcf`` - Annotate variants in a VCF file
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 To annotate variants in a ``variants.vcf`` VCF file and store the annotated variants as ``output.vcf``, run ::
 
-  $ java -jar squirls-cli.jar run -c squirls_config.yml annotate-vcf variants.vcf output.vcf
+  $ java -jar squirls-cli.jar annotate-vcf --config squirls_config.yml variants.vcf output.vcf
 
 The annotation adds two ``INFO`` field to each coding variant:
 
@@ -53,12 +53,12 @@ The annotation adds two ``INFO`` field to each coding variant:
 When selecting the ``html`` output format option, Squirls generates a HTML report with graphics. See the
 :ref:`rstinterpretation` section for getting help with interpretation of the report.
 
-Annotate variant positions (``annotate-pos``)
+``annotate-pos`` - Annotate variant positions
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The easiest way to quickly calculate Squirls scores for a couple of variants is to use the ``annotate-pos`` command ::
 
-  $java -jar squirls-cli.jar run -c squirls_config.yml annotate-pos -c "chr9:136224694A>T" -c "chr3:52676065CA>C"
+  $java -jar squirls-cli.jar annotate-pos --config squirls_config.yml "chr9:136224694A>T" "chr3:52676065CA>C"
 
 An output similar to this is produced ::
 
@@ -70,8 +70,7 @@ An output similar to this is produced ::
 
   ...
 
-
-Annotate variant positions stored in a CSV file (``annotate-csv``)
+``annotate-csv`` - Annotate variant positions stored in a CSV file
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 If you want to annotate >10 variant positions, it might be more convenient to do this by using the ``annotate-csv`` command.
@@ -86,7 +85,7 @@ Let's consider 4 variants stored in a CSV file ``example.csv``::
 
 then, by running command the ``annotate-csv`` command ::
 
-  java -jar squirls-cli.jar annotate-csv -c squirls_config.yml example.csv output.csv
+  java -jar squirls-cli.jar annotate-csv --config squirls_config.yml example.csv output.csv
 
 Squirls performs the variant classification and predicts pathogenicity wrt. all overlapping transcripts ::
 
