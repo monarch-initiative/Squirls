@@ -8,36 +8,28 @@ Squirls is a command-line Java tool that runs with Java version 11 or higher.
 
 To get help, run Squirls with a command or with the option "-h": ::
 
-  $ java -jar squirls-cli-1.0.0.jar --help
-    usage: java -jar squirls-cli.jar
-       [-h] {generate-config,run} ...
+  $ java -jar squirls-cli.jar --help
+  Usage: squirls-cli.jar [-hV] [COMMAND]
+  Super-quick Information Content and Random Forest Learning for Splice Variants
+    -h, --help      Show this help message and exit.
+    -V, --version   Print version information and exit.
+  Commands:
+    generate-config, G  generate a configuration YAML file
+    annotate-pos, P     annotate several variant positions
+    annotate-csv, C     annotate variants stored in tabular file
+    annotate-vcf, A     annotate variants in a VCF file
 
-    Super-quick Information Content and Random Forest Learning for Splice Variants
+Before running any command, the ``generate-config`` command needs to be run to generate a configuration YAML file for
+Squirls analysis. Then, the other commands can then be used to analyze variants in multiple input formats.
 
-    positional arguments:
-      {generate-config,run}
-        generate-config      generate a configuration YAML file
-        run                  run a command
+Squirls annotates variants using the following commands:
 
-    named arguments:
-      -h, --help             show this help message and exit
+* ``annotate-vcf``,
+* ``annotate-pos``, and
+* ``annotate-csv``,
 
-Squirls has two main commands, ``generate-config``, and ``run``. The ``generate-config`` command needs to be run before
-anything else to generate a configuration YAML file for Squirls analysis. Squirls can then be used to analyze variants in
-a VCF file.
-
-
-Commands
-~~~~~~~~
-
-Squirls command line interface consists of the following commands:
-
-- ``annotate-vcf``,
-- ``annotate-pos``,
-- ``annotate-csv``, and
-
-All the commands require path to the YAML configuration file. We use ``squirls_config.yml`` in all command examples to
-indicate the location of the YAML configuration file.
+All the commands require path to the YAML configuration file prepared in the :ref:`rstsetup` section.
+To indicate the location of the YAML configuration file, we use ``squirls_config.yml`` placeholder in all command examples below.
 
 Annotate variants in a VCF file (``annotate-vcf``)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -48,9 +40,9 @@ To annotate variants in a ``variants.vcf`` VCF file and store the annotated vari
 
 The annotation adds two ``INFO`` field to each coding variant:
 
-- ``SQUIRLS`` - a flag indicating that the variant is considered to have a deleterious effect on at least a single
+* ``SQUIRLS`` - a flag indicating that the variant is considered to have a deleterious effect on at least a single
   overlapping transcript
-- ``SQUIRLS_SCORE`` - a string containing SQUIRLS scores for each variant-transcript combination. For the variant
+* ``SQUIRLS_SCORE`` - a string containing SQUIRLS scores for each variant-transcript combination. For the variant
   ``chr1:1234C>A,G``, the field might look like::
 
     SQUIRLS_SCORE=A|NM_123456.1=0.988654|ENST00000987654.1=0.988654&G|NM_12356.1=0.330112|ENST00000987654.1=0.330112
@@ -77,4 +69,36 @@ An output similar to this is produced ::
   chr3:52676065CA>C	neutral	ENST00000296302.7.7=0.008163;ENST00000337303.4.4=0.008163;ENST00000356770.4.4=0.008163;ENST00000394830.3.3=0.008163;ENST00000409057.1.1=0.008163;ENST00000409114.3.3=0.008163;ENST00000409767.1.1=0.008163;ENST00000410007.1.1=0.008163;ENST00000412587.1.1=0.008163;ENST00000423351.1.1=0.008163;ENST00000446103.1.1=0.008163;NM_018313.4=0.008163;XM_005265275.1=0.008163;XM_005265276.1=0.008163;XM_005265277.1=0.008163;XM_005265278.1=0.008163;XM_005265279.1=0.008163;XM_005265280.1=0.008163;XM_005265281.1=0.008163;XM_005265282.1=0.008163;XM_005265283.1=0.008163;XM_005265284.1=0.008163;XM_005265285.1=0.008163;XM_005265286.1=0.008163;XM_005265287.1=0.008163;XM_005265288.1=0.008163;XM_005265289.1=0.008163;XM_005265290.1=0.008163;XM_005265291.1=0.008163;XM_005265292.1=0.008163;uc003deq.2=0.008163;uc003der.2=0.008163;uc003des.2=0.008163;uc003det.2=0.008163;uc003deu.2=0.008163;uc003dev.2=0.008163;uc003dew.2=0.008163;uc003dex.2=0.008163;uc003dey.2=0.008163;uc003dez.1=0.008163;uc003dfb.1=0.008163;uc010hmk.1=0.008163
 
   ...
+
+
+Annotate variant positions stored in a CSV file (``annotate-csv``)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+If you want to annotate >10 variant positions, it might be more convenient to do this by using the ``annotate-csv`` command.
+
+Let's consider 4 variants stored in a CSV file ``example.csv``::
+
+  CHROM,POS,REF,ALT
+  chr9,136224694,A,T
+  chr3,52676065,CA,C
+  chr3,165504107,A,C
+  chr17,41197805,ACATCTGCC,A
+
+then, by running command the ``annotate-csv`` command ::
+
+  java -jar squirls-cli.jar annotate-csv -c squirls_config.yml example.csv output.csv
+
+Squirls performs the variant classification and predicts pathogenicity wrt. all overlapping transcripts ::
+
+  CHROM,POS,REF,ALT,PATHOGENIC,MAX_SCORE,SCORES
+  chr9,136224694,A,T,true,0.9663857211265289,ENST00000371964.4.4=0.966386;ENST00000486887.1.1=0.966386;ENST00000495524.1.1=0.966386;NM_001278928.1=0.966386;NM_017503.4=0.966386;uc004cdi.2=0.966386
+  chr3,52676065,CA,C,false,0.008163212387616258,ENST00000296302.7.7=0.008163;ENST00000337303.4.4=0.008163;ENST00000356770.4.4=0.008163;ENST00000394830.3.3=0.008163;ENST00000409057.1.1=0.008163;ENST00000409114.3.3=0.008163;ENST00000409767.1.1=0.008163;ENST00000410007.1.1=0.008163;ENST00000412587.1.1=0.008163;ENST00000423351.1.1=0.008163;ENST00000446103.1.1=0.008163;NM_018313.4=0.008163;XM_005265275.1=0.008163;XM_005265276.1=0.008163;XM_005265277.1=0.008163;XM_005265278.1=0.008163;XM_005265279.1=0.008163;XM_005265280.1=0.008163;XM_005265281.1=0.008163;XM_005265282.1=0.008163;XM_005265283.1=0.008163;XM_005265284.1=0.008163;XM_005265285.1=0.008163;XM_005265286.1=0.008163;XM_005265287.1=0.008163;XM_005265288.1=0.008163;XM_005265289.1=0.008163;XM_005265290.1=0.008163;XM_005265291.1=0.008163;XM_005265292.1=0.008163;uc003deq.2=0.008163;uc003der.2=0.008163;uc003des.2=0.008163;uc003det.2=0.008163;uc003deu.2=0.008163;uc003dev.2=0.008163;uc003dew.2=0.008163;uc003dex.2=0.008163;uc003dey.2=0.008163;uc003dez.1=0.008163;uc003dfb.1=0.008163;uc010hmk.1=0.008163
+  chr3,165504107,A,C,true,0.9999720330487433,ENST00000264381.3.3=0.999972;ENST00000479451.1.1=0.999972;ENST00000482958.1.1=0.999972;ENST00000488954.1.1=0.999972;ENST00000497011.1.1=0.999972;ENST00000540653.1.1=0.999972;NM_000055.2=0.999972;XM_005247685.1=0.999972;uc003fem.4=0.999972;uc003fen.4=0.999972
+  chr17,41197805,ACATCTGCC,A,false,0.010936742107683193,ENST00000309486.4.4=0.010927;ENST00000346315.3.3=0.010927;ENST00000351666.3.3=0.010927;ENST00000352993.3.3=0.010927;ENST00000354071.3.3=0.010927;ENST00000357654.3.3=0.010927;ENST00000461221.1.1=0.010937;ENST00000468300.1.1=0.010927;ENST00000471181.2.2=0.010930;ENST00000491747.2.2=0.010937;ENST00000493795.1.1=0.010930;ENST00000586385.1.1=0.010929;ENST00000591534.1.1=0.010929;ENST00000591849.1.1=0.010929;NM_007294.3=0.010927;NM_007297.3=0.010927;NM_007298.3=0.010927;NM_007299.3=0.010927;NM_007300.3=0.010927;NR_027676.1=0.010927;uc002icp.4=0.010927;uc002icq.3=0.010927;uc002ict.3=0.010927;uc002icu.3=0.010927;uc010cyx.3=0.010927;uc010whl.2=0.010927;uc010whm.2=0.010927;uc010whn.2=0.010927;uc010who.3=0.010927;uc010whp.2=0.010927
+
+Three columns are added:
+
+* ``PATHOGENIC`` - ``true`` if the variant is predicted to be splicing pathogenic
+* ``MAX_SCORE`` - maximum Squirls score of all overlapping transcripts
+* ``SCORES`` - Squirls scores calculated wrt. all overlapping transcripts stored in format ``TX1=SCORE1;TX2=SCORE2;...;TXn=SCOREn``
 

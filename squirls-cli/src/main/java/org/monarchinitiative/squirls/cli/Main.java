@@ -1,15 +1,15 @@
 package org.monarchinitiative.squirls.cli;
 
+import org.monarchinitiative.squirls.cli.cmd.GenerateConfigCommand;
 import org.monarchinitiative.squirls.cli.cmd.analyze_vcf.AnalyzeVcfCommand;
-import org.monarchinitiative.squirls.cli.cmd.annotate_vcf.AnnotateVcfCommand;
 import org.monarchinitiative.squirls.cli.cmd.annotate_csv.AnnotateCsvCommand;
 import org.monarchinitiative.squirls.cli.cmd.annotate_pos.AnnotatePosCommand;
-import org.monarchinitiative.squirls.cli.cmd.GenerateConfigCommand;
+import org.monarchinitiative.squirls.cli.cmd.annotate_vcf.AnnotateVcfCommand;
 import picocli.CommandLine;
 
 import java.util.concurrent.Callable;
 
-@CommandLine.Command(name = "squirls", mixinStandardHelpOptions = true, version = "squirls v1.0.0-RC3-SNAPSHOT",
+@CommandLine.Command(name = "squirls-cli.jar", mixinStandardHelpOptions = true, version = "squirls v1.0.0-RC3-SNAPSHOT",
         description = "Super-quick Information Content and Random Forest Learning for Splice Variants")
 public class Main implements Callable<Integer> {
 

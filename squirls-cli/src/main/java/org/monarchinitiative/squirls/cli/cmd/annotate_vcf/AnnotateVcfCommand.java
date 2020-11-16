@@ -27,7 +27,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @CommandLine.Command(name = "annotate-vcf", aliases = {"A"}, mixinStandardHelpOptions = true,
-        description = "annotate VCF file")
+        description = "annotate variants in a VCF file")
 public class AnnotateVcfCommand extends SquirlsCommand {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AnnotateVcfCommand.class);
@@ -44,7 +44,7 @@ public class AnnotateVcfCommand extends SquirlsCommand {
             VCFHeaderLineType.String,
             "Squirls pathogenicity score");
 
-    @CommandLine.Parameters(index = "0", description = "path to the input VCF file")
+    @CommandLine.Parameters(index = "0", description = "path to input VCF file")
     public Path inputPath;
     @CommandLine.Parameters(index = "1", description = "where to write the output VCF file")
     public Path outputPath;
