@@ -6,7 +6,7 @@ package org.monarchinitiative.squirls.cli.cmd.analyze_vcf;
 public interface IPresentableVariant {
 
     /**
-     * @return a string like <code>chr1:1234C>A</code>
+     * @return a string like <code>chr1:1,234 C>A</code>
      */
     String getVariantRepresentation();
 

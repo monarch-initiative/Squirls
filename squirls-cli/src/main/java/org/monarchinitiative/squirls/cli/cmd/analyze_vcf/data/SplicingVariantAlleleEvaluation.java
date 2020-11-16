@@ -9,6 +9,7 @@ import org.monarchinitiative.squirls.cli.visualization.VisualizedVariant;
 import org.monarchinitiative.squirls.core.SplicingPredictionData;
 import org.monarchinitiative.squirls.core.classifier.Prediction;
 
+import java.text.NumberFormat;
 import java.util.*;
 
 /**
@@ -25,6 +26,8 @@ import java.util.*;
  */
 // TODO: 16. 10. 2020 simplify - get rid of the variant context, allele, etc, when work on SplicingVariantGraphicsGenerator is finished
 public class SplicingVariantAlleleEvaluation implements VisualizedVariant {
+
+    private static final NumberFormat NUMBER_FORMAT = NumberFormat.getNumberInstance();
 
     /**
      * The base variant context that is being analyzed.
@@ -139,7 +142,7 @@ public class SplicingVariantAlleleEvaluation implements VisualizedVariant {
     }
 
     public String getRepresentation() {
-        return String.format("%s:%d%s>%s", base.getContig(), base.getStart(),
+        return String.format("%s:%s %s>%s", base.getContig(), NUMBER_FORMAT.format(base.getStart()),
                 base.getReference().getBaseString(),
                 altAllele.getBaseString());
     }
