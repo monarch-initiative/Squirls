@@ -203,7 +203,7 @@ Sequence ruler
 
 .. figure:: _static/acceptorRuler.svg
    :width: 800
-   :height: 250
+   :height: 200
 
 Sequence rulers are SVG graphics that show the sequence of the donor or acceptor site, mark the intron-exon boundary,
 and show the position of any alternate bases that diverge from the reference sequence.

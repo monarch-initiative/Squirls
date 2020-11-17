@@ -35,7 +35,7 @@ Build Squirls from source
 Squirls is a Maven project and as such, it is built by running the following commands::
 
   $ cd Squirls
-  $ mvn package
+  $ ./mvnw package
 
 The executable JAR file is located at `squirls-cli/target/squirls-cli-1.0.0.jar`.
 
