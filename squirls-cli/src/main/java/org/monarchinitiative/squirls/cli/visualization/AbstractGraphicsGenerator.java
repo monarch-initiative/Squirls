@@ -15,9 +15,11 @@ import org.monarchinitiative.squirls.core.scoring.calculators.ic.SplicingInforma
 import org.monarchinitiative.vmvt.core.VmvtGenerator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import xyz.ielis.hyperutil.reference.fasta.GenomeSequenceAccessor;
 import xyz.ielis.hyperutil.reference.fasta.SequenceInterval;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 public abstract class AbstractGraphicsGenerator implements SplicingVariantGraphicsGenerator {
@@ -34,15 +36,19 @@ public abstract class AbstractGraphicsGenerator implements SplicingVariantGraphi
 
     private final SplicingInformationContentCalculator icCalculator;
 
+    private final GenomeSequenceAccessor genomeSequenceAccessor;
+
     protected AbstractGraphicsGenerator(VmvtGenerator vmvtGenerator,
                                         SplicingPwmData splicingPwmData,
-                                        VisualizationContextSelector contextSelector) {
+                                        VisualizationContextSelector contextSelector,
+                                        GenomeSequenceAccessor genomeSequenceAccessor) {
 
         this.vmvtGenerator = vmvtGenerator;
         this.splicingParameters = splicingPwmData.getParameters();
         this.alleleGenerator = new AlleleGenerator(splicingPwmData.getParameters());
         this.icCalculator = new SplicingInformationContentCalculator(splicingPwmData);
         this.contextSelector = contextSelector;
+        this.genomeSequenceAccessor = genomeSequenceAccessor;
     }
 
     /**
@@ -54,7 +60,7 @@ public abstract class AbstractGraphicsGenerator implements SplicingVariantGraphi
      * @return result HTML string
      */
     private static String makeCrypticContextGraphics(String title, String primary, String secondary) {
-        final StringBuilder graphics = new StringBuilder();
+        StringBuilder graphics = new StringBuilder();
         // add title
         graphics.append("<div class=\"graphics-container\">")
                 .append("<div class=\"graphics-title\">").append(title).append("</div>")
@@ -84,7 +90,7 @@ public abstract class AbstractGraphicsGenerator implements SplicingVariantGraphi
      * @return string with titled div containing all figures
      */
     private static String assembleFigures(VisualizationContext context, String... figures) {
-        final StringBuilder graphics = new StringBuilder();
+        StringBuilder graphics = new StringBuilder();
         // add title
         graphics.append("<div class=\"graphics-container\">")
                 .append("<div class=\"graphics-title\">").append(context.getTitle()).append("</div>")
@@ -124,23 +130,27 @@ public abstract class AbstractGraphicsGenerator implements SplicingVariantGraphi
      * @return String with content in HTML format containing SVG with graphics
      */
     protected String makeCanonicalDonorContextGraphics(SplicingPredictionData predictionData) {
-        final VisualizationContext context = VisualizationContext.CANONICAL_DONOR;
+        VisualizationContext context = VisualizationContext.CANONICAL_DONOR;
 
-        final GenomeVariant variant = predictionData.getVariant();
-        final SequenceInterval sequence = predictionData.getSequence();
-        final SplicingTranscript transcript = predictionData.getTranscript();
+        GenomeVariant variant = predictionData.getVariant();
+        SplicingTranscript transcript = predictionData.getTranscript();
+        Optional<SequenceInterval> sio = fetchSequenceForTranscript(transcript);
+        if (sio.isEmpty()) {
+            return EMPTY_SVG_IMAGE;
+        }
+        SequenceInterval sequence = sio.get();
 
         // Overlaps with canonical donor site?
-        final GenomePosition donorAnchor = predictionData.getMetadata().getDonorCoordinateMap().get(transcript.getAccessionId());
+        GenomePosition donorAnchor = predictionData.getMetadata().getDonorCoordinateMap().get(transcript.getAccessionId());
 
         if (donorAnchor != null) {
-            final GenomeInterval canonicalDonorInterval = alleleGenerator.makeDonorInterval(donorAnchor);
+            GenomeInterval canonicalDonorInterval = alleleGenerator.makeDonorInterval(donorAnchor);
             if (variant.getGenomeInterval().overlapsWith(canonicalDonorInterval)) {
-                final String refAllele = alleleGenerator.getDonorSiteSnippet(donorAnchor, sequence);
+                String refAllele = alleleGenerator.getDonorSiteSnippet(donorAnchor, sequence);
                 if (refAllele != null) {
-                    final String altAllele = alleleGenerator.getDonorSiteWithAltAllele(donorAnchor, variant, sequence);
+                    String altAllele = alleleGenerator.getDonorSiteWithAltAllele(donorAnchor, variant, sequence);
 
-                    final StringBuilder graphics = new StringBuilder();
+                    StringBuilder graphics = new StringBuilder();
                     // add title
                     graphics.append("<div class=\"graphics-container\">")
                             .append("<div class=\"graphics-title\">").append(context.getTitle()).append("</div>")
@@ -195,22 +205,25 @@ public abstract class AbstractGraphicsGenerator implements SplicingVariantGraphi
      * @return String with content in HTML format containing SVG with graphics
      */
     protected String makeCanonicalAcceptorContextGraphics(SplicingPredictionData predictionData) {
-        final VisualizationContext context = VisualizationContext.CANONICAL_ACCEPTOR;
-        final GenomeVariant variant = predictionData.getVariant();
-        // TODO: 17. 11. 2020 this sequence will not exist anymore!
-        final SequenceInterval sequence = predictionData.getSequence();
-        final SplicingTranscript transcript = predictionData.getTranscript();
+        VisualizationContext context = VisualizationContext.CANONICAL_ACCEPTOR;
+        GenomeVariant variant = predictionData.getVariant();
+        SplicingTranscript transcript = predictionData.getTranscript();
+        Optional<SequenceInterval> sio = fetchSequenceForTranscript(transcript);
+        if (sio.isEmpty()) {
+            return EMPTY_SVG_IMAGE;
+        }
+        SequenceInterval sequence = sio.get();
 
         // Overlaps with canonical acceptor site?
-        final GenomePosition acceptorAnchor = predictionData.getMetadata().getAcceptorCoordinateMap().get(transcript.getAccessionId());
+        GenomePosition acceptorAnchor = predictionData.getMetadata().getAcceptorCoordinateMap().get(transcript.getAccessionId());
         if (acceptorAnchor != null) {
-            final GenomeInterval canonicalAcceptorInterval = alleleGenerator.makeAcceptorInterval(acceptorAnchor);
+            GenomeInterval canonicalAcceptorInterval = alleleGenerator.makeAcceptorInterval(acceptorAnchor);
             if (variant.getGenomeInterval().overlapsWith(canonicalAcceptorInterval)) {
-                final String refAllele = alleleGenerator.getAcceptorSiteSnippet(acceptorAnchor, sequence);
+                String refAllele = alleleGenerator.getAcceptorSiteSnippet(acceptorAnchor, sequence);
                 if (refAllele != null) {
-                    final String altAllele = alleleGenerator.getAcceptorSiteWithAltAllele(acceptorAnchor, variant, sequence);
+                    String altAllele = alleleGenerator.getAcceptorSiteWithAltAllele(acceptorAnchor, variant, sequence);
 
-                    final StringBuilder graphics = new StringBuilder();
+                    StringBuilder graphics = new StringBuilder();
                     // add title
                     graphics.append("<div class=\"graphics-container\">")
                             .append("<div class=\"graphics-title\">").append(context.getTitle()).append("</div>")
@@ -264,38 +277,42 @@ public abstract class AbstractGraphicsGenerator implements SplicingVariantGraphi
      * @return String with content in HTML format containing SVG with graphics
      */
     protected String makeCrypticDonorContextGraphics(SplicingPredictionData predictionData) {
-        final VisualizationContext context = VisualizationContext.CRYPTIC_DONOR;
+        VisualizationContext context = VisualizationContext.CRYPTIC_DONOR;
 
-        final SequenceInterval sequence = predictionData.getSequence();
-        final GenomeVariant variant = predictionData.getVariant();
-        final GenomeInterval variantInterval = variant.getGenomeInterval();
+        GenomeVariant variant = predictionData.getVariant();
+        GenomeInterval variantInterval = variant.getGenomeInterval();
+        Optional<SequenceInterval> sio = fetchSequenceForTranscript(predictionData.getTranscript());
+        if (sio.isEmpty()) {
+            return EMPTY_SVG_IMAGE;
+        }
+        SequenceInterval sequence = sio.get();
 
         // find index of the position that yields the highest score
         // get the corresponding ref & alt snippets
-        final String refSnippet = alleleGenerator.getDonorNeighborSnippet(variantInterval, sequence, variant.getRef());
-        final String altSnippet = alleleGenerator.getDonorNeighborSnippet(variantInterval, sequence, variant.getAlt());
+        String refSnippet = alleleGenerator.getDonorNeighborSnippet(variantInterval, sequence, variant.getRef());
+        String altSnippet = alleleGenerator.getDonorNeighborSnippet(variantInterval, sequence, variant.getAlt());
         if (refSnippet == null || altSnippet == null) {
             // nothing more to be done
             return EMPTY_SVG_IMAGE;
         }
 
-        final List<Double> altDonorScores = Utils.slidingWindow(altSnippet, splicingParameters.getDonorLength())
+        List<Double> altDonorScores = Utils.slidingWindow(altSnippet, splicingParameters.getDonorLength())
                 .map(icCalculator::getSpliceDonorScore)
                 .collect(Collectors.toList());
 
-        final int altMaxIdx = Utils.argmax(altDonorScores);
+        int altMaxIdx = Utils.argmax(altDonorScores);
 
         // primary - trekker comparing the best ALT window with the corresponding REF window
-        final String altBestWindow = altSnippet.substring(altMaxIdx, altMaxIdx + splicingParameters.getDonorLength());
-        final String refCorrespondingWindow = refSnippet.substring(altMaxIdx, altMaxIdx + splicingParameters.getDonorLength());
-        final String trekker = vmvtGenerator.getDonorTrekkerSvg(refCorrespondingWindow, altBestWindow);
+        String altBestWindow = altSnippet.substring(altMaxIdx, altMaxIdx + splicingParameters.getDonorLength());
+        String refCorrespondingWindow = refSnippet.substring(altMaxIdx, altMaxIdx + splicingParameters.getDonorLength());
+        String trekker = vmvtGenerator.getDonorTrekkerSvg(refCorrespondingWindow, altBestWindow);
 
         // secondary - sequence walkers comparing the best ALT window with the canonical donor snippet
-        final GenomePosition donorAnchor = predictionData.getMetadata().getDonorCoordinateMap().get(predictionData.getTranscript().getAccessionId());
-        final String walkers;
+        GenomePosition donorAnchor = predictionData.getMetadata().getDonorCoordinateMap().get(predictionData.getTranscript().getAccessionId());
+        String walkers;
         if (donorAnchor != null) {
             // we have the anchor, thus let's make the graphics
-            final String canonicalDonorSnippet = alleleGenerator.getDonorSiteWithAltAllele(donorAnchor, variant, sequence);
+            String canonicalDonorSnippet = alleleGenerator.getDonorSiteWithAltAllele(donorAnchor, variant, sequence);
             walkers = vmvtGenerator.getDonorCanonicalCryptic(canonicalDonorSnippet, altBestWindow);
         } else {
             // there is no anchor, this happens in single-exon transcripts
@@ -332,38 +349,42 @@ public abstract class AbstractGraphicsGenerator implements SplicingVariantGraphi
      * @return String with content in HTML format containing SVG with graphics
      */
     protected String makeCrypticAcceptorContextGraphics(SplicingPredictionData predictionData) {
-        final VisualizationContext context = VisualizationContext.CRYPTIC_ACCEPTOR;
+        VisualizationContext context = VisualizationContext.CRYPTIC_ACCEPTOR;
 
-        final SequenceInterval sequence = predictionData.getSequence();
-        final GenomeVariant variant = predictionData.getVariant();
-        final GenomeInterval variantInterval = variant.getGenomeInterval();
+        GenomeVariant variant = predictionData.getVariant();
+        GenomeInterval variantInterval = variant.getGenomeInterval();
+        Optional<SequenceInterval> sio = fetchSequenceForTranscript(predictionData.getTranscript());
+        if (sio.isEmpty()) {
+            return EMPTY_SVG_IMAGE;
+        }
+        SequenceInterval sequence = sio.get();
 
         // find index of the position that yields the highest score
         // get the corresponding ref & alt snippets
-        final String refSnippet = alleleGenerator.getAcceptorNeighborSnippet(variantInterval, sequence, variant.getRef());
-        final String altSnippet = alleleGenerator.getAcceptorNeighborSnippet(variantInterval, sequence, variant.getAlt());
+        String refSnippet = alleleGenerator.getAcceptorNeighborSnippet(variantInterval, sequence, variant.getRef());
+        String altSnippet = alleleGenerator.getAcceptorNeighborSnippet(variantInterval, sequence, variant.getAlt());
         if (refSnippet == null || altSnippet == null) {
             // nothing more to be done
             return EMPTY_SVG_IMAGE;
         }
 
-        final List<Double> altAcceptorScores = Utils.slidingWindow(altSnippet, splicingParameters.getAcceptorLength())
+        List<Double> altAcceptorScores = Utils.slidingWindow(altSnippet, splicingParameters.getAcceptorLength())
                 .map(icCalculator::getSpliceAcceptorScore)
                 .collect(Collectors.toList());
 
-        final int altMaxIdx = Utils.argmax(altAcceptorScores);
+        int altMaxIdx = Utils.argmax(altAcceptorScores);
 
         // primary - trekker comparing the best ALT window with the corresponding REF window
-        final String altBestWindow = altSnippet.substring(altMaxIdx, altMaxIdx + splicingParameters.getAcceptorLength());
-        final String refCorrespondingWindow = refSnippet.substring(altMaxIdx, altMaxIdx + splicingParameters.getAcceptorLength());
-        final String trekker = vmvtGenerator.getAcceptorTrekkerSvg(refCorrespondingWindow, altBestWindow);
+        String altBestWindow = altSnippet.substring(altMaxIdx, altMaxIdx + splicingParameters.getAcceptorLength());
+        String refCorrespondingWindow = refSnippet.substring(altMaxIdx, altMaxIdx + splicingParameters.getAcceptorLength());
+        String trekker = vmvtGenerator.getAcceptorTrekkerSvg(refCorrespondingWindow, altBestWindow);
 
         // secondary - sequence walkers comparing the best ALT window with the canonical acceptor snippet
-        final GenomePosition acceptorAnchor = predictionData.getMetadata().getAcceptorCoordinateMap().get(predictionData.getTranscript().getAccessionId());
-        final String walkers;
+        GenomePosition acceptorAnchor = predictionData.getMetadata().getAcceptorCoordinateMap().get(predictionData.getTranscript().getAccessionId());
+        String walkers;
         if (acceptorAnchor != null) {
             // we have the anchor, thus let's make the graphics
-            final String canonicalAcceptorSnippet = alleleGenerator.getAcceptorSiteWithAltAllele(acceptorAnchor, variant, sequence);
+            String canonicalAcceptorSnippet = alleleGenerator.getAcceptorSiteWithAltAllele(acceptorAnchor, variant, sequence);
             walkers = vmvtGenerator.getAcceptorCanonicalCryptic(canonicalAcceptorSnippet, altBestWindow);
         } else {
             // there is no anchor, this happens in single-exon transcripts
@@ -379,22 +400,22 @@ public abstract class AbstractGraphicsGenerator implements SplicingVariantGraphi
     }
 
     protected String makeSreContextGraphics(SplicingPredictionData predictionData) {
-        final VisualizationContext context = VisualizationContext.SRE;
+        VisualizationContext context = VisualizationContext.SRE;
 
-        final GenomeVariant variant = predictionData.getVariant();
-        final SequenceInterval sequence = predictionData.getSequence();
+        GenomeVariant variant = predictionData.getVariant();
+        SequenceInterval sequence = predictionData.getSequence();
 
         // primary - hexamer
-        final String hexamerRefSnippet = AlleleGenerator.getPaddedAllele(variant.getGenomeInterval(), sequence, variant.getRef(), 5);  // 5 because at least one base is REF/ALT
-        final String hexamerAltSnippet = AlleleGenerator.getPaddedAllele(variant.getGenomeInterval(), sequence, variant.getAlt(), 5);
-        final String hexamerGraphics = hexamerRefSnippet != null && hexamerAltSnippet != null
+        String hexamerRefSnippet = AlleleGenerator.getPaddedAllele(variant.getGenomeInterval(), sequence, variant.getRef(), 5);  // 5 because at least one base is REF/ALT
+        String hexamerAltSnippet = AlleleGenerator.getPaddedAllele(variant.getGenomeInterval(), sequence, variant.getAlt(), 5);
+        String hexamerGraphics = hexamerRefSnippet != null && hexamerAltSnippet != null
                 ? vmvtGenerator.getHexamerSvg(hexamerRefSnippet, hexamerAltSnippet)
                 : null;
 
         // secondary - heptamer
-        final String heptamerRefSnippet = AlleleGenerator.getPaddedAllele(variant.getGenomeInterval(), sequence, variant.getRef(), 6); // 6 because at least one base is REF/ALT
-        final String heptamerAltSnippet = AlleleGenerator.getPaddedAllele(variant.getGenomeInterval(), sequence, variant.getAlt(), 6);
-        final String heptamerGraphics = heptamerRefSnippet != null && heptamerAltSnippet != null
+        String heptamerRefSnippet = AlleleGenerator.getPaddedAllele(variant.getGenomeInterval(), sequence, variant.getRef(), 6); // 6 because at least one base is REF/ALT
+        String heptamerAltSnippet = AlleleGenerator.getPaddedAllele(variant.getGenomeInterval(), sequence, variant.getAlt(), 6);
+        String heptamerGraphics = heptamerRefSnippet != null && heptamerAltSnippet != null
                 ? vmvtGenerator.getHeptamerSvg(heptamerRefSnippet, heptamerAltSnippet)
                 : null;
 
@@ -405,5 +426,7 @@ public abstract class AbstractGraphicsGenerator implements SplicingVariantGraphi
         return EMPTY_SVG_IMAGE;
     }
 
-
+    private Optional<SequenceInterval> fetchSequenceForTranscript(SplicingTranscript transcript) {
+        return genomeSequenceAccessor.fetchSequence(transcript.getTxRegionCoordinates().withMorePadding(100, 100));
+    }
 }

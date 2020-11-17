@@ -11,6 +11,7 @@ import org.monarchinitiative.squirls.core.data.ic.SplicingPwmData;
 import org.monarchinitiative.vmvt.core.VmvtGenerator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import xyz.ielis.hyperutil.reference.fasta.GenomeSequenceAccessor;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -32,8 +33,9 @@ public class SimpleSplicingVariantGraphicsGenerator extends AbstractGraphicsGene
 
     public SimpleSplicingVariantGraphicsGenerator(VmvtGenerator generator,
                                                   SplicingPwmData splicingPwmData,
-                                                  VisualizationContextSelector selector) {
-        super(generator, splicingPwmData, selector);
+                                                  VisualizationContextSelector selector,
+                                                  GenomeSequenceAccessor genomeSequenceAccessor) {
+        super(generator, splicingPwmData, selector, genomeSequenceAccessor);
     }
 
     @Override

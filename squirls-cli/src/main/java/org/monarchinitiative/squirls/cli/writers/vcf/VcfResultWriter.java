@@ -58,6 +58,10 @@ public class VcfResultWriter implements ResultWriter {
             VariantContextBuilder builder = new VariantContextBuilder(ve.variantContext());
             Map<String, SplicingPredictionData> squirlsScores = ve.squirlsPredictions();
 
+            if (squirlsScores.isEmpty()) {
+                return builder.make();
+            }
+
             // is the ALT allele pathogenic wrt any overlapping transcript?
             boolean isPathogenic = squirlsScores.values().stream()
                     .anyMatch(spd -> spd.getPrediction().isPositive());

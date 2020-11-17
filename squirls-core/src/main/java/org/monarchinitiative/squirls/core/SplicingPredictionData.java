@@ -37,4 +37,8 @@ public interface SplicingPredictionData extends Annotatable, Classifiable {
     default boolean hasSequence() {
         return getSequence() != null || getSequence() != SequenceInterval.empty();
     }
+
+    default boolean isEmpty() {
+        return this.equals(emptyPredictionData());
+    }
 }

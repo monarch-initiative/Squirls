@@ -64,6 +64,7 @@ public class HtmlResultWriter implements ResultWriter {
 
         // sort results by max squirls pathogenicity and select at most n variants
         List<? extends WritableSplicingAllele> allelesToReport = results.getVariants().stream()
+                .filter(variant -> !Double.isNaN(variant.maxSquirlsScore()))
                 .sorted(Comparator.comparing(WritableSplicingAllele::maxSquirlsScore).reversed())
                 .limit(outputSettings.nVariantsToReport())
                 .collect(Collectors.toList());

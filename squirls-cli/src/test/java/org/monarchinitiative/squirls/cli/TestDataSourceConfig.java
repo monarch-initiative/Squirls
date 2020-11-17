@@ -6,6 +6,7 @@ import de.charite.compbio.jannovar.data.JannovarData;
 import de.charite.compbio.jannovar.data.JannovarDataSerializer;
 import de.charite.compbio.jannovar.data.ReferenceDictionary;
 import de.charite.compbio.jannovar.data.SerializationException;
+import org.mockito.Mockito;
 import org.monarchinitiative.squirls.cli.visualization.SplicingVariantGraphicsGenerator;
 import org.monarchinitiative.squirls.cli.visualization.panel.PanelGraphicsGenerator;
 import org.monarchinitiative.squirls.cli.visualization.selector.SimpleVisualizationContextSelector;
@@ -16,6 +17,7 @@ import org.monarchinitiative.squirls.core.data.kmer.FileKMerParser;
 import org.monarchinitiative.vmvt.core.VmvtGenerator;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import xyz.ielis.hyperutil.reference.fasta.GenomeSequenceAccessor;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -27,11 +29,6 @@ import java.util.Map;
 @Configuration
 public class TestDataSourceConfig {
 
-
-    @Bean
-    public VisualizationContextSelector visualizationContextSelector() {
-        return new SimpleVisualizationContextSelector();
-    }
 
     /**
      * Small Jannovar cache containing RefSeq transcripts of several genes only:
@@ -91,9 +88,26 @@ public class TestDataSourceConfig {
     }
 
     @Bean
-    public SplicingVariantGraphicsGenerator splicingVariantGraphicsGenerator(SplicingPwmData splicingPwmData) {
-        SimpleVisualizationContextSelector contextSelector = new SimpleVisualizationContextSelector();
-        VmvtGenerator vmvtGenerator = new VmvtGenerator();
-        return new PanelGraphicsGenerator(vmvtGenerator, splicingPwmData, contextSelector);
+    public SplicingVariantGraphicsGenerator splicingVariantGraphicsGenerator(VmvtGenerator vmvtGenerator,
+                                                                             SplicingPwmData splicingPwmData,
+                                                                             VisualizationContextSelector visualizationContextSelector,
+                                                                             GenomeSequenceAccessor genomeSequenceAccessor) {
+        return new PanelGraphicsGenerator(vmvtGenerator, splicingPwmData, visualizationContextSelector, genomeSequenceAccessor);
     }
+
+    @Bean
+    public GenomeSequenceAccessor genomeSequenceAccessor() {
+        return Mockito.mock(GenomeSequenceAccessor.class);
+    }
+
+    @Bean
+    public VisualizationContextSelector visualizationContextSelector() {
+        return new SimpleVisualizationContextSelector();
+    }
+
+    @Bean
+    public VmvtGenerator vmvtGenerator() {
+        return new VmvtGenerator();
+    }
+
 }

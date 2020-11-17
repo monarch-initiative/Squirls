@@ -14,6 +14,7 @@ import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 import org.thymeleaf.templatemode.TemplateMode;
 import org.thymeleaf.templateresolver.ClassLoaderTemplateResolver;
+import xyz.ielis.hyperutil.reference.fasta.GenomeSequenceAccessor;
 
 import java.util.Map;
 
@@ -29,8 +30,9 @@ public class PanelGraphicsGenerator extends AbstractGraphicsGenerator {
 
     public PanelGraphicsGenerator(VmvtGenerator vmvtGenerator,
                                   SplicingPwmData splicingPwmData,
-                                  VisualizationContextSelector contextSelector) {
-        super(vmvtGenerator, splicingPwmData, contextSelector);
+                                  VisualizationContextSelector contextSelector,
+                                  GenomeSequenceAccessor genomeSequenceAccessor) {
+        super(vmvtGenerator, splicingPwmData, contextSelector, genomeSequenceAccessor);
 
         ClassLoaderTemplateResolver templateResolver = new ClassLoaderTemplateResolver();
         templateResolver.setTemplateMode(TemplateMode.HTML);

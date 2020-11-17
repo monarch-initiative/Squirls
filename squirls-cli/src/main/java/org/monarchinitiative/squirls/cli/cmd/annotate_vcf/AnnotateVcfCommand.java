@@ -10,6 +10,7 @@ import de.charite.compbio.jannovar.data.ReferenceDictionary;
 import de.charite.compbio.jannovar.data.SerializationException;
 import de.charite.compbio.jannovar.reference.GenomePosition;
 import de.charite.compbio.jannovar.reference.GenomeVariant;
+import de.charite.compbio.jannovar.reference.PositionType;
 import de.charite.compbio.jannovar.reference.Strand;
 import htsjdk.samtools.util.CloseableIterator;
 import htsjdk.variant.variantcontext.Allele;
@@ -42,9 +43,8 @@ public class AnnotateVcfCommand extends SquirlsCommand {
     public String jannovarDataPath;
 
     @CommandLine.Option(names = {"-f", "--output-format"},
-            type = OutputFormat.class,
-            description = "what format to use to write the results [HTML,VCF]")
-    public OutputFormat[] outputFormats = new OutputFormat[]{OutputFormat.HTML};
+            description = "comma separated list of output formats to use for writing the results [html,VCF]")
+    public String outputFormats = "HTML";
 
     @CommandLine.Option(names = {"-n", "--n-variants-to-report"},
             defaultValue = "100",
@@ -78,7 +78,7 @@ public class AnnotateVcfCommand extends SquirlsCommand {
                     continue;
                 }
 
-                GenomePosition pos = new GenomePosition(rd, Strand.FWD, contigId, vc.getStart());
+                GenomePosition pos = new GenomePosition(rd, Strand.FWD, contigId, vc.getStart(), PositionType.ONE_BASED);
                 GenomeVariant variant = new GenomeVariant(pos, vc.getReference().getDisplayString(), allele.getDisplayString());
                 VariantAnnotations variantAnnotations;
                 try {
@@ -89,7 +89,10 @@ public class AnnotateVcfCommand extends SquirlsCommand {
                 }
 
                 // Squirls scores
-                Map<String, SplicingPredictionData> squirlsScores = evaluator.evaluate(vc.getContig(), vc.getStart(), vc.getReference().getBaseString(), allele.getBaseString());
+                Map<String, SplicingPredictionData> squirlsScores = variantAnnotations.getHighestImpactEffect().isOffTranscript()
+                        ? Map.of() // don't bother with annotating an off-exome variant
+                        : evaluator.evaluate(vc.getContig(), vc.getStart(), vc.getReference().getBaseString(), allele.getBaseString());
+
 
                 evaluations.add(new WritableSplicingAlleleImpl(vc, allele, variantAnnotations, squirlsScores));
             }
@@ -102,7 +105,7 @@ public class AnnotateVcfCommand extends SquirlsCommand {
     public Integer call() {
         try (ConfigurableApplicationContext context = getContext()) {
             LOGGER.info("Reading variants from `{}`", inputPath);
-
+            Set<OutputFormat> outputFormats = parseOutputFormats();
             VariantSplicingEvaluator evaluator = context.getBean(VariantSplicingEvaluator.class);
 
             JannovarData jd;
@@ -118,7 +121,7 @@ public class AnnotateVcfCommand extends SquirlsCommand {
 
             // TODO: 29. 5. 2020 improve behavior & logging
             // e.g. report progress in % if variant index and thus count is available
-            AnnotateVcfProgressReporter progressReporter = new AnnotateVcfProgressReporter(500);
+            AnnotateVcfProgressReporter progressReporter = new AnnotateVcfProgressReporter(5_000);
             List<WritableSplicingAllele> annotated = Collections.synchronizedList(new ArrayList<>());
 
             // annotate the variants
@@ -163,5 +166,17 @@ public class AnnotateVcfCommand extends SquirlsCommand {
         }
 
         return 0;
+    }
+
+    private Set<OutputFormat> parseOutputFormats() {
+        Set<OutputFormat> formats = new HashSet<>(2);
+        for (String format : outputFormats.split(",")) {
+            try {
+                formats.add(OutputFormat.valueOf(format.toUpperCase()));
+            } catch (IllegalArgumentException e) {
+                LOGGER.warn("Invalid output format `{}`", format);
+            }
+        }
+        return formats;
     }
 }
