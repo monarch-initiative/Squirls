@@ -364,18 +364,18 @@ public class VariantsForTesting {
                 "canonical_donor=2.447047894181465\n" +
                 "creates_ag_in_agez=0.0\n" +
                 "creates_yag_in_agez=0.0\n" +
-                "cryptic_acceptor=NaN\n" +  // TODO: 17. 11. 2020 investigate
+                "cryptic_acceptor=-12.4905210874462\n" +
                 "cryptic_donor=0.0\n" +
                 "donor_offset=-2.0\n" +
-                "exon_length=4207.0\n" +
+                "exon_length=144.0\n" +
                 "hexamer=-1.4957907\n" +
-                "intron_length=-144.0\n" +
+                "intron_length=2057.0\n" +
                 "phylop=3.5\n" +
                 "ppt_is_truncated=0.0\n" +
                 "s_strength_diff_acceptor=0.0\n" +
                 "s_strength_diff_donor=0.0\n" +
                 "septamer=-0.8844000000000001\n" +
-                "wt_ri_acceptor=NaN\n" +
+                "wt_ri_acceptor=9.42867691754065\n" +
                 "wt_ri_donor=4.867617848006766\n" +
                 "yag_at_acceptor_minus_three=0.0";
 

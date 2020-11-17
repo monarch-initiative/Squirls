@@ -32,8 +32,8 @@ import java.util.Map;
 public class GenerateSplicingAnnotatorValues {
 
     //    private static final Path PHYLOP = Path.of("/Users/danisd/data/threes/hg19.100way.phyloP100way.bw");
-    //    private static final Path PHYLOP = Path.of("/home/ielis/dub/bigwig/hg19.100way.phyloP100way.bw");
-    private static final Path PHYLOP = Path.of("hg19.100way.phyloP100way.bw");
+    private static final Path PHYLOP = Path.of("/home/ielis/dub/bigwig/hg19.100way.phyloP100way.bw");
+//    private static final Path PHYLOP = Path.of("hg19.100way.phyloP100way.bw");
 
     private static final ReferenceDictionary RD = HG19RefDictBuilder.build();
     /*

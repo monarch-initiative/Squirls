@@ -95,7 +95,12 @@ public class SplicingCalculatorImpl implements SplicingCalculator {
                             .build());
         }
 
-        return Optional.of(builder.build());
+        try {
+            return Optional.of(builder.check(true).build());
+        } catch (IllegalArgumentException e) {
+            LOGGER.warn("Error processing transcript {}: {}", model.getAccession(), e.getMessage());
+            return Optional.empty();
+        }
     }
 
 }
