@@ -197,6 +197,7 @@ public abstract class AbstractGraphicsGenerator implements SplicingVariantGraphi
     protected String makeCanonicalAcceptorContextGraphics(SplicingPredictionData predictionData) {
         final VisualizationContext context = VisualizationContext.CANONICAL_ACCEPTOR;
         final GenomeVariant variant = predictionData.getVariant();
+        // TODO: 17. 11. 2020 this sequence will not exist anymore!
         final SequenceInterval sequence = predictionData.getSequence();
         final SplicingTranscript transcript = predictionData.getTranscript();
 

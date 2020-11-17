@@ -3,13 +3,15 @@ package org.monarchinitiative.squirls.cli.cmd;
 import org.monarchinitiative.squirls.cli.visualization.SplicingVariantGraphicsGenerator;
 import org.monarchinitiative.squirls.cli.visualization.panel.PanelGraphicsGenerator;
 import org.monarchinitiative.squirls.cli.visualization.selector.SimpleVisualizationContextSelector;
+import org.monarchinitiative.squirls.cli.writers.ResultWriterFactory;
 import org.monarchinitiative.squirls.core.SplicingPredictionData;
 import org.monarchinitiative.squirls.core.data.ic.SplicingPwmData;
 import org.monarchinitiative.vmvt.core.VmvtGenerator;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import picocli.CommandLine;
 
 import java.nio.file.Path;
@@ -17,7 +19,8 @@ import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
 
-@SpringBootApplication
+@Configuration
+@EnableAutoConfiguration
 public abstract class SquirlsCommand implements Callable<Integer> {
 
     @CommandLine.Option(names = {"-c", "--config"},
@@ -53,5 +56,10 @@ public abstract class SquirlsCommand implements Callable<Integer> {
         final VmvtGenerator generator = new VmvtGenerator();
         final SimpleVisualizationContextSelector selector = new SimpleVisualizationContextSelector();
         return new PanelGraphicsGenerator(generator, splicingPwmData, selector);
+    }
+
+    @Bean
+    public ResultWriterFactory resultWriterFactory(SplicingVariantGraphicsGenerator splicingVariantGraphicsGenerator) {
+        return new ResultWriterFactory(splicingVariantGraphicsGenerator);
     }
 }

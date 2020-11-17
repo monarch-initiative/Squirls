@@ -2,7 +2,7 @@ package org.monarchinitiative.squirls.cli.visualization.panel;
 
 import org.monarchinitiative.squirls.cli.visualization.AbstractGraphicsGenerator;
 import org.monarchinitiative.squirls.cli.visualization.MissingFeatureException;
-import org.monarchinitiative.squirls.cli.visualization.VisualizedVariant;
+import org.monarchinitiative.squirls.cli.visualization.VisualizableVariantAllele;
 import org.monarchinitiative.squirls.cli.visualization.selector.VisualizationContext;
 import org.monarchinitiative.squirls.cli.visualization.selector.VisualizationContextSelector;
 import org.monarchinitiative.squirls.core.SplicingPredictionData;
@@ -43,14 +43,14 @@ public class PanelGraphicsGenerator extends AbstractGraphicsGenerator {
     }
 
     @Override
-    public String generateGraphics(VisualizedVariant data) {
+    public String generateGraphics(VisualizableVariantAllele visualizableAllele) {
         /*
         To generate graphics, we first determine graphics type (visualization context).
         Then, we select the relevant parts of the splicing data.
         Finally, we process the data using appropriate template and return HTML
          */
 
-        final SplicingPredictionData prediction = data.getPrimaryPrediction();
+        final SplicingPredictionData prediction = visualizableAllele.getPrimaryPrediction();
         final Map<String, Double> featureMap = prediction.getFeatureMap();
 
         // 0 - select what visualization context and template name
@@ -81,15 +81,15 @@ public class PanelGraphicsGenerator extends AbstractGraphicsGenerator {
                     return EMPTY_SVG_IMAGE;
             }
         } catch (MissingFeatureException e) {
-            LOGGER.warn("Missing feature "); // TODO: 15. 10. 2020 add info
+            LOGGER.warn("Cannot generate graphics for {}. {}", visualizableAllele.genomeVariant(), e.getMessage());
             return EMPTY_SVG_IMAGE;
         }
 
         // 1 - prepare context for the template
-        final Context context = new Context();
-        context.setVariable("features", featureMap);
-        context.setVariable("variantData", data);
-        context.setVariable("annotations", data.getAnnotations());
+        Context context = new Context();
+        context.setVariable("variantAnnotations", visualizableAllele.variantAnnotations());
+        context.setVariable("primaryPrediction", prediction);
+        context.setVariable("variantAllele", visualizableAllele);
         context.setVariable("graphics", graphics);
 
         return templateEngine.process(templateName, context);

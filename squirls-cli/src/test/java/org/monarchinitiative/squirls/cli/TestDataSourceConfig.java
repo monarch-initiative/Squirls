@@ -6,11 +6,14 @@ import de.charite.compbio.jannovar.data.JannovarData;
 import de.charite.compbio.jannovar.data.JannovarDataSerializer;
 import de.charite.compbio.jannovar.data.ReferenceDictionary;
 import de.charite.compbio.jannovar.data.SerializationException;
+import org.monarchinitiative.squirls.cli.visualization.SplicingVariantGraphicsGenerator;
+import org.monarchinitiative.squirls.cli.visualization.panel.PanelGraphicsGenerator;
 import org.monarchinitiative.squirls.cli.visualization.selector.SimpleVisualizationContextSelector;
 import org.monarchinitiative.squirls.cli.visualization.selector.VisualizationContextSelector;
 import org.monarchinitiative.squirls.core.data.ic.InputStreamBasedPositionalWeightMatrixParser;
 import org.monarchinitiative.squirls.core.data.ic.SplicingPwmData;
 import org.monarchinitiative.squirls.core.data.kmer.FileKMerParser;
+import org.monarchinitiative.vmvt.core.VmvtGenerator;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -85,5 +88,12 @@ public class TestDataSourceConfig {
     public Map<String, Double> septamerMap() throws IOException {
         Path path = Paths.get(TestDataSourceConfig.class.getResource("septamer-scores.tsv").getPath());
         return new FileKMerParser(path).getKmerMap();
+    }
+
+    @Bean
+    public SplicingVariantGraphicsGenerator splicingVariantGraphicsGenerator(SplicingPwmData splicingPwmData) {
+        SimpleVisualizationContextSelector contextSelector = new SimpleVisualizationContextSelector();
+        VmvtGenerator vmvtGenerator = new VmvtGenerator();
+        return new PanelGraphicsGenerator(vmvtGenerator, splicingPwmData, contextSelector);
     }
 }

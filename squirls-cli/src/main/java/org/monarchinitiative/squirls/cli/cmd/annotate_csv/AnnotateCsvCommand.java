@@ -72,7 +72,7 @@ public class AnnotateCsvCommand extends SquirlsCommand {
                         LOGGER.warn("Invalid pos `{}` in record #{}", record.get("POS"), record.getRecordNumber());
                         continue;
                     }
-                    final Map<String, SplicingPredictionData> predictionData = evaluator.evaluate(chrom, pos, ref, alt);
+                    Map<String, SplicingPredictionData> predictionData = evaluator.evaluate(chrom, pos, ref, alt);
 
                     // figure out max pathogenicity and whether the variant is a splice variant
                     boolean isSpliceVariant = false;

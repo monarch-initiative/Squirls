@@ -1,9 +1,9 @@
-package org.monarchinitiative.squirls.cli.cmd.analyze_vcf.data;
+package org.monarchinitiative.squirls.cli.writers;
 
-import org.monarchinitiative.squirls.cli.cmd.analyze_vcf.IPresentableVariant;
-
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Objects;
 
 /**
  * Container for analysis results, as presented by the `templates/results.html` template.
@@ -13,13 +13,11 @@ public class AnalysisResults {
     private final List<String> sampleNames;
     private final SettingsData settingsData;
     private final AnalysisStats analysisStats;
-    private final List<? extends IPresentableVariant> variants;
+    private final List<? extends WritableSplicingAllele> variants;
 
     private AnalysisResults(Builder builder) {
         sampleNames = List.copyOf(builder.sampleNames);
-        variants = builder.variants.stream()
-                .sorted(Comparator.comparing(IPresentableVariant::getMaxPathogenicity).reversed())
-                .collect(Collectors.toList());
+        variants = List.copyOf(builder.variants);
         analysisStats = Objects.requireNonNull(builder.analysisStats);
         settingsData = Objects.requireNonNull(builder.settingsData);
     }
@@ -40,13 +38,39 @@ public class AnalysisResults {
         return sampleNames;
     }
 
-    public List<? extends IPresentableVariant> getVariants() {
+    public List<? extends WritableSplicingAllele> getVariants() {
         return variants;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        AnalysisResults that = (AnalysisResults) o;
+        return Objects.equals(sampleNames, that.sampleNames) &&
+                Objects.equals(settingsData, that.settingsData) &&
+                Objects.equals(analysisStats, that.analysisStats) &&
+                Objects.equals(variants, that.variants);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(sampleNames, settingsData, analysisStats, variants);
+    }
+
+    @Override
+    public String toString() {
+        return "AnalysisResults{" +
+                "sampleNames=" + sampleNames +
+                ", settingsData=" + settingsData +
+                ", analysisStats=" + analysisStats +
+                ", variants=" + variants +
+                '}';
     }
 
     public static final class Builder {
         private final List<String> sampleNames = new ArrayList<>();
-        private Collection<? extends IPresentableVariant> variants;
+        private Collection<? extends WritableSplicingAllele> variants;
         private AnalysisStats analysisStats;
         private SettingsData settingsData;
 
@@ -58,7 +82,7 @@ public class AnalysisResults {
             return this;
         }
 
-        public Builder variants(Collection<? extends IPresentableVariant> variantData) {
+        public Builder variants(Collection<? extends WritableSplicingAllele> variantData) {
             this.variants = variantData;
             return this;
         }

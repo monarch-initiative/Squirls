@@ -1,4 +1,6 @@
-package org.monarchinitiative.squirls.cli.cmd.analyze_vcf.data;
+package org.monarchinitiative.squirls.cli.writers;
+
+import java.util.Objects;
 
 /**
  * Container for storing statistics of the analysis.
@@ -35,6 +37,32 @@ public class AnalysisStats {
 
     public int getPathogenicAlleleCount() {
         return pathogenicAlleleCount;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        AnalysisStats that = (AnalysisStats) o;
+        return allVariants == that.allVariants &&
+                alleleCount == that.alleleCount &&
+                annotatedAlleleCount == that.annotatedAlleleCount &&
+                pathogenicAlleleCount == that.pathogenicAlleleCount;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(allVariants, alleleCount, annotatedAlleleCount, pathogenicAlleleCount);
+    }
+
+    @Override
+    public String toString() {
+        return "AnalysisStats{" +
+                "allVariants=" + allVariants +
+                ", alleleCount=" + alleleCount +
+                ", annotatedAlleleCount=" + annotatedAlleleCount +
+                ", pathogenicAlleleCount=" + pathogenicAlleleCount +
+                '}';
     }
 
     public static final class Builder {

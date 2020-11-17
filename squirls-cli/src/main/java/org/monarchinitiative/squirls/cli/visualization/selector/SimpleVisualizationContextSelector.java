@@ -14,6 +14,11 @@ public class SimpleVisualizationContextSelector implements VisualizationContextS
      */
     private static final double EQUALITY_TOLERANCE = 1e-9;
 
+    private final Set<String> requiredFeatures = Set.of(
+            "canonical_donor", "cryptic_donor",
+            "canonical_acceptor", "cryptic_acceptor",
+            "donor_offset", "acceptor_offset");
+
 
     private static boolean notCloseToZero(double first) {
         return !(Math.abs(first - 0.) < EQUALITY_TOLERANCE);
@@ -27,22 +32,17 @@ public class SimpleVisualizationContextSelector implements VisualizationContextS
      */
     @Override
     public VisualizationContext selectContext(Map<String, Double> prediction) throws MissingFeatureException {
-        final Set<String> requiredFeatures = Set.of(
-                "canonical_donor", "cryptic_donor",
-                "canonical_acceptor", "cryptic_acceptor",
-                "donor_offset", "acceptor_offset");
-
         // check that we have all the necessary features
         if (!prediction.keySet().containsAll(requiredFeatures)) {
             final String missingFeatures = requiredFeatures.stream()
                     .filter(f -> !prediction.containsKey(f))
                     .sorted()
                     .collect(Collectors.joining(",", "[", "]"));
-            throw new MissingFeatureException(String.format("Missing features for deciding context: %s", missingFeatures));
+            throw new MissingFeatureException(String.format("Missing features `%s`", missingFeatures));
         }
 
-        final double canonicalDonor = prediction.get("canonical_donor");
-        final double crypticDonor = prediction.get("cryptic_donor");
+        double canonicalDonor = prediction.get("canonical_donor");
+        double crypticDonor = prediction.get("cryptic_donor");
         if (notCloseToZero(canonicalDonor)) {
             // variant overlaps with the canonical donor site
             // decide between canonical vs cryptic
@@ -51,8 +51,8 @@ public class SimpleVisualizationContextSelector implements VisualizationContextS
                     : VisualizationContext.CANONICAL_DONOR;
         }
 
-        final double canonicalAcceptor = prediction.get("canonical_acceptor");
-        final double crypticAcceptor = prediction.get("cryptic_acceptor");
+        double canonicalAcceptor = prediction.get("canonical_acceptor");
+        double crypticAcceptor = prediction.get("cryptic_acceptor");
         if (notCloseToZero(canonicalAcceptor)) {
             // variant overlaps with the canonical acceptor site
             // decide between canonical vs cryptic

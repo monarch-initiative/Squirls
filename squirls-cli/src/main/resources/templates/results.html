@@ -151,11 +151,11 @@
         <div class="panel-heading">
             <h3 class="panel-title">Prioritised Variants</h3>
         </div>
-        <div class="panel panel-info" th:each="variant, variant_is: ${variants}">
+        <div class="panel panel-info" th:each="variant, variant_is: ${variants}" th:remove="tag">
             <div class="panel-heading">
                 <div class="panel-title row">
                     <div class="col-md-4">
-                        <b th:text="${variant.getVariantRepresentation()}">chr9:136224690A>G</b>
+                        <b th:text="${variant.getVariantRepresentation()}">chr9:136,224,690A > G</b>
                     </div>
                     <div class="col-md-4">
                         <b th:text="${variant.getGeneSymbol()}">SURF2</b>

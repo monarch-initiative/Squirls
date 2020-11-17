@@ -1,11 +1,11 @@
-package org.monarchinitiative.squirls.cli.cmd.analyze_vcf;
+package org.monarchinitiative.squirls.cli.cmd.annotate_vcf;
 
 import org.monarchinitiative.squirls.cli.cmd.ProgressReporter;
-import org.monarchinitiative.squirls.cli.cmd.analyze_vcf.data.AnalysisStats;
+import org.monarchinitiative.squirls.cli.writers.AnalysisStats;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-class AnalyzeVcfProgressReporter extends ProgressReporter {
+class AnnotateVcfProgressReporter extends ProgressReporter {
 
     /**
      * We report each n-th instance
@@ -15,11 +15,11 @@ class AnalyzeVcfProgressReporter extends ProgressReporter {
     private final AtomicInteger annotatedAltAlleleCount = new AtomicInteger();
     private final AtomicInteger pathogenicAltAlleleCount = new AtomicInteger();
 
-    AnalyzeVcfProgressReporter(int tick) {
+    AnnotateVcfProgressReporter(int tick) {
         super(tick);
     }
 
-    public void logAltAllele(Object variantDataBox) {
+    public <T> void logAltAllele(T item) {
         altAlleleCount.incrementAndGet();
     }
 

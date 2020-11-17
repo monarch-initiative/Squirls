@@ -1,10 +1,10 @@
 package org.monarchinitiative.squirls.cli;
 
 import org.monarchinitiative.squirls.cli.cmd.GenerateConfigCommand;
-import org.monarchinitiative.squirls.cli.cmd.analyze_vcf.AnalyzeVcfCommand;
 import org.monarchinitiative.squirls.cli.cmd.annotate_csv.AnnotateCsvCommand;
 import org.monarchinitiative.squirls.cli.cmd.annotate_pos.AnnotatePosCommand;
 import org.monarchinitiative.squirls.cli.cmd.annotate_vcf.AnnotateVcfCommand;
+import org.monarchinitiative.squirls.cli.writers.OutputFormat;
 import picocli.CommandLine;
 
 import java.util.concurrent.Callable;
@@ -18,11 +18,12 @@ public class Main implements Callable<Integer> {
 
     public static void main(String[] args) {
         CommandLine cline = new CommandLine(new Main())
+                .setCaseInsensitiveEnumValuesAllowed(true)
+                .registerConverter(OutputFormat.class, new OutputFormatConverter())
                 .addSubcommand("generate-config", new GenerateConfigCommand())
                 .addSubcommand("annotate-pos", new AnnotatePosCommand())
                 .addSubcommand("annotate-csv", new AnnotateCsvCommand())
-                .addSubcommand("annotate-vcf", new AnnotateVcfCommand())
-                .addSubcommand("analyze-vcf", new AnalyzeVcfCommand());
+                .addSubcommand("annotate-vcf", new AnnotateVcfCommand());
         cline.setToggleBooleanFlags(false);
         int exitCode = cline.execute(args);
         System.exit(exitCode);
@@ -33,5 +34,19 @@ public class Main implements Callable<Integer> {
     public Integer call() throws Exception {
         // work done in subcommands
         return 0;
+    }
+
+    private static class OutputFormatConverter implements CommandLine.ITypeConverter<OutputFormat> {
+
+        /**
+         * Converts the specified command line argument value to some domain object.
+         *
+         * @param value the command line argument String value
+         * @return the resulting domain object
+         * @throws Exception an exception detailing what went wrong during the conversion
+         */
+        public OutputFormat convert(String value) throws Exception {
+            return OutputFormat.valueOf(value);
+        }
     }
 }

@@ -1,4 +1,4 @@
-package org.monarchinitiative.squirls.cli.cmd.analyze_vcf.data;
+package org.monarchinitiative.squirls.cli.writers;
 
 public class SettingsData {
 
@@ -10,6 +10,7 @@ public class SettingsData {
     /**
      * Threshold used to determine pathogenicity of the variant.
      */
+    @Deprecated
     private final double threshold;
 
     /**
@@ -38,6 +39,7 @@ public class SettingsData {
     }
 
 
+    @Deprecated
     public double getThreshold() {
         return threshold;
     }
@@ -65,6 +67,7 @@ public class SettingsData {
             return this;
         }
 
+        @Deprecated
         public Builder threshold(double threshold) {
             this.threshold = threshold;
             return this;

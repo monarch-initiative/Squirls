@@ -1,54 +1,58 @@
 <div class="row">
     <div class="col-md-12">
-        <h5 class="effects-title">Variant effects on overlapping transcripts</h5>
         <!-- THE TRANSCRIPT LIST -->
-        <div class="transcript-list" th:with="ann = ${annotations.getHighestImpactAnnotation()}">
-            <b><span th:text="${annotations.getHighestImpactEffect()}">MISSENSE_VARIANT</span></b>
-            <span th:text="${ann.getTranscript().getAccession()}">NM_0012234.5</span>: <span th:text="${ann.getCDSNTChangeStr()}">c.123A>G</span>
-            <span th:text="${#numbers.formatDecimal(pathogenicity, 1, 3)}"
-                  th:with="pathogenicity=${variantData.getPrimaryPrediction().getPrediction().getMaxPathogenicity()}">0.89</span>
+        <h5 class="effects-title">Variant effects on overlapping transcripts</h5>
+        <div class="transcript-list">
+            <ul th:each="annotation: ${variantAnnotations.getAnnotations()}">
+                <li th:remove="tag">
+                    <span th:remove="tag" th:text="${annotation.getTranscript().getAccession()}">NM_0012234.5</span>: <span th:text="${annotation.getCDSNTChangeStr()}">c.123A>G</span>
+                    <span th:remove="tag" th:text="${annotation.getMostPathogenicVarType()}">MISSENSE_VARIANT</span>
+                    <span th:remove="tag" th:text="${#numbers.formatDecimal(pathogenicity, 1, 3)}" th:with="pathogenicity=${primaryPrediction.getPrediction().getMaxPathogenicity()}">0.890</span>
+                </li>
+            </ul>
         </div>
         <!-- SPLICING FEATURES TABLE -->
-        <table class="table table-striped feature-table" th:with="pp = ${variantData.getPrimaryPrediction()}">
+        <h5 class="effects-title">Squirls features</h5>
+        <table class="table table-striped feature-table">
             <tr>
                 <th>Feature</th>
                 <th>Value</th>
             </tr>
             <tr>
                 <td>Acceptor offset</td>
-                <td th:text="${pp.getFeatureAsInt('acceptor_offset')}">-7</td>
+                <td th:text="${primaryPrediction.getFeatureAsInt('acceptor_offset')}">-7</td>
             </tr>
             <tr>
                 <td><i>&Delta;R<sub>i</sub></i> canonical acceptor</td>
-                <td th:text="${#numbers.formatDecimal(pp.getFeatureAsDouble('canonical_acceptor'), 1, 2)}">3.45</td>
+                <td th:text="${#numbers.formatDecimal(primaryPrediction.getFeatureAsDouble('canonical_acceptor'), 1, 2)}">3.45</td>
             </tr>
             <tr>
                 <td><i>&Delta;R<sub>i</sub></i> cryptic acceptor</td>
-                <td th:text="${#numbers.formatDecimal(pp.getFeatureAsDouble('cryptic_acceptor'), 1, 2)}">1.23</td>
+                <td th:text="${#numbers.formatDecimal(primaryPrediction.getFeatureAsDouble('cryptic_acceptor'), 1, 2)}">1.23</td>
             </tr>
             <tr>
                 <td>Exon length</td>
-                <td th:text="${pp.getFeatureAsInt('exon_length')}">123</td>
+                <td th:text="${primaryPrediction.getFeatureAsInt('exon_length')}">123</td>
             </tr>
             <tr>
                 <td>Creates AG in <i>AGEZ</i></td>
-                <td th:text="${pp.getFeatureAsInt('creates_ag_in_agez')==1 ? 'Yes': 'No'}">Yes</td>
+                <td th:text="${primaryPrediction.getFeatureAsInt('creates_ag_in_agez')==1 ? 'Yes': 'No'}">Yes</td>
             </tr>
             <tr>
                 <td>Creates YAG in <i>AGEZ</i></td>
-                <td th:text="${pp.getFeatureAsInt('creates_yag_in_agez')==1 ? 'Yes': 'No'}">Yes</td>
+                <td th:text="${primaryPrediction.getFeatureAsInt('creates_yag_in_agez')==1 ? 'Yes': 'No'}">Yes</td>
             </tr>
             <tr>
                 <td>ESRSeq</td>
-                <td th:text="${#numbers.formatDecimal(pp.getFeatureAsDouble('hexamer'), 1, 2)}">3.12</td>
+                <td th:text="${#numbers.formatDecimal(primaryPrediction.getFeatureAsDouble('hexamer'), 1, 2)}">3.12</td>
             </tr>
             <tr>
                 <td>SMS</td>
-                <td th:text="${#numbers.formatDecimal(pp.getFeatureAsDouble('septamer'), 1, 2)}">1.23</td>
+                <td th:text="${#numbers.formatDecimal(primaryPrediction.getFeatureAsDouble('septamer'), 1, 2)}">1.23</td>
             </tr>
             <tr>
                 <td>phyloP</td>
-                <td th:text="${#numbers.formatDecimal(pp.getFeatureAsDouble('phylop'), 1, 2)}">3.4</td>
+                <td th:text="${#numbers.formatDecimal(primaryPrediction.getFeatureAsDouble('phylop'), 1, 2)}">3.4</td>
             </tr>
         </table>
     </div>

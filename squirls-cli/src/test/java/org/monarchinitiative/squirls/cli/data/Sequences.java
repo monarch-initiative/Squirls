@@ -194,7 +194,7 @@ class Sequences {
         return SequenceInterval.builder()
                 .sequence(COL4A5_EXON29)
                 .interval(new GenomeInterval(rd, Strand.FWD,
-                        rd.getContigNameToID().get("chr16"), 107_849_601, 107_850_400, PositionType.ONE_BASED))
+                        rd.getContigNameToID().get("chrX"), 107_849_601, 107_850_400, PositionType.ONE_BASED))
                 .build();
     }
 

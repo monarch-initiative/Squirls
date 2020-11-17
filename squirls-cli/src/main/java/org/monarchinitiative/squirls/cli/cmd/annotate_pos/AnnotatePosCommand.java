@@ -44,7 +44,7 @@ public class AnnotatePosCommand extends SquirlsCommand {
 
             System.out.println();
             for (VariantChange change : changes) {
-                final Map<String, SplicingPredictionData> predictionData = splicingEvaluator.evaluate(change.getContig(), change.getPos(), change.getRef(), change.getAlt());
+                Map<String, SplicingPredictionData> predictionData = splicingEvaluator.evaluate(change.getContig(), change.getPos(), change.getRef(), change.getAlt());
                 List<String> columns = new ArrayList<>();
 
                 // variant

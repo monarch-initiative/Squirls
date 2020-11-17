@@ -7,8 +7,10 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.monarchinitiative.squirls.cli.data.VariantsForTesting;
 import org.monarchinitiative.squirls.cli.visualization.GraphicsGeneratorTestBase;
+import org.monarchinitiative.squirls.cli.visualization.VisualizableVariantAllele;
 import org.monarchinitiative.squirls.cli.visualization.selector.VisualizationContext;
 import org.monarchinitiative.squirls.cli.visualization.selector.VisualizationContextSelector;
+import org.monarchinitiative.squirls.cli.writers.WritableSplicingAllele;
 
 import static org.mockito.Mockito.anyMap;
 import static org.mockito.Mockito.when;
@@ -29,7 +31,11 @@ public class PanelGraphicsGeneratorTest extends GraphicsGeneratorTestBase {
     @Test
     public void canonicalDonor() throws Exception {
         when(selector.selectContext(anyMap())).thenReturn(VisualizationContext.CANONICAL_DONOR);
-        final String content = generator.generateGraphics(VariantsForTesting.BRCA2DonorExon15plus2QUID(jannovarData.getRefDict(), annotator));
+
+        WritableSplicingAllele writableSplicingAllele = VariantsForTesting.BRCA2DonorExon15plus2QUID(jannovarData.getRefDict(), annotator);
+        VisualizableVariantAllele allele = toVisualizableAllele(writableSplicingAllele);
+
+        String content = generator.generateGraphics(allele);
 
         System.err.println(content);
     }
@@ -46,7 +52,9 @@ public class PanelGraphicsGeneratorTest extends GraphicsGeneratorTestBase {
     @Test
     public void canonicalAcceptor() throws Exception {
         when(selector.selectContext(anyMap())).thenReturn(VisualizationContext.CANONICAL_ACCEPTOR);
-        final String content = generator.generateGraphics(VariantsForTesting.TSC2AcceptorExon11Minus3(jannovarData.getRefDict(), annotator));
+        WritableSplicingAllele writableSplicingAllele = VariantsForTesting.TSC2AcceptorExon11Minus3(jannovarData.getRefDict(), annotator);
+        VisualizableVariantAllele allele = toVisualizableAllele(writableSplicingAllele);
+        final String content = generator.generateGraphics(allele);
 
         System.err.println(content);
     }

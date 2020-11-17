@@ -3,7 +3,7 @@ package org.monarchinitiative.squirls.cli.visualization.simple;
 import de.charite.compbio.jannovar.reference.GenomeVariantType;
 import org.monarchinitiative.squirls.cli.visualization.AbstractGraphicsGenerator;
 import org.monarchinitiative.squirls.cli.visualization.MissingFeatureException;
-import org.monarchinitiative.squirls.cli.visualization.VisualizedVariant;
+import org.monarchinitiative.squirls.cli.visualization.VisualizableVariantAllele;
 import org.monarchinitiative.squirls.cli.visualization.selector.VisualizationContext;
 import org.monarchinitiative.squirls.cli.visualization.selector.VisualizationContextSelector;
 import org.monarchinitiative.squirls.core.SplicingPredictionData;
@@ -37,8 +37,8 @@ public class SimpleSplicingVariantGraphicsGenerator extends AbstractGraphicsGene
     }
 
     @Override
-    public String generateGraphics(VisualizedVariant variant) {
-        if (!variant.getAnnotations().getGenomeVariant().getType().equals(GenomeVariantType.SNV)) {
+    public String generateGraphics(VisualizableVariantAllele variant) {
+        if (!variant.variantAnnotations().getGenomeVariant().getType().equals(GenomeVariantType.SNV)) {
             // this class only supports SNVs
             return EMPTY_SVG_IMAGE;
         }
@@ -47,15 +47,15 @@ public class SimpleSplicingVariantGraphicsGenerator extends AbstractGraphicsGene
         Select the prediction data that we use to create the SVG. This is the data that corresponds to transcript with
         respect to which the variant has the maximum predicted pathogenicity.
          */
-        final SplicingPredictionData predictionData = variant.getPrimaryPrediction();
+        SplicingPredictionData predictionData = variant.getPrimaryPrediction();
         if (predictionData == null) {
             LOGGER.debug("Unable to find transcript with maximum pathogenicity score for variant `{}`",
-                    variant.getAnnotations().getGenomeVariant());
+                    variant.variantAnnotations().getGenomeVariant());
             return EMPTY_SVG_IMAGE;
         }
 
         try {
-            final VisualizationContext ctx = contextSelector.selectContext(predictionData.getFeatureMap());
+            VisualizationContext ctx = contextSelector.selectContext(predictionData.getFeatureMap());
             switch (ctx) {
                 case CANONICAL_DONOR:
                     return makeCanonicalDonorContextGraphics(predictionData);
@@ -72,7 +72,7 @@ public class SimpleSplicingVariantGraphicsGenerator extends AbstractGraphicsGene
             }
         } catch (MissingFeatureException e) {
             if (LOGGED_MISSING_FEATURE.compareAndSet(false, true)) {
-                LOGGER.warn("{} : {}", e.getMessage(), variant.getAnnotations().getGenomeVariant());
+                LOGGER.warn("{} : {}", e.getMessage(), variant.variantAnnotations().getGenomeVariant());
             }
         }
 

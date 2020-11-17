@@ -1,34 +1,32 @@
-package org.monarchinitiative.squirls.cli.cmd.analyze_vcf;
+package org.monarchinitiative.squirls.cli.writers.html;
 
 import de.charite.compbio.jannovar.annotation.VariantAnnotator;
 import de.charite.compbio.jannovar.annotation.builders.AnnotationBuilderOptions;
 import de.charite.compbio.jannovar.data.JannovarData;
 import de.charite.compbio.jannovar.data.ReferenceDictionary;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.monarchinitiative.squirls.cli.TestDataSourceConfig;
 import org.monarchinitiative.squirls.cli.data.VariantsForTesting;
-import org.monarchinitiative.squirls.cli.cmd.analyze_vcf.data.AnalysisResults;
-import org.monarchinitiative.squirls.cli.cmd.analyze_vcf.data.AnalysisStats;
-import org.monarchinitiative.squirls.cli.cmd.analyze_vcf.data.SettingsData;
-import org.monarchinitiative.squirls.cli.cmd.analyze_vcf.data.SplicingVariantAlleleEvaluation;
+import org.monarchinitiative.squirls.cli.visualization.SplicingVariantGraphicsGenerator;
+import org.monarchinitiative.squirls.cli.writers.*;
 import org.monarchinitiative.squirls.core.data.ic.SplicingPwmData;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
-import java.io.OutputStream;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.Set;
-import java.util.function.Function;
-import java.util.stream.Collectors;
+
 
 @SpringBootTest(classes = TestDataSourceConfig.class)
 class HtmlResultWriterTest {
 
-    private static final Path OUTPATH = Paths.get("target/SQUIRLS.html");
+    private static final Path OUTPATH = Paths.get("target/Sample192");
+
+    private static OutputSettings OUTPUT_SETTINGS;
 
     @Autowired
     public SplicingPwmData splicingPwmData;
@@ -36,27 +34,25 @@ class HtmlResultWriterTest {
     @Autowired
     public JannovarData jannovarData;
 
-    private Set<PresentableVariant> variantData;
+    @Autowired
+    public SplicingVariantGraphicsGenerator graphicsGenerator;
 
-    private HtmlResultWriter writer;
+    private Set<WritableSplicingAllele> variantData;
 
-    private static Function<SplicingVariantAlleleEvaluation, PresentableVariant> toPresentableVariant() {
-        return ve -> PresentableVariant.of(ve.getRepresentation(),
-                ve.getAnnotations().getHighestImpactAnnotation().getGeneSymbol(),
-                ve.getMaxScore(),
-                ve.getGraphics());
+    private HtmlResultWriter resultWriter;
+
+    @BeforeAll
+    public static void beforeAll() {
+        OUTPUT_SETTINGS = new OutputSettings(OUTPATH.toString(), 100);
     }
 
     @BeforeEach
     void setUp() throws Exception {
         VariantAnnotator annotator = new VariantAnnotator(jannovarData.getRefDict(), jannovarData.getChromosomes(), new AnnotationBuilderOptions());
-        writer = new HtmlResultWriter();
+        resultWriter = new HtmlResultWriter(graphicsGenerator);
         final ReferenceDictionary rd = jannovarData.getRefDict();
 
         variantData = Set.of(
-                // TODO: 7. 7. 2020 consider removing
-//                VariantsForTesting.SURF2DonorExon3Plus4Evaluation(rd, annotator),
-//                VariantsForTesting.SURF2Exon3AcceptorMinus2Evaluation(rd, annotator),
                 // donor
                 VariantsForTesting.BRCA2DonorExon15plus2QUID(rd, annotator),
                 VariantsForTesting.ALPLDonorExon7Minus2(rd, annotator),
@@ -69,10 +65,7 @@ class HtmlResultWriterTest {
                 VariantsForTesting.RYR1codingExon102crypticAcceptor(rd, annotator),
                 // SRE
                 VariantsForTesting.NF1codingExon9coding_SRE(rd, annotator)
-        ).stream()
-                .map(toPresentableVariant()) // TODO - the test data should be presentable by default
-                .collect(Collectors.toSet());
-
+        );
     }
 
     /**
@@ -92,41 +85,10 @@ class HtmlResultWriterTest {
                         .build())
                 .settingsData(SettingsData.builder()
                         .inputPath("path/to/Sample_192.vcf")
-                        .threshold(VariantsForTesting.FAKE_THRESHOLD)
                         .transcriptDb("refseq")
                         .build())
                 .variants(variantData)
                 .build();
-        try (OutputStream os = Files.newOutputStream(OUTPATH)) {
-            writer.writeResults(os, results);
-        }
-    }
-
-    /**
-     * This test does not currently test anything. It writes HTML file to {@link #OUTPATH}.
-     *
-     * @throws Exception bla
-     */
-    @Test
-    void writeResultsRealGraphics() throws Exception {
-        // TODO - remove or make a real test
-        AnalysisResults results = AnalysisResults.builder()
-                .addAllSampleNames(List.of("Sample_192"))
-                .analysisStats(AnalysisStats.builder()
-                        .allVariants(100)
-                        .alleleCount(120)
-                        .annotatedAlleleCount(115)
-                        .pathogenicAlleleCount(2)
-                        .build())
-                .settingsData(SettingsData.builder()
-                        .inputPath("path/to/Sample_192.vcf")
-                        .threshold(VariantsForTesting.FAKE_THRESHOLD)
-                        .transcriptDb("refseq")
-                        .build())
-                .variants(variantData)
-                .build();
-        try (OutputStream os = Files.newOutputStream(OUTPATH)) {
-            writer.writeResults(os, results);
-        }
+        resultWriter.write(results, OUTPUT_SETTINGS);
     }
 }

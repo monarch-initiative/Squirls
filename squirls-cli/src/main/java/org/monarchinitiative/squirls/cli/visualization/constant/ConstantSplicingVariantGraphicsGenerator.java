@@ -1,7 +1,8 @@
 package org.monarchinitiative.squirls.cli.visualization.constant;
 
+
 import org.monarchinitiative.squirls.cli.visualization.SplicingVariantGraphicsGenerator;
-import org.monarchinitiative.squirls.cli.visualization.VisualizedVariant;
+import org.monarchinitiative.squirls.cli.visualization.VisualizableVariantAllele;
 
 /**
  * This class returns the same SVG for each variant. Not really useful for anything except for testing.
@@ -157,7 +158,7 @@ public class ConstantSplicingVariantGraphicsGenerator implements SplicingVariant
             "</svg>\n";
 
     @Override
-    public String generateGraphics(VisualizedVariant variant) {
+    public String generateGraphics(VisualizableVariantAllele variant) {
         return CONSTANT_SVG_STRING;
     }
 }
