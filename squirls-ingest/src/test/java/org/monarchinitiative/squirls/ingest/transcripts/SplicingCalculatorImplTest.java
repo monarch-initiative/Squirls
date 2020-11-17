@@ -15,7 +15,7 @@ import org.monarchinitiative.squirls.ingest.TestDataSourceConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import xyz.ielis.hyperutil.reference.fasta.GenomeSequenceAccessor;
-import xyz.ielis.hyperutil.reference.fasta.SequenceInterval;
+import xyz.ielis.hyperutil.reference.fasta.SequenceIntervalDefault;
 
 import java.util.Arrays;
 import java.util.Optional;
@@ -48,7 +48,7 @@ class SplicingCalculatorImplTest {
         String mockSeq = new String(chars);
         final GenomeInterval gi = new GenomeInterval(referenceDictionary, Strand.FWD, 2, 9_900, 20_100);
         when(accessor.fetchSequence(gi))
-                .thenReturn(Optional.of(SequenceInterval.builder()
+                .thenReturn(Optional.of(SequenceIntervalDefault.builder()
                         .interval(gi)
                         .sequence(mockSeq)
                         .build()));
@@ -98,7 +98,7 @@ class SplicingCalculatorImplTest {
         String mockSeq = new String(chars);
         final GenomeInterval gi = new GenomeInterval(referenceDictionary, Strand.FWD, 2, 0, 300);
         when(accessor.fetchSequence(gi))
-                .thenReturn(Optional.of(SequenceInterval.builder()
+                .thenReturn(Optional.of(SequenceIntervalDefault.builder()
                         .interval(gi)
                         .sequence(mockSeq)
                         .build()));

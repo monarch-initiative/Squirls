@@ -21,7 +21,7 @@ class StandardSplicingPredictionData implements SplicingPredictionData {
     private Prediction prediction;
     private Metadata metadata;
 
-    private StandardSplicingPredictionData(GenomeVariant variant, SplicingTranscript transcript, SequenceInterval sequence) {
+    protected StandardSplicingPredictionData(GenomeVariant variant, SplicingTranscript transcript, SequenceInterval sequence) {
         this.variant = variant;
         this.transcript = transcript;
         this.sequence = sequence;

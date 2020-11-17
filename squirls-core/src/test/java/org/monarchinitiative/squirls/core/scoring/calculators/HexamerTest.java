@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import xyz.ielis.hyperutil.reference.fasta.SequenceInterval;
+import xyz.ielis.hyperutil.reference.fasta.SequenceIntervalDefault;
 
 import java.util.Map;
 
@@ -42,7 +43,7 @@ class HexamerTest extends CalculatorTestBase {
      */
     @Test
     void realVariant() {
-        final SequenceInterval si = SequenceInterval.builder()
+        final SequenceInterval si = SequenceIntervalDefault.builder()
                 .interval(new GenomeInterval(rd, Strand.FWD, 1, 0, 125))
                 .sequence("cccagGGT" +
                         "C" + // c.520C>T

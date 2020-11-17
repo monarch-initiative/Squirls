@@ -1,9 +1,8 @@
 package org.monarchinitiative.squirls.core.classifier.transform.feature;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 public interface MutableFeature {
 
@@ -31,14 +30,31 @@ public interface MutableFeature {
      */
     void putFeature(String name, Object value);
 
+    default void putAllFeatures(Map<String, ?> featureMap) {
+        featureMap.forEach(this::putFeature);
+    }
+
     /**
      * Get map with all available features.
      *
      * @return {@link Map} with all available features
      */
     default Map<String, Double> getFeatureMap() {
-        return getFeatureNames().stream()
-                .collect(Collectors.toMap(Function.identity(), name -> getFeature(name, Double.class)));
+        Set<String> featureNames = getFeatureNames();
+        HashMap<String, Double> featureMap = new HashMap<>(featureNames.size());
+
+        for (String featureName : featureNames) {
+            Object rawFeature = getFeature(featureName, Object.class);
+            if (rawFeature instanceof Double) {
+                featureMap.put(featureName, (Double) rawFeature);
+            } else if (rawFeature instanceof Integer) {
+                double doubleValue = ((Integer) rawFeature).doubleValue();
+                featureMap.put(featureName, doubleValue);
+            } else {
+                throw new RuntimeException("Unexpected type " + rawFeature.getClass() + " for feature `" + featureName + '`');
+            }
+        }
+        return featureMap;
     }
 
 }

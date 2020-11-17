@@ -9,6 +9,7 @@ import org.monarchinitiative.squirls.core.model.SplicingParameters;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import xyz.ielis.hyperutil.reference.fasta.SequenceInterval;
+import xyz.ielis.hyperutil.reference.fasta.SequenceIntervalDefault;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
@@ -35,16 +36,16 @@ class AlleleGeneratorTest {
 
     @BeforeEach
     void setUp() {
-        sequence = SequenceInterval.builder()
+        sequence = SequenceIntervalDefault.builder()
                 .interval(new GenomeInterval(rd, Strand.FWD, 1, 0, 60))
                 .sequence("aaaaaCCCCCgggggTTTTTaaaaaCCCCCgggggTTTTTaaaaaCCCCCgggggTTTTT")
                 .build();
-        donorSi = SequenceInterval.builder()
+        donorSi = SequenceIntervalDefault.builder()
                 .interval(new GenomeInterval(rd, Strand.FWD, 1, 93, 110))
                 .sequence("CGTGATGgtaggtgaaa")
                 .build();
 
-        acceptorSi = SequenceInterval.builder()
+        acceptorSi = SequenceIntervalDefault.builder()
                 .interval(new GenomeInterval(rd, Strand.FWD, 1, 70, 110))
                 .sequence("atggcaaacactgttccttctctctttcagGTGGCCCTGC")
                 .build();
@@ -335,7 +336,7 @@ class AlleleGeneratorTest {
         assertThat(snippet, is(nullValue()));
 
         // not enough sequence returns null
-        final SequenceInterval small = SequenceInterval.builder()
+        final SequenceInterval small = SequenceIntervalDefault.builder()
                 .interval(new GenomeInterval(rd, Strand.FWD, 1, 0, 1)).sequence("C")
                 .build();
         snippet = AlleleGenerator.getPaddedAllele(variant.getGenomeInterval(), small, variant.getRef(), 1);

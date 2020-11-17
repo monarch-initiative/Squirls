@@ -9,6 +9,7 @@ import org.monarchinitiative.squirls.core.model.SplicingIntron;
 import org.monarchinitiative.squirls.core.model.SplicingParameters;
 import org.monarchinitiative.squirls.core.model.SplicingTranscript;
 import xyz.ielis.hyperutil.reference.fasta.SequenceInterval;
+import xyz.ielis.hyperutil.reference.fasta.SequenceIntervalDefault;
 
 /**
  * Class with static method for construction of medium-complicated objects.
@@ -20,7 +21,7 @@ public class PojosForTesting {
     }
 
     public static SequenceInterval getSequenceIntervalForTranscriptWithThreeExons(ReferenceDictionary referenceDictionary) {
-        return SequenceInterval.builder()
+        return SequenceIntervalDefault.builder()
                 .interval(new GenomeInterval(referenceDictionary, Strand.FWD, 1, 900, 2100))
                 .sequence(
                         // upstream 100bp

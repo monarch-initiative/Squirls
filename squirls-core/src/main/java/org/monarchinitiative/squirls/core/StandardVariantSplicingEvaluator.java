@@ -137,7 +137,8 @@ public class StandardVariantSplicingEvaluator implements VariantSplicingEvaluato
                 .map(annotator::annotate)
                 .map(classifier::predict)
                 .map(transformer::transform)
-                .collect(Collectors.toUnmodifiableMap(k -> k.getTranscript().getAccessionId(), Function.identity()));
+                // drop the sequence
+                .collect(Collectors.toUnmodifiableMap(k -> k.getTranscript().getAccessionId(), NoRefSplicingPredictionData::copyOf));
     }
 
     /**
