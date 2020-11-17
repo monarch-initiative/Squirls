@@ -11,7 +11,6 @@ import org.monarchinitiative.squirls.core.model.SplicingIntron;
 import org.monarchinitiative.squirls.core.model.SplicingParameters;
 import org.monarchinitiative.squirls.core.model.SplicingTranscript;
 import xyz.ielis.hyperutil.reference.fasta.SequenceInterval;
-import xyz.ielis.hyperutil.reference.fasta.SequenceIntervalDefault;
 
 /**
  *
@@ -121,9 +120,9 @@ public class PojosForTesting {
     }
 
     public static SequenceInterval getSequenceIntervalForTranscriptWithThreeExons(ReferenceDictionary referenceDictionary) {
-        return SequenceIntervalDefault.builder()
-                .interval(new GenomeInterval(referenceDictionary, Strand.FWD, 1, 900, 2100))
-                .sequence("AAACAGGTTAATCGCCACGACATAGTAGTATTTAGAGTTACTAGTAAGCCTGATGCCACT" + // 960
+        return SequenceInterval.of(
+                new GenomeInterval(referenceDictionary, Strand.FWD, 1, 900, 2100),
+                "AAACAGGTTAATCGCCACGACATAGTAGTATTTAGAGTTACTAGTAAGCCTGATGCCACT" + // 960
                         "ACACAATTCTAGCTTTTCTCTTTAGGATGATTGTTTCATT" + // 1000
                         "CAGTCTTATCTCTTTTAGAA" + // 1020
                         "AACATAGGaaaaaattatttaataataaaatttaattGGCAAAATGAAGGTATGGCTTAT" + // 1080
@@ -146,8 +145,7 @@ public class PojosForTesting {
                         "AATTTTTCACTTTACATCACATAATGAATGGATCCAAATATGTTATGGATAGATATCTTC" +
                         "AAACTTTCTACTTACAAGTAGTGATAATAACAGATGTTCTCTCTAAAGTGTAGTTGGTAT" +
                         "CAATTTTACTGACCTTTAAAAATATCTTAATGGGACAAAGTTCAAATATTTGATGACCAG" +
-                        "CTATCGTGACCTTTATCTCTGTGGCTCTGTGGGCCTGTAGTTTTTACGTGCTTTTAGTGT")
-                .build();
+                        "CTATCGTGACCTTTATCTCTGTGGCTCTGTGGGCCTGTAGTTTTTACGTGCTTTTAGTGT");
     }
 
     public static SplicingTranscript getTranscriptWithThreeExons(ReferenceDictionary referenceDictionary) {

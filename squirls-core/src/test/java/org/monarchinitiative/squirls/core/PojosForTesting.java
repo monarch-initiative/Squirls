@@ -9,7 +9,6 @@ import org.monarchinitiative.squirls.core.model.SplicingIntron;
 import org.monarchinitiative.squirls.core.model.SplicingParameters;
 import org.monarchinitiative.squirls.core.model.SplicingTranscript;
 import xyz.ielis.hyperutil.reference.fasta.SequenceInterval;
-import xyz.ielis.hyperutil.reference.fasta.SequenceIntervalDefault;
 
 /**
  * Class with static method for construction of medium-complicated objects.
@@ -21,19 +20,17 @@ public class PojosForTesting {
     }
 
     public static SequenceInterval getSequenceIntervalForTranscriptWithThreeExons(ReferenceDictionary referenceDictionary) {
-        return SequenceIntervalDefault.builder()
-                .interval(new GenomeInterval(referenceDictionary, Strand.FWD, 1, 900, 2100))
-                .sequence(
-                        // upstream 100bp
-                        "AAACAGGTTAATCGCCACGACATAGTAGTATTTAGAGTTACTAGTAAGCCTGATGCCACT" + // 960
-                                "ACACAATTCTAGCTTTTCTCAGAGCCCCGCCCCCGGCTCC" + // 1000
-                                //
-                                // 1st exon
-                                "AGGTTCTGCGAGCGGCTTCCAACATAGGaaaaaattatttaataataaaatttaattGGC" +
-                                "AAAATGAAGGTATGGCTTATAAGAGTGTTTTCCTATTGTTTTCAGTGTAGGACTCACTGT" +
-                                "TCTAAATAACTGGGACACCCAAGGATTCTGAGCCTGCGGCTCCAGACGGACGCCCGCAAG" +
-                                "TCCAGACGGACGCCCGCAAG" + // 1200 (end of the 1st exon)
-                                //
+        return SequenceInterval.of(new GenomeInterval(referenceDictionary, Strand.FWD, 1, 900, 2100),
+                // upstream 100bp
+                "AAACAGGTTAATCGCCACGACATAGTAGTATTTAGAGTTACTAGTAAGCCTGATGCCACT" + // 960
+                        "ACACAATTCTAGCTTTTCTCAGAGCCCCGCCCCCGGCTCC" + // 1000
+                        //
+                        // 1st exon
+                        "AGGTTCTGCGAGCGGCTTCCAACATAGGaaaaaattatttaataataaaatttaattGGC" +
+                        "AAAATGAAGGTATGGCTTATAAGAGTGTTTTCCTATTGTTTTCAGTGTAGGACTCACTGT" +
+                        "TCTAAATAACTGGGACACCCAAGGATTCTGAGCCTGCGGCTCCAGACGGACGCCCGCAAG" +
+                        "TCCAGACGGACGCCCGCAAG" + // 1200 (end of the 1st exon)
+                        //
                                 // 1st intron
                                 "gttcgcagcgcgggaggggaacggagtggcggaGTAGAATTCTGGTTAAAATTTGGCATA" +
                                 "GAACACCCGGGTATTTTTTCATAATGCACCCAATAACTGTCATTCACTAATTGAGAATGG" +
@@ -50,18 +47,17 @@ public class PojosForTesting {
                                 "gtaggtggtccgcggcggcgcggggaggcccaggGCTGATGTATATACTTACATATTTTA" +
                                 "CAGTGTATTCAAATAAAGAGTATATTACATAAGACATATCCTTTTGTAACCAACTTTTGT" +
                                 "CATTAACAATTTACTGGACTTGTCAACAAACCTAAATCTGtgtgaactgtccctacaaat" +
-                                "ttggtctctctgctctgtag" +
-                                //                  ^  <- 1800 (end of the 2nd intron)
-                                // 3rd exon
-                                "GCACCAGTTGTTCTGCAAACTCACCCTGCGGCACATCAACAAGTGCCCAGAACACTGTCT" +
-                                "aatttttcacTTTACATCACATAATGAATGGATCCAAATATGTTATGGATAGATATCTTC" +
-                                "AAACTTTCTACTTACAAGTAGTGATAATAACAGATGTTCTCTCTAAAGTGTAGTTGGTAT" +
-                                "CCAGCGAGCTCTGTGTAAAT" +
-                                //                  ^  <- 2000 (end of the 3rd exon)
-                                // downstream 100bp
-                                "AATATCTTAATGGGACAAAGTTCAAATATTTGATGACCAGCTATCGTGACCTTTATCTCT" +
-                                "GTGGCTCTGTGGGCCTGTAGTTTTTACGTGCTTTTAGTGT")
-                .build();
+                        "ttggtctctctgctctgtag" +
+                        //                  ^  <- 1800 (end of the 2nd intron)
+                        // 3rd exon
+                        "GCACCAGTTGTTCTGCAAACTCACCCTGCGGCACATCAACAAGTGCCCAGAACACTGTCT" +
+                        "aatttttcacTTTACATCACATAATGAATGGATCCAAATATGTTATGGATAGATATCTTC" +
+                        "AAACTTTCTACTTACAAGTAGTGATAATAACAGATGTTCTCTCTAAAGTGTAGTTGGTAT" +
+                        "CCAGCGAGCTCTGTGTAAAT" +
+                        //                  ^  <- 2000 (end of the 3rd exon)
+                        // downstream 100bp
+                        "AATATCTTAATGGGACAAAGTTCAAATATTTGATGACCAGCTATCGTGACCTTTATCTCT" +
+                        "GTGGCTCTGTGGGCCTGTAGTTTTTACGTGCTTTTAGTGT");
     }
 
     public static SplicingTranscript getTranscriptWithThreeExons(ReferenceDictionary referenceDictionary) {

@@ -14,7 +14,6 @@ import org.monarchinitiative.squirls.core.scoring.calculators.ic.SplicingInforma
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import xyz.ielis.hyperutil.reference.fasta.SequenceInterval;
-import xyz.ielis.hyperutil.reference.fasta.SequenceIntervalDefault;
 
 /**
  *
@@ -50,10 +49,7 @@ public class CalculatorTestBase {
     public void setUp() throws Exception {
         st = PojosForTesting.getTranscriptWithThreeExons(rd);
         sequenceInterval = PojosForTesting.getSequenceIntervalForTranscriptWithThreeExons(rd);
-        sequenceOnOtherChrom = SequenceIntervalDefault.builder()
-                .interval(new GenomeInterval(rd, Strand.FWD, 2, 0, 4))
-                .sequence("ACGT")
-                .build();
+        sequenceOnOtherChrom = SequenceInterval.of(new GenomeInterval(rd, Strand.FWD, 2, 0, 4), "ACGT");
     }
 
 }

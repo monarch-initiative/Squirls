@@ -17,7 +17,6 @@ import org.monarchinitiative.squirls.core.scoring.SplicingAnnotator;
 import org.springframework.boot.test.context.SpringBootTest;
 import xyz.ielis.hyperutil.reference.fasta.GenomeSequenceAccessor;
 import xyz.ielis.hyperutil.reference.fasta.SequenceInterval;
-import xyz.ielis.hyperutil.reference.fasta.SequenceIntervalDefault;
 
 import java.util.*;
 
@@ -68,10 +67,7 @@ class StandardVariantSplicingEvaluatorTest {
         RD = rdBuilder.build();
         char[] chars = new char[136_230_000 - 136_210_000 + 1];
         Arrays.fill(chars, 'A'); // the sequence does not really matter since we use mocks
-        SI = SequenceIntervalDefault.builder()
-                .interval(new GenomeInterval(RD, Strand.FWD, 9, 136_210_000, 136_230_000, PositionType.ONE_BASED))
-                .sequence(new String(chars))
-                .build();
+        SI = SequenceInterval.of(new GenomeInterval(RD, Strand.FWD, 9, 136_210_000, 136_230_000, PositionType.ONE_BASED), new String(chars));
     }
 
     @BeforeEach
