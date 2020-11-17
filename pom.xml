@@ -21,8 +21,8 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <java.version>11</java.version>
 
-        <hyperutil.version>0.1.4-SNAPSHOT</hyperutil.version>
-        <htsjdk.version>2.19.0</htsjdk.version>
+        <hyperutil.version>0.1.4</hyperutil.version>
+        <htsjdk.version>2.23.0</htsjdk.version>
         <jannovar.version>0.29</jannovar.version>
         <argparse.version>0.8.1</argparse.version>
         <slf4j.version>1.7.29</slf4j.version>
