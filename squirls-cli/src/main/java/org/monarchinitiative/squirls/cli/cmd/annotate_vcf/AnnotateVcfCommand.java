@@ -132,14 +132,17 @@ public class AnnotateVcfCommand extends SquirlsCommand {
                     new AnnotationBuilderOptions());
 
             // TODO: 29. 5. 2020 improve behavior & logging
-            // e.g. report progress in % if variant index and thus count is available
+            //  e.g. report progress in % if variant index and thus count is available
             AnnotateVcfProgressReporter progressReporter = new AnnotateVcfProgressReporter(5_000);
             List<WritableSplicingAllele> annotated = Collections.synchronizedList(new ArrayList<>());
+            ArrayList<String> sampleNames;
 
             // annotate the variants
             LOGGER.info("Annotating variants");
             try (VCFFileReader reader = new VCFFileReader(inputPath, false);
                  CloseableIterator<VariantContext> variantIterator = reader.iterator()) {
+
+                sampleNames = reader.getFileHeader().getSampleNamesInOrder();
 
                 try (Stream<VariantContext> stream = variantIterator.stream()) {
                     stream.parallel()
@@ -156,9 +159,11 @@ public class AnnotateVcfCommand extends SquirlsCommand {
 
             // write out the results
             AnalysisResults results = AnalysisResults.builder()
+                    .addAllSampleNames(sampleNames)
                     .settingsData(SettingsData.builder()
                             .inputPath(inputPath.toString())
                             .transcriptDb(jannovarDataPath)
+                            .nReported(nVariantsToReport)
                             .build())
                     .analysisStats(progressReporter.getAnalysisStats())
                     .variants(annotated)

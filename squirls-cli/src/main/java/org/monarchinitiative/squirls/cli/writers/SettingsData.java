@@ -8,10 +8,9 @@ public class SettingsData {
     private final String inputPath;
 
     /**
-     * Threshold used to determine pathogenicity of the variant.
+     * N variants to be included in HTML report.
      */
-    @Deprecated
-    private final double threshold;
+    private final int nReported;
 
     /**
      * One of the supported transcript databases: {refseq, ucsc, ensembl}.
@@ -20,7 +19,7 @@ public class SettingsData {
 
     private SettingsData(Builder builder) {
         inputPath = builder.inputPath;
-        threshold = builder.threshold;
+        nReported = builder.nReported;
         transcriptDb = builder.transcriptDb;
     }
 
@@ -40,23 +39,23 @@ public class SettingsData {
 
 
     @Deprecated
-    public double getThreshold() {
-        return threshold;
+    public int getNReported() {
+        return nReported;
     }
 
 
     public String getYamlRepresentation() {
         return new StringBuilder()
                 .append("Analysis settings:").append(System.lineSeparator())
-                .append(" - inputPath: ").append(inputPath).append(System.lineSeparator())
-                .append(" - transcriptDatabase: ").append(transcriptDb).append(System.lineSeparator())
-                .append(" - threshold: ").append(threshold).append(System.lineSeparator())
+                .append(" - input VCF path: ").append(inputPath).append(System.lineSeparator())
+                .append(" - Jannovar transcript database: ").append(transcriptDb).append(System.lineSeparator())
+                .append(" - # variants reported: ").append(nReported).append(System.lineSeparator())
                 .toString();
     }
 
     public static final class Builder {
         private String inputPath;
-        private double threshold;
+        private int nReported;
         private String transcriptDb;
 
         private Builder() {
@@ -67,9 +66,8 @@ public class SettingsData {
             return this;
         }
 
-        @Deprecated
-        public Builder threshold(double threshold) {
-            this.threshold = threshold;
+        public Builder nReported(int nReported) {
+            this.nReported = nReported;
             return this;
         }
 
