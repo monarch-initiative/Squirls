@@ -9,8 +9,6 @@ import org.monarchinitiative.squirls.core.model.SplicingIntron;
 import org.monarchinitiative.squirls.core.model.SplicingParameters;
 import org.monarchinitiative.squirls.core.model.SplicingTranscript;
 import org.monarchinitiative.squirls.core.scoring.calculators.ic.SplicingInformationContentCalculator;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import xyz.ielis.hyperutil.reference.fasta.GenomeSequenceAccessor;
 import xyz.ielis.hyperutil.reference.fasta.SequenceInterval;
 
@@ -20,8 +18,6 @@ import java.util.Optional;
  *
  */
 public class SplicingCalculatorImpl implements SplicingCalculator {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(SplicingCalculatorImpl.class);
 
     /**
      * For each {@link TranscriptModel} we fetch +- 100bp sequence

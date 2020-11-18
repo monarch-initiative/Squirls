@@ -114,12 +114,12 @@ public class RunIngestCommand extends IngestCommand {
                 classifiers, versionedAssembly);
 
         // 4 - compress all the files into a single ZIP file
-        File[] resources = buildDirPath.toFile().listFiles();
+        File[] resources = genomeBuildDir.toFile().listFiles();
         if (resources == null) {
             LOGGER.warn("Resources are null: {}", buildDirPath);
             return;
         }
-        Path zipPath = buildDirPath.getParent().resolve(versionedAssembly + ".zip");
+        Path zipPath = buildDirPath.resolve(versionedAssembly + ".zip");
         LOGGER.info("Compressing the resource files into a single ZIP file `{}`", zipPath);
         try (ZipCompressionWrapper wrapper = new ZipCompressionWrapper(zipPath.toFile())) {
             for (File resource : resources) {
