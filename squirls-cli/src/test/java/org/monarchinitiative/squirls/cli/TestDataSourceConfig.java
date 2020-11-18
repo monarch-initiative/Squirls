@@ -54,7 +54,7 @@ public class TestDataSourceConfig {
      */
     @Bean
     public JannovarData jannovarData() throws SerializationException {
-        return new JannovarDataSerializer(TestDataSourceConfig.class.getResource("small_refseq.ser").getFile()).load();
+        return new JannovarDataSerializer(TestDataSourceConfig.class.getResource("hg19_small_refseq.ser").getFile()).load();
     }
 
     @Bean

@@ -23,7 +23,7 @@
 
         <hyperutil.version>0.1.4</hyperutil.version>
         <htsjdk.version>2.23.0</htsjdk.version>
-        <jannovar.version>0.29</jannovar.version>
+        <jannovar.version>0.35</jannovar.version>
         <argparse.version>0.8.1</argparse.version>
         <slf4j.version>1.7.29</slf4j.version>
         <h2.version>1.4.200</h2.version>
