@@ -12,15 +12,18 @@ import java.util.concurrent.Callable;
 import static picocli.CommandLine.Help.Ansi.Style.*;
 
 @CommandLine.Command(name = "squirls-cli.jar",
+        header = "Super-quick Information Content and Random Forest Learning for Splice Variants\n",
         mixinStandardHelpOptions = true,
         version = Main.VERSION,
-        header = "Super-quick Information Content and Random Forest Learning for Splice Variants",
-        usageHelpWidth = 120,
-        description = "See the full documentation at https://github.com/TheJacksonLaboratory/Squirls/blob/master")
+        usageHelpWidth = Main.WIDTH,
+        footer = Main.FOOTER)
 // TODO: 18. 11. 2020 fix documentation link
 public class Main implements Callable<Integer> {
 
     public static final String VERSION = "squirls v1.0.0-RC3-SNAPSHOT";
+    public static final int WIDTH = 120;
+
+    public static final String FOOTER = "See the full documentation at https://github.com/TheJacksonLaboratory/Squirls/blob/master";
 
     private static final CommandLine.Help.ColorScheme COLOR_SCHEME = new Builder()
             .commands(bold, fg_blue, underline)
@@ -36,9 +39,7 @@ public class Main implements Callable<Integer> {
                 .addSubcommand("annotate-pos", new AnnotatePosCommand())
                 .addSubcommand("annotate-csv", new AnnotateCsvCommand())
                 .addSubcommand("annotate-vcf", new AnnotateVcfCommand());
-        cline.setToggleBooleanFlags(false);
-        int exitCode = cline.execute(args);
-        System.exit(exitCode);
+        System.exit(cline.execute(args));
     }
 
 

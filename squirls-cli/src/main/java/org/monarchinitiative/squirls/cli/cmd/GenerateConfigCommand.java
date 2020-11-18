@@ -1,5 +1,6 @@
 package org.monarchinitiative.squirls.cli.cmd;
 
+import org.monarchinitiative.squirls.cli.Main;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import picocli.CommandLine;
@@ -11,8 +12,13 @@ import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.concurrent.Callable;
 
-@CommandLine.Command(name = "generate-config", aliases = {"G"}, mixinStandardHelpOptions = true,
-        description = "generate a configuration YAML file")
+@CommandLine.Command(name = "generate-config",
+        aliases = {"G"},
+        header = "Generate a configuration YAML file",
+        mixinStandardHelpOptions = true,
+        version = Main.VERSION,
+        usageHelpWidth = Main.WIDTH,
+        footer = Main.FOOTER)
 public class GenerateConfigCommand implements Callable<Integer> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(GenerateConfigCommand.class);

@@ -20,10 +20,11 @@ import static picocli.CommandLine.Parameters;
 
 @CommandLine.Command(name = "annotate-pos",
         aliases = {"P"},
+        header = "Annotate several variant positions",
         mixinStandardHelpOptions = true,
         version = Main.VERSION,
-        usageHelpWidth = 120,
-        header = "Annotate several variant positions\n")
+        usageHelpWidth = Main.WIDTH,
+        footer = Main.FOOTER)
 public class AnnotatePosCommand extends SquirlsCommand {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AnnotatePosCommand.class);

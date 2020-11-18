@@ -34,10 +34,11 @@ import java.util.stream.Stream;
 
 @CommandLine.Command(name = "annotate-vcf",
         aliases = {"A"},
+        header = "Annotate variants in a VCF file",
         mixinStandardHelpOptions = true,
         version = Main.VERSION,
-        usageHelpWidth = 120,
-        header = "Annotate variants in a VCF file\n")
+        usageHelpWidth = Main.WIDTH,
+        footer = Main.FOOTER)
 public class AnnotateVcfCommand extends SquirlsCommand {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AnnotateVcfCommand.class);

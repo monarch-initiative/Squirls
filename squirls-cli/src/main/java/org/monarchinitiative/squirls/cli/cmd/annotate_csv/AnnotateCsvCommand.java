@@ -23,10 +23,11 @@ import java.util.Map;
 
 @CommandLine.Command(name = "annotate-csv",
         aliases = {"C"},
+        header = "Annotate variants stored in tabular file",
         mixinStandardHelpOptions = true,
         version = Main.VERSION,
-        usageHelpWidth = 120,
-        header = "Annotate variants stored in tabular file\n")
+        usageHelpWidth = Main.WIDTH,
+        footer = Main.FOOTER)
 public class AnnotateCsvCommand extends SquirlsCommand {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AnnotateCsvCommand.class);
