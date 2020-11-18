@@ -4,6 +4,7 @@ import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVPrinter;
 import org.apache.commons.csv.CSVRecord;
+import org.monarchinitiative.squirls.cli.Main;
 import org.monarchinitiative.squirls.cli.cmd.SquirlsCommand;
 import org.monarchinitiative.squirls.core.SplicingPredictionData;
 import org.monarchinitiative.squirls.core.VariantSplicingEvaluator;
@@ -20,17 +21,26 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-@CommandLine.Command(name = "annotate-csv", aliases = {"C"}, mixinStandardHelpOptions = true,
-        description = "annotate variants stored in tabular file")
+@CommandLine.Command(name = "annotate-csv",
+        aliases = {"C"},
+        mixinStandardHelpOptions = true,
+        version = Main.VERSION,
+        usageHelpWidth = 120,
+        header = "Annotate variants stored in tabular file\n")
 public class AnnotateCsvCommand extends SquirlsCommand {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AnnotateCsvCommand.class);
 
     private static final List<String> EXPECTED_HEADER = List.of("CHROM", "POS", "REF", "ALT");
 
-    @CommandLine.Parameters(index = "0", description = "path to the input tabular file")
+    @CommandLine.Parameters(index = "0",
+            paramLabel = "input.csv",
+            description = "path to the input tabular file")
     public Path inputPath;
-    @CommandLine.Parameters(index = "1", description = "where to write the output")
+
+    @CommandLine.Parameters(index = "1",
+            paramLabel = "output.csv",
+            description = "where to write the output")
     public Path outputPath;
 
 

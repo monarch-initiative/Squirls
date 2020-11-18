@@ -5,3 +5,4 @@ Release checklist items:
 - update version in: 
   - `pom.xml`
   - documentation
+  - `org.monarchinitiative.squirls.cli.Main`

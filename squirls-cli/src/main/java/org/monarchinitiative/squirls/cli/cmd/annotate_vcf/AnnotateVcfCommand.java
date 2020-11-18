@@ -16,6 +16,7 @@ import htsjdk.samtools.util.CloseableIterator;
 import htsjdk.variant.variantcontext.Allele;
 import htsjdk.variant.variantcontext.VariantContext;
 import htsjdk.variant.vcf.VCFFileReader;
+import org.monarchinitiative.squirls.cli.Main;
 import org.monarchinitiative.squirls.cli.cmd.SquirlsCommand;
 import org.monarchinitiative.squirls.cli.writers.*;
 import org.monarchinitiative.squirls.core.SplicingPredictionData;
@@ -31,30 +32,40 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
-@CommandLine.Command(name = "annotate-vcf", aliases = {"A"}, mixinStandardHelpOptions = true,
-        description = "annotate variants in a VCF file")
+@CommandLine.Command(name = "annotate-vcf",
+        aliases = {"A"},
+        mixinStandardHelpOptions = true,
+        version = Main.VERSION,
+        usageHelpWidth = 120,
+        header = "Annotate variants in a VCF file\n")
 public class AnnotateVcfCommand extends SquirlsCommand {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AnnotateVcfCommand.class);
 
     @CommandLine.Option(names = {"-d", "--jannovar-data"},
             required = true,
+            paramLabel = "hg38_refseq.ser",
             description = "path to Jannovar transcript database")
     public String jannovarDataPath;
 
     @CommandLine.Option(names = {"-f", "--output-format"},
-            description = "comma separated list of output formats to use for writing the results [html,VCF]")
-    public String outputFormats = "HTML";
+            paramLabel = "html",
+            description = "comma separated list of output formats to use for writing the results [html,vcf]")
+    public String outputFormats = "html";
 
     @CommandLine.Option(names = {"-n", "--n-variants-to-report"},
-            defaultValue = "100",
+            paramLabel = "100",
             description = "N most pathogenic variants to include into HTML report")
-    public int nVariantsToReport;
+    public int nVariantsToReport = 100;
 
-    @CommandLine.Parameters(index = "0", description = "path to input VCF file")
+    @CommandLine.Parameters(index = "0",
+            paramLabel = "input.vcf",
+            description = "path to input VCF file")
     public Path inputPath;
 
-    @CommandLine.Parameters(index = "1", description = "prefix for the output files")
+    @CommandLine.Parameters(index = "1",
+            paramLabel = "path/to/output",
+            description = "prefix for the output files")
     public String outputPrefix;
 
     /**

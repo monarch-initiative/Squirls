@@ -1,12 +1,14 @@
 package org.monarchinitiative.squirls.cli.cmd.annotate_pos;
 
 
+import org.monarchinitiative.squirls.cli.Main;
 import org.monarchinitiative.squirls.cli.cmd.SquirlsCommand;
 import org.monarchinitiative.squirls.core.SplicingPredictionData;
 import org.monarchinitiative.squirls.core.VariantSplicingEvaluator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ConfigurableApplicationContext;
+import picocli.CommandLine;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,8 +18,12 @@ import java.util.stream.Collectors;
 
 import static picocli.CommandLine.Parameters;
 
-@picocli.CommandLine.Command(name = "annotate-pos", aliases = {"P"}, mixinStandardHelpOptions = true,
-        description = "annotate several variant positions")
+@CommandLine.Command(name = "annotate-pos",
+        aliases = {"P"},
+        mixinStandardHelpOptions = true,
+        version = Main.VERSION,
+        usageHelpWidth = 120,
+        header = "Annotate several variant positions\n")
 public class AnnotatePosCommand extends SquirlsCommand {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AnnotatePosCommand.class);
