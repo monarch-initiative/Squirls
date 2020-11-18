@@ -61,6 +61,7 @@ public class HtmlResultWriter implements ResultWriter {
     @Override
     public void write(AnalysisResults results, OutputSettings outputSettings) throws IOException {
         Path outputPath = Paths.get(outputSettings.outputPrefix() + '.' + OutputFormat.HTML.getFileExtension());
+        LOGGER.info("Writing HTML output to `{}`", outputPath);
 
         // sort results by max squirls pathogenicity and select at most n variants
         List<? extends WritableSplicingAllele> allelesToReport = results.getVariants().stream()

@@ -133,7 +133,7 @@ public class AnnotateVcfCommand extends SquirlsCommand {
 
             // TODO: 29. 5. 2020 improve behavior & logging
             //  e.g. report progress in % if variant index and thus count is available
-            AnnotateVcfProgressReporter progressReporter = new AnnotateVcfProgressReporter(5_000);
+            AnnotateVcfProgressReporter progressReporter = new AnnotateVcfProgressReporter(10_000);
             List<WritableSplicingAllele> annotated = Collections.synchronizedList(new ArrayList<>());
             ArrayList<String> sampleNames;
 
@@ -172,7 +172,6 @@ public class AnnotateVcfCommand extends SquirlsCommand {
             ResultWriterFactory resultWriterFactory = context.getBean(ResultWriterFactory.class);
             OutputSettings settings = new OutputSettings(outputPrefix, nVariantsToReport);
             for (OutputFormat format : outputFormats) {
-                LOGGER.info("Writing out the {} results", format);
                 ResultWriter writer = resultWriterFactory.resultWriterForFormat(format);
                 try {
                     writer.write(results, settings);

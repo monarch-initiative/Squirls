@@ -83,6 +83,8 @@ public class VcfResultWriter implements ResultWriter {
         Path inputVcfPath = Paths.get(results.getSettingsData().getInputPath());
         Path outputVcfPath = Paths.get(outputSettings.outputPrefix() + '.' + OutputFormat.VCF.getFileExtension());
 
+        LOGGER.info("Writing VCF output to `{}`", outputVcfPath);
+
         VCFHeader header;
         try (VCFFileReader reader = new VCFFileReader(inputVcfPath, false)) {
             header = extendHeaderWithSquirlsFields(reader.getFileHeader());
