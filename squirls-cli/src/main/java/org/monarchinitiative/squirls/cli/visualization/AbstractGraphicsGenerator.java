@@ -132,8 +132,8 @@ public abstract class AbstractGraphicsGenerator implements SplicingVariantGraphi
     protected String makeCanonicalDonorContextGraphics(SplicingPredictionData predictionData) {
         VisualizationContext context = VisualizationContext.CANONICAL_DONOR;
 
-        GenomeVariant variant = predictionData.getVariant();
         SplicingTranscript transcript = predictionData.getTranscript();
+        GenomeVariant variant = predictionData.getVariant().withStrand(transcript.getStrand());
         Optional<SequenceInterval> sio = fetchSequenceForTranscript(transcript);
         if (sio.isEmpty()) {
             return EMPTY_SVG_IMAGE;
@@ -206,8 +206,8 @@ public abstract class AbstractGraphicsGenerator implements SplicingVariantGraphi
      */
     protected String makeCanonicalAcceptorContextGraphics(SplicingPredictionData predictionData) {
         VisualizationContext context = VisualizationContext.CANONICAL_ACCEPTOR;
-        GenomeVariant variant = predictionData.getVariant();
         SplicingTranscript transcript = predictionData.getTranscript();
+        GenomeVariant variant = predictionData.getVariant().withStrand(transcript.getStrand());
         Optional<SequenceInterval> sio = fetchSequenceForTranscript(transcript);
         if (sio.isEmpty()) {
             return EMPTY_SVG_IMAGE;
