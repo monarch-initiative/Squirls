@@ -280,12 +280,13 @@ public abstract class AbstractGraphicsGenerator implements SplicingVariantGraphi
         VisualizationContext context = VisualizationContext.CRYPTIC_DONOR;
 
         GenomeVariant variant = predictionData.getVariant();
-        GenomeInterval variantInterval = variant.getGenomeInterval();
-        Optional<SequenceInterval> sio = fetchSequenceForTranscript(predictionData.getTranscript());
+        SplicingTranscript transcript = predictionData.getTranscript();
+        Optional<SequenceInterval> sio = fetchSequenceForTranscript(transcript);
         if (sio.isEmpty()) {
             return EMPTY_SVG_IMAGE;
         }
         SequenceInterval sequence = sio.get();
+        GenomeInterval variantInterval = variant.getGenomeInterval().withStrand(transcript.getStrand());
 
         // find index of the position that yields the highest score
         // get the corresponding ref & alt snippets
@@ -308,7 +309,7 @@ public abstract class AbstractGraphicsGenerator implements SplicingVariantGraphi
         String trekker = vmvtGenerator.getDonorTrekkerSvg(refCorrespondingWindow, altBestWindow);
 
         // secondary - sequence walkers comparing the best ALT window with the canonical donor snippet
-        GenomePosition donorAnchor = predictionData.getMetadata().getDonorCoordinateMap().get(predictionData.getTranscript().getAccessionId());
+        GenomePosition donorAnchor = predictionData.getMetadata().getDonorCoordinateMap().get(transcript.getAccessionId());
         String walkers;
         if (donorAnchor != null) {
             // we have the anchor, thus let's make the graphics
@@ -316,10 +317,10 @@ public abstract class AbstractGraphicsGenerator implements SplicingVariantGraphi
             walkers = vmvtGenerator.getDonorCanonicalCryptic(canonicalDonorSnippet, altBestWindow);
         } else {
             // there is no anchor, this happens in single-exon transcripts
-            if (!predictionData.getTranscript().getIntrons().isEmpty()) {
+            if (!transcript.getIntrons().isEmpty()) {
                 // however, complain if this is not a single-exon transcript!
                 LOGGER.warn("Did not find donor site in metadata while but the transcript has {} intron(s)",
-                        predictionData.getTranscript().getIntrons().size());
+                        transcript.getIntrons().size());
             }
             walkers = EMPTY_SVG_IMAGE;
         }
@@ -352,12 +353,13 @@ public abstract class AbstractGraphicsGenerator implements SplicingVariantGraphi
         VisualizationContext context = VisualizationContext.CRYPTIC_ACCEPTOR;
 
         GenomeVariant variant = predictionData.getVariant();
-        GenomeInterval variantInterval = variant.getGenomeInterval();
-        Optional<SequenceInterval> sio = fetchSequenceForTranscript(predictionData.getTranscript());
+        SplicingTranscript transcript = predictionData.getTranscript();
+        Optional<SequenceInterval> sio = fetchSequenceForTranscript(transcript);
         if (sio.isEmpty()) {
             return EMPTY_SVG_IMAGE;
         }
         SequenceInterval sequence = sio.get();
+        GenomeInterval variantInterval = variant.getGenomeInterval().withStrand(transcript.getStrand());
 
         // find index of the position that yields the highest score
         // get the corresponding ref & alt snippets
@@ -380,7 +382,7 @@ public abstract class AbstractGraphicsGenerator implements SplicingVariantGraphi
         String trekker = vmvtGenerator.getAcceptorTrekkerSvg(refCorrespondingWindow, altBestWindow);
 
         // secondary - sequence walkers comparing the best ALT window with the canonical acceptor snippet
-        GenomePosition acceptorAnchor = predictionData.getMetadata().getAcceptorCoordinateMap().get(predictionData.getTranscript().getAccessionId());
+        GenomePosition acceptorAnchor = predictionData.getMetadata().getAcceptorCoordinateMap().get(transcript.getAccessionId());
         String walkers;
         if (acceptorAnchor != null) {
             // we have the anchor, thus let's make the graphics
@@ -388,10 +390,10 @@ public abstract class AbstractGraphicsGenerator implements SplicingVariantGraphi
             walkers = vmvtGenerator.getAcceptorCanonicalCryptic(canonicalAcceptorSnippet, altBestWindow);
         } else {
             // there is no anchor, this happens in single-exon transcripts
-            if (!predictionData.getTranscript().getIntrons().isEmpty()) {
+            if (!transcript.getIntrons().isEmpty()) {
                 // however, complain if this is not single-exon transcript!
                 LOGGER.warn("Did not find acceptor site in metadata while but the transcript has {} intron(s)",
-                        predictionData.getTranscript().getIntrons().size());
+                        transcript.getIntrons().size());
             }
             walkers = null;
         }
