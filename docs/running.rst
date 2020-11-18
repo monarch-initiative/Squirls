@@ -54,8 +54,10 @@ The ``annotate-vcf`` command writes results in 2 formats: *HTML* and *VCF*. Use 
 
 HTML output format
 ~~~~~~~~~~~~~~~~~~
-By default, a *HTML* report with the 100 most deleterious variants is produced. See the :ref:`rstinterpretation`
-section for getting help with interpretation of the report.
+A *HTML* report containing the 100 most deleterious variants is produced when ``-f`` option is not specified.
+See the :ref:`rstinterpretation` section for getting help with interpretation of the report.
+
+Number of reported variants can be adjusted using ``-n`` option
 
 VCF output format
 ~~~~~~~~~~~~~~~~~
