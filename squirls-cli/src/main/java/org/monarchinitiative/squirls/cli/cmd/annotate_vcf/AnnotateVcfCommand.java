@@ -46,12 +46,12 @@ public class AnnotateVcfCommand extends SquirlsCommand {
     @CommandLine.Option(names = {"-d", "--jannovar-data"},
             required = true,
             paramLabel = "hg38_refseq.ser",
-            description = "path to Jannovar transcript database")
+            description = "Path to Jannovar transcript database")
     public String jannovarDataPath;
 
     @CommandLine.Option(names = {"-f", "--output-format"},
             paramLabel = "html",
-            description = "comma separated list of output formats to use for writing the results [html,vcf]")
+            description = "Comma separated list of output formats to use for writing the results [html,vcf]")
     public String outputFormats = "html";
 
     @CommandLine.Option(names = {"-n", "--n-variants-to-report"},
@@ -61,12 +61,12 @@ public class AnnotateVcfCommand extends SquirlsCommand {
 
     @CommandLine.Parameters(index = "0",
             paramLabel = "input.vcf",
-            description = "path to input VCF file")
+            description = "Path to input VCF file")
     public Path inputPath;
 
     @CommandLine.Parameters(index = "1",
             paramLabel = "path/to/output",
-            description = "prefix for the output files")
+            description = "Prefix for the output files")
     public String outputPrefix;
 
     /**

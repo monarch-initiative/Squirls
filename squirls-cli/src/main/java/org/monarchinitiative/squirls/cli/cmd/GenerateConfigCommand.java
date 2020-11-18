@@ -24,7 +24,7 @@ public class GenerateConfigCommand implements Callable<Integer> {
     private static final Logger LOGGER = LoggerFactory.getLogger(GenerateConfigCommand.class);
 
     @CommandLine.Parameters(arity = "1",
-            description = "configuration file path",
+            description = "Configuration file path",
             defaultValue = "squirls-config.yml")
     public Path outputPath;
 

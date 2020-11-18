@@ -36,12 +36,12 @@ public class AnnotateCsvCommand extends SquirlsCommand {
 
     @CommandLine.Parameters(index = "0",
             paramLabel = "input.csv",
-            description = "path to the input tabular file")
+            description = "Path to the input tabular file")
     public Path inputPath;
 
     @CommandLine.Parameters(index = "1",
             paramLabel = "output.csv",
-            description = "where to write the output")
+            description = "Where to write the output")
     public Path outputPath;
 
 

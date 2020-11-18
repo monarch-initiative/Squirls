@@ -45,7 +45,7 @@ public class PanelGraphicsGeneratorTest extends GraphicsGeneratorTestBase {
 
         String content = generator.generateGraphics(allele);
 
-        System.err.println(content);
+//        System.err.println(content);
     }
 
     @Disabled
@@ -66,6 +66,6 @@ public class PanelGraphicsGeneratorTest extends GraphicsGeneratorTestBase {
         VisualizableVariantAllele allele = toVisualizableAllele(writableSplicingAllele);
         final String content = generator.generateGraphics(allele);
 
-        System.err.println(content);
+//        System.err.println(content);
     }
 }

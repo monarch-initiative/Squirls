@@ -33,7 +33,7 @@ public class AnnotatePosCommand extends SquirlsCommand {
 
     @Parameters(arity = "1..*",
             paramLabel = "chr3:165504107A>C",
-            description = "nucleotide change(s) to annotate")
+            description = "Nucleotide change(s) to annotate")
     public List<String> rawChanges;
 
     @Override

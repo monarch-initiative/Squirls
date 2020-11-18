@@ -6,21 +6,21 @@ Running Squirls
 
 Squirls is a command-line Java tool that runs with Java version 11 or higher.
 
-To get help, run Squirls with a command or with the option "-h": ::
+To get help, run Squirls with a command or with the option ``-h`` or ``--help``: ::
 
-  $ java -jar squirls-cli.jar --help
+  $ Super-quick Information Content and Random Forest Learning for Splice Variants
+
   Usage: squirls-cli.jar [-hV] [COMMAND]
-  Super-quick Information Content and Random Forest Learning for Splice Variants
     -h, --help      Show this help message and exit.
     -V, --version   Print version information and exit.
   Commands:
-    generate-config, G  generate a configuration YAML file
-    annotate-pos, P     annotate several variant positions
-    annotate-csv, C     annotate variants stored in tabular file
-    annotate-vcf, A     annotate variants in a VCF file
+    generate-config, G  Generate a configuration YAML file
+    annotate-pos, P     Annotate several variant positions
+    annotate-csv, C     Annotate variants stored in tabular file
+    annotate-vcf, A     Annotate variants in a VCF file
 
 Before running any command, the ``generate-config`` command needs to be run to generate a configuration YAML file for
-Squirls analysis. Then, the other commands can then be used to analyze variants in multiple input formats.
+Squirls analysis (see :ref:`generate-config-ref`). Then, the other commands can then be used to analyze variants in multiple input formats.
 
 Squirls annotates variants using the following commands:
 
@@ -28,30 +28,48 @@ Squirls annotates variants using the following commands:
 * ``annotate-pos``, and
 * ``annotate-csv``,
 
-All the commands require path to the YAML configuration file prepared in the :ref:`rstsetup` section.
-To indicate the location of the YAML configuration file, we use ``squirls_config.yml`` placeholder in all command examples below.
+We use ``squirls_config.yml`` placeholder to indicate the location of the YAML configuration file in all command
+examples below.
 
 ``annotate-vcf`` - Annotate variants in a VCF file
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-To annotate variants in a ``variants.vcf`` VCF file and store the annotated variants as ``output.vcf``, run ::
+The aim of this command is to annotate variants in a VCF file. The results are then stored in *HTML* and/or
+*VCF* format.
 
-  $ java -jar squirls-cli.jar annotate-vcf --config squirls_config.yml variants.vcf output.vcf
+To annotate variants in the `example.vcf`_ file (a file with 6 variants stored in Squirls repository), run ::
 
-The annotation adds two ``INFO`` field to each coding variant:
+  $ java -jar squirls-cli.jar annotate-vcf -c squirls_config.yml -d hg19_refseq.ser example.vcf output
 
-* ``SQUIRLS`` - a flag indicating that the variant is considered to have a deleterious effect on at least a single
-  overlapping transcript
-* ``SQUIRLS_SCORE`` - a string containing SQUIRLS scores for each variant-transcript combination. For the variant
+Squirls uses `Jannovar`_ library to perform functional annotation for the variant, hence it must be provided with
+path to Jannovar transcript database (``-d`` option). See :ref:`download-jannovar-ref` for download instructions.
+
+After the annotation, the results are stored at ``output.html``.
+
+Run ``java -jar squirls-cli.jar annotate-vcf --help`` to see all the available options.
+
+Output formats
+##############
+The ``annotate-vcf`` command writes results in 2 formats: *HTML* and *VCF*. Use the ``-f`` option to select the output format.
+
+HTML output format
+~~~~~~~~~~~~~~~~~~
+By default, a *HTML* report with the 100 most deleterious variants is produced. See the :ref:`rstinterpretation`
+section for getting help with interpretation of the report.
+
+VCF output format
+~~~~~~~~~~~~~~~~~
+When using the ``-f vcf`` option, a VCF file with all input variants is created. The annotation adds two novel ``INFO``
+fields to each variant that overlaps with at least single transcript region:
+
+* ``SQUIRLS`` - a flag indicating that the variant is considered to have a deleterious effect on >=1 overlapping transcript
+* ``SQUIRLS_SCORE`` - a string containing SQUIRLS scores for each variant-transcript combination. For a hypothetical variant
   ``chr1:1234C>A,G``, the field might look like::
 
     SQUIRLS_SCORE=A|NM_123456.1=0.988654|ENST00000987654.1=0.988654&G|NM_12356.1=0.330112|ENST00000987654.1=0.330112
 
   Predictions for the individual ``ALT`` alleles are delimited by the ``&`` symbol and grouped with respect to the
-  accession of the affected transcript
-
-When selecting the ``html`` output format option, Squirls generates a HTML report with graphics. See the
-:ref:`rstinterpretation` section for getting help with interpretation of the report.
+  accession ID of the affected transcript
 
 ``annotate-pos`` - Annotate variant positions
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -101,3 +119,5 @@ Three columns are added:
 * ``MAX_SCORE`` - maximum Squirls score of all overlapping transcripts
 * ``SCORES`` - Squirls scores calculated wrt. all overlapping transcripts stored in format ``TX1=SCORE1;TX2=SCORE2;...;TXn=SCOREn``
 
+.. _Jannovar: https://pubmed.ncbi.nlm.nih.gov/24677618
+.. _example.vcf: https://github.com/TheJacksonLaboratory/Squirls/blob/development/squirls-cli/src/examples/example.vcf
