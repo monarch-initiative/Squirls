@@ -7,6 +7,7 @@ import org.monarchinitiative.squirls.cli.cmd.annotate_vcf.AnnotateVcfCommand;
 import picocli.CommandLine;
 import picocli.CommandLine.Help.ColorScheme.Builder;
 
+import java.util.Locale;
 import java.util.concurrent.Callable;
 
 import static picocli.CommandLine.Help.Ansi.Style.*;
@@ -33,6 +34,7 @@ public class Main implements Callable<Integer> {
             .build();
 
     public static void main(String[] args) {
+        Locale.setDefault(Locale.US);
         CommandLine cline = new CommandLine(new Main())
                 .setColorScheme(COLOR_SCHEME)
                 .addSubcommand("generate-config", new GenerateConfigCommand())
