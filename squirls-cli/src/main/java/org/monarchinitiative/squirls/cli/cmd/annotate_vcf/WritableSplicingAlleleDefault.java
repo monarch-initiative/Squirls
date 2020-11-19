@@ -85,17 +85,17 @@ import org.monarchinitiative.squirls.core.SplicingPredictionData;
 import java.util.Map;
 import java.util.Objects;
 
-class WritableSplicingAlleleImpl implements WritableSplicingAllele {
+class WritableSplicingAlleleDefault implements WritableSplicingAllele {
 
     private final VariantContext variantContext;
     private final Allele allele;
     private final VariantAnnotations annotations;
     private final Map<String, SplicingPredictionData> squirlsScores;
 
-    WritableSplicingAlleleImpl(VariantContext variantContext,
-                               Allele allele,
-                               VariantAnnotations annotations,
-                               Map<String, SplicingPredictionData> squirlsScores) {
+    WritableSplicingAlleleDefault(VariantContext variantContext,
+                                  Allele allele,
+                                  VariantAnnotations annotations,
+                                  Map<String, SplicingPredictionData> squirlsScores) {
         this.variantContext = variantContext;
         this.allele = allele;
         this.annotations = annotations;
@@ -126,7 +126,7 @@ class WritableSplicingAlleleImpl implements WritableSplicingAllele {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        WritableSplicingAlleleImpl that = (WritableSplicingAlleleImpl) o;
+        WritableSplicingAlleleDefault that = (WritableSplicingAlleleDefault) o;
         return Objects.equals(variantContext, that.variantContext) &&
                 Objects.equals(allele, that.allele) &&
                 Objects.equals(annotations, that.annotations) &&
@@ -140,7 +140,7 @@ class WritableSplicingAlleleImpl implements WritableSplicingAllele {
 
     @Override
     public String toString() {
-        return "SplicingVariantAlleleEvaluationImpl{" +
+        return "WritableSplicingAlleleDefault{" +
                 "variantContext=" + variantContext +
                 ", allele=" + allele +
                 ", annotations=" + annotations +

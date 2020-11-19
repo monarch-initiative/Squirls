@@ -103,22 +103,22 @@ public class SimpleVisualizationContextSelector implements VisualizationContextS
     /**
      * Figure out which figures to create for this variant.
      *
-     * @param prediction data regarding variant prediction
+     * @param features data regarding variant features
      * @return {@link VisualizationContext} for the variant
      */
     @Override
-    public VisualizationContext selectContext(Map<String, Double> prediction) throws MissingFeatureException {
+    public VisualizationContext selectContext(Map<String, Double> features) throws MissingFeatureException {
         // check that we have all the necessary features
-        if (!prediction.keySet().containsAll(requiredFeatures)) {
+        if (!features.keySet().containsAll(requiredFeatures)) {
             final String missingFeatures = requiredFeatures.stream()
-                    .filter(f -> !prediction.containsKey(f))
+                    .filter(f -> !features.containsKey(f))
                     .sorted()
                     .collect(Collectors.joining(",", "[", "]"));
             throw new MissingFeatureException(String.format("Missing features `%s`", missingFeatures));
         }
 
-        double canonicalDonor = prediction.get("canonical_donor");
-        double crypticDonor = prediction.get("cryptic_donor");
+        double canonicalDonor = features.get("canonical_donor");
+        double crypticDonor = features.get("cryptic_donor");
         if (notCloseToZero(canonicalDonor)) {
             // variant overlaps with the canonical donor site
             // decide between canonical vs cryptic
@@ -127,8 +127,8 @@ public class SimpleVisualizationContextSelector implements VisualizationContextS
                     : VisualizationContext.CANONICAL_DONOR;
         }
 
-        double canonicalAcceptor = prediction.get("canonical_acceptor");
-        double crypticAcceptor = prediction.get("cryptic_acceptor");
+        double canonicalAcceptor = features.get("canonical_acceptor");
+        double crypticAcceptor = features.get("cryptic_acceptor");
         if (notCloseToZero(canonicalAcceptor)) {
             // variant overlaps with the canonical acceptor site
             // decide between canonical vs cryptic
@@ -138,8 +138,8 @@ public class SimpleVisualizationContextSelector implements VisualizationContextS
         }
 
         // variant is coding if donor offset is negative AND acceptor offset is positive
-        if (prediction.get("donor_offset") < 0
-                && prediction.get("acceptor_offset") > 0) {
+        if (features.get("donor_offset") < 0
+                && features.get("acceptor_offset") > 0) {
             // show SRE if both cryptic features are negative
             // (the cryptic site is not better in comparison with the canonical)
             if (crypticDonor < 0. && crypticAcceptor < 0.) {

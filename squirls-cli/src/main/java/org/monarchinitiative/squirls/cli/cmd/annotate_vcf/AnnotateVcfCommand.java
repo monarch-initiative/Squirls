@@ -76,6 +76,7 @@
 
 package org.monarchinitiative.squirls.cli.cmd.annotate_vcf;
 
+import de.charite.compbio.jannovar.annotation.Annotation;
 import de.charite.compbio.jannovar.annotation.AnnotationException;
 import de.charite.compbio.jannovar.annotation.VariantAnnotations;
 import de.charite.compbio.jannovar.annotation.VariantAnnotator;
@@ -84,10 +85,7 @@ import de.charite.compbio.jannovar.data.JannovarData;
 import de.charite.compbio.jannovar.data.JannovarDataSerializer;
 import de.charite.compbio.jannovar.data.ReferenceDictionary;
 import de.charite.compbio.jannovar.data.SerializationException;
-import de.charite.compbio.jannovar.reference.GenomePosition;
-import de.charite.compbio.jannovar.reference.GenomeVariant;
-import de.charite.compbio.jannovar.reference.PositionType;
-import de.charite.compbio.jannovar.reference.Strand;
+import de.charite.compbio.jannovar.reference.*;
 import htsjdk.samtools.util.CloseableIterator;
 import htsjdk.variant.variantcontext.Allele;
 import htsjdk.variant.variantcontext.VariantContext;
@@ -107,6 +105,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @CommandLine.Command(name = "annotate-vcf",
@@ -192,12 +191,20 @@ public class AnnotateVcfCommand extends SquirlsCommand {
                 }
 
                 // Squirls scores
-                Map<String, SplicingPredictionData> squirlsScores = variantAnnotations.getHighestImpactEffect().isOffTranscript()
-                        ? Map.of() // don't bother with annotating an off-exome variant
-                        : evaluator.evaluate(vc.getContig(), vc.getStart(), vc.getReference().getBaseString(), allele.getBaseString());
+                Map<String, SplicingPredictionData> squirlsScores;
+                if (!variantAnnotations.getHighestImpactEffect().isOffTranscript()) {
+                    Set<String> txAccessions = variantAnnotations.getAnnotations().stream()
+                            .map(Annotation::getTranscript)
+                            .map(TranscriptModel::getAccession)
+                            .collect(Collectors.toSet());
+                    squirlsScores = evaluator.evaluate(vc.getContig(), vc.getStart(), vc.getReference().getBaseString(), allele.getBaseString(), txAccessions);
+                } else {
+                    // don't bother with annotating an off-exome variant
+                    squirlsScores = Map.of();
+                }
 
 
-                evaluations.add(new WritableSplicingAlleleImpl(vc, allele, variantAnnotations, squirlsScores));
+                evaluations.add(new WritableSplicingAlleleDefault(vc, allele, variantAnnotations, squirlsScores));
             }
 
             return evaluations;
