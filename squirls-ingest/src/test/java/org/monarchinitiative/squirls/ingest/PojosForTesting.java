@@ -120,9 +120,9 @@ public class PojosForTesting {
     }
 
     public static SequenceInterval getSequenceIntervalForTranscriptWithThreeExons(ReferenceDictionary referenceDictionary) {
-        return SequenceInterval.builder()
-                .interval(new GenomeInterval(referenceDictionary, Strand.FWD, 1, 900, 2100))
-                .sequence("AAACAGGTTAATCGCCACGACATAGTAGTATTTAGAGTTACTAGTAAGCCTGATGCCACT" + // 960
+        return SequenceInterval.of(
+                new GenomeInterval(referenceDictionary, Strand.FWD, 1, 900, 2100),
+                "AAACAGGTTAATCGCCACGACATAGTAGTATTTAGAGTTACTAGTAAGCCTGATGCCACT" + // 960
                         "ACACAATTCTAGCTTTTCTCTTTAGGATGATTGTTTCATT" + // 1000
                         "CAGTCTTATCTCTTTTAGAA" + // 1020
                         "AACATAGGaaaaaattatttaataataaaatttaattGGCAAAATGAAGGTATGGCTTAT" + // 1080
@@ -145,8 +145,7 @@ public class PojosForTesting {
                         "AATTTTTCACTTTACATCACATAATGAATGGATCCAAATATGTTATGGATAGATATCTTC" +
                         "AAACTTTCTACTTACAAGTAGTGATAATAACAGATGTTCTCTCTAAAGTGTAGTTGGTAT" +
                         "CAATTTTACTGACCTTTAAAAATATCTTAATGGGACAAAGTTCAAATATTTGATGACCAG" +
-                        "CTATCGTGACCTTTATCTCTGTGGCTCTGTGGGCCTGTAGTTTTTACGTGCTTTTAGTGT")
-                .build();
+                        "CTATCGTGACCTTTATCTCTGTGGCTCTGTGGGCCTGTAGTTTTTACGTGCTTTTAGTGT");
     }
 
     public static SplicingTranscript getTranscriptWithThreeExons(ReferenceDictionary referenceDictionary) {

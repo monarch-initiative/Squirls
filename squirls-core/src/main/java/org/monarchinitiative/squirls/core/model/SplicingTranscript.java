@@ -31,6 +31,8 @@ public class SplicingTranscript {
         exons = List.copyOf(builder.exons);
         introns = List.copyOf(builder.introns);
         accessionId = builder.accessionId;
+        if (builder.check)
+            check();
     }
 
     public static SplicingTranscript getDefaultInstance() {
@@ -39,6 +41,44 @@ public class SplicingTranscript {
 
     public static Builder builder() {
         return new Builder();
+    }
+
+    private void check() {
+        if (!exons.stream().allMatch(e -> e.getInterval().getStrand().equals(txRegionCoordinates.getStrand()))) {
+            throw new IllegalArgumentException("All exons are not on transcript's strand");
+        }
+
+        if (!introns.stream().allMatch(i -> i.getInterval().getStrand().equals(txRegionCoordinates.getStrand()))) {
+            throw new IllegalArgumentException("All introns are not on transcript's strand");
+        }
+
+        for (int i = 0; i < exons.size(); i++) {
+            GenomeInterval current = exons.get(i).getInterval();
+            if (current.getGenomeBeginPos().isGeq(current.getGenomeEndPos())) {
+                throw new IllegalArgumentException("Invalid exon " + i + ": begin is not upstream from end");
+            }
+
+            if (i > 0) {
+                GenomeInterval previous = exons.get(i - 1).getInterval();
+                if (previous.getGenomeEndPos().isGeq(current.getGenomeBeginPos())) {
+                    throw new IllegalArgumentException("Inconsistent exon " + (i - 1) + ',' + i + " order: " + previous + ", " + current);
+                }
+            }
+        }
+
+        for (int i = 0; i < introns.size(); i++) {
+            GenomeInterval current = introns.get(i).getInterval();
+            if (current.getGenomeBeginPos().isGeq(current.getGenomeEndPos())) {
+                throw new IllegalArgumentException("Invalid intron " + i + ": begin is not upstream from end");
+            }
+
+            if (i > 0) {
+                GenomeInterval previous = introns.get(i - 1).getInterval();
+                if (previous.getGenomeEndPos().isGeq(current.getGenomeBeginPos())) {
+                    throw new IllegalArgumentException("Inconsistent exon " + (i - 1) + ',' + i + " order: " + previous + ", " + current);
+                }
+            }
+        }
     }
 
     public GenomeInterval getTxRegionCoordinates() {
@@ -114,6 +154,7 @@ public class SplicingTranscript {
         private final List<SplicingIntron> introns = new ArrayList<>();
         private GenomeInterval coordinates;
         private String accessionId = "";
+        private boolean check = false;
 
         private Builder() {
             // private no-op
@@ -146,6 +187,11 @@ public class SplicingTranscript {
 
         public Builder addAllIntrons(Collection<SplicingIntron> introns) {
             this.introns.addAll(introns);
+            return this;
+        }
+
+        public Builder check(boolean check) {
+            this.check = check;
             return this;
         }
 

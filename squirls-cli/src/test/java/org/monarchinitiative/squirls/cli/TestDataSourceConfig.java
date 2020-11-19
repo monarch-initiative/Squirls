@@ -6,13 +6,18 @@ import de.charite.compbio.jannovar.data.JannovarData;
 import de.charite.compbio.jannovar.data.JannovarDataSerializer;
 import de.charite.compbio.jannovar.data.ReferenceDictionary;
 import de.charite.compbio.jannovar.data.SerializationException;
-import org.monarchinitiative.squirls.cli.visualization.SimpleVisualizationContextSelector;
-import org.monarchinitiative.squirls.cli.visualization.VisualizationContextSelector;
+import org.mockito.Mockito;
+import org.monarchinitiative.squirls.cli.visualization.SplicingVariantGraphicsGenerator;
+import org.monarchinitiative.squirls.cli.visualization.panel.PanelGraphicsGenerator;
+import org.monarchinitiative.squirls.cli.visualization.selector.SimpleVisualizationContextSelector;
+import org.monarchinitiative.squirls.cli.visualization.selector.VisualizationContextSelector;
 import org.monarchinitiative.squirls.core.data.ic.InputStreamBasedPositionalWeightMatrixParser;
 import org.monarchinitiative.squirls.core.data.ic.SplicingPwmData;
 import org.monarchinitiative.squirls.core.data.kmer.FileKMerParser;
+import org.monarchinitiative.vmvt.core.VmvtGenerator;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import xyz.ielis.hyperutil.reference.fasta.GenomeSequenceAccessor;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -24,11 +29,6 @@ import java.util.Map;
 @Configuration
 public class TestDataSourceConfig {
 
-
-    @Bean
-    public VisualizationContextSelector visualizationContextSelector() {
-        return new SimpleVisualizationContextSelector();
-    }
 
     /**
      * Small Jannovar cache containing RefSeq transcripts of several genes only:
@@ -54,7 +54,7 @@ public class TestDataSourceConfig {
      */
     @Bean
     public JannovarData jannovarData() throws SerializationException {
-        return new JannovarDataSerializer(TestDataSourceConfig.class.getResource("small_refseq.ser").getFile()).load();
+        return new JannovarDataSerializer(TestDataSourceConfig.class.getResource("hg19_small_refseq.ser").getFile()).load();
     }
 
     @Bean
@@ -86,4 +86,28 @@ public class TestDataSourceConfig {
         Path path = Paths.get(TestDataSourceConfig.class.getResource("septamer-scores.tsv").getPath());
         return new FileKMerParser(path).getKmerMap();
     }
+
+    @Bean
+    public SplicingVariantGraphicsGenerator splicingVariantGraphicsGenerator(VmvtGenerator vmvtGenerator,
+                                                                             SplicingPwmData splicingPwmData,
+                                                                             VisualizationContextSelector visualizationContextSelector,
+                                                                             GenomeSequenceAccessor genomeSequenceAccessor) {
+        return new PanelGraphicsGenerator(vmvtGenerator, splicingPwmData, visualizationContextSelector, genomeSequenceAccessor);
+    }
+
+    @Bean
+    public GenomeSequenceAccessor genomeSequenceAccessor() {
+        return Mockito.mock(GenomeSequenceAccessor.class);
+    }
+
+    @Bean
+    public VisualizationContextSelector visualizationContextSelector() {
+        return new SimpleVisualizationContextSelector();
+    }
+
+    @Bean
+    public VmvtGenerator vmvtGenerator() {
+        return new VmvtGenerator();
+    }
+
 }

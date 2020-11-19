@@ -1,14 +1,20 @@
 package org.monarchinitiative.squirls.cli.data;
 
+import de.charite.compbio.jannovar.annotation.VariantAnnotator;
+import de.charite.compbio.jannovar.annotation.builders.AnnotationBuilderOptions;
+import de.charite.compbio.jannovar.data.JannovarData;
 import de.charite.compbio.jannovar.data.ReferenceDictionary;
-import de.charite.compbio.jannovar.reference.*;
+import de.charite.compbio.jannovar.reference.HG19RefDictBuilder;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.monarchinitiative.squirls.cli.TestDataSourceConfig;
+import org.monarchinitiative.squirls.cli.writers.WritableSplicingAllele;
+import org.monarchinitiative.squirls.core.SplicingPredictionData;
 import org.monarchinitiative.squirls.core.data.ic.SplicingPwmData;
 import org.monarchinitiative.squirls.core.scoring.AGEZSplicingAnnotator;
+import org.monarchinitiative.squirls.core.scoring.Annotatable;
 import org.monarchinitiative.squirls.core.scoring.SplicingAnnotator;
 import org.monarchinitiative.squirls.core.scoring.calculators.conservation.BigWigAccessor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,7 +31,9 @@ import java.util.Map;
 @SpringBootTest(classes = TestDataSourceConfig.class)
 public class GenerateSplicingAnnotatorValues {
 
-    private static final Path PHYLOP = Path.of("/Users/danisd/data/threes/hg19.100way.phyloP100way.bw");
+    //    private static final Path PHYLOP = Path.of("/Users/danisd/data/threes/hg19.100way.phyloP100way.bw");
+    private static final Path PHYLOP = Path.of("/home/ielis/dub/bigwig/hg19.100way.phyloP100way.bw");
+//    private static final Path PHYLOP = Path.of("hg19.100way.phyloP100way.bw");
 
     private static final ReferenceDictionary RD = HG19RefDictBuilder.build();
     /*
@@ -47,6 +55,11 @@ public class GenerateSplicingAnnotatorValues {
     @Qualifier("hexamerMap")
     public Map<String, Double> hexamerMap;
 
+    @Autowired
+    public JannovarData jannovarData;
+
+    private VariantAnnotator variantAnnotator;
+
     private SplicingAnnotator annotator;
 
     @BeforeAll
@@ -54,34 +67,90 @@ public class GenerateSplicingAnnotatorValues {
         ACCESSOR = new BigWigAccessor(PHYLOP);
     }
 
+    private static void printFeatureMap(Annotatable annotatable) {
+        annotatable.getFeatureMap().entrySet()
+                .stream().sorted(Map.Entry.comparingByKey())
+                .forEach(e -> System.err.printf("%s=%s\n", e.getKey(), e.getValue()));
+    }
+
     @BeforeEach
     public void setUp() {
+        variantAnnotator = new VariantAnnotator(jannovarData.getRefDict(), jannovarData.getChromosomes(), new AnnotationBuilderOptions());
         annotator = new AGEZSplicingAnnotator(splicingPwmData, hexamerMap, septamerMap, ACCESSOR);
     }
 
     @Test
-    public void annotateBRCA2Variant() {
-        final GenomeVariant variant = new GenomeVariant(new GenomePosition(RD, Strand.FWD, 13, 32_930_748, PositionType.ONE_BASED),
-                "T", "G");
+    public void BRCA2DonorExon15plus2QUID() throws Exception {
+        WritableSplicingAllele allele = VariantsForTesting.BRCA2DonorExon15plus2QUID(RD, variantAnnotator);
+        SplicingPredictionData annotatable = annotator.annotate(allele.getPrimaryPrediction());
 
-        final SimpleAnnotatable ann = new SimpleAnnotatable(variant, Transcripts.brca2Transcripts(RD).get(0), Sequences.getBrca2Exon15Sequence(RD));
-
-        final SimpleAnnotatable annotate = annotator.annotate(ann);
-        annotate.getFeatureMap().entrySet()
-                .stream().sorted(Map.Entry.comparingByKey())
-                .forEach(e -> System.err.printf("%s=%s\n", e.getKey(), e.getValue()));
+        printFeatureMap(annotatable);
     }
 
     @Test
-    public void annotateTSC2AcceptorExon11Minus3Variant() {
-        final GenomeVariant variant = new GenomeVariant(new GenomePosition(RD, Strand.FWD, 16, 2_110_668, PositionType.ONE_BASED),
-                "C", "G");
+    public void ALPLDonorExon7Minus2() throws Exception {
+        WritableSplicingAllele allele = VariantsForTesting.ALPLDonorExon7Minus2(RD, variantAnnotator);
+        SplicingPredictionData annotatable = annotator.annotate(allele.getPrimaryPrediction());
 
-        final SimpleAnnotatable ann = new SimpleAnnotatable(variant, Transcripts.tsc2Transcripts(RD).get(0), Sequences.getTsc2Exon11Sequence(RD));
+        printFeatureMap(annotatable);
+    }
 
-        final SimpleAnnotatable annotate = annotator.annotate(ann);
-        annotate.getFeatureMap().entrySet()
-                .stream().sorted(Map.Entry.comparingByKey())
-                .forEach(e -> System.err.printf("%s=%s\n", e.getKey(), e.getValue()));
+    @Test
+    public void HBBcodingExon1UpstreamCrypticInCanonical() throws Exception {
+        WritableSplicingAllele allele = VariantsForTesting.HBBcodingExon1UpstreamCrypticInCanonical(RD, variantAnnotator);
+        SplicingPredictionData annotatable = annotator.annotate(allele.getPrimaryPrediction());
+
+        printFeatureMap(annotatable);
+    }
+
+    @Test
+    public void HBBcodingExon1UpstreamCryptic() throws Exception {
+        WritableSplicingAllele allele = VariantsForTesting.HBBcodingExon1UpstreamCryptic(RD, variantAnnotator);
+        SplicingPredictionData annotatable = annotator.annotate(allele.getPrimaryPrediction());
+
+        printFeatureMap(annotatable);
+    }
+
+    @Test
+    public void VWFAcceptorExon26minus2QUID() throws Exception {
+        WritableSplicingAllele allele = VariantsForTesting.VWFAcceptorExon26minus2QUID(RD, variantAnnotator);
+        SplicingPredictionData annotatable = annotator.annotate(allele.getPrimaryPrediction());
+
+        printFeatureMap(annotatable);
+    }
+
+
+    @Test
+    public void TSC2AcceptorExon11Minus3() throws Exception {
+        WritableSplicingAllele allele = VariantsForTesting.TSC2AcceptorExon11Minus3(RD, variantAnnotator);
+        SplicingPredictionData annotatable = annotator.annotate(allele.getPrimaryPrediction());
+
+        printFeatureMap(annotatable);
+    }
+
+
+    @Test
+    public void COL4A5AcceptorExon11Minus8() throws Exception {
+        WritableSplicingAllele allele = VariantsForTesting.COL4A5AcceptorExon11Minus8(RD, variantAnnotator);
+        SplicingPredictionData annotatable = annotator.annotate(allele.getPrimaryPrediction());
+
+        printFeatureMap(annotatable);
+    }
+
+    @Test
+    public void RYR1codingExon102crypticAcceptor() throws Exception {
+        WritableSplicingAllele allele = VariantsForTesting.RYR1codingExon102crypticAcceptor(RD, variantAnnotator);
+        SplicingPredictionData annotatable = annotator.annotate(allele.getPrimaryPrediction());
+
+        printFeatureMap(annotatable);
+    }
+
+
+    @Test
+    public void NF1codingExon9coding_SRE() throws Exception {
+        WritableSplicingAllele allele = VariantsForTesting.NF1codingExon9coding_SRE(RD, variantAnnotator);
+        SplicingPredictionData annotatable = annotator.annotate(allele.getPrimaryPrediction());
+
+        printFeatureMap(annotatable);
     }
 }

@@ -5,6 +5,7 @@ import de.charite.compbio.jannovar.annotation.builders.AnnotationBuilderOptions;
 import de.charite.compbio.jannovar.data.JannovarData;
 import org.junit.jupiter.api.BeforeEach;
 import org.monarchinitiative.squirls.cli.TestDataSourceConfig;
+import org.monarchinitiative.squirls.cli.writers.WritableSplicingAllele;
 import org.monarchinitiative.squirls.core.data.ic.SplicingPwmData;
 import org.monarchinitiative.vmvt.core.VmvtGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,5 +27,9 @@ public class GraphicsGeneratorTestBase {
     @BeforeEach
     public void setUp() {
         annotator = new VariantAnnotator(jannovarData.getRefDict(), jannovarData.getChromosomes(), new AnnotationBuilderOptions());
+    }
+
+    protected static VisualizableVariantAllele toVisualizableAllele(WritableSplicingAllele writableSplicingAllele) {
+        return new SimpleVisualizableVariantAllele(writableSplicingAllele.variantAnnotations(), writableSplicingAllele.squirlsPredictions());
     }
 }

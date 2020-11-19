@@ -5,11 +5,12 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.monarchinitiative.squirls.cli.TestDataSourceConfig;
+import org.monarchinitiative.squirls.cli.cmd.annotate_pos.AnnotatePosCommand;
 import org.monarchinitiative.squirls.core.VariantSplicingEvaluator;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest(classes = TestDataSourceConfig.class)
-@Disabled
+@Disabled // TODO - fix
 class AnnotatePosCommandTest {
 
     @Mock
@@ -19,7 +20,7 @@ class AnnotatePosCommandTest {
 
     @BeforeEach
     void setUp() {
-        cmd = new AnnotatePosCommand(evaluator);
+        cmd = new AnnotatePosCommand();
     }
 
     @Test

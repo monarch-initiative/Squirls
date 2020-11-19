@@ -1,6 +1,11 @@
 package org.monarchinitiative.squirls.cli.visualization.panel;
 
-import org.monarchinitiative.squirls.cli.visualization.*;
+import de.charite.compbio.jannovar.annotation.Annotation;
+import org.monarchinitiative.squirls.cli.visualization.AbstractGraphicsGenerator;
+import org.monarchinitiative.squirls.cli.visualization.MissingFeatureException;
+import org.monarchinitiative.squirls.cli.visualization.VisualizableVariantAllele;
+import org.monarchinitiative.squirls.cli.visualization.selector.VisualizationContext;
+import org.monarchinitiative.squirls.cli.visualization.selector.VisualizationContextSelector;
 import org.monarchinitiative.squirls.core.SplicingPredictionData;
 import org.monarchinitiative.squirls.core.data.ic.SplicingPwmData;
 import org.monarchinitiative.vmvt.core.VmvtGenerator;
@@ -10,8 +15,11 @@ import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 import org.thymeleaf.templatemode.TemplateMode;
 import org.thymeleaf.templateresolver.ClassLoaderTemplateResolver;
+import xyz.ielis.hyperutil.reference.fasta.GenomeSequenceAccessor;
 
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * This graphics generator makes graphics for the splice variant. The graphics generation is delegated to the
@@ -21,16 +29,19 @@ public class PanelGraphicsGenerator extends AbstractGraphicsGenerator {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PanelGraphicsGenerator.class);
 
+    private static final AnnotationComparator TX_COMPARATOR = new AnnotationComparator();
+
     private final TemplateEngine templateEngine;
 
     public PanelGraphicsGenerator(VmvtGenerator vmvtGenerator,
                                   SplicingPwmData splicingPwmData,
-                                  VisualizationContextSelector contextSelector) {
-        super(vmvtGenerator, splicingPwmData, contextSelector);
+                                  VisualizationContextSelector contextSelector,
+                                  GenomeSequenceAccessor genomeSequenceAccessor) {
+        super(vmvtGenerator, splicingPwmData, contextSelector, genomeSequenceAccessor);
 
         ClassLoaderTemplateResolver templateResolver = new ClassLoaderTemplateResolver();
         templateResolver.setTemplateMode(TemplateMode.HTML);
-        templateResolver.setPrefix("templates/");
+        templateResolver.setPrefix("templates/panel/");
         templateResolver.setSuffix(".html");
         templateResolver.setCacheable(true);
 
@@ -39,15 +50,16 @@ public class PanelGraphicsGenerator extends AbstractGraphicsGenerator {
     }
 
     @Override
-    public String generateGraphics(VisualizedVariant data) {
+    public String generateGraphics(VisualizableVariantAllele visualizableAllele) {
         /*
         To generate graphics, we first determine graphics type (visualization context).
         Then, we select the relevant parts of the splicing data.
         Finally, we process the data using appropriate template and return HTML
          */
 
-        final SplicingPredictionData prediction = data.getPrimaryPrediction();
-        final Map<String, Double> featureMap = prediction.getFeatureMap();
+        SplicingPredictionData prediction = visualizableAllele.getPrimaryPrediction();
+        Map<String, Double> featureMap = prediction.getFeatureMap();
+
 
         // 0 - select what visualization context and template name
         final String templateName;
@@ -77,15 +89,18 @@ public class PanelGraphicsGenerator extends AbstractGraphicsGenerator {
                     return EMPTY_SVG_IMAGE;
             }
         } catch (MissingFeatureException e) {
-            LOGGER.warn("Missing feature "); // TODO: 15. 10. 2020 add info
+            LOGGER.warn("Cannot generate graphics for {}. {}", visualizableAllele.genomeVariant(), e.getMessage());
             return EMPTY_SVG_IMAGE;
         }
 
         // 1 - prepare context for the template
-        final Context context = new Context();
-        context.setVariable("features", featureMap);
-        context.setVariable("variantData", data);
-        context.setVariable("annotations", data.getAnnotations());
+        Context context = new Context();
+        List<Annotation> annotations = visualizableAllele.variantAnnotations().getAnnotations().stream()
+                .sorted(TX_COMPARATOR)
+                .collect(Collectors.toList());
+        context.setVariable("variantAnnotations", annotations);
+        context.setVariable("primaryPrediction", prediction);
+        context.setVariable("variantAllele", visualizableAllele);
         context.setVariable("graphics", graphics);
 
         return templateEngine.process(templateName, context);

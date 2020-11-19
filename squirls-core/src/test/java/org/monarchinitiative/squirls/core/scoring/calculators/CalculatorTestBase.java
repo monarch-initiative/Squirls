@@ -49,10 +49,7 @@ public class CalculatorTestBase {
     public void setUp() throws Exception {
         st = PojosForTesting.getTranscriptWithThreeExons(rd);
         sequenceInterval = PojosForTesting.getSequenceIntervalForTranscriptWithThreeExons(rd);
-        sequenceOnOtherChrom = SequenceInterval.builder()
-                .interval(new GenomeInterval(rd, Strand.FWD, 2, 0, 4))
-                .sequence("ACGT")
-                .build();
+        sequenceOnOtherChrom = SequenceInterval.of(new GenomeInterval(rd, Strand.FWD, 2, 0, 4), "ACGT");
     }
 
 }

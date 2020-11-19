@@ -48,10 +48,7 @@ class SplicingCalculatorImplTest {
         String mockSeq = new String(chars);
         final GenomeInterval gi = new GenomeInterval(referenceDictionary, Strand.FWD, 2, 9_900, 20_100);
         when(accessor.fetchSequence(gi))
-                .thenReturn(Optional.of(SequenceInterval.builder()
-                        .interval(gi)
-                        .sequence(mockSeq)
-                        .build()));
+                .thenReturn(Optional.of(SequenceInterval.of(gi, mockSeq)));
     }
 
     @Test
@@ -98,10 +95,7 @@ class SplicingCalculatorImplTest {
         String mockSeq = new String(chars);
         final GenomeInterval gi = new GenomeInterval(referenceDictionary, Strand.FWD, 2, 0, 300);
         when(accessor.fetchSequence(gi))
-                .thenReturn(Optional.of(SequenceInterval.builder()
-                        .interval(gi)
-                        .sequence(mockSeq)
-                        .build()));
+                .thenReturn(Optional.of(SequenceInterval.of(gi, mockSeq)));
         TranscriptModel tm = PojosForTesting.makeSmallTranscriptModel(referenceDictionary);
 
         Optional<SplicingTranscript> stOptional = instance.calculate(tm);

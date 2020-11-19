@@ -146,6 +146,7 @@ class Transcripts {
                 .addExon(SplicingExon.builder()
                         .setInterval(new GenomeInterval(rd, Strand.FWD, 17, 29_701_031, 29_704_695, PositionType.ONE_BASED))
                         .build())
+                .check(true)
                 .build();
     }
 
@@ -208,6 +209,7 @@ class Transcripts {
                 .addExon(SplicingExon.builder()
                         .setInterval(new GenomeInterval(rd, Strand.FWD, 9, 136227931, 136228034))
                         .build())
+                .check(true)
                 .build();
     }
 
@@ -276,6 +278,7 @@ class Transcripts {
                 .addExon(SplicingExon.builder()
                         .setInterval(new GenomeInterval(rd, Strand.FWD, 9, 136227931, 136228034))
                         .build())
+                .check(true)
                 .build();
     }
 
@@ -320,24 +323,24 @@ class Transcripts {
                         .build())
                 // 5
                 .addExon(SplicingExon.builder()
-                        .setInterval(new GenomeInterval(rd, Strand.FWD, 1, 21889603, 21889777, PositionType.ONE_BASED))
+                        .setInterval(new GenomeInterval(rd, Strand.FWD, 1, 21_889_603, 21_889_777, PositionType.ONE_BASED))
                         .build())
                 .addIntron(SplicingIntron.builder()
-                        .setInterval(new GenomeInterval(rd, Strand.FWD, 1, 21889777, 21890533))
+                        .setInterval(new GenomeInterval(rd, Strand.FWD, 1, 21_889_777, 21_890_533))
                         .build())
                 // 6
                 .addExon(SplicingExon.builder()
-                        .setInterval(new GenomeInterval(rd, Strand.FWD, 1, 21890534, 21894740, PositionType.ONE_BASED))
+                        .setInterval(new GenomeInterval(rd, Strand.FWD, 1, 21_890_534, 21_890_709, PositionType.ONE_BASED))
                         .build())
                 .addIntron(SplicingIntron.builder()
-                        .setInterval(new GenomeInterval(rd, Strand.FWD, 1, 21894740, 21894596))
+                        .setInterval(new GenomeInterval(rd, Strand.FWD, 1, 21_890_709, 21_894_596))
                         .build())
                 // 7
                 .addExon(SplicingExon.builder()
-                        .setInterval(new GenomeInterval(rd, Strand.FWD, 1, 21894597, 21890709, PositionType.ONE_BASED))
+                        .setInterval(new GenomeInterval(rd, Strand.FWD, 1, 21_894_597, 21_894_740, PositionType.ONE_BASED))
                         .build())
                 .addIntron(SplicingIntron.builder()
-                        .setInterval(new GenomeInterval(rd, Strand.FWD, 1, 21890709, 21896797))
+                        .setInterval(new GenomeInterval(rd, Strand.FWD, 1, 21_894_740, 21_896_797))
                         .build())
                 // 8
                 .addExon(SplicingExon.builder()
@@ -371,6 +374,7 @@ class Transcripts {
                 .addExon(SplicingExon.builder()
                         .setInterval(new GenomeInterval(rd, Strand.FWD, 1, 21903876, 21904903, PositionType.ONE_BASED))
                         .build())
+                .check(true)
                 .build();
     }
 
@@ -404,6 +408,7 @@ class Transcripts {
                 .addExon(SplicingExon.builder()
                         .setInterval(new GenomeInterval(rd, Strand.FWD, 16, 2_138_447, 2_139_492, PositionType.ONE_BASED))
                         .build())
+                .check(true)
                 .build();
     }
 
@@ -437,6 +442,7 @@ class Transcripts {
                 .addExon(SplicingExon.builder()
                         .setInterval(new GenomeInterval(rd, Strand.FWD, 23, 107_939_527, 107_940_775, PositionType.ONE_BASED))
                         .build())
+                .check(true)
                 .build();
     }
 
@@ -470,6 +476,7 @@ class Transcripts {
                 .addExon(SplicingExon.builder()
                         .setInterval(new GenomeInterval(rd, Strand.FWD, 19, 39_077_965, 39_078_204, PositionType.ONE_BASED))
                         .build())
+                .check(true)
                 .build();
     }
 
@@ -503,6 +510,7 @@ class Transcripts {
                 .addExon(SplicingExon.builder()
                         .setInterval(new GenomeInterval(rd, Strand.FWD, 11, 5_246_694, 5_246_956, PositionType.ONE_BASED).withStrand(Strand.REV))
                         .build())
+                .check(true)
                 .build();
     }
 
@@ -536,6 +544,7 @@ class Transcripts {
                 .addExon(SplicingExon.builder()
                         .setInterval(new GenomeInterval(rd, Strand.FWD, 13, 32_972_299, 32_973_809, PositionType.ONE_BASED))
                         .build())
+                .check(true)
                 .build();
     }
 
@@ -570,6 +579,7 @@ class Transcripts {
                 .addExon(SplicingExon.builder()
                         .setInterval(new GenomeInterval(rd, Strand.FWD, 12, 6_058_040, 6_058_369, PositionType.ONE_BASED).withStrand(Strand.REV))
                         .build())
+                .check(true)
                 .build();
     }
 }

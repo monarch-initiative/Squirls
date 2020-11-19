@@ -7,7 +7,7 @@ import java.util.Optional;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 
-class VariantChangeTest {
+public class VariantChangeTest {
 
     @Test
     void parseSnp() {

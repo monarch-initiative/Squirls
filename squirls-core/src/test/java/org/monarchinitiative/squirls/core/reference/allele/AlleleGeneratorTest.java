@@ -35,19 +35,16 @@ class AlleleGeneratorTest {
 
     @BeforeEach
     void setUp() {
-        sequence = SequenceInterval.builder()
-                .interval(new GenomeInterval(rd, Strand.FWD, 1, 0, 60))
-                .sequence("aaaaaCCCCCgggggTTTTTaaaaaCCCCCgggggTTTTTaaaaaCCCCCgggggTTTTT")
-                .build();
-        donorSi = SequenceInterval.builder()
-                .interval(new GenomeInterval(rd, Strand.FWD, 1, 93, 110))
-                .sequence("CGTGATGgtaggtgaaa")
-                .build();
+        sequence = SequenceInterval.of(
+                new GenomeInterval(rd, Strand.FWD, 1, 0, 60),
+                "aaaaaCCCCCgggggTTTTTaaaaaCCCCCgggggTTTTTaaaaaCCCCCgggggTTTTT");
+        donorSi = SequenceInterval.of(
+                new GenomeInterval(rd, Strand.FWD, 1, 93, 110),
+                "CGTGATGgtaggtgaaa");
 
-        acceptorSi = SequenceInterval.builder()
-                .interval(new GenomeInterval(rd, Strand.FWD, 1, 70, 110))
-                .sequence("atggcaaacactgttccttctctctttcagGTGGCCCTGC")
-                .build();
+        acceptorSi = SequenceInterval.of(
+                new GenomeInterval(rd, Strand.FWD, 1, 70, 110),
+                "atggcaaacactgttccttctctctttcagGTGGCCCTGC");
 
         anchor = new GenomePosition(rd, Strand.FWD, 1, 100);
         generator = new AlleleGenerator(splicingParameters);
@@ -335,9 +332,9 @@ class AlleleGeneratorTest {
         assertThat(snippet, is(nullValue()));
 
         // not enough sequence returns null
-        final SequenceInterval small = SequenceInterval.builder()
-                .interval(new GenomeInterval(rd, Strand.FWD, 1, 0, 1)).sequence("C")
-                .build();
+        final SequenceInterval small = SequenceInterval.of(
+                new GenomeInterval(rd, Strand.FWD, 1, 0, 1),
+                "C");
         snippet = AlleleGenerator.getPaddedAllele(variant.getGenomeInterval(), small, variant.getRef(), 1);
         assertThat(snippet, is(nullValue()));
     }

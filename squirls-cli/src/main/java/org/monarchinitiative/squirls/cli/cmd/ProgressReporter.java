@@ -3,6 +3,7 @@ package org.monarchinitiative.squirls.cli.cmd;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.text.NumberFormat;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -10,7 +11,13 @@ import java.util.concurrent.atomic.AtomicReference;
 
 public class ProgressReporter {
 
+    protected static final NumberFormat NUMBER_FORMAT;
     private static final Logger LOGGER = LoggerFactory.getLogger(ProgressReporter.class);
+
+    static {
+        NUMBER_FORMAT = NumberFormat.getNumberInstance();
+        NUMBER_FORMAT.setMaximumFractionDigits(2);
+    }
 
     protected final Instant begin;
     /**
@@ -31,19 +38,24 @@ public class ProgressReporter {
     public <T> void logItem(T entry) {
         int current = count.incrementAndGet();
         if (current % tick == 0) {
-            final Instant end = Instant.now();
-            final Instant begin = localBegin.getAndSet(end);
-            final Duration duration = Duration.between(begin, end);
-            final long ms = duration.toMillis();
-            LOGGER.info("Processed {} items at {} items/s", current, String.format("%.2f", ((double) tick * 1000) / ms));
+            Instant end = Instant.now();
+            Instant begin = localBegin.getAndSet(end);
+            Duration duration = Duration.between(begin, end);
+            long ms = duration.toMillis();
+            LOGGER.info("Processed {} items at {} items/s", NUMBER_FORMAT.format(current), NUMBER_FORMAT.format(((double) tick * 1000) / ms));
         }
     }
 
     public Runnable summarize() {
         return () -> {
             Duration duration = Duration.between(begin, Instant.now());
-            long ms = duration.toMillis();
-            LOGGER.info("Processed {} items in {}m {}s ({} ms)", count.get(), (ms / 1000) / 60 % 60, ms / 1000 % 60, ms);
+            long totalMillis = duration.toMillis();
+            double items = count.get();
+            double itemsPerSecond = (items * 1000) / totalMillis;
+            long mins = (totalMillis / 1000) / 60 % 60;
+            long seconds = totalMillis / 1000 % 60;
+            LOGGER.info("Processed {} items in {}m {}s ({} totalMillis) at {} items/s",
+                    NUMBER_FORMAT.format(count.get()), mins, seconds, totalMillis, NUMBER_FORMAT.format(itemsPerSecond));
         };
     }
 }

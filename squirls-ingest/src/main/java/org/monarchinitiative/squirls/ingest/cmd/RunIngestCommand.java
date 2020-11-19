@@ -6,10 +6,12 @@ import net.sourceforge.argparse4j.inf.Subparsers;
 import org.monarchinitiative.squirls.core.SquirlsException;
 import org.monarchinitiative.squirls.ingest.IngestProperties;
 import org.monarchinitiative.squirls.ingest.SquirlsDataBuilder;
+import org.monarchinitiative.squirls.ingest.data.ZipCompressionWrapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
+import java.io.File;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -74,24 +76,33 @@ public class RunIngestCommand extends IngestCommand {
         LOGGER.info("Running `run-ingest` command");
 
         // 0 - parse command line
-        final Path buildDirPath = Paths.get(args.getString("build_dir"));
+        Path buildDirPath = Paths.get(args.getString("build_dir"));
+        if (!buildDirPath.toFile().isDirectory()) {
+            LOGGER.error("Not a directory: {}", buildDirPath);
+            return;
+        }
+        if (!buildDirPath.toFile().canWrite()) {
+            LOGGER.error("Directory not writable: {}", buildDirPath);
+            return;
+        }
+
         LOGGER.info("Build directory: `{}`", buildDirPath);
 
-        final String version = args.getString("version");
-        final String assembly = args.getString("assembly");
+        String version = args.getString("version");
+        String assembly = args.getString("assembly");
         LOGGER.info("Using version `{}` and genome assembly `{}`", version, assembly);
 
         // 1 - create build folder
-        final URL genomeUrl = new URL(ingestProperties.getFastaUrl());
-        final URL phylopUrl = new URL(ingestProperties.getPhylopUrl());
+        URL genomeUrl = new URL(ingestProperties.getFastaUrl());
+        URL phylopUrl = new URL(ingestProperties.getPhylopUrl());
 
-        final String versionedAssembly = getVersionedAssembly(assembly, version);
-        final Path versionedAssemblyBuildPath = buildDirPath.resolve(versionedAssembly);
+        String versionedAssembly = getVersionedAssembly(assembly, version);
+        Path versionedAssemblyBuildPath = buildDirPath.resolve(versionedAssembly);
         Path genomeBuildDir = Files.createDirectories(versionedAssemblyBuildPath);
         LOGGER.info("Building resources in `{}`", versionedAssemblyBuildPath);
 
         // 2 - read classifier data
-        final Map<String, String> classifiers = ingestProperties.getClassifiers().stream()
+        Map<String, String> classifiers = ingestProperties.getClassifiers().stream()
                 .collect(Collectors.toMap(IngestProperties.ClassifierData::getVersion, IngestProperties.ClassifierData::getClassifierPath));
 
         // 3 - build database
@@ -101,5 +112,20 @@ public class RunIngestCommand extends IngestCommand {
                 Path.of(ingestProperties.getHexamerTsvPath()),
                 Path.of(ingestProperties.getSeptamerTsvPath()),
                 classifiers, versionedAssembly);
+
+        // 4 - compress all the files into a single ZIP file
+        File[] resources = genomeBuildDir.toFile().listFiles();
+        if (resources == null) {
+            LOGGER.warn("Resources are null: {}", buildDirPath);
+            return;
+        }
+        Path zipPath = buildDirPath.resolve(versionedAssembly + ".zip");
+        LOGGER.info("Compressing the resource files into a single ZIP file `{}`", zipPath);
+        try (ZipCompressionWrapper wrapper = new ZipCompressionWrapper(zipPath.toFile())) {
+            for (File resource : resources) {
+                LOGGER.info("Compressing `{}`", resource);
+                wrapper.addResource(resource, resource.getName());
+            }
+        }
     }
 }

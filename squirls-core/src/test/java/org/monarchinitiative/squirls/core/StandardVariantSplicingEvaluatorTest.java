@@ -67,10 +67,7 @@ class StandardVariantSplicingEvaluatorTest {
         RD = rdBuilder.build();
         char[] chars = new char[136_230_000 - 136_210_000 + 1];
         Arrays.fill(chars, 'A'); // the sequence does not really matter since we use mocks
-        SI = SequenceInterval.builder()
-                .interval(new GenomeInterval(RD, Strand.FWD, 9, 136_210_000, 136_230_000, PositionType.ONE_BASED))
-                .sequence(new String(chars))
-                .build();
+        SI = SequenceInterval.of(new GenomeInterval(RD, Strand.FWD, 9, 136_210_000, 136_230_000, PositionType.ONE_BASED), new String(chars));
     }
 
     @BeforeEach
@@ -100,22 +97,20 @@ class StandardVariantSplicingEvaluatorTest {
         when(accessor.fetchSequence(any(GenomeInterval.class))).thenReturn(Optional.of(SI));
 
         // 2 - splicing annotator
-        final StandardSplicingPredictionData plain = StandardSplicingPredictionData.of(variant, stx, SI);
-        final StandardSplicingPredictionData annotated = StandardSplicingPredictionData.of(variant, stx, SI);
+        SplicingPredictionData plain = StandardSplicingPredictionData.of(variant, stx, SI);
+        SplicingPredictionData annotated = StandardSplicingPredictionData.of(variant, stx, SI);
         annotated.putFeature("donor_offset", 5);
         annotated.putFeature("acceptor_offset", 1234); // not real
-
         when(annotator.annotate(plain)).thenReturn(annotated);
 
         // 3 - classifier
         StandardPrediction prediction = StandardPrediction.of(
                 PartialPrediction.of("donor", .6, .7),
                 PartialPrediction.of("acceptor", .1, .6));
-        final StandardSplicingPredictionData predicted = StandardSplicingPredictionData.of(variant, stx, SI);
+        SplicingPredictionData predicted = NoRefSplicingPredictionData.of(variant, stx);
         predicted.putFeature("donor_offset", 5);
         predicted.putFeature("acceptor_offset", 1234); // not real
         predicted.setPrediction(prediction);
-
         when(classifier.predict(annotated)).thenReturn(predicted);
 
         // act
@@ -125,7 +120,15 @@ class StandardVariantSplicingEvaluatorTest {
         // assert
         assertThat(predictions.size(), is(1));
         assertThat(predictions, hasKey("NM_017503.5"));
-        assertThat(predictions, hasValue(predicted));
+
+        SplicingPredictionData actual = predictions.get("NM_017503.5");
+        assertThat(actual.getVariant(), is(variant));
+        assertThat(actual.getTranscript(), is(stx));
+        assertThat(actual.getSequence(), is(SequenceInterval.empty()));
+        assertThat(actual.getFeatureAsInt("donor_offset"), is(5));
+        assertThat(actual.getFeatureAsInt("acceptor_offset"), is(1234));
+        assertThat(actual.getPrediction(), is(prediction));
+        assertThat(actual.getMetadata(), is(nullValue()));
 
         verify(accessor).fetchSequence(new GenomeInterval(RD, Strand.FWD, 9, 136_223_176, 136_228_284, PositionType.ONE_BASED));
         verify(annotator).annotate(plain);
@@ -194,22 +197,31 @@ class StandardVariantSplicingEvaluatorTest {
         when(annotator.annotate(plain)).thenReturn(annotated);
 
         // 3 - classifier
-        final SplicingPredictionData predicted = StandardSplicingPredictionData.of(variant, stx, SI);
+        StandardPrediction prediction = StandardPrediction.of(
+                PartialPrediction.of("donor", .6, .7),
+                PartialPrediction.of("acceptor", .1, .6));
+        SplicingPredictionData predicted = StandardSplicingPredictionData.of(variant, stx, SI);
         predicted.putFeature("donor_offset", 5);
         predicted.putFeature("acceptor_offset", 1234); // not real
-        predicted.setPrediction(StandardPrediction.of(
-                PartialPrediction.of("donor", .6, .7),
-                PartialPrediction.of("acceptor", .1, .6)));
+        predicted.setPrediction(prediction);
 
         when(classifier.predict(annotated)).thenReturn(predicted);
 
         // act
-        final Map<String, SplicingPredictionData> predictionMap = evaluator.evaluate("chr9", 136_223_949, "G", "C");
+        final Map<String, SplicingPredictionData> predictions = evaluator.evaluate("chr9", 136_223_949, "G", "C");
 
         // assert
-        assertThat(predictionMap.size(), is(1));
-        assertThat(predictionMap, hasKey("NM_017503.5"));
-        assertThat(predictionMap, hasValue(predicted));
+        assertThat(predictions.size(), is(1));
+        assertThat(predictions, hasKey("NM_017503.5"));
+
+        SplicingPredictionData actual = predictions.get("NM_017503.5");
+        assertThat(actual.getVariant(), is(variant));
+        assertThat(actual.getTranscript(), is(stx));
+        assertThat(actual.getSequence(), is(SequenceInterval.empty()));
+        assertThat(actual.getFeatureAsInt("donor_offset"), is(5));
+        assertThat(actual.getFeatureAsInt("acceptor_offset"), is(1234));
+        assertThat(actual.getPrediction(), is(prediction));
+        assertThat(actual.getMetadata(), is(nullValue()));
 
         verify(accessor).fetchSequence(new GenomeInterval(RD, Strand.FWD, 9, 136_223_176, 136_228_284, PositionType.ONE_BASED));
         verify(annotator).annotate(plain);

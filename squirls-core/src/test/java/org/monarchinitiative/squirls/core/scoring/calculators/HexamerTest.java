@@ -42,16 +42,15 @@ class HexamerTest extends CalculatorTestBase {
      */
     @Test
     void realVariant() {
-        final SequenceInterval si = SequenceInterval.builder()
-                .interval(new GenomeInterval(rd, Strand.FWD, 1, 0, 125))
-                .sequence("cccagGGT" +
+        final SequenceInterval si = SequenceInterval.of(
+                new GenomeInterval(rd, Strand.FWD, 1, 0, 125),
+                "cccagGGT" +
                         "C" + // c.520C>T
                         "GTCAGACACCAAAACATATTTCTGAAAGTCTAGGAGCTGAGGTGGATCCTGATATGTCTT" +
                         "G" + // c.581G>A
                         "GTCAAGTTCTTTAGCTACACCACCCACCCTTAGTT" +
                         "C" + // c.617C>G
-                        "TACTGTGCTCATAGgtaat")
-                .build();
+                        "TACTGTGCTCATAGgtaat");
         // representing the c.520C>T variant from Figure 3
         final GenomeVariant first = new GenomeVariant(new GenomePosition(rd, Strand.FWD, 1, 9, PositionType.ONE_BASED), "C", "T");
         double score = calculator.score(first, st, si);
