@@ -1,7 +1,5 @@
 package org.monarchinitiative.squirls.cli.writers;
 
-import java.util.Objects;
-
 /**
  * Container for storing statistics of the analysis.
  */
@@ -10,92 +8,23 @@ public class AnalysisStats {
     private final int allVariants;
     private final int alleleCount;
     private final int annotatedAlleleCount;
-    private final int pathogenicAlleleCount;
 
-    private AnalysisStats(Builder builder) {
-        allVariants = builder.allVariants;
-        alleleCount = builder.alleleCount;
-        annotatedAlleleCount = builder.annotatedAlleleCount;
-        pathogenicAlleleCount = builder.pathogenicAlleleCount;
+    public AnalysisStats(int allVariants, int alleleCount, int annotatedAlleleCount) {
+        this.allVariants = allVariants;
+        this.alleleCount = alleleCount;
+        this.annotatedAlleleCount = annotatedAlleleCount;
     }
 
-    public static Builder builder() {
-        return new Builder();
-    }
 
-    public int getAllVariants() {
+    public int allVariants() {
         return allVariants;
     }
 
-    public int getAlleleCount() {
+    public int alleleCount() {
         return alleleCount;
     }
 
-    public int getAnnotatedAlleleCount() {
+    public int annotatedAlleleCount() {
         return annotatedAlleleCount;
-    }
-
-    public int getPathogenicAlleleCount() {
-        return pathogenicAlleleCount;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        AnalysisStats that = (AnalysisStats) o;
-        return allVariants == that.allVariants &&
-                alleleCount == that.alleleCount &&
-                annotatedAlleleCount == that.annotatedAlleleCount &&
-                pathogenicAlleleCount == that.pathogenicAlleleCount;
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(allVariants, alleleCount, annotatedAlleleCount, pathogenicAlleleCount);
-    }
-
-    @Override
-    public String toString() {
-        return "AnalysisStats{" +
-                "allVariants=" + allVariants +
-                ", alleleCount=" + alleleCount +
-                ", annotatedAlleleCount=" + annotatedAlleleCount +
-                ", pathogenicAlleleCount=" + pathogenicAlleleCount +
-                '}';
-    }
-
-    public static final class Builder {
-        private int allVariants;
-        private int alleleCount;
-        private int annotatedAlleleCount;
-        private int pathogenicAlleleCount;
-
-        private Builder() {
-        }
-
-        public Builder allVariants(int allVariants) {
-            this.allVariants = allVariants;
-            return this;
-        }
-
-        public Builder alleleCount(int alleleCount) {
-            this.alleleCount = alleleCount;
-            return this;
-        }
-
-        public Builder annotatedAlleleCount(int annotatedAlleleCount) {
-            this.annotatedAlleleCount = annotatedAlleleCount;
-            return this;
-        }
-
-        public Builder pathogenicAlleleCount(int pathogenicAlleleCount) {
-            this.pathogenicAlleleCount = pathogenicAlleleCount;
-            return this;
-        }
-
-        public AnalysisStats build() {
-            return new AnalysisStats(this);
-        }
     }
 }

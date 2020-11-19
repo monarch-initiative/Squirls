@@ -22,7 +22,7 @@ import java.util.Set;
 
 
 @SpringBootTest(classes = TestDataSourceConfig.class)
-class HtmlResultWriterTest {
+public class HtmlResultWriterTest {
 
     private static final Path OUTPATH = Paths.get("target/Sample192");
 
@@ -47,10 +47,10 @@ class HtmlResultWriterTest {
     }
 
     @BeforeEach
-    void setUp() throws Exception {
+    public void setUp() throws Exception {
         VariantAnnotator annotator = new VariantAnnotator(jannovarData.getRefDict(), jannovarData.getChromosomes(), new AnnotationBuilderOptions());
         resultWriter = new HtmlResultWriter(graphicsGenerator);
-        final ReferenceDictionary rd = jannovarData.getRefDict();
+        ReferenceDictionary rd = jannovarData.getRefDict();
 
         variantData = Set.of(
                 // donor
@@ -74,15 +74,10 @@ class HtmlResultWriterTest {
      * @throws Exception if anything fails
      */
     @Test
-    void writeResults() throws Exception {
+    public void writeResults() throws Exception {
         AnalysisResults results = AnalysisResults.builder()
                 .addAllSampleNames(List.of("Sample_192"))
-                .analysisStats(AnalysisStats.builder()
-                        .allVariants(100)
-                        .alleleCount(120)
-                        .annotatedAlleleCount(115)
-                        .pathogenicAlleleCount(2)
-                        .build())
+                .analysisStats(new AnalysisStats(100, 120, 110))
                 .settingsData(SettingsData.builder()
                         .inputPath("path/to/Sample_192.vcf")
                         .transcriptDb("refseq")

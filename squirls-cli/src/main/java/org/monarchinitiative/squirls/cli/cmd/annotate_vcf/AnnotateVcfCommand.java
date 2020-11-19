@@ -15,6 +15,7 @@ import de.charite.compbio.jannovar.reference.Strand;
 import htsjdk.samtools.util.CloseableIterator;
 import htsjdk.variant.variantcontext.Allele;
 import htsjdk.variant.variantcontext.VariantContext;
+import htsjdk.variant.variantcontext.VariantContextBuilder;
 import htsjdk.variant.vcf.VCFFileReader;
 import org.monarchinitiative.squirls.cli.Main;
 import org.monarchinitiative.squirls.cli.cmd.SquirlsCommand;
@@ -68,6 +69,20 @@ public class AnnotateVcfCommand extends SquirlsCommand {
             paramLabel = "path/to/output",
             description = "Prefix for the output files")
     public String outputPrefix;
+
+    private static Function<VariantContext, Collection<VariantContext>> meltToSingleAltVariants() {
+        return vc -> {
+            List<Allele> alts = vc.getAlternateAlleles();
+            List<VariantContext> contexts = new ArrayList<>(alts.size());
+            for (Allele alt : alts) {
+                contexts.add(new VariantContextBuilder(vc)
+                        .alleles(List.<Allele>of()) // delete alleles
+                        .alleles(List.of(vc.getReference(), alt))
+                        .make());
+            }
+            return contexts;
+        };
+    }
 
     /**
      * Split {@link VariantContext} into <em>alt</em> alleles and annotate each allele with Squirls and Jannovar.
@@ -147,11 +162,19 @@ public class AnnotateVcfCommand extends SquirlsCommand {
                 try (Stream<VariantContext> stream = variantIterator.stream()) {
                     stream.parallel()
                             .onClose(progressReporter.summarize())
-                            .peek(progressReporter::logItem)
+                            .peek(progressReporter::logVariant)
+
+                            .map(meltToSingleAltVariants())
+                            .flatMap(Collection::stream)
+                            .peek(progressReporter::logAllele)
 
                             .map(annotateVariant(evaluator, jd.getRefDict(), annotator))
                             .flatMap(Collection::stream)
-                            .peek(progressReporter::logAltAllele)
+                            .peek(wa -> {
+                                if (!wa.squirlsPredictions().isEmpty()) {
+                                    progressReporter.logAnnotatedAllele(wa);
+                                }
+                            })
 
                             .forEach(annotated::add);
                 }

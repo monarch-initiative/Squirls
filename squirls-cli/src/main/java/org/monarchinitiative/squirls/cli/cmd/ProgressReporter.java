@@ -24,9 +24,10 @@ public class ProgressReporter {
      * We report each n-th instance
      */
     private final int tick;
+
     private final AtomicReference<Instant> localBegin;
 
-    private final AtomicInteger count = new AtomicInteger(0);
+    protected final AtomicInteger alleleCount = new AtomicInteger(0);
 
     public ProgressReporter(int tick) {
         this.tick = tick;
@@ -35,14 +36,14 @@ public class ProgressReporter {
         LOGGER.info("Starting the analysis");
     }
 
-    public <T> void logItem(T entry) {
-        int current = count.incrementAndGet();
+    public <T> void logAllele(T allele) {
+        int current = alleleCount.incrementAndGet();
         if (current % tick == 0) {
             Instant end = Instant.now();
             Instant begin = localBegin.getAndSet(end);
             Duration duration = Duration.between(begin, end);
             long ms = duration.toMillis();
-            LOGGER.info("Processed {} items at {} items/s", NUMBER_FORMAT.format(current), NUMBER_FORMAT.format(((double) tick * 1000) / ms));
+            LOGGER.info("Processed {} alleles at {} items/s", NUMBER_FORMAT.format(current), NUMBER_FORMAT.format(((double) tick * 1000) / ms));
         }
     }
 
@@ -50,12 +51,12 @@ public class ProgressReporter {
         return () -> {
             Duration duration = Duration.between(begin, Instant.now());
             long totalMillis = duration.toMillis();
-            double items = count.get();
+            double items = alleleCount.get();
             double itemsPerSecond = (items * 1000) / totalMillis;
             long mins = (totalMillis / 1000) / 60 % 60;
             long seconds = totalMillis / 1000 % 60;
-            LOGGER.info("Processed {} items in {}m {}s ({} totalMillis) at {} items/s",
-                    NUMBER_FORMAT.format(count.get()), mins, seconds, totalMillis, NUMBER_FORMAT.format(itemsPerSecond));
+            LOGGER.info("Processed {} alleles in {}m {}s ({} totalMillis) at {} items/s",
+                    NUMBER_FORMAT.format(alleleCount.get()), mins, seconds, totalMillis, NUMBER_FORMAT.format(itemsPerSecond));
         };
     }
 }

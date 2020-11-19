@@ -7,36 +7,26 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 class AnnotateVcfProgressReporter extends ProgressReporter {
 
+    private final AtomicInteger variantCount = new AtomicInteger();
+
+    private final AtomicInteger annotatedAllele = new AtomicInteger();
+
     /**
      * We report each n-th instance
      */
-    private final AtomicInteger allVariantCount = new AtomicInteger();
-    private final AtomicInteger altAlleleCount = new AtomicInteger();
-    private final AtomicInteger annotatedAltAlleleCount = new AtomicInteger();
-    private final AtomicInteger pathogenicAltAlleleCount = new AtomicInteger();
-
     AnnotateVcfProgressReporter(int tick) {
         super(tick);
     }
 
-    public <T> void logAltAllele(T item) {
-        altAlleleCount.incrementAndGet();
+    public <T> void logVariant(T item) {
+        variantCount.incrementAndGet();
     }
 
-    public <T> void logAnnotatedAllele(T variantDataBox) {
-        annotatedAltAlleleCount.incrementAndGet();
-    }
-
-    public <T> void logEligibleAllele(T variantDataBox) {
-        pathogenicAltAlleleCount.incrementAndGet();
+    public <T> void logAnnotatedAllele(T item) {
+        annotatedAllele.incrementAndGet();
     }
 
     public AnalysisStats getAnalysisStats() {
-        return AnalysisStats.builder()
-                .allVariants(allVariantCount.get())
-                .alleleCount(altAlleleCount.get())
-                .annotatedAlleleCount(annotatedAltAlleleCount.get())
-                .pathogenicAlleleCount(pathogenicAltAlleleCount.get())
-                .build();
+        return new AnalysisStats(variantCount.get(), alleleCount.get(), annotatedAllele.get());
     }
 }

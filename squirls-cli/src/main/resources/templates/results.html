@@ -124,20 +124,20 @@
         <div class="panel-body">
             <table class="table table-striped">
                 <tr>
-                    <th>Info</th>
-                    <th>Count</th>
-                </tr>
-                <tr>
                     <td>number of variants in the VCF file</td>
-                    <td th:text="${stats.getAllVariants()}">100</td>
+                    <td th:text="${stats.allVariants()}">100</td>
                 </tr>
                 <tr>
                     <td>number of <em>ALT</em> alleles in the VCF file</td>
-                    <td th:text="${stats.alleleCount}">120</td>
+                    <td th:text="${stats.alleleCount()}">120</td>
                 </tr>
                 <tr>
-                    <td>number of alleles with &gt;1 functional annotation</td>
-                    <td th:text="${stats.annotatedAlleleCount}">110</td>
+                    <td>number of <em>ALT</em> alleles annotated by Squirls</td>
+                    <td th:text="${stats.annotatedAlleleCount()}">110</td>
+                </tr>
+                <tr>
+                    <td>number of reported variants</td>
+                    <td th:text="${variants.size()}">100</td>
                 </tr>
             </table>
         </div>
@@ -178,7 +178,7 @@
         </div>
         <div class="panel-body">
             <p>
-                <b>Squirls</b> is a desktop Java application that performs prediction of deleteriousness of genomic variants with respect to mRNA splicing.
+                <em>SQUIRLS</em> is a desktop Java application that performs prediction of deleteriousness of genomic variants with respect to mRNA splicing.
                 Variants are prioritized based on interpretable splicing features using a machine learning algorithm.
                 The functional annotation code is based on <a href="https://github.com/charite/jannovar/">Jannovar</a>.
             </p>
