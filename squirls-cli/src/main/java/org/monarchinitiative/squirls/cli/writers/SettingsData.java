@@ -46,7 +46,6 @@ public class SettingsData {
 
     public String getYamlRepresentation() {
         return new StringBuilder()
-                .append("Analysis settings:").append(System.lineSeparator())
                 .append(" - input VCF path: ").append(inputPath).append(System.lineSeparator())
                 .append(" - Jannovar transcript database: ").append(transcriptDb).append(System.lineSeparator())
                 .append(" - # variants reported: ").append(nReported).append(System.lineSeparator())

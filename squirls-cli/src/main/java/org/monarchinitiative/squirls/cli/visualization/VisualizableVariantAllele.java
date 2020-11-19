@@ -35,4 +35,7 @@ public interface VisualizableVariantAllele {
                 .orElse(SplicingPredictionData.emptyPredictionData());
     }
 
+    default SplicingPredictionData getPredictionForTx(String accessionId) {
+        return squirlsPredictions().get(accessionId);
+    }
 }

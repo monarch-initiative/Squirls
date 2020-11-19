@@ -11,9 +11,13 @@ import java.util.concurrent.atomic.AtomicReference;
 
 public class ProgressReporter {
 
+    protected static final NumberFormat NUMBER_FORMAT;
     private static final Logger LOGGER = LoggerFactory.getLogger(ProgressReporter.class);
 
-    private static final NumberFormat NUMBER_FORMAT = NumberFormat.getNumberInstance();
+    static {
+        NUMBER_FORMAT = NumberFormat.getNumberInstance();
+        NUMBER_FORMAT.setMaximumFractionDigits(2);
+    }
 
     protected final Instant begin;
     /**
@@ -38,7 +42,7 @@ public class ProgressReporter {
             Instant begin = localBegin.getAndSet(end);
             Duration duration = Duration.between(begin, end);
             long ms = duration.toMillis();
-            LOGGER.info("Processed {} items at {} items/s", current, String.format("%.2f", ((double) tick * 1000) / ms));
+            LOGGER.info("Processed {} items at {} items/s", NUMBER_FORMAT.format(current), NUMBER_FORMAT.format(((double) tick * 1000) / ms));
         }
     }
 
@@ -51,7 +55,7 @@ public class ProgressReporter {
             long mins = (totalMillis / 1000) / 60 % 60;
             long seconds = totalMillis / 1000 % 60;
             LOGGER.info("Processed {} items in {}m {}s ({} totalMillis) at {} items/s",
-                    count.get(), mins, seconds, totalMillis, NUMBER_FORMAT.format(itemsPerSecond));
+                    NUMBER_FORMAT.format(count.get()), mins, seconds, totalMillis, NUMBER_FORMAT.format(itemsPerSecond));
         };
     }
 }

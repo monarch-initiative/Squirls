@@ -13,7 +13,9 @@
         }
 
         .panel > .panel-info {
-            margin: 15px;
+            border-color: transparent;
+            border-width: 0;
+            margin: 5px 0 0 0;
         }
 
         .graphics-container {
@@ -60,7 +62,7 @@
             margin-bottom: 1cm;
         }
 
-        .effects-title{
+        .effects-title {
             text-transform: uppercase;
             font-weight: bold;
             margin: 5px 0 0 0;
@@ -88,7 +90,7 @@
 <body>
 <div class="container" id="content">
     <!--    TITLE -->
-    <h2>Results for <span th:text="${sampleName}">Sample ID</span></h2>
+    <h2>Results for <em th:text="${sampleName}">Sample ID</em></h2>
 
     <!--    NAV   -->
     <ul class="nav nav-pills" id="tabs">
@@ -108,9 +110,9 @@
         <div class="panel-body">
             <p>Settings used for this analysis:</p>
             <pre th:text="${settings.getYamlRepresentation()}">
-  - vcfPath: /path/to/input.vcf
-  - transcript database path: ensembl
-  - threshold: 0.2</pre>
+  - input VCF path: /path/to/input.vcf
+  - Jannovar transcript database: /path/to/hg19_ensembl.ser
+  - # variants reported: 100</pre>
         </div>
     </div>
 
@@ -146,14 +148,14 @@
         <div class="panel-heading">
             <h3 class="panel-title">Prioritised Variants</h3>
         </div>
-        <div class="panel panel-info" th:each="variant, variant_is: ${variants}" th:remove="tag">
+        <div class="panel panel-info" th:each="variant, variant_is: ${variants}">
             <div class="panel-heading">
                 <div class="panel-title row">
                     <div class="col-md-4">
                         <b th:text="${variant.getVariantRepresentation()}">chr9:136,224,690A > G</b>
                     </div>
                     <div class="col-md-4">
-                        <b th:text="${variant.getGeneSymbol()}">SURF2</b>
+                        <b><em th:text="${variant.getGeneSymbol()}">SURF2</em></b>
                     </div>
                     <div class="col-md-4">
                         Pathogenicity:
@@ -167,18 +169,26 @@
                 </div>
             </div>
         </div>
+    </div>
 
-        <!--    FOOTER    -->
-        <div class="panel panel-default" id="about">
-            <div class="panel-heading">
-                <h3 class="panel-title">About</h3>
-            </div>
-            <div class="panel-body">
-                This is it! Let us know how you absolutely love us at our <a href="https://robinsongroup.github.io/">
-                website</a>.
-            </div>
+    <!--    FOOTER    -->
+    <div class="panel panel-default" id="about">
+        <div class="panel-heading">
+            <h3 class="panel-title">About</h3>
         </div>
+        <div class="panel-body">
+            <p>
+                <b>Squirls</b> is a desktop Java application that performs prediction of deleteriousness of genomic variants with respect to mRNA splicing.
+                Variants are prioritized based on interpretable splicing features using a machine learning algorithm.
+                The functional annotation code is based on <a href="https://github.com/charite/jannovar/">Jannovar</a>.
+            </p>
+            <!--todo Update documentation link-->
+            <p>See <a href="#">the comprehensive documentation</a> for instructions regarding how to perform setup, run and interpret the results.</p>
+            <p>Developed by <em>Daniel Danis</em> and <em>Peter N Robinson</em> at <a href="https://www.jax.org">The Jackson Laboratory for Genomic Medicine</a>.</p>
+            <p>Problems, suggestions, or comments? Please <a href="mailto:daniel.danis@jax.org">let us know</a>.</p>
 
+            <div style="text-align: center;">&#169;2020 Daniel Danis, Peter N Robinson</div>
+        </div>
     </div>
 </div>
 </body>

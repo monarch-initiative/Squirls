@@ -1,5 +1,6 @@
 package org.monarchinitiative.squirls.cli.visualization.panel;
 
+import de.charite.compbio.jannovar.annotation.Annotation;
 import org.monarchinitiative.squirls.cli.visualization.AbstractGraphicsGenerator;
 import org.monarchinitiative.squirls.cli.visualization.MissingFeatureException;
 import org.monarchinitiative.squirls.cli.visualization.VisualizableVariantAllele;
@@ -16,7 +17,9 @@ import org.thymeleaf.templatemode.TemplateMode;
 import org.thymeleaf.templateresolver.ClassLoaderTemplateResolver;
 import xyz.ielis.hyperutil.reference.fasta.GenomeSequenceAccessor;
 
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * This graphics generator makes graphics for the splice variant. The graphics generation is delegated to the
@@ -25,6 +28,8 @@ import java.util.Map;
 public class PanelGraphicsGenerator extends AbstractGraphicsGenerator {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PanelGraphicsGenerator.class);
+
+    private static final AnnotationComparator TX_COMPARATOR = new AnnotationComparator();
 
     private final TemplateEngine templateEngine;
 
@@ -52,8 +57,9 @@ public class PanelGraphicsGenerator extends AbstractGraphicsGenerator {
         Finally, we process the data using appropriate template and return HTML
          */
 
-        final SplicingPredictionData prediction = visualizableAllele.getPrimaryPrediction();
-        final Map<String, Double> featureMap = prediction.getFeatureMap();
+        SplicingPredictionData prediction = visualizableAllele.getPrimaryPrediction();
+        Map<String, Double> featureMap = prediction.getFeatureMap();
+
 
         // 0 - select what visualization context and template name
         final String templateName;
@@ -89,7 +95,10 @@ public class PanelGraphicsGenerator extends AbstractGraphicsGenerator {
 
         // 1 - prepare context for the template
         Context context = new Context();
-        context.setVariable("variantAnnotations", visualizableAllele.variantAnnotations());
+        List<Annotation> annotations = visualizableAllele.variantAnnotations().getAnnotations().stream()
+                .sorted(TX_COMPARATOR)
+                .collect(Collectors.toList());
+        context.setVariable("variantAnnotations", annotations);
         context.setVariable("primaryPrediction", prediction);
         context.setVariable("variantAllele", visualizableAllele);
         context.setVariable("graphics", graphics);
