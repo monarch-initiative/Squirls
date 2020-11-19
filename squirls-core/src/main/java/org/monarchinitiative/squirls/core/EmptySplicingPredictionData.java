@@ -120,16 +120,6 @@ class EmptySplicingPredictionData implements SplicingPredictionData {
     }
 
     @Override
-    public Metadata getMetadata() {
-        return Metadata.empty();
-    }
-
-    @Override
-    public void setMetadata(Metadata metadata) {
-        // no-op
-    }
-
-    @Override
     public Set<String> getFeatureNames() {
         return Set.of();
     }

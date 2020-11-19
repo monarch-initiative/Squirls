@@ -111,7 +111,7 @@ import static org.mockito.Mockito.when;
  * Here we test some real-world variants.
  */
 @SpringBootTest(classes = TestDataSourceConfig.class)
-class StandardVariantSplicingEvaluatorTest {
+class VariantSplicingEvaluatorDefaultTest {
 
     /**
      * Tolerance for numeric comparisons.
@@ -134,7 +134,7 @@ class StandardVariantSplicingEvaluatorTest {
     @Mock
     private SquirlsClassifier classifier;
 
-    private StandardVariantSplicingEvaluator evaluator;
+    private VariantSplicingEvaluatorDefault evaluator;
 
 
     @BeforeAll
@@ -154,7 +154,7 @@ class StandardVariantSplicingEvaluatorTest {
     void setUp() {
         // genome sequence accessor
         when(accessor.getReferenceDictionary()).thenReturn(RD);
-        evaluator = StandardVariantSplicingEvaluator.builder()
+        evaluator = VariantSplicingEvaluatorDefault.builder()
                 .accessor(accessor)
                 .txSource(transcriptSource)
                 .annotator(annotator)
@@ -177,8 +177,8 @@ class StandardVariantSplicingEvaluatorTest {
         when(accessor.fetchSequence(any(GenomeInterval.class))).thenReturn(Optional.of(SI));
 
         // 2 - splicing annotator
-        SplicingPredictionData plain = StandardSplicingPredictionData.of(variant, stx, SI);
-        SplicingPredictionData annotated = StandardSplicingPredictionData.of(variant, stx, SI);
+        SplicingPredictionData plain = SplicingPredictionDataDefault.of(variant, stx, SI);
+        SplicingPredictionData annotated = SplicingPredictionDataDefault.of(variant, stx, SI);
         annotated.putFeature("donor_offset", 5);
         annotated.putFeature("acceptor_offset", 1234); // not real
         when(annotator.annotate(plain)).thenReturn(annotated);
@@ -187,7 +187,7 @@ class StandardVariantSplicingEvaluatorTest {
         StandardPrediction prediction = StandardPrediction.of(
                 PartialPrediction.of("donor", .6, .7),
                 PartialPrediction.of("acceptor", .1, .6));
-        SplicingPredictionData predicted = NoRefSplicingPredictionData.of(variant, stx);
+        SplicingPredictionData predicted = SplicingPredictionDataDefault.of(variant, stx, SI);
         predicted.putFeature("donor_offset", 5);
         predicted.putFeature("acceptor_offset", 1234); // not real
         predicted.setPrediction(prediction);
@@ -269,8 +269,8 @@ class StandardVariantSplicingEvaluatorTest {
         when(accessor.fetchSequence(any(GenomeInterval.class))).thenReturn(Optional.of(SI));
 
         // 2 - splicing annotator
-        final SplicingPredictionData plain = StandardSplicingPredictionData.of(variant, stx, SI);
-        final SplicingPredictionData annotated = StandardSplicingPredictionData.of(variant, stx, SI);
+        final SplicingPredictionData plain = SplicingPredictionDataDefault.of(variant, stx, SI);
+        final SplicingPredictionData annotated = SplicingPredictionDataDefault.of(variant, stx, SI);
         annotated.putFeature("donor_offset", 5);
         annotated.putFeature("acceptor_offset", 1234); // not real
 
@@ -280,7 +280,7 @@ class StandardVariantSplicingEvaluatorTest {
         StandardPrediction prediction = StandardPrediction.of(
                 PartialPrediction.of("donor", .6, .7),
                 PartialPrediction.of("acceptor", .1, .6));
-        SplicingPredictionData predicted = StandardSplicingPredictionData.of(variant, stx, SI);
+        SplicingPredictionData predicted = SplicingPredictionDataDefault.of(variant, stx, SI);
         predicted.putFeature("donor_offset", 5);
         predicted.putFeature("acceptor_offset", 1234); // not real
         predicted.setPrediction(prediction);

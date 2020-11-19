@@ -87,7 +87,6 @@ import de.charite.compbio.jannovar.reference.Strand;
 import htsjdk.variant.variantcontext.Allele;
 import htsjdk.variant.variantcontext.VariantContext;
 import htsjdk.variant.variantcontext.VariantContextBuilder;
-import org.monarchinitiative.squirls.core.Metadata;
 import org.monarchinitiative.squirls.core.SquirlsTxResult;
 import org.monarchinitiative.squirls.core.classifier.PartialPrediction;
 import org.monarchinitiative.squirls.core.classifier.StandardPrediction;
@@ -119,7 +118,6 @@ public class VariantsForTesting {
                                               Collection<SplicingTranscript> transcripts,
                                               SequenceInterval si,
                                               double pathogenicity,
-                                              Metadata metadata,
                                               String featurePayload,
                                               String ruler,
                                               String primary,
@@ -236,10 +234,6 @@ public class VariantsForTesting {
 
         final SequenceInterval si = Sequences.getBrca2Exon15Sequence(rd);
         final Collection<SplicingTranscript> transcripts = Transcripts.brca2Transcripts(rd);
-        final Metadata metadata = Metadata.builder()
-                .putDonorCoordinate("NM_000059.3", new GenomePosition(rd, Strand.FWD, chr, 32_930_747, PositionType.ONE_BASED))
-                .putAcceptorCoordinate("NM_000059.3", new GenomePosition(rd, Strand.FWD, chr, 32_930_565, PositionType.ONE_BASED))
-                .build();
         final String featurePayload = "acceptor_offset=184.0\n" +
                 "alt_ri_best_window_acceptor=6.24199227902568\n" +
                 "alt_ri_best_window_donor=1.6462531025600458\n" +
@@ -276,7 +270,7 @@ public class VariantsForTesting {
 
         // *************************************************************************************************************
 
-        return makeEvaluation(rd, chrom, pos, variantId, ref, alt, annotator, seqIds, transcripts, si, pathogenicity, metadata, featurePayload, ruler, primary, secondary, "Canonical donor");
+        return makeEvaluation(rd, chrom, pos, variantId, ref, alt, annotator, seqIds, transcripts, si, pathogenicity, featurePayload, ruler, primary, secondary, "Canonical donor");
     }
 
     /**
@@ -305,10 +299,6 @@ public class VariantsForTesting {
 
         final SequenceInterval si = Sequences.getAlplExon7Sequence(rd);
         final Collection<SplicingTranscript> transcripts = Transcripts.alplTranscripts(rd);
-        final Metadata metadata = Metadata.builder()
-                .putDonorCoordinate("NM_000478.4", new GenomePosition(rd, Strand.FWD, chr, 21_894_741, PositionType.ONE_BASED))
-                .putAcceptorCoordinate("NM_000478.4", new GenomePosition(rd, Strand.FWD, chr, 21_894_597, PositionType.ONE_BASED))
-                .build();
         String featurePayload = "acceptor_offset=143.0\n" +
                 "alt_ri_best_window_acceptor=-3.06184416990555\n" +
                 "alt_ri_best_window_donor=2.4205699538253014\n" +
@@ -338,7 +328,7 @@ public class VariantsForTesting {
 
         // *************************************************************************************************************
 
-        return makeEvaluation(rd, chrom, pos, variantId, ref, alt, annotator, seqIds, transcripts, si, pathogenicity, metadata, featurePayload, ruler, primary, secondary, "Canonical donor");
+        return makeEvaluation(rd, chrom, pos, variantId, ref, alt, annotator, seqIds, transcripts, si, pathogenicity, featurePayload, ruler, primary, secondary, "Canonical donor");
     }
 
     /**
@@ -367,10 +357,6 @@ public class VariantsForTesting {
 
         final SequenceInterval si = Sequences.getHbbExon1Sequence(rd);
         final Collection<SplicingTranscript> transcripts = Transcripts.hbbTranscripts(rd);
-        final Metadata metadata = Metadata.builder()
-                .putDonorCoordinate("NM_000518.4", new GenomePosition(rd, Strand.FWD, chr, 5_248_159, PositionType.ONE_BASED))
-                .putAcceptorCoordinate("NM_000518.4", new GenomePosition(rd, Strand.FWD, chr, 5_248_029, PositionType.ONE_BASED))
-                .build();
         String featurePayload = "acceptor_offset=-133.0\n" +
                 "alt_ri_best_window_acceptor=-1.781069482220321\n" +
                 "alt_ri_best_window_donor=6.324680776661294\n" +
@@ -406,7 +392,7 @@ public class VariantsForTesting {
 
         // *************************************************************************************************************
 
-        return makeEvaluation(rd, chrom, pos, variantId, ref, alt, annotator, seqIds, transcripts, si, pathogenicity, metadata, featurePayload, ruler, primary, secondary, "Cryptic donor");
+        return makeEvaluation(rd, chrom, pos, variantId, ref, alt, annotator, seqIds, transcripts, si, pathogenicity, featurePayload, ruler, primary, secondary, "Cryptic donor");
     }
 
     /**
@@ -435,10 +421,6 @@ public class VariantsForTesting {
 
         final SequenceInterval si = Sequences.getHbbExon1Sequence(rd);
         final Collection<SplicingTranscript> transcripts = Transcripts.hbbTranscripts(rd);
-        final Metadata metadata = Metadata.builder()
-                .putDonorCoordinate("NM_000518.4", new GenomePosition(rd, Strand.FWD, chr, 5_248_159, PositionType.ONE_BASED))
-                .putAcceptorCoordinate("NM_000518.4", new GenomePosition(rd, Strand.FWD, chr, 5_248_029, PositionType.ONE_BASED))
-                .build();
         String featurePayload = "acceptor_offset=-144.0\n" +
                 "alt_ri_best_window_acceptor=-1.679406754820472\n" +
                 "alt_ri_best_window_donor=8.331467886352396\n" +
@@ -474,7 +456,7 @@ public class VariantsForTesting {
 
         // *************************************************************************************************************
 
-        return makeEvaluation(rd, chrom, pos, variantId, ref, alt, annotator, seqIds, transcripts, si, pathogenicity, metadata, featurePayload, ruler, primary, secondary, "Cryptic donor");
+        return makeEvaluation(rd, chrom, pos, variantId, ref, alt, annotator, seqIds, transcripts, si, pathogenicity, featurePayload, ruler, primary, secondary, "Cryptic donor");
     }
 
     /**
@@ -503,10 +485,6 @@ public class VariantsForTesting {
 
         final SequenceInterval si = Sequences.getVwfExon26Sequence(rd);
         final Collection<SplicingTranscript> transcripts = Transcripts.vwfTranscripts(rd);
-        final Metadata metadata = Metadata.builder()
-                .putDonorCoordinate("NM_000552.3", new GenomePosition(rd, Strand.FWD, chr, 6_131_905, PositionType.ONE_BASED).withStrand(Strand.REV))
-                .putAcceptorCoordinate("NM_000552.3", new GenomePosition(rd, Strand.FWD, chr, 6_132_064, PositionType.ONE_BASED).withStrand(Strand.REV))
-                .build();
         String featurePayload = "acceptor_offset=-2.0\n" +
                 "alt_ri_best_window_acceptor=3.648124750022908\n" +
                 "alt_ri_best_window_donor=-8.032751156095085\n" +
@@ -543,7 +521,7 @@ public class VariantsForTesting {
 
         // *************************************************************************************************************
 
-        return makeEvaluation(rd, chrom, pos, variantId, ref, alt, annotator, seqIds, transcripts, si, pathogenicity, metadata, featurePayload, logo, primary, secondary, "Canonical acceptor");
+        return makeEvaluation(rd, chrom, pos, variantId, ref, alt, annotator, seqIds, transcripts, si, pathogenicity, featurePayload, logo, primary, secondary, "Canonical acceptor");
     }
 
     /**
@@ -572,10 +550,6 @@ public class VariantsForTesting {
 
         final SequenceInterval si = Sequences.getTsc2Exon11Sequence(rd);
         final Collection<SplicingTranscript> transcripts = Transcripts.tsc2Transcripts(rd);
-        final Metadata metadata = Metadata.builder()
-                .putDonorCoordinate("NM_000548.3", new GenomePosition(rd, Strand.FWD, chr, 2_110_815, PositionType.ONE_BASED))
-                .putAcceptorCoordinate("NM_000548.3", new GenomePosition(rd, Strand.FWD, chr, 2_110_671, PositionType.ONE_BASED))
-                .build();
         String featurePayload = "acceptor_offset=-3.0\n" +
                 "alt_ri_best_window_acceptor=-2.95580052736842\n" +
                 "alt_ri_best_window_donor=-1.9417000079717732\n" +
@@ -605,7 +579,7 @@ public class VariantsForTesting {
 
         // *************************************************************************************************************
 
-        return makeEvaluation(rd, chrom, pos, variantId, ref, alt, annotator, seqIds, transcripts, si, pathogenicity, metadata, featurePayload, logo, primary, secondary, "Cryptic acceptor");
+        return makeEvaluation(rd, chrom, pos, variantId, ref, alt, annotator, seqIds, transcripts, si, pathogenicity, featurePayload, logo, primary, secondary, "Cryptic acceptor");
     }
 
 
@@ -635,10 +609,6 @@ public class VariantsForTesting {
 
         final SequenceInterval si = Sequences.getCol4a5Exon29Sequence(rd);
         final Collection<SplicingTranscript> transcripts = Transcripts.col4a5Transcripts(rd);
-        final Metadata metadata = Metadata.builder()
-                .putDonorCoordinate("NM_000495.4", new GenomePosition(rd, Strand.FWD, chr, 107_850_122, PositionType.ONE_BASED))
-                .putAcceptorCoordinate("NM_000495.4", new GenomePosition(rd, Strand.FWD, chr, 107_849_971, PositionType.ONE_BASED))
-                .build();
 
         String featurePayload = "acceptor_offset=-8.0\n" +
                 "alt_ri_best_window_acceptor=4.2276385348389045\n" +
@@ -675,7 +645,7 @@ public class VariantsForTesting {
 
         // *************************************************************************************************************
 
-        return makeEvaluation(rd, chrom, pos, variantId, ref, alt, annotator, seqIds, transcripts, si, pathogenicity, metadata, featurePayload, ruler, primary, secondary, "Cryptic acceptor");
+        return makeEvaluation(rd, chrom, pos, variantId, ref, alt, annotator, seqIds, transcripts, si, pathogenicity, featurePayload, ruler, primary, secondary, "Cryptic acceptor");
     }
 
     /**
@@ -704,10 +674,6 @@ public class VariantsForTesting {
 
         final SequenceInterval si = Sequences.getRyr1Exon102Sequence(rd);
         final Collection<SplicingTranscript> transcripts = Transcripts.ryr1Transcripts(rd);
-        final Metadata metadata = Metadata.builder()
-                .putDonorCoordinate("NM_000540.2", new GenomePosition(rd, Strand.FWD, chr, 39_075_583, PositionType.ONE_BASED))
-                .putAcceptorCoordinate("NM_000540.2", new GenomePosition(rd, Strand.FWD, chr, 39_075_740, PositionType.ONE_BASED))
-                .build();
         String featurePayload = "acceptor_offset=21.0\n" +
                 "alt_ri_best_window_acceptor=8.15014683108099\n" +
                 "alt_ri_best_window_donor=7.955283012714299\n" +
@@ -744,7 +710,7 @@ public class VariantsForTesting {
 
         // *************************************************************************************************************
 
-        return makeEvaluation(rd, chrom, pos, variantId, ref, alt, annotator, seqIds, transcripts, si, pathogenicity, metadata, featurePayload, ruler, primary, secondary, "Cryptic acceptor");
+        return makeEvaluation(rd, chrom, pos, variantId, ref, alt, annotator, seqIds, transcripts, si, pathogenicity, featurePayload, ruler, primary, secondary, "Cryptic acceptor");
     }
 
 
@@ -774,10 +740,6 @@ public class VariantsForTesting {
 
         final SequenceInterval si = Sequences.getNf1Exon9Sequence(rd);
         final Collection<SplicingTranscript> transcripts = Transcripts.nf1Transcripts(rd);
-        final Metadata metadata = Metadata.builder()
-                .putDonorCoordinate("NM_000267.3", new GenomePosition(rd, Strand.FWD, chr, 29_527_614, PositionType.ONE_BASED))
-                .putAcceptorCoordinate("NM_000267.3", new GenomePosition(rd, Strand.FWD, chr, 29_527_440, PositionType.ONE_BASED))
-                .build();
         String featurePayload = "acceptor_offset=22.0\n" +
                 "alt_ri_best_window_acceptor=-1.0318475740969986\n" +
                 "alt_ri_best_window_donor=-2.8493547798837007\n" +
@@ -822,7 +784,7 @@ public class VariantsForTesting {
 
         // *************************************************************************************************************
 
-        return makeEvaluation(rd, chrom, pos, variantId, ref, alt, annotator, seqIds, transcripts, si, pathogenicity, metadata, featurePayload, ruler, primary, secondary, "Splicing regulatory elements");
+        return makeEvaluation(rd, chrom, pos, variantId, ref, alt, annotator, seqIds, transcripts, si, pathogenicity, featurePayload, ruler, primary, secondary, "Splicing regulatory elements");
     }
 
 }

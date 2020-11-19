@@ -76,130 +76,100 @@
 
 package org.monarchinitiative.squirls.core;
 
-import de.charite.compbio.jannovar.reference.GenomePosition;
+import de.charite.compbio.jannovar.reference.GenomeVariant;
 import org.monarchinitiative.squirls.core.model.SplicingTranscript;
+import xyz.ielis.hyperutil.reference.fasta.SequenceInterval;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 
-// TODO: 8. 6. 2020 - revise docs
+class SplicingPredictionDataDefault implements SplicingPredictionData {
 
-/**
- * This class is a kitchen sink for all data we need to make a nice figures or anything else downstream.
- * <p>
- * Each instance contains information with respect to a single
- * {@link de.charite.compbio.jannovar.reference.GenomeVariant} and a single
- * {@link SplicingTranscript}.
- * <p>
- * Therefore, it is necessary for it to reside within {@link SplicingPredictionData} instance which contains these
- * information.
- */
-public class Metadata {
+    private final GenomeVariant variant;
 
-    /**
-     * A singleton empty instance.
-     */
-    private static final Metadata EMPTY = new Metadata();
+    private final SplicingTranscript transcript;
 
-    /**
-     * Map with transcript accession ID to coordinates of the donor site closest to the variant.
-     * <p>
-     * The coordinate represents the 1-based position of the first intronic base. In 0-based coordinate system,
-     * the coordinate represents the exon|intron boundary.
-     */
-    private final Map<String, GenomePosition> donorCoordinateMap;
+    private final SequenceInterval sequence;
+    private final Map<String, Object> featureMap = new HashMap<>();
+    private Prediction prediction;
 
-    /**
-     * Map with transcript accession ID to coordinates of the acceptor site closest to the variant.
-     * <p>
-     * The coordinate represents the 1-based position of the first exonic base. In 0-based coordinate system,
-     * the coordinate represents the intron|exon boundary.
-     */
-    private final Map<String, GenomePosition> acceptorCoordinateMap;
-
-
-    /**
-     * Special private constructor for creating {@link #EMPTY} singleton instance.
-     */
-    private Metadata() {
-        donorCoordinateMap = Map.of();
-        acceptorCoordinateMap = Map.of();
+    protected SplicingPredictionDataDefault(GenomeVariant variant, SplicingTranscript transcript, SequenceInterval sequence) {
+        this.variant = variant;
+        this.transcript = transcript;
+        this.sequence = sequence;
     }
 
-    private Metadata(Builder builder) {
-        donorCoordinateMap = Map.copyOf(builder.donorCoordinateMap);
-        acceptorCoordinateMap = Map.copyOf(builder.acceptorCoordinateMap);
+    public static SplicingPredictionDataDefault of(GenomeVariant variant, SplicingTranscript transcript, SequenceInterval sequence) {
+        return new SplicingPredictionDataDefault(variant, transcript, sequence);
     }
 
-    public static Metadata empty() {
-        return EMPTY;
+    @Override
+    public Prediction getPrediction() {
+        return prediction;
     }
 
-    public static Builder builder() {
-        return new Builder();
+    @Override
+    public void setPrediction(Prediction prediction) {
+        this.prediction = prediction;
     }
 
-
-    public Map<String, GenomePosition> getDonorCoordinateMap() {
-        return donorCoordinateMap;
+    @Override
+    public GenomeVariant getVariant() {
+        return variant;
     }
 
-    public Map<String, GenomePosition> getAcceptorCoordinateMap() {
-        return acceptorCoordinateMap;
+    @Override
+    public SplicingTranscript getTranscript() {
+        return transcript;
     }
 
-    /**
-     * @return <code>true</code> if the metadata instance is equal to the empty/singleton metadata instance
-     */
-    public boolean isEmpty() {
-        return equals(EMPTY);
+    @Override
+    public SequenceInterval getSequence() {
+        return sequence;
+    }
+
+    @Override
+    public Set<String> getFeatureNames() {
+        return featureMap.keySet();
+    }
+
+    @Override
+    public <T> T getFeature(String featureName, Class<T> clz) {
+        return clz.cast(featureMap.get(featureName));
+    }
+
+    @Override
+    public void putFeature(String name, Object value) {
+        featureMap.put(name, value);
     }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        Metadata metadata = (Metadata) o;
-        return Objects.equals(donorCoordinateMap, metadata.donorCoordinateMap) &&
-                Objects.equals(acceptorCoordinateMap, metadata.acceptorCoordinateMap);
+        SplicingPredictionDataDefault that = (SplicingPredictionDataDefault) o;
+        return Objects.equals(variant, that.variant) &&
+                Objects.equals(transcript, that.transcript) &&
+                Objects.equals(sequence, that.sequence) &&
+                Objects.equals(featureMap, that.featureMap) &&
+                Objects.equals(prediction, that.prediction);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(donorCoordinateMap, acceptorCoordinateMap);
+        return Objects.hash(variant, transcript, sequence, featureMap, prediction);
     }
 
-    public static final class Builder {
-        private final Map<String, GenomePosition> donorCoordinateMap = new HashMap<>();
-        private final Map<String, GenomePosition> acceptorCoordinateMap = new HashMap<>();
-
-        private Builder() {
-        }
-
-
-        public Builder putDonorCoordinate(String txAccession, GenomePosition donorPosition) {
-            this.donorCoordinateMap.put(txAccession, donorPosition);
-            return this;
-        }
-
-        public Builder putAllDonorCoordinates(Map<String, GenomePosition> donorCoordinateMap) {
-            this.donorCoordinateMap.putAll(donorCoordinateMap);
-            return this;
-        }
-
-        public Builder putAcceptorCoordinate(String txAccession, GenomePosition acceptorPosition) {
-            this.acceptorCoordinateMap.put(txAccession, acceptorPosition);
-            return this;
-        }
-
-        public Builder putAllAcceptorCoordinates(Map<String, GenomePosition> acceptorCoordinateMap) {
-            this.acceptorCoordinateMap.putAll(acceptorCoordinateMap);
-            return this;
-        }
-
-        public Metadata build() {
-            return new Metadata(this);
-        }
+    @Override
+    public String toString() {
+        return "SimpleSplicingPredictionData{" +
+                "variant=" + variant +
+                ", transcript=" + transcript +
+                ", sequence=" + sequence +
+                ", featureMap=" + featureMap +
+                ", prediction=" + prediction +
+                '}';
     }
 }

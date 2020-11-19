@@ -81,7 +81,6 @@ import de.charite.compbio.jannovar.reference.GenomeVariant;
 import htsjdk.variant.variantcontext.Allele;
 import htsjdk.variant.variantcontext.VariantContext;
 import org.monarchinitiative.squirls.cli.writers.WritableSplicingAllele;
-import org.monarchinitiative.squirls.core.Metadata;
 import org.monarchinitiative.squirls.core.SplicingPredictionData;
 import org.monarchinitiative.squirls.core.SquirlsResult;
 import org.monarchinitiative.squirls.core.model.SplicingTranscript;
@@ -220,16 +219,6 @@ class TestVariant implements WritableSplicingAllele, Annotatable {
     @Override
     public SequenceInterval getSequence() {
         return si;
-    }
-
-    @Override
-    public Metadata getMetadata() {
-        return null;
-    }
-
-    @Override
-    public void setMetadata(Metadata metadata) {
-        // no-op
     }
 
     @Override

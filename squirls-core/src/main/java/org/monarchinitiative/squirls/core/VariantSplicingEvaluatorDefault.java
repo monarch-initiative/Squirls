@@ -92,9 +92,9 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-public class StandardVariantSplicingEvaluator implements VariantSplicingEvaluator {
+public class VariantSplicingEvaluatorDefault implements VariantSplicingEvaluator {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(StandardVariantSplicingEvaluator.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(VariantSplicingEvaluatorDefault.class);
 
     private static final int PADDING = 150;
 
@@ -118,7 +118,7 @@ public class StandardVariantSplicingEvaluator implements VariantSplicingEvaluato
      */
     private final int padding;
 
-    private StandardVariantSplicingEvaluator(Builder builder) {
+    private VariantSplicingEvaluatorDefault(Builder builder) {
         accessor = Objects.requireNonNull(builder.accessor, "Accessor cannot be null");
         rd = builder.accessor.getReferenceDictionary();
         txSource = Objects.requireNonNull(builder.txSource, "Transcript source cannot be null");
@@ -213,7 +213,7 @@ public class StandardVariantSplicingEvaluator implements VariantSplicingEvaluato
          3 - let's evaluate the variant with respect to all transcripts
          */
         Set<SquirlsTxResult> squirlsTxResults = txMap.keySet().stream()
-                .map(tx -> StandardSplicingPredictionData.of(variant, txMap.get(tx), sio.get()))
+                .map(tx -> SplicingPredictionDataDefault.of(variant, txMap.get(tx), sio.get()))
                 .map(annotator::annotate)
                 .map(classifier::predict)
                 .map(transformer::transform)
@@ -305,8 +305,8 @@ public class StandardVariantSplicingEvaluator implements VariantSplicingEvaluato
             return this;
         }
 
-        public StandardVariantSplicingEvaluator build() {
-            return new StandardVariantSplicingEvaluator(this);
+        public VariantSplicingEvaluatorDefault build() {
+            return new VariantSplicingEvaluatorDefault(this);
         }
     }
 
