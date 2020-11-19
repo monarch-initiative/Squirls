@@ -83,12 +83,11 @@ import htsjdk.variant.variantcontext.writer.VariantContextWriter;
 import htsjdk.variant.variantcontext.writer.VariantContextWriterBuilder;
 import htsjdk.variant.vcf.*;
 import org.monarchinitiative.squirls.cli.writers.*;
-import org.monarchinitiative.squirls.core.SplicingPredictionData;
+import org.monarchinitiative.squirls.core.SquirlsResult;
 
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -132,20 +131,19 @@ public class VcfResultWriter implements ResultWriter {
     private static Function<WritableSplicingAllele, VariantContext> addInfoFields() {
         return ve -> {
             VariantContextBuilder builder = new VariantContextBuilder(ve.variantContext());
-            Map<String, SplicingPredictionData> squirlsScores = ve.squirlsPredictions();
+            SquirlsResult squirlsScores = ve.squirlsResult();
 
             if (squirlsScores.isEmpty()) {
                 return builder.make();
             }
 
             // is the ALT allele pathogenic wrt any overlapping transcript?
-            boolean isPathogenic = squirlsScores.values().stream()
-                    .anyMatch(spd -> spd.getPrediction().isPositive());
+            boolean isPathogenic = squirlsScores.isPathogenic();
 
             // prediction string wrt all overlapping transcripts
-            String txPredictions = squirlsScores.entrySet().stream()
+            String txPredictions = squirlsScores.results()
                     // tx_accession=score
-                    .map(entry -> String.format("%s=%f", entry.getKey(), entry.getValue().getPrediction().getMaxPathogenicity()))
+                    .map(sq -> String.format("%s=%f", sq.accessionId(), sq.prediction().getMaxPathogenicity()))
                     .collect(Collectors.joining("|", String.format("%s|", ve.allele().getBaseString()), ""));
 
             return builder.attribute(SQUIRLS_FLAG_FIELD_NAME, isPathogenic)

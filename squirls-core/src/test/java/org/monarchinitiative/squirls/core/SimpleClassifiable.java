@@ -77,7 +77,6 @@
 package org.monarchinitiative.squirls.core;
 
 import org.monarchinitiative.squirls.core.classifier.Classifiable;
-import org.monarchinitiative.squirls.core.classifier.Prediction;
 
 import java.util.HashMap;
 import java.util.Map;

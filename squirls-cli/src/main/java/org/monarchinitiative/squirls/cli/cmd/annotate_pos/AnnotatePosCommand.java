@@ -79,7 +79,9 @@ package org.monarchinitiative.squirls.cli.cmd.annotate_pos;
 
 import org.monarchinitiative.squirls.cli.Main;
 import org.monarchinitiative.squirls.cli.cmd.SquirlsCommand;
-import org.monarchinitiative.squirls.core.SplicingPredictionData;
+import org.monarchinitiative.squirls.core.Prediction;
+import org.monarchinitiative.squirls.core.SquirlsResult;
+import org.monarchinitiative.squirls.core.SquirlsTxResult;
 import org.monarchinitiative.squirls.core.VariantSplicingEvaluator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -127,26 +129,22 @@ public class AnnotatePosCommand extends SquirlsCommand {
 
             System.out.println();
             for (VariantChange change : changes) {
-                Map<String, SplicingPredictionData> predictionData = splicingEvaluator.evaluate(change.getContig(), change.getPos(), change.getRef(), change.getAlt());
+                SquirlsResult squirlsResult = splicingEvaluator.evaluate(change.getContig(), change.getPos(), change.getRef(), change.getAlt());
                 List<String> columns = new ArrayList<>();
 
                 // variant
                 columns.add(change.getVariantChange());
 
                 // is pathogenic
-                boolean isPathogenic = predictionData.values().stream()
-                        .anyMatch(spd -> spd.getPrediction().isPositive());
-                columns.add(isPathogenic ? "pathogenic" : "neutral");
+                columns.add(squirlsResult.isPathogenic() ? "pathogenic" : "neutral");
 
                 // max pathogenicity
-                double maxScore = predictionData.values().stream()
-                        .mapToDouble(e -> e.getPrediction().getMaxPathogenicity())
-                        .max()
-                        .orElse(Double.NaN);
-                columns.add(String.format("%.3f", maxScore));
+                columns.add(String.format("%.3f", squirlsResult.maxPathogenicity()));
 
                 // predictions per transcript
-                final String scores = processScores(predictionData);
+                Map<String, Prediction> predictionMap = squirlsResult.results()
+                        .collect(Collectors.toMap(SquirlsTxResult::accessionId, SquirlsTxResult::prediction));
+                String scores = processScores(predictionMap);
                 columns.add(scores);
 
                 System.out.println(String.join(DELIMITER, columns));

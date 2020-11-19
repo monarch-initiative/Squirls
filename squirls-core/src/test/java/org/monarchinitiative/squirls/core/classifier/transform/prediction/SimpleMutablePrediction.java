@@ -76,7 +76,7 @@
 
 package org.monarchinitiative.squirls.core.classifier.transform.prediction;
 
-import org.monarchinitiative.squirls.core.classifier.Prediction;
+import org.monarchinitiative.squirls.core.Prediction;
 
 import java.util.Objects;
 

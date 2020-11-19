@@ -83,6 +83,7 @@ import xyz.ielis.hyperutil.reference.fasta.SequenceInterval;
 /**
  * Splicing prediction data where {@link SequenceInterval} is not included.
  */
+@Deprecated // not planned to be returned anymore, use SquirlsResult
 public class NoRefSplicingPredictionData extends StandardSplicingPredictionData {
 
     protected NoRefSplicingPredictionData(GenomeVariant variant, SplicingTranscript transcript) {

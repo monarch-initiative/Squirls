@@ -112,7 +112,7 @@ public abstract class AbstractGraphicsGenerator implements SplicingVariantGraphi
 
     private final SplicingInformationContentCalculator icCalculator;
 
-    private final GenomeSequenceAccessor genomeSequenceAccessor;
+    protected final GenomeSequenceAccessor genomeSequenceAccessor;
 
     protected AbstractGraphicsGenerator(VmvtGenerator vmvtGenerator,
                                         SplicingPwmData splicingPwmData,
@@ -202,14 +202,13 @@ public abstract class AbstractGraphicsGenerator implements SplicingVariantGraphi
      *     </li>
      * </ol>
      *
-     * @param predictionData data to generate the graphics for
      * @return String with content in HTML format containing SVG with graphics
      */
-    protected String makeCanonicalDonorContextGraphics(SplicingPredictionData predictionData) {
+    protected String makeCanonicalDonorContextGraphics(GenomeVariant variant,
+                                                       SplicingTranscript transcript,
+                                                       GenomePosition donorAnchor) {
         VisualizationContext context = VisualizationContext.CANONICAL_DONOR;
 
-        SplicingTranscript transcript = predictionData.getTranscript();
-        GenomeVariant variant = predictionData.getVariant().withStrand(transcript.getStrand());
         Optional<SequenceInterval> sio = fetchSequenceForTranscript(transcript);
         if (sio.isEmpty()) {
             return EMPTY_SVG_IMAGE;
@@ -217,8 +216,6 @@ public abstract class AbstractGraphicsGenerator implements SplicingVariantGraphi
         SequenceInterval sequence = sio.get();
 
         // Overlaps with canonical donor site?
-        GenomePosition donorAnchor = predictionData.getMetadata().getDonorCoordinateMap().get(transcript.getAccessionId());
-
         if (donorAnchor != null) {
             GenomeInterval canonicalDonorInterval = alleleGenerator.makeDonorInterval(donorAnchor);
             if (variant.getGenomeInterval().overlapsWith(canonicalDonorInterval)) {
@@ -277,13 +274,13 @@ public abstract class AbstractGraphicsGenerator implements SplicingVariantGraphi
      *     </li>
      * </ol>
      *
-     * @param predictionData data to generate the graphics for
      * @return String with content in HTML format containing SVG with graphics
      */
-    protected String makeCanonicalAcceptorContextGraphics(SplicingPredictionData predictionData) {
+    protected String makeCanonicalAcceptorContextGraphics(GenomeVariant variant,
+                                                          SplicingTranscript transcript,
+                                                          GenomePosition acceptorAnchor) {
         VisualizationContext context = VisualizationContext.CANONICAL_ACCEPTOR;
-        SplicingTranscript transcript = predictionData.getTranscript();
-        GenomeVariant variant = predictionData.getVariant().withStrand(transcript.getStrand());
+
         Optional<SequenceInterval> sio = fetchSequenceForTranscript(transcript);
         if (sio.isEmpty()) {
             return EMPTY_SVG_IMAGE;
@@ -291,7 +288,6 @@ public abstract class AbstractGraphicsGenerator implements SplicingVariantGraphi
         SequenceInterval sequence = sio.get();
 
         // Overlaps with canonical acceptor site?
-        GenomePosition acceptorAnchor = predictionData.getMetadata().getAcceptorCoordinateMap().get(transcript.getAccessionId());
         if (acceptorAnchor != null) {
             GenomeInterval canonicalAcceptorInterval = alleleGenerator.makeAcceptorInterval(acceptorAnchor);
             if (variant.getGenomeInterval().overlapsWith(canonicalAcceptorInterval)) {
@@ -349,14 +345,13 @@ public abstract class AbstractGraphicsGenerator implements SplicingVariantGraphi
      *     </li>
      * </ol>
      *
-     * @param predictionData data to generate the graphics for
      * @return String with content in HTML format containing SVG with graphics
      */
-    protected String makeCrypticDonorContextGraphics(SplicingPredictionData predictionData) {
+    protected String makeCrypticDonorContextGraphics(GenomeVariant variant,
+                                                     SplicingTranscript transcript,
+                                                     GenomePosition donorAnchor) {
         VisualizationContext context = VisualizationContext.CRYPTIC_DONOR;
 
-        GenomeVariant variant = predictionData.getVariant();
-        SplicingTranscript transcript = predictionData.getTranscript();
         Optional<SequenceInterval> sio = fetchSequenceForTranscript(transcript);
         if (sio.isEmpty()) {
             return EMPTY_SVG_IMAGE;
@@ -385,7 +380,6 @@ public abstract class AbstractGraphicsGenerator implements SplicingVariantGraphi
         String trekker = vmvtGenerator.getDonorTrekkerSvg(refCorrespondingWindow, altBestWindow);
 
         // secondary - sequence walkers comparing the best ALT window with the canonical donor snippet
-        GenomePosition donorAnchor = predictionData.getMetadata().getDonorCoordinateMap().get(transcript.getAccessionId());
         String walkers;
         if (donorAnchor != null) {
             // we have the anchor, thus let's make the graphics
@@ -422,14 +416,13 @@ public abstract class AbstractGraphicsGenerator implements SplicingVariantGraphi
      *     </li>
      * </ol>
      *
-     * @param predictionData data to generate the graphics for
      * @return String with content in HTML format containing SVG with graphics
      */
-    protected String makeCrypticAcceptorContextGraphics(SplicingPredictionData predictionData) {
+    protected String makeCrypticAcceptorContextGraphics(GenomeVariant variant,
+                                                        SplicingTranscript transcript,
+                                                        GenomePosition acceptorAnchor) {
         VisualizationContext context = VisualizationContext.CRYPTIC_ACCEPTOR;
 
-        GenomeVariant variant = predictionData.getVariant();
-        SplicingTranscript transcript = predictionData.getTranscript();
         Optional<SequenceInterval> sio = fetchSequenceForTranscript(transcript);
         if (sio.isEmpty()) {
             return EMPTY_SVG_IMAGE;
@@ -458,7 +451,6 @@ public abstract class AbstractGraphicsGenerator implements SplicingVariantGraphi
         String trekker = vmvtGenerator.getAcceptorTrekkerSvg(refCorrespondingWindow, altBestWindow);
 
         // secondary - sequence walkers comparing the best ALT window with the canonical acceptor snippet
-        GenomePosition acceptorAnchor = predictionData.getMetadata().getAcceptorCoordinateMap().get(transcript.getAccessionId());
         String walkers;
         if (acceptorAnchor != null) {
             // we have the anchor, thus let's make the graphics

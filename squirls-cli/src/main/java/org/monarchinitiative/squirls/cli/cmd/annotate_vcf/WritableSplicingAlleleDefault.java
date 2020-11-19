@@ -80,9 +80,8 @@ import de.charite.compbio.jannovar.annotation.VariantAnnotations;
 import htsjdk.variant.variantcontext.Allele;
 import htsjdk.variant.variantcontext.VariantContext;
 import org.monarchinitiative.squirls.cli.writers.WritableSplicingAllele;
-import org.monarchinitiative.squirls.core.SplicingPredictionData;
+import org.monarchinitiative.squirls.core.SquirlsResult;
 
-import java.util.Map;
 import java.util.Objects;
 
 class WritableSplicingAlleleDefault implements WritableSplicingAllele {
@@ -90,16 +89,16 @@ class WritableSplicingAlleleDefault implements WritableSplicingAllele {
     private final VariantContext variantContext;
     private final Allele allele;
     private final VariantAnnotations annotations;
-    private final Map<String, SplicingPredictionData> squirlsScores;
+    private final SquirlsResult squirlsResult;
 
     WritableSplicingAlleleDefault(VariantContext variantContext,
                                   Allele allele,
                                   VariantAnnotations annotations,
-                                  Map<String, SplicingPredictionData> squirlsScores) {
+                                  SquirlsResult squirlsResult) {
         this.variantContext = variantContext;
         this.allele = allele;
         this.annotations = annotations;
-        this.squirlsScores = squirlsScores;
+        this.squirlsResult = squirlsResult;
     }
 
     @Override
@@ -118,8 +117,8 @@ class WritableSplicingAlleleDefault implements WritableSplicingAllele {
     }
 
     @Override
-    public Map<String, SplicingPredictionData> squirlsPredictions() {
-        return squirlsScores;
+    public SquirlsResult squirlsResult() {
+        return squirlsResult;
     }
 
     @Override
@@ -130,12 +129,12 @@ class WritableSplicingAlleleDefault implements WritableSplicingAllele {
         return Objects.equals(variantContext, that.variantContext) &&
                 Objects.equals(allele, that.allele) &&
                 Objects.equals(annotations, that.annotations) &&
-                Objects.equals(squirlsScores, that.squirlsScores);
+                Objects.equals(squirlsResult, that.squirlsResult);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(variantContext, allele, annotations, squirlsScores);
+        return Objects.hash(variantContext, allele, annotations, squirlsResult);
     }
 
     @Override
@@ -144,7 +143,7 @@ class WritableSplicingAlleleDefault implements WritableSplicingAllele {
                 "variantContext=" + variantContext +
                 ", allele=" + allele +
                 ", annotations=" + annotations +
-                ", squirlsScores=" + squirlsScores +
+                ", squirlsResult=" + squirlsResult +
                 '}';
     }
 }

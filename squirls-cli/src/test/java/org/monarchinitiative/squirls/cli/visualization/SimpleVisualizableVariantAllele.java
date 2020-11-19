@@ -77,9 +77,8 @@
 package org.monarchinitiative.squirls.cli.visualization;
 
 import de.charite.compbio.jannovar.annotation.VariantAnnotations;
-import org.monarchinitiative.squirls.core.SplicingPredictionData;
+import org.monarchinitiative.squirls.core.SquirlsResult;
 
-import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -89,11 +88,11 @@ class SimpleVisualizableVariantAllele implements VisualizableVariantAllele {
 
     private final VariantAnnotations annotations;
 
-    private final Map<String, SplicingPredictionData> squirlsPredictions;
+    private final SquirlsResult squirlsResult;
 
-    SimpleVisualizableVariantAllele(VariantAnnotations annotations, Map<String, SplicingPredictionData> squirlsPredictions) {
+    SimpleVisualizableVariantAllele(VariantAnnotations annotations, SquirlsResult squirlsResult) {
         this.annotations = annotations;
-        this.squirlsPredictions = squirlsPredictions;
+        this.squirlsResult = squirlsResult;
     }
 
     @Override
@@ -102,8 +101,8 @@ class SimpleVisualizableVariantAllele implements VisualizableVariantAllele {
     }
 
     @Override
-    public Map<String, SplicingPredictionData> squirlsPredictions() {
-        return squirlsPredictions;
+    public SquirlsResult squirlsResults() {
+        return squirlsResult;
     }
 
     @Override
@@ -112,19 +111,19 @@ class SimpleVisualizableVariantAllele implements VisualizableVariantAllele {
         if (o == null || getClass() != o.getClass()) return false;
         SimpleVisualizableVariantAllele that = (SimpleVisualizableVariantAllele) o;
         return Objects.equals(annotations, that.annotations) &&
-                Objects.equals(squirlsPredictions, that.squirlsPredictions);
+                Objects.equals(squirlsResult, that.squirlsResult);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(annotations, squirlsPredictions);
+        return Objects.hash(annotations, squirlsResult);
     }
 
     @Override
     public String toString() {
         return "SimpleVisualizableVariantAllele{" +
                 "annotations=" + annotations +
-                ", squirlsPredictions=" + squirlsPredictions +
+                ", squirlsResult=" + squirlsResult +
                 '}';
     }
 }

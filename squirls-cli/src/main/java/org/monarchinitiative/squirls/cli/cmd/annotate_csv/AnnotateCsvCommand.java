@@ -82,9 +82,10 @@ import org.apache.commons.csv.CSVPrinter;
 import org.apache.commons.csv.CSVRecord;
 import org.monarchinitiative.squirls.cli.Main;
 import org.monarchinitiative.squirls.cli.cmd.SquirlsCommand;
-import org.monarchinitiative.squirls.core.SplicingPredictionData;
+import org.monarchinitiative.squirls.core.Prediction;
+import org.monarchinitiative.squirls.core.SquirlsResult;
+import org.monarchinitiative.squirls.core.SquirlsTxResult;
 import org.monarchinitiative.squirls.core.VariantSplicingEvaluator;
-import org.monarchinitiative.squirls.core.classifier.Prediction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ConfigurableApplicationContext;
@@ -96,6 +97,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @CommandLine.Command(name = "annotate-csv",
         aliases = {"C"},
@@ -159,14 +161,16 @@ public class AnnotateCsvCommand extends SquirlsCommand {
                         LOGGER.warn("Invalid pos `{}` in record #{}", record.get("POS"), record.getRecordNumber());
                         continue;
                     }
-                    Map<String, SplicingPredictionData> predictionData = evaluator.evaluate(chrom, pos, ref, alt);
+
+                    SquirlsResult squirlsResult = evaluator.evaluate(chrom, pos, ref, alt);
 
                     // figure out max pathogenicity and whether the variant is a splice variant
                     boolean isSpliceVariant = false;
                     double maxScore = Double.NaN;
-                    for (SplicingPredictionData prediction : predictionData.values()) {
-                        final Prediction prd = prediction.getPrediction();
-                        final double current = prd.getMaxPathogenicity();
+                    Map<String, Prediction> predictionMap = squirlsResult.results()
+                            .collect(Collectors.toMap(SquirlsTxResult::accessionId, SquirlsTxResult::prediction));
+                    for (Prediction prediction : predictionMap.values()) {
+                        double current = prediction.getMaxPathogenicity();
                         if (Double.isNaN(maxScore)) {
                             maxScore = current;
                         } else {
@@ -174,10 +178,10 @@ public class AnnotateCsvCommand extends SquirlsCommand {
                                 maxScore = current;
                             }
                         }
-                        isSpliceVariant = isSpliceVariant || prd.isPositive();
+                        isSpliceVariant = isSpliceVariant || prediction.isPositive();
                     }
 
-                    printer.printRecord(chrom, pos, ref, alt, isSpliceVariant, maxScore, processScores(predictionData));
+                    printer.printRecord(chrom, pos, ref, alt, isSpliceVariant, maxScore, processScores(predictionMap));
                 }
 
             } catch (IOException e) {

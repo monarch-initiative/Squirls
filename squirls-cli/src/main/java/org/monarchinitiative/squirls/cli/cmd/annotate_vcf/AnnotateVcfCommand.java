@@ -94,7 +94,7 @@ import htsjdk.variant.vcf.VCFFileReader;
 import org.monarchinitiative.squirls.cli.Main;
 import org.monarchinitiative.squirls.cli.cmd.SquirlsCommand;
 import org.monarchinitiative.squirls.cli.writers.*;
-import org.monarchinitiative.squirls.core.SplicingPredictionData;
+import org.monarchinitiative.squirls.core.SquirlsResult;
 import org.monarchinitiative.squirls.core.VariantSplicingEvaluator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -191,20 +191,19 @@ public class AnnotateVcfCommand extends SquirlsCommand {
                 }
 
                 // Squirls scores
-                Map<String, SplicingPredictionData> squirlsScores;
+                SquirlsResult squirlsResult;
                 if (!variantAnnotations.getHighestImpactEffect().isOffTranscript()) {
                     Set<String> txAccessions = variantAnnotations.getAnnotations().stream()
                             .map(Annotation::getTranscript)
                             .map(TranscriptModel::getAccession)
                             .collect(Collectors.toSet());
-                    squirlsScores = evaluator.evaluate(vc.getContig(), vc.getStart(), vc.getReference().getBaseString(), allele.getBaseString(), txAccessions);
+                    squirlsResult = evaluator.evaluate(vc.getContig(), vc.getStart(), vc.getReference().getBaseString(), allele.getBaseString(), txAccessions);
                 } else {
                     // don't bother with annotating an off-exome variant
-                    squirlsScores = Map.of();
+                    squirlsResult = SquirlsResult.empty();
                 }
 
-
-                evaluations.add(new WritableSplicingAlleleDefault(vc, allele, variantAnnotations, squirlsScores));
+                evaluations.add(new WritableSplicingAlleleDefault(vc, allele, variantAnnotations, squirlsResult));
             }
 
             return evaluations;
@@ -254,7 +253,7 @@ public class AnnotateVcfCommand extends SquirlsCommand {
                             .map(annotateVariant(evaluator, jd.getRefDict(), annotator))
                             .flatMap(Collection::stream)
                             .peek(wa -> {
-                                if (!wa.squirlsPredictions().isEmpty()) {
+                                if (!wa.squirlsResult().isEmpty()) {
                                     progressReporter.logAnnotatedAllele(wa);
                                 }
                             })

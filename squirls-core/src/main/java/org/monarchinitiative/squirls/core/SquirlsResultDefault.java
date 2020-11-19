@@ -73,50 +73,55 @@
  *
  * Daniel Danis, Peter N Robinson, 2020
  */
+package org.monarchinitiative.squirls.core;
 
-package org.monarchinitiative.squirls.core.classifier;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
-import java.util.Collection;
+class SquirlsResultDefault implements SquirlsResult {
 
-/**
- * The implementing classes represent predictions made by the {@link BinaryClassifier} with respect
- * to a single transcript.
- */
-public interface Prediction {
+    private final Set<SquirlsTxResult> results;
 
-    static Prediction emptyPrediction() {
-        return EmptyPrediction.getInstance();
-    }
+    private SquirlsResultDefault(Set<SquirlsTxResult> results) {
+        int nUniqueTxAccessions = results.stream()
+                .map(SquirlsTxResult::accessionId)
+                .collect(Collectors.toSet()).size();
 
-    /**
-     * Predictions are being made by one or more decision functions, where {@link PartialPrediction} represents outcome
-     * of a single decision function.
-     *
-     * @return a collection of partial predictions
-     */
-    Collection<PartialPrediction> getPartialPredictions();
-
-    /**
-     * @return <code>true</code> if binary classifier considers this {@link Prediction} to be positive
-     */
-    boolean isPositive();
-
-    /**
-     * @return the maximum pathogenicity prediction value
-     */
-    default double getMaxPathogenicity() {
-        double max = Double.NaN;
-        for (PartialPrediction pp : getPartialPredictions()) {
-            final double proba = pp.getPathoProba();
-            if (Double.isNaN(max)) {
-                max = proba;
-            } else {
-                if (max < proba) {
-                    max = proba;
-                }
-            }
+        if (nUniqueTxAccessions != results.size()) {
+            throw new IllegalArgumentException("Inconsistent number of transcripts `" + nUniqueTxAccessions + "` and results `" + results.size() + '`');
         }
-        return max;
+
+        this.results = Set.copyOf(results);
     }
 
+    static SquirlsResultDefault of(Set<SquirlsTxResult> squirlsTxResults) {
+        return new SquirlsResultDefault(squirlsTxResults);
+    }
+
+    @Override
+    public Stream<SquirlsTxResult> results() {
+        return results.stream();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        SquirlsResultDefault that = (SquirlsResultDefault) o;
+        return Objects.equals(results, that.results);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(results);
+    }
+
+    @Override
+    public String toString() {
+        return "SquirlsResultDefault{" +
+                "results=" + results +
+                '}';
+    }
 }

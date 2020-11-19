@@ -74,48 +74,137 @@
  * Daniel Danis, Peter N Robinson, 2020
  */
 
-package org.monarchinitiative.squirls.cli;
+package org.monarchinitiative.squirls.cli.data;
 
+import de.charite.compbio.jannovar.annotation.VariantAnnotations;
 import de.charite.compbio.jannovar.reference.GenomeVariant;
+import htsjdk.variant.variantcontext.Allele;
+import htsjdk.variant.variantcontext.VariantContext;
+import org.monarchinitiative.squirls.cli.writers.WritableSplicingAllele;
 import org.monarchinitiative.squirls.core.Metadata;
 import org.monarchinitiative.squirls.core.SplicingPredictionData;
-import org.monarchinitiative.squirls.core.classifier.Prediction;
+import org.monarchinitiative.squirls.core.SquirlsResult;
 import org.monarchinitiative.squirls.core.model.SplicingTranscript;
+import org.monarchinitiative.squirls.core.scoring.Annotatable;
 import xyz.ielis.hyperutil.reference.fasta.SequenceInterval;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
 /**
- * Simple implementation of {@link SplicingPredictionData} for test purposes only.
+ * This class is a POJO for a single ALT allele of the variant and all the associated data.
+ * <p>
+ * <b>BEWARE</b> - This class contains variant data that uses 2 separate and possibly different
+ * {@link de.charite.compbio.jannovar.data.ReferenceDictionary} objects!
+ * <p>
+ * The first dictionary comes from Jannovar and is within
+ * {@link VariantAnnotations} object.
+ * <p>
+ * The second dictionary comes from SQUIRLS database and is used by all objects present within
+ * {@link SplicingPredictionData}.
  */
-public class SimpleSplicingPredictionData implements SplicingPredictionData {
+class TestVariant implements WritableSplicingAllele, Annotatable {
+
+    /**
+     * The base variant context that is being analyzed.
+     */
+    private final VariantContext base;
+
+    /**
+     * The ALT allele of the variant context that is being analyzed.
+     */
+    private final Allele altAllele;
 
     private final GenomeVariant variant;
-    private final SplicingTranscript transcript;
-    private final SequenceInterval sequence;
-    private final Map<String, Object> featureMap = new HashMap<>();
 
-    private Prediction prediction;
-    private Metadata metadata;
+    private final SplicingTranscript tx;
 
-    public SimpleSplicingPredictionData(GenomeVariant variant, SplicingTranscript transcript, SequenceInterval sequence) {
+    private final SequenceInterval si;
+
+    private final Map<String, Object> features;
+    /**
+     * Results of the splicing analysis.
+     */
+    private SquirlsResult squirlsResult;
+    /**
+     * Results of Jannovar's functional annotation with respect to transcripts this variant overlaps with.
+     */
+    private VariantAnnotations annotations;
+    /**
+     * The primary graphics presented to the user for this variant.
+     */
+    private String graphics;
+
+    TestVariant(VariantContext base, Allele altAllele, GenomeVariant variant, SplicingTranscript tx, SequenceInterval si, Map<String, Object> features) {
+        this.base = base;
+        this.altAllele = altAllele;
         this.variant = variant;
-        this.transcript = transcript;
-        this.sequence = sequence;
+        this.tx = tx;
+        this.si = si;
+        this.features = features;
     }
 
+    public String getGraphics() {
+        return graphics;
+    }
 
-    @Override
-    public Prediction getPrediction() {
-        return prediction;
+    public void setGraphics(String graphics) {
+        this.graphics = graphics;
+    }
+
+    public void setSquirlsResult(SquirlsResult squirlsResult) {
+        this.squirlsResult = squirlsResult;
     }
 
     @Override
-    public void setPrediction(Prediction prediction) {
-        this.prediction = prediction;
+    public Allele allele() {
+        return altAllele;
+    }
+
+    @Override
+    public VariantContext variantContext() {
+        return base;
+    }
+
+    @Override
+    public VariantAnnotations variantAnnotations() {
+        return annotations;
+    }
+
+    public void setAnnotations(VariantAnnotations annotations) {
+        this.annotations = annotations;
+    }
+
+    @Override
+    public SquirlsResult squirlsResult() {
+        return squirlsResult;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        TestVariant that = (TestVariant) o;
+        return Objects.equals(base, that.base) &&
+                Objects.equals(altAllele, that.altAllele) &&
+                Objects.equals(squirlsResult, that.squirlsResult) &&
+                Objects.equals(annotations, that.annotations);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(base, altAllele, squirlsResult, annotations);
+    }
+
+    @Override
+    public String toString() {
+        return "TestVariant{" +
+                "base=" + base +
+                ", altAllele=" + altAllele +
+                ", squirlsResult=" + squirlsResult +
+                ", annotations=" + annotations +
+                '}';
     }
 
     @Override
@@ -125,66 +214,36 @@ public class SimpleSplicingPredictionData implements SplicingPredictionData {
 
     @Override
     public SplicingTranscript getTranscript() {
-        return transcript;
+        return tx;
     }
 
     @Override
     public SequenceInterval getSequence() {
-        return sequence;
+        return si;
     }
 
     @Override
     public Metadata getMetadata() {
-        return metadata;
+        return null;
     }
 
     @Override
     public void setMetadata(Metadata metadata) {
-        this.metadata = metadata;
+        // no-op
     }
 
     @Override
     public Set<String> getFeatureNames() {
-        return featureMap.keySet();
+        return features.keySet();
     }
 
     @Override
     public <T> T getFeature(String featureName, Class<T> clz) {
-        return clz.cast(featureMap.get(featureName));
+        return clz.cast(features.get(featureName));
     }
 
     @Override
     public void putFeature(String name, Object value) {
-        featureMap.put(name, value);
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        SimpleSplicingPredictionData that = (SimpleSplicingPredictionData) o;
-        return Objects.equals(variant, that.variant) &&
-                Objects.equals(transcript, that.transcript) &&
-                Objects.equals(sequence, that.sequence) &&
-                Objects.equals(featureMap, that.featureMap) &&
-                Objects.equals(prediction, that.prediction) &&
-                Objects.equals(metadata, that.metadata);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(variant, transcript, sequence, featureMap, prediction, metadata);
-    }
-
-    @Override
-    public String toString() {
-        return "SimpleSplicingPredictionData{" +
-                "variant=" + variant +
-                ", transcript=" + transcript +
-                ", sequence=" + sequence +
-                ", featureMap=" + featureMap +
-                ", prediction=" + prediction +
-                ", metadata=" + metadata +
-                '}';
+        features.put(name, value);
     }
 }

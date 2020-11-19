@@ -74,38 +74,68 @@
  * Daniel Danis, Peter N Robinson, 2020
  */
 
-package org.monarchinitiative.squirls.cli.visualization;
+package org.monarchinitiative.squirls.core;
 
-import de.charite.compbio.jannovar.annotation.VariantAnnotator;
-import de.charite.compbio.jannovar.annotation.builders.AnnotationBuilderOptions;
-import de.charite.compbio.jannovar.data.JannovarData;
-import org.junit.jupiter.api.BeforeEach;
-import org.monarchinitiative.squirls.cli.TestDataSourceConfig;
-import org.monarchinitiative.squirls.cli.writers.WritableSplicingAllele;
-import org.monarchinitiative.squirls.core.data.ic.SplicingPwmData;
-import org.monarchinitiative.vmvt.core.VmvtGenerator;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
+import java.util.Map;
+import java.util.Objects;
 
-@SpringBootTest(classes = TestDataSourceConfig.class)
-public class GraphicsGeneratorTestBase {
+/**
+ * Squirls prediction results wrt. single transcript.
+ */
+class SquirlsTxResultDefault implements SquirlsTxResult {
 
-    @Autowired
-    public JannovarData jannovarData;
+    private final String accessionId;
+    private final Prediction prediction;
+    private final Map<String, Double> features;
 
-    @Autowired
-    public SplicingPwmData splicingPwmData;
-
-    protected VmvtGenerator vmvtGenerator = new VmvtGenerator();
-
-    protected VariantAnnotator annotator;
-
-    @BeforeEach
-    public void setUp() {
-        annotator = new VariantAnnotator(jannovarData.getRefDict(), jannovarData.getChromosomes(), new AnnotationBuilderOptions());
+    private SquirlsTxResultDefault(String accessionId,
+                                   Prediction prediction,
+                                   Map<String, Double> features) {
+        this.accessionId = accessionId;
+        this.prediction = prediction;
+        this.features = features;
     }
 
-    protected static VisualizableVariantAllele toVisualizableAllele(WritableSplicingAllele writableSplicingAllele) {
-        return new SimpleVisualizableVariantAllele(writableSplicingAllele.variantAnnotations(), writableSplicingAllele.squirlsResult());
+    static SquirlsTxResultDefault of(String accessionId, Prediction prediction, Map<String, Double> featureMap) {
+        return new SquirlsTxResultDefault(accessionId, prediction, featureMap);
+    }
+
+    @Override
+    public String accessionId() {
+        return accessionId;
+    }
+
+    @Override
+    public Prediction prediction() {
+        return prediction;
+    }
+
+    @Override
+    public Map<String, Double> features() {
+        return features;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        SquirlsTxResultDefault that = (SquirlsTxResultDefault) o;
+        return Objects.equals(accessionId, that.accessionId) &&
+                Objects.equals(prediction, that.prediction) &&
+                Objects.equals(features, that.features);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(accessionId, prediction, features);
+    }
+
+    @Override
+    public String toString() {
+        return "SquirlsTxResultDefault{" +
+                "accessionId='" + accessionId + '\'' +
+                ", prediction=" + prediction +
+                ", features=" + features +
+                '}';
     }
 }

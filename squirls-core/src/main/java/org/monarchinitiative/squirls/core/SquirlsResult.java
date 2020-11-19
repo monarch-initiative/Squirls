@@ -74,38 +74,77 @@
  * Daniel Danis, Peter N Robinson, 2020
  */
 
-package org.monarchinitiative.squirls.cli.visualization;
+package org.monarchinitiative.squirls.core;
 
-import de.charite.compbio.jannovar.annotation.VariantAnnotator;
-import de.charite.compbio.jannovar.annotation.builders.AnnotationBuilderOptions;
-import de.charite.compbio.jannovar.data.JannovarData;
-import org.junit.jupiter.api.BeforeEach;
-import org.monarchinitiative.squirls.cli.TestDataSourceConfig;
-import org.monarchinitiative.squirls.cli.writers.WritableSplicingAllele;
-import org.monarchinitiative.squirls.core.data.ic.SplicingPwmData;
-import org.monarchinitiative.vmvt.core.VmvtGenerator;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
+import java.util.Comparator;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
-@SpringBootTest(classes = TestDataSourceConfig.class)
-public class GraphicsGeneratorTestBase {
+/**
+ * Squirls results for a variant.
+ */
+public interface SquirlsResult {
 
-    @Autowired
-    public JannovarData jannovarData;
-
-    @Autowired
-    public SplicingPwmData splicingPwmData;
-
-    protected VmvtGenerator vmvtGenerator = new VmvtGenerator();
-
-    protected VariantAnnotator annotator;
-
-    @BeforeEach
-    public void setUp() {
-        annotator = new VariantAnnotator(jannovarData.getRefDict(), jannovarData.getChromosomes(), new AnnotationBuilderOptions());
+    static SquirlsResult empty() {
+        return SquirlsResultEmpty.instance();
     }
 
-    protected static VisualizableVariantAllele toVisualizableAllele(WritableSplicingAllele writableSplicingAllele) {
-        return new SimpleVisualizableVariantAllele(writableSplicingAllele.variantAnnotations(), writableSplicingAllele.squirlsResult());
+    Stream<SquirlsTxResult> results();
+
+    default boolean isEmpty() {
+        return this.equals(empty()) || results().map(SquirlsTxResult::prediction).allMatch(Prediction::isEmpty);
     }
+
+    default Optional<SquirlsTxResult> resultForTranscript(String accessionId) {
+        return results()
+                .filter(e -> e.accessionId().equals(accessionId))
+                .findFirst();
+    }
+
+    default Optional<Prediction> predictionForTranscript(String accessionId) {
+        return resultForTranscript(accessionId)
+                .map(SquirlsTxResult::prediction);
+    }
+
+    default Optional<Double> pathogenicityForTranscript(String accessionId) {
+        return predictionForTranscript(accessionId)
+                .map(Prediction::getMaxPathogenicity);
+    }
+
+    default Set<String> txAccessionIds() {
+        return results()
+                .map(SquirlsTxResult::accessionId)
+                .collect(Collectors.toSet());
+    }
+
+    default Stream<Prediction> predictions() {
+        return results()
+                .map(SquirlsTxResult::prediction);
+    }
+
+    default boolean isPathogenic() {
+        return predictions()
+                .anyMatch(Prediction::isPositive);
+    }
+
+    default Optional<SquirlsTxResult> maxPathogenicityResult() {
+        return results()
+                .filter(e -> e.prediction().maxPathogenicityNotNaN())
+                .max(Comparator.comparing(SquirlsTxResult::prediction));
+    }
+
+    default Optional<String> maxPathogenicityTranscriptAccession() {
+        return maxPathogenicityResult()
+                .map(SquirlsTxResult::accessionId);
+    }
+
+    default double maxPathogenicity() {
+        return maxPathogenicityResult()
+                .map(SquirlsTxResult::prediction)
+                .map(Prediction::getMaxPathogenicity)
+                .orElse(Double.NaN);
+    }
+
 }

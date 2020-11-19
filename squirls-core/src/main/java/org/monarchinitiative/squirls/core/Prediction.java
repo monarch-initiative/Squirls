@@ -74,38 +74,74 @@
  * Daniel Danis, Peter N Robinson, 2020
  */
 
-package org.monarchinitiative.squirls.cli.visualization;
+package org.monarchinitiative.squirls.core;
 
-import de.charite.compbio.jannovar.annotation.VariantAnnotator;
-import de.charite.compbio.jannovar.annotation.builders.AnnotationBuilderOptions;
-import de.charite.compbio.jannovar.data.JannovarData;
-import org.junit.jupiter.api.BeforeEach;
-import org.monarchinitiative.squirls.cli.TestDataSourceConfig;
-import org.monarchinitiative.squirls.cli.writers.WritableSplicingAllele;
-import org.monarchinitiative.squirls.core.data.ic.SplicingPwmData;
-import org.monarchinitiative.vmvt.core.VmvtGenerator;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.monarchinitiative.squirls.core.classifier.EmptyPrediction;
+import org.monarchinitiative.squirls.core.classifier.PartialPrediction;
 
-@SpringBootTest(classes = TestDataSourceConfig.class)
-public class GraphicsGeneratorTestBase {
+import java.util.Collection;
+import java.util.Comparator;
 
-    @Autowired
-    public JannovarData jannovarData;
+/**
+ * A prediction made by the {@link org.monarchinitiative.squirls.core.classifier.SquirlsClassifier} with respect
+ * to a single transcript.
+ */
+public interface Prediction extends Comparable<Prediction> {
 
-    @Autowired
-    public SplicingPwmData splicingPwmData;
+    Comparator<Prediction> PREDICTION_COMPARATOR = Comparator.comparing(Prediction::getMaxPathogenicity)
+            .thenComparing(Prediction::isPositive);
 
-    protected VmvtGenerator vmvtGenerator = new VmvtGenerator();
-
-    protected VariantAnnotator annotator;
-
-    @BeforeEach
-    public void setUp() {
-        annotator = new VariantAnnotator(jannovarData.getRefDict(), jannovarData.getChromosomes(), new AnnotationBuilderOptions());
+    static Prediction emptyPrediction() {
+        return EmptyPrediction.getInstance();
     }
 
-    protected static VisualizableVariantAllele toVisualizableAllele(WritableSplicingAllele writableSplicingAllele) {
-        return new SimpleVisualizableVariantAllele(writableSplicingAllele.variantAnnotations(), writableSplicingAllele.squirlsResult());
+    /**
+     * Predictions are being made by one or more decision functions, where {@link PartialPrediction} represents outcome
+     * of a single decision function.
+     *
+     * @return a collection of partial predictions
+     */
+    Collection<PartialPrediction> getPartialPredictions();
+
+    /**
+     * @return <code>true</code> if binary classifier considers this {@link Prediction} to be positive
+     */
+    boolean isPositive();
+
+    default boolean isEmpty() {
+        return this.equals(emptyPrediction());
+    }
+
+    /**
+     * @return <code>true</code> if the prediction was made and max pathogenicity is available
+     */
+    default boolean maxPathogenicityNotNaN() {
+        return !Double.isNaN(getMaxPathogenicity());
+    }
+
+    /**
+     * @return the maximum pathogenicity prediction value or <code>NaN</code>
+     */
+    default double getMaxPathogenicity() {
+        double max = Double.NaN;
+        for (PartialPrediction pp : getPartialPredictions()) {
+            double proba = pp.getPathoProba();
+            if (Double.isNaN(proba)) {
+                continue;
+            }
+            if (Double.isNaN(max)) {
+                max = proba;
+            } else {
+                if (max < proba) {
+                    max = proba;
+                }
+            }
+        }
+        return max;
+    }
+
+    @Override
+    default int compareTo(Prediction o) {
+        return PREDICTION_COMPARATOR.compare(this, o);
     }
 }

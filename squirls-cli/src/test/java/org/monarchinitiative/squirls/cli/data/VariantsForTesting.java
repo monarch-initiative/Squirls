@@ -87,10 +87,8 @@ import de.charite.compbio.jannovar.reference.Strand;
 import htsjdk.variant.variantcontext.Allele;
 import htsjdk.variant.variantcontext.VariantContext;
 import htsjdk.variant.variantcontext.VariantContextBuilder;
-import org.monarchinitiative.squirls.cli.SimpleSplicingPredictionData;
-import org.monarchinitiative.squirls.cli.writers.WritableSplicingAllele;
 import org.monarchinitiative.squirls.core.Metadata;
-import org.monarchinitiative.squirls.core.SplicingPredictionData;
+import org.monarchinitiative.squirls.core.SquirlsTxResult;
 import org.monarchinitiative.squirls.core.classifier.PartialPrediction;
 import org.monarchinitiative.squirls.core.classifier.StandardPrediction;
 import org.monarchinitiative.squirls.core.model.SplicingTranscript;
@@ -98,7 +96,6 @@ import org.monarchinitiative.vmvt.core.VmvtGenerator;
 import xyz.ielis.hyperutil.reference.fasta.SequenceInterval;
 
 import java.util.*;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class VariantsForTesting {
@@ -111,162 +108,29 @@ public class VariantsForTesting {
         // no-op
     }
 
-
-    /**
-     * Get data for variant <code>chr9:136,224,586G>A</code>. The variant is at -1 position of the canonical acceptor
-     * site of the exon 3.
-     *
-     * @param rd        {@link ReferenceDictionary} to use
-     * @param annotator {@link VariantAnnotator} to use to perform functional annotation with respect to genes & transcripts
-     * @return evaluation object with all the data
-     * @throws Exception bla
-     */
-    public static WritableSplicingAllele SURF2Exon3AcceptorMinus1Evaluation(ReferenceDictionary rd, VariantAnnotator annotator) throws Exception {
-        /*
-        Prepare POJOs
-         */
-        Allele referenceAllele = Allele.create("G", true);
-        Allele alternateAllele = Allele.create("A", false);
-        final VariantContext vc = new VariantContextBuilder()
-                .chr("chr9")
-                .start(136_224_586)
-                .stop(136_224_586)
-                .id("rs993")
-                .alleles(List.of(referenceAllele, alternateAllele))
-                .make();
-
-        final SimpleWritableSplicingAllele evaluation = new SimpleWritableSplicingAllele(vc, alternateAllele);
-
-        final GenomePosition position = new GenomePosition(rd, Strand.FWD, rd.getContigNameToID().get("chr9"), 136_224_586, PositionType.ONE_BASED);
-        final GenomeVariant variant = new GenomeVariant(position, "G", "A");
-
-        /*
-        Make annotations map
-         */
-        final VariantAnnotations ann = annotator.buildAnnotations(variant);
-        evaluation.setAnnotations(ann);
-
-        /*
-        Make predictions map
-         */
-        final Map<String, SplicingPredictionData> predictions = Transcripts.surf2Transcripts(rd).stream()
-                .map(transcript -> new SimpleSplicingPredictionData(variant, transcript, Sequences.getSurf2Exon3Sequence(rd)))
-                .peek(data -> data.setPrediction(StandardPrediction.of(PartialPrediction.of("fake", 0.93, FAKE_THRESHOLD))))
-                .peek(data -> data.setMetadata(Metadata.builder()
-                        .putDonorCoordinate("NM_017503.4", new GenomePosition(rd, Strand.FWD, 9, 136_224_691, PositionType.ONE_BASED))
-                        .putAcceptorCoordinate("NM_017503.4", new GenomePosition(rd, Strand.FWD, 9, 136_224_587, PositionType.ONE_BASED))
-                        .putDonorCoordinate("NM_001278928.1", new GenomePosition(rd, Strand.FWD, 9, 136_224_691, PositionType.ONE_BASED))
-                        .putAcceptorCoordinate("NM_001278928.1", new GenomePosition(rd, Strand.FWD, 9, 136_224_587, PositionType.ONE_BASED))
-                        .build()))
-                .peek(data -> {
-                    data.putFeature("donor_offset", -2.);
-                    data.putFeature("canonical_donor", 2.44704789418146);
-                    data.putFeature("cryptic_donor", 0.);
-                    data.putFeature("acceptor_offset", 143.);
-                    data.putFeature("canonical_acceptor", 0.);
-                    data.putFeature("cryptic_acceptor", -12.4905210874462);
-                    data.putFeature("phylop", 3.5);
-                    data.putFeature("hexamer", -1.4957907);
-                    data.putFeature("septamer", -0.8844);
-                })
-                .collect(Collectors.toMap(k -> k.getTranscript().getAccessionId(), Function.identity()));
-        evaluation.putAllPredictionData(predictions);
-
-        return evaluation;
-    }
-
-
-    /**
-     * Get data for variant <code>chr9:136,224,694A>T</code>. The variant is located at +4 position of the canonical
-     * donor site of the exon 3.
-     *
-     * @param rd        {@link ReferenceDictionary} to use
-     * @param annotator {@link VariantAnnotator} to use to perform functional annotation with respect to genes & transcripts
-     * @return evaluation object with all the data
-     * @throws Exception bla
-     */
-    public static WritableSplicingAllele SURF2DonorExon3Plus4Evaluation(ReferenceDictionary rd, VariantAnnotator annotator) throws Exception {
-        final String chrom = "chr9";
-        final int chr = 9;
-        final int pos = 136_224_694;
-
-        /*
-        Prepare POJOs
-         */
-        Allele referenceAllele = Allele.create("A", true);
-        Allele altAlleleOne = Allele.create("T", false);
-        Allele altAlleleTwo = Allele.create("TC", false);
-        final VariantContext vc = new VariantContextBuilder()
-                .chr(chrom) // on hg19
-                .start(pos)
-                .stop(pos)
-                .id("rs993")
-                .alleles(List.of(referenceAllele, altAlleleOne, altAlleleTwo))
-                .make();
-
-        final SimpleWritableSplicingAllele evaluation = new SimpleWritableSplicingAllele(vc, altAlleleOne);
-        final GenomePosition position = new GenomePosition(rd, Strand.FWD, rd.getContigNameToID().get(chrom), pos, PositionType.ONE_BASED);
-        final GenomeVariant variant = new GenomeVariant(position, "A", "T");
-
-        /*
-        Make annotations map
-         */
-        final VariantAnnotations ann = annotator.buildAnnotations(variant);
-        evaluation.setAnnotations(ann);
-
-        /*
-        Make predictions map
-         */
-        final Map<String, SplicingPredictionData> predictions = Transcripts.surf2Transcripts(rd).stream()
-                .map(transcript -> new SimpleSplicingPredictionData(variant, transcript, Sequences.getSurf2Exon3Sequence(rd)))
-                .peek(data -> data.setPrediction(StandardPrediction.of(PartialPrediction.of("fake", 0.94, FAKE_THRESHOLD))))
-                .peek(data -> data.setMetadata(Metadata.builder()
-                        .putDonorCoordinate("NM_017503.4", new GenomePosition(rd, Strand.FWD, chr, 136_224_691, PositionType.ONE_BASED))
-                        .putAcceptorCoordinate("NM_017503.4", new GenomePosition(rd, Strand.FWD, chr, 136_224_587, PositionType.ONE_BASED))
-                        .putDonorCoordinate("NM_001278928.1", new GenomePosition(rd, Strand.FWD, chr, 136_224_691, PositionType.ONE_BASED))
-                        .putAcceptorCoordinate("NM_001278928.1", new GenomePosition(rd, Strand.FWD, chr, 136_224_587, PositionType.ONE_BASED))
-                        .build()))
-                .peek(data -> {
-                    data.putFeature("donor_offset", -2.);
-                    data.putFeature("canonical_donor", 2.44704789418146);
-                    data.putFeature("cryptic_donor", 0.);
-                    data.putFeature("acceptor_offset", 143.);
-                    data.putFeature("canonical_acceptor", 0.);
-                    data.putFeature("cryptic_acceptor", -12.4905210874462);
-                    data.putFeature("phylop", 3.5);
-                    data.putFeature("hexamer", -1.4957907);
-                    data.putFeature("septamer", -0.8844);
-                })
-                .collect(Collectors.toMap(k -> k.getTranscript().getAccessionId(), Function.identity()));
-        evaluation.putAllPredictionData(predictions);
-
-        return evaluation;
-    }
-
-
-    private static WritableSplicingAllele makeEvaluation(ReferenceDictionary rd,
-                                                         String chrom,
-                                                         int pos,
-                                                         String variantId,
-                                                         String ref,
-                                                         String alt,
-                                                         VariantAnnotator annotator,
-                                                         Set<String> seqIds,
-                                                         Collection<SplicingTranscript> transcripts,
-                                                         SequenceInterval si,
-                                                         double pathogenicity,
-                                                         Metadata metadata,
-                                                         String featurePayload,
-                                                         String ruler,
-                                                         String primary,
-                                                         String secondary,
-                                                         String title) throws AnnotationException {
+    private static TestVariant makeEvaluation(ReferenceDictionary rd,
+                                              String chrom,
+                                              int pos,
+                                              String variantId,
+                                              String ref,
+                                              String alt,
+                                              VariantAnnotator annotator,
+                                              Set<String> seqIds,
+                                              Collection<SplicingTranscript> transcripts,
+                                              SequenceInterval si,
+                                              double pathogenicity,
+                                              Metadata metadata,
+                                              String featurePayload,
+                                              String ruler,
+                                              String primary,
+                                              String secondary,
+                                              String title) throws AnnotationException {
         /*
         Assemble data to POJOs
          */
         Allele referenceAllele = Allele.create(ref, true);
         Allele altAlleleOne = Allele.create(alt, false);
-        final VariantContext vc = new VariantContextBuilder()
+        VariantContext vc = new VariantContextBuilder()
                 .chr(chrom) // on hg19
                 .start(pos)
                 .stop(pos)
@@ -274,35 +138,47 @@ public class VariantsForTesting {
                 .alleles(List.of(referenceAllele, altAlleleOne))
                 .make();
 
-        final SimpleWritableSplicingAllele evaluation = new SimpleWritableSplicingAllele(vc, altAlleleOne);
-        final GenomePosition position = new GenomePosition(rd, Strand.FWD, rd.getContigNameToID().get(chrom), pos, PositionType.ONE_BASED);
-        final GenomeVariant variant = new GenomeVariant(position, ref, alt);
+        /*
+        Prepare features
+         */
+        Map<String, Double> featureMap = Arrays.stream(featurePayload.split("\n"))
+                .map(line -> line.split("="))
+                .collect(Collectors.toMap(v -> v[0], v -> Double.parseDouble(v[1])));
+        Map<String, Object> featureObjects = Arrays.stream(featurePayload.split("\n"))
+                .map(line -> line.split("="))
+                .collect(Collectors.toMap(v -> v[0], v -> Double.parseDouble(v[1])));
+
+        SplicingTranscript st = transcripts.stream().min(Comparator.comparing(SplicingTranscript::getAccessionId)).orElseThrow();
+        GenomePosition position = new GenomePosition(rd, Strand.FWD, rd.getContigNameToID().get(chrom), pos, PositionType.ONE_BASED);
+        GenomeVariant variant = new GenomeVariant(position, ref, alt);
 
         /*
-        Make annotations
+        Prepare test object
          */
-        final VariantAnnotations fullAnnotations = annotator.buildAnnotations(variant);
-        final VariantAnnotations smallAnnotations = new VariantAnnotations(fullAnnotations.getGenomeVariant(),
+        TestVariant evaluation = new TestVariant(vc, altAlleleOne, variant, st, si, featureObjects);
+
+
+        Set<SquirlsTxResult> txResults = new HashSet<>();
+        for (SplicingTranscript transcript : transcripts) {
+            SquirlsTxResultSimple squirlsTxResult = new SquirlsTxResultSimple(transcript.getAccessionId(),
+                    StandardPrediction.of(PartialPrediction.of("fake", pathogenicity, FAKE_THRESHOLD)),
+                    featureMap);
+            txResults.add(squirlsTxResult);
+        }
+        evaluation.setSquirlsResult(new SquirlsResultSimple(txResults));
+
+        /*
+         * Make Jannovar annotations.
+         */
+        VariantAnnotations fullAnnotations = annotator.buildAnnotations(variant);
+        VariantAnnotations smallAnnotations = new VariantAnnotations(fullAnnotations.getGenomeVariant(),
                 fullAnnotations.getAnnotations().stream()
                         .filter(ann -> seqIds.contains(ann.getTranscript().getAccession()))
                         .collect(Collectors.toList()));
         evaluation.setAnnotations(smallAnnotations);
 
-        /*
-        Prepare predictions
-         */
-        final Map<String, Double> featureMap = Arrays.stream(featurePayload.split("\n"))
-                .map(line -> line.split("="))
-                .collect(Collectors.toMap(v -> v[0], v -> Double.parseDouble(v[1])));
-        final Map<String, SplicingPredictionData> predictions = transcripts.stream()
-                .map(transcript -> new SimpleSplicingPredictionData(variant, transcript, si))
-                .peek(data -> data.setPrediction(StandardPrediction.of(PartialPrediction.of("fake", pathogenicity, FAKE_THRESHOLD))))
-                .peek(data -> data.setMetadata(metadata))
-                .peek(data -> featureMap.forEach(data::putFeature))
-                .collect(Collectors.toMap(k -> k.getTranscript().getAccessionId(), Function.identity()));
-        evaluation.putAllPredictionData(predictions);
 
-        // add graphics
+        // Add graphics
         evaluation.setGraphics(assembleFigures(title, ruler, primary, secondary));
 
         return evaluation;
@@ -343,7 +219,7 @@ public class VariantsForTesting {
      * @return evaluation object with all the data
      * @throws Exception bla
      */
-    public static WritableSplicingAllele BRCA2DonorExon15plus2QUID(ReferenceDictionary rd, VariantAnnotator annotator) throws Exception {
+    public static TestVariant BRCA2DonorExon15plus2QUID(ReferenceDictionary rd, VariantAnnotator annotator) throws Exception {
 
         // *********************************** PARAMETRIZE *************************************************************
 
@@ -412,7 +288,7 @@ public class VariantsForTesting {
      * @return evaluation object with all the data
      * @throws Exception bla
      */
-    public static WritableSplicingAllele ALPLDonorExon7Minus2(ReferenceDictionary rd, VariantAnnotator annotator) throws Exception {
+    public static TestVariant ALPLDonorExon7Minus2(ReferenceDictionary rd, VariantAnnotator annotator) throws Exception {
 
         // *********************************** PARAMETRIZE *************************************************************
 
@@ -474,7 +350,7 @@ public class VariantsForTesting {
      * @return evaluation object with all the data
      * @throws Exception bla
      */
-    public static WritableSplicingAllele HBBcodingExon1UpstreamCrypticInCanonical(ReferenceDictionary rd, VariantAnnotator annotator) throws Exception {
+    public static TestVariant HBBcodingExon1UpstreamCrypticInCanonical(ReferenceDictionary rd, VariantAnnotator annotator) throws Exception {
 
         // *********************************** PARAMETRIZE *************************************************************
 
@@ -542,7 +418,7 @@ public class VariantsForTesting {
      * @return evaluation object with all the data
      * @throws Exception bla
      */
-    public static WritableSplicingAllele HBBcodingExon1UpstreamCryptic(ReferenceDictionary rd, VariantAnnotator annotator) throws Exception {
+    public static TestVariant HBBcodingExon1UpstreamCryptic(ReferenceDictionary rd, VariantAnnotator annotator) throws Exception {
 
         // *********************************** PARAMETRIZE *************************************************************
 
@@ -610,7 +486,7 @@ public class VariantsForTesting {
      * @return evaluation object with all the data
      * @throws Exception bla
      */
-    public static WritableSplicingAllele VWFAcceptorExon26minus2QUID(ReferenceDictionary rd, VariantAnnotator annotator) throws Exception {
+    public static TestVariant VWFAcceptorExon26minus2QUID(ReferenceDictionary rd, VariantAnnotator annotator) throws Exception {
 
         // *********************************** PARAMETRIZE *************************************************************
 
@@ -679,7 +555,7 @@ public class VariantsForTesting {
      * @return evaluation object with all the data
      * @throws Exception bla
      */
-    public static WritableSplicingAllele TSC2AcceptorExon11Minus3(ReferenceDictionary rd, VariantAnnotator annotator) throws Exception {
+    public static TestVariant TSC2AcceptorExon11Minus3(ReferenceDictionary rd, VariantAnnotator annotator) throws Exception {
 
         // *********************************** PARAMETRIZE *************************************************************
 
@@ -742,7 +618,7 @@ public class VariantsForTesting {
      * @return evaluation object with all the data
      * @throws Exception bla
      */
-    public static WritableSplicingAllele COL4A5AcceptorExon11Minus8(ReferenceDictionary rd, VariantAnnotator annotator) throws Exception {
+    public static TestVariant COL4A5AcceptorExon11Minus8(ReferenceDictionary rd, VariantAnnotator annotator) throws Exception {
 
         // *********************************** PARAMETRIZE *************************************************************
 
@@ -811,7 +687,7 @@ public class VariantsForTesting {
      * @return evaluation object with all the data
      * @throws Exception bla
      */
-    public static WritableSplicingAllele RYR1codingExon102crypticAcceptor(ReferenceDictionary rd, VariantAnnotator annotator) throws Exception {
+    public static TestVariant RYR1codingExon102crypticAcceptor(ReferenceDictionary rd, VariantAnnotator annotator) throws Exception {
 
         // *********************************** PARAMETRIZE *************************************************************
 
@@ -881,7 +757,7 @@ public class VariantsForTesting {
      * @return evaluation object with all the data
      * @throws Exception bla
      */
-    public static WritableSplicingAllele NF1codingExon9coding_SRE(ReferenceDictionary rd, VariantAnnotator annotator) throws Exception {
+    public static TestVariant NF1codingExon9coding_SRE(ReferenceDictionary rd, VariantAnnotator annotator) throws Exception {
 
         // *********************************** PARAMETRIZE *************************************************************
 

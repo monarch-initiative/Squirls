@@ -87,6 +87,7 @@ import org.monarchinitiative.squirls.cli.visualization.SplicingVariantGraphicsGe
 import org.monarchinitiative.squirls.cli.visualization.panel.PanelGraphicsGenerator;
 import org.monarchinitiative.squirls.cli.visualization.selector.SimpleVisualizationContextSelector;
 import org.monarchinitiative.squirls.cli.visualization.selector.VisualizationContextSelector;
+import org.monarchinitiative.squirls.core.data.SplicingTranscriptSource;
 import org.monarchinitiative.squirls.core.data.ic.InputStreamBasedPositionalWeightMatrixParser;
 import org.monarchinitiative.squirls.core.data.ic.SplicingPwmData;
 import org.monarchinitiative.squirls.core.data.kmer.FileKMerParser;
@@ -167,8 +168,9 @@ public class TestDataSourceConfig {
     public SplicingVariantGraphicsGenerator splicingVariantGraphicsGenerator(VmvtGenerator vmvtGenerator,
                                                                              SplicingPwmData splicingPwmData,
                                                                              VisualizationContextSelector visualizationContextSelector,
-                                                                             GenomeSequenceAccessor genomeSequenceAccessor) {
-        return new PanelGraphicsGenerator(vmvtGenerator, splicingPwmData, visualizationContextSelector, genomeSequenceAccessor);
+                                                                             GenomeSequenceAccessor genomeSequenceAccessor,
+                                                                             SplicingTranscriptSource splicingTranscriptSource) {
+        return new PanelGraphicsGenerator(vmvtGenerator, splicingPwmData, visualizationContextSelector, genomeSequenceAccessor, splicingTranscriptSource);
     }
 
     @Bean
@@ -179,6 +181,11 @@ public class TestDataSourceConfig {
     @Bean
     public VisualizationContextSelector visualizationContextSelector() {
         return new SimpleVisualizationContextSelector();
+    }
+
+    @Bean
+    public SplicingTranscriptSource splicingTranscriptSource() {
+        return Mockito.mock(SplicingTranscriptSource.class);
     }
 
     @Bean
