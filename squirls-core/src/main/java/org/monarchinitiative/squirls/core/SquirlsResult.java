@@ -74,38 +74,128 @@
  * Daniel Danis, Peter N Robinson, 2020
  */
 
-package org.monarchinitiative.squirls.cli.visualization;
+package org.monarchinitiative.squirls.core;
 
-import de.charite.compbio.jannovar.annotation.VariantAnnotator;
-import de.charite.compbio.jannovar.annotation.builders.AnnotationBuilderOptions;
-import de.charite.compbio.jannovar.data.JannovarData;
-import org.junit.jupiter.api.BeforeEach;
-import org.monarchinitiative.squirls.cli.TestDataSourceConfig;
-import org.monarchinitiative.squirls.cli.writers.WritableSplicingAllele;
-import org.monarchinitiative.squirls.core.data.ic.SplicingPwmData;
-import org.monarchinitiative.vmvt.core.VmvtGenerator;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
+import java.util.Comparator;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
-@SpringBootTest(classes = TestDataSourceConfig.class)
-public class GraphicsGeneratorTestBase {
+/**
+ * Squirls results for a variant.
+ */
+@SquirlsApi
+public interface SquirlsResult {
 
-    @Autowired
-    public JannovarData jannovarData;
-
-    @Autowired
-    public SplicingPwmData splicingPwmData;
-
-    protected VmvtGenerator vmvtGenerator = new VmvtGenerator();
-
-    protected VariantAnnotator annotator;
-
-    @BeforeEach
-    public void setUp() {
-        annotator = new VariantAnnotator(jannovarData.getRefDict(), jannovarData.getChromosomes(), new AnnotationBuilderOptions());
+    /**
+     * @return an empty result
+     */
+    static SquirlsResult empty() {
+        return SquirlsResultEmpty.instance();
     }
 
-    protected static VisualizableVariantAllele toVisualizableAllele(WritableSplicingAllele writableSplicingAllele) {
-        return new SimpleVisualizableVariantAllele(writableSplicingAllele.variantAnnotations(), writableSplicingAllele.squirlsResult());
+    /**
+     * @return stream with results wrt. all transcripts
+     */
+    Stream<SquirlsTxResult> results();
+
+    /**
+     * @return <code>true</code> if Squirls calculated no prediction for given input
+     */
+    default boolean isEmpty() {
+        return this.equals(empty()) || results().map(SquirlsTxResult::prediction).allMatch(Prediction::isEmpty);
     }
+
+    /**
+     * Get {@link SquirlsTxResult} for given transcript accession.
+     *
+     * @param accessionId string with transcript accession ID, e.g. <code>NM_123456.2</code>
+     * @return optional with results for the specified transcript or empty optional if prediction for the transcript
+     * is not present
+     */
+    default Optional<SquirlsTxResult> resultForTranscript(String accessionId) {
+        return results()
+                .filter(e -> e.accessionId().equals(accessionId))
+                .findFirst();
+    }
+
+    /**
+     * Get {@link Prediction} for given transcript accession.
+     *
+     * @param accessionId string with transcript accession ID, e.g. <code>NM_123456.2</code>
+     * @return optional with prediction for the specified transcript or empty optional if prediction for the
+     * transcript is not present
+     */
+    default Optional<Prediction> predictionForTranscript(String accessionId) {
+        return resultForTranscript(accessionId)
+                .map(SquirlsTxResult::prediction);
+    }
+
+    /**
+     * Get pathogenicity for given transcript accession.
+     *
+     * @param accessionId string with transcript accession ID, e.g. <code>NM_123456.2</code>
+     * @return optional with pathogenicity for the specified transcript or empty optional if prediction for the
+     * transcript is not present
+     */
+    default Optional<Double> pathogenicityForTranscript(String accessionId) {
+        return predictionForTranscript(accessionId)
+                .map(Prediction::getMaxPathogenicity);
+    }
+
+    /**
+     * @return stream with predictions
+     */
+    default Stream<Prediction> predictions() {
+        return results()
+                .map(SquirlsTxResult::prediction);
+    }
+
+    /**
+     * @return <code>true</code> the variant is predicted as pathogenic wrt. at least transcript from
+     * {@link #txAccessionIds()}
+     */
+    default boolean isPathogenic() {
+        return predictions()
+                .anyMatch(Prediction::isPositive);
+    }
+
+    /**
+     * @return set with transcription IDs wrt. which Squirls made the prediction
+     */
+    default Set<String> txAccessionIds() {
+        return results()
+                .map(SquirlsTxResult::accessionId)
+                .collect(Collectors.toSet());
+    }
+
+    /**
+     * @return optional with result that has the highest pathogenicity or empty optional if there is no prediction or
+     * all predictions are <code>NaN</code>
+     */
+    default Optional<SquirlsTxResult> maxPathogenicityResult() {
+        return results()
+                .filter(e -> e.prediction().maxPathogenicityNotNaN())
+                .max(Comparator.comparing(SquirlsTxResult::prediction));
+    }
+
+    /**
+     * @return optional with accession ID belonging to the most pathogenic prediction
+     */
+    default Optional<String> maxPathogenicityTranscriptAccession() {
+        return maxPathogenicityResult()
+                .map(SquirlsTxResult::accessionId);
+    }
+
+    /**
+     * @return the pathogenicity belonging to {@link #maxPathogenicityTranscriptAccession()} or <code>NaN</code>
+     */
+    default double maxPathogenicity() {
+        return maxPathogenicityResult()
+                .map(SquirlsTxResult::prediction)
+                .map(Prediction::getMaxPathogenicity)
+                .orElse(Double.NaN);
+    }
+
 }

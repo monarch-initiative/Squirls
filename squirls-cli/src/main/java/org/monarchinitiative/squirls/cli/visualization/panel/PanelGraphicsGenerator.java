@@ -77,13 +77,21 @@
 package org.monarchinitiative.squirls.cli.visualization.panel;
 
 import de.charite.compbio.jannovar.annotation.Annotation;
+import de.charite.compbio.jannovar.data.ReferenceDictionary;
+import de.charite.compbio.jannovar.reference.GenomePosition;
+import de.charite.compbio.jannovar.reference.GenomeVariant;
 import org.monarchinitiative.squirls.cli.visualization.AbstractGraphicsGenerator;
 import org.monarchinitiative.squirls.cli.visualization.MissingFeatureException;
 import org.monarchinitiative.squirls.cli.visualization.VisualizableVariantAllele;
 import org.monarchinitiative.squirls.cli.visualization.selector.VisualizationContext;
 import org.monarchinitiative.squirls.cli.visualization.selector.VisualizationContextSelector;
-import org.monarchinitiative.squirls.core.SplicingPredictionData;
+import org.monarchinitiative.squirls.core.SquirlsTxResult;
+import org.monarchinitiative.squirls.core.data.SplicingTranscriptSource;
 import org.monarchinitiative.squirls.core.data.ic.SplicingPwmData;
+import org.monarchinitiative.squirls.core.model.SplicingTranscript;
+import org.monarchinitiative.squirls.core.reference.SplicingLocationData;
+import org.monarchinitiative.squirls.core.reference.transcript.SplicingTranscriptLocator;
+import org.monarchinitiative.squirls.core.reference.transcript.SplicingTranscriptLocatorNaive;
 import org.monarchinitiative.vmvt.core.VmvtGenerator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -94,7 +102,7 @@ import org.thymeleaf.templateresolver.ClassLoaderTemplateResolver;
 import xyz.ielis.hyperutil.reference.fasta.GenomeSequenceAccessor;
 
 import java.util.List;
-import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -109,11 +117,18 @@ public class PanelGraphicsGenerator extends AbstractGraphicsGenerator {
 
     private final TemplateEngine templateEngine;
 
+    private final SplicingTranscriptSource splicingTranscriptSource;
+
+    private final SplicingTranscriptLocator locator;
+
     public PanelGraphicsGenerator(VmvtGenerator vmvtGenerator,
                                   SplicingPwmData splicingPwmData,
                                   VisualizationContextSelector contextSelector,
-                                  GenomeSequenceAccessor genomeSequenceAccessor) {
+                                  GenomeSequenceAccessor genomeSequenceAccessor,
+                                  SplicingTranscriptSource splicingTranscriptSource) {
         super(vmvtGenerator, splicingPwmData, contextSelector, genomeSequenceAccessor);
+        this.splicingTranscriptSource = splicingTranscriptSource;
+        this.locator = new SplicingTranscriptLocatorNaive(splicingPwmData.getParameters());
 
         ClassLoaderTemplateResolver templateResolver = new ClassLoaderTemplateResolver();
         templateResolver.setTemplateMode(TemplateMode.HTML);
@@ -126,59 +141,108 @@ public class PanelGraphicsGenerator extends AbstractGraphicsGenerator {
     }
 
     @Override
-    public String generateGraphics(VisualizableVariantAllele visualizableAllele) {
+    public String generateGraphics(VisualizableVariantAllele allele) {
+        Optional<SquirlsTxResult> mspOpt = allele.squirlsResults().maxPathogenicityResult();
+        if (mspOpt.isEmpty()) {
+            return EMPTY_SVG_IMAGE;
+        }
+
+        SquirlsTxResult highestPrediction = mspOpt.get();
+        Optional<SplicingTranscript> stOpt = splicingTranscriptSource.fetchTranscriptByAccession(highestPrediction.accessionId(), genomeSequenceAccessor.getReferenceDictionary());
+        if (stOpt.isEmpty()) {
+            LOGGER.warn("Could not find transcript {} for variant {}", highestPrediction.accessionId(), allele.genomeVariant());
+            return EMPTY_SVG_IMAGE;
+        }
+        SplicingTranscript transcript = stOpt.get();
+
+        GenomeVariant variant = convertRefDict(allele.genomeVariant());
+        if (variant == null) {
+            return EMPTY_SVG_IMAGE;
+        }
+
+
+        SplicingLocationData locationData = locator.locate(variant, transcript);
+        Optional<GenomePosition> dOpt = locationData.getDonorBoundary();
+        Optional<GenomePosition> aOpt = locationData.getAcceptorBoundary();
+
         /*
         To generate graphics, we first determine graphics type (visualization context).
         Then, we select the relevant parts of the splicing data.
         Finally, we process the data using appropriate template and return HTML
          */
-
-        SplicingPredictionData prediction = visualizableAllele.getPrimaryPrediction();
-        Map<String, Double> featureMap = prediction.getFeatureMap();
-
-
         // 0 - select what visualization context and template name
-        final String templateName;
-        final String graphics;
-        final VisualizationContext visualizationContext;
+        String templateName;
+        String graphics;
+        VisualizationContext visualizationContext;
         try {
-            visualizationContext = contextSelector.selectContext(featureMap);
+            visualizationContext = contextSelector.selectContext(highestPrediction.features());
             switch (visualizationContext) {
                 case CANONICAL_DONOR:
                     templateName = "donor";
-                    graphics = makeCanonicalDonorContextGraphics(prediction);
+                    graphics = makeCanonicalDonorContextGraphics(variant, transcript, dOpt.orElse(null));
                     break;
                 case CRYPTIC_DONOR:
                     templateName = "donor";
-                    graphics = makeCrypticDonorContextGraphics(prediction);
+                    graphics = makeCrypticDonorContextGraphics(variant, transcript, dOpt.orElse(null));
                     break;
                 case CANONICAL_ACCEPTOR:
                     templateName = "acceptor";
-                    graphics = makeCanonicalAcceptorContextGraphics(prediction);
+                    graphics = makeCanonicalAcceptorContextGraphics(variant, transcript, aOpt.orElse(null));
                     break;
                 case CRYPTIC_ACCEPTOR:
                     templateName = "acceptor";
-                    graphics = makeCrypticAcceptorContextGraphics(prediction);
+                    graphics = makeCrypticAcceptorContextGraphics(variant, transcript, aOpt.orElse(null));
                     break;
                 default:
                     LOGGER.warn("Unable to generate graphics for context {}", visualizationContext.getTitle());
                     return EMPTY_SVG_IMAGE;
             }
         } catch (MissingFeatureException e) {
-            LOGGER.warn("Cannot generate graphics for {}. {}", visualizableAllele.genomeVariant(), e.getMessage());
+            LOGGER.warn("Cannot generate graphics for {}. {}", allele.genomeVariant(), e.getMessage());
             return EMPTY_SVG_IMAGE;
         }
 
         // 1 - prepare context for the template
         Context context = new Context();
-        List<Annotation> annotations = visualizableAllele.variantAnnotations().getAnnotations().stream()
+        List<Annotation> annotations = allele.variantAnnotations().getAnnotations().stream()
                 .sorted(TX_COMPARATOR)
                 .collect(Collectors.toList());
-        context.setVariable("variantAnnotations", annotations);
-        context.setVariable("primaryPrediction", prediction);
-        context.setVariable("variantAllele", visualizableAllele);
+
+        context.setVariable("variantAnnotations", annotations); // for tx table
+        context.setVariable("highest_prediction", highestPrediction); // for features
+        context.setVariable("squirls_results", allele.squirlsResults());
         context.setVariable("graphics", graphics);
 
         return templateEngine.process(templateName, context);
     }
+
+    /**
+     * Convert genome variant from Jannovar's reference dictionary to Squirls' reference dictionary.
+     * <p>
+     * Conversion is performed if lengths of the corresponding contigs are the same.
+     *
+     * @param gv variant on Jannovar's reference dictionary
+     * @return variant converted to Squirls reference dictionary
+     */
+    private GenomeVariant convertRefDict(GenomeVariant gv) {
+        // match contigs by name and check that the contig lengths are the same
+
+        ReferenceDictionary jvRd = gv.getGenomeInterval().getRefDict();
+        int jvContigLength = jvRd.getContigIDToLength().getOrDefault(gv.getChr(), -1);
+        ReferenceDictionary sqRd = genomeSequenceAccessor.getReferenceDictionary();
+        Integer sqContigId = sqRd.getContigNameToID().get(gv.getChrName());
+        if (sqContigId == null) {
+            LOGGER.warn("Contig {} for variant {} not present in reference", gv.getChrName(), gv);
+            return null;
+        }
+        int sqContigLength = sqRd.getContigIDToLength().getOrDefault(sqContigId, -2);
+
+        if (jvContigLength == sqContigLength) {
+            // contig length match, let's convert
+            GenomePosition pos = new GenomePosition(sqRd, gv.getGenomePos().getStrand(), sqContigId, gv.getPos());
+            return new GenomeVariant(pos, gv.getRef(), gv.getAlt());
+        }
+        return null;
+    }
+
 }

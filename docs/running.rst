@@ -73,6 +73,20 @@ fields to each variant that overlaps with at least single transcript region:
   Predictions for the individual ``ALT`` alleles are delimited by the ``&`` symbol and grouped with respect to the
   accession ID of the affected transcript
 
+Command options
+###############
+
+The ``annotate-vcf`` command allows to specify these options:
+
+* ``-c, --config`` - path to Squirls configuration file
+* ``-d, --jannovar-data`` - path to Jannovar transcript database to use for functional annotation
+* ``-f, --output-format`` - comma separated list of output format descriptors. Use ``html,vcf`` to create both *VCF*
+  and *HTML* report. Default: ``html``
+* ``-n, --n-variants-to-report`` - number of most pathogenic variants to include in *HTML* report. Default: ``100``
+* ``-t, --n-threads`` - number of threads to use for variant processing. Default: ``4``
+
+The input VCF and output prefix are provided as positional parameters.
+
 ``annotate-pos`` - Annotate variant positions
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 

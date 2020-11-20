@@ -74,38 +74,63 @@
  * Daniel Danis, Peter N Robinson, 2020
  */
 
-package org.monarchinitiative.squirls.cli.visualization;
+package org.monarchinitiative.squirls.core;
 
-import de.charite.compbio.jannovar.annotation.VariantAnnotator;
-import de.charite.compbio.jannovar.annotation.builders.AnnotationBuilderOptions;
-import de.charite.compbio.jannovar.data.JannovarData;
-import org.junit.jupiter.api.BeforeEach;
-import org.monarchinitiative.squirls.cli.TestDataSourceConfig;
-import org.monarchinitiative.squirls.cli.writers.WritableSplicingAllele;
-import org.monarchinitiative.squirls.core.data.ic.SplicingPwmData;
-import org.monarchinitiative.vmvt.core.VmvtGenerator;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
+import de.charite.compbio.jannovar.reference.GenomeVariant;
+import org.monarchinitiative.squirls.core.model.SplicingTranscript;
+import xyz.ielis.hyperutil.reference.fasta.SequenceInterval;
 
-@SpringBootTest(classes = TestDataSourceConfig.class)
-public class GraphicsGeneratorTestBase {
+import java.util.Set;
 
-    @Autowired
-    public JannovarData jannovarData;
+class SplicingPredictionDataEmpty implements SplicingPredictionData {
 
-    @Autowired
-    public SplicingPwmData splicingPwmData;
+    private static final SplicingPredictionDataEmpty INSTANCE = new SplicingPredictionDataEmpty();
 
-    protected VmvtGenerator vmvtGenerator = new VmvtGenerator();
-
-    protected VariantAnnotator annotator;
-
-    @BeforeEach
-    public void setUp() {
-        annotator = new VariantAnnotator(jannovarData.getRefDict(), jannovarData.getChromosomes(), new AnnotationBuilderOptions());
+    private SplicingPredictionDataEmpty() {
+        // private no-op
     }
 
-    protected static VisualizableVariantAllele toVisualizableAllele(WritableSplicingAllele writableSplicingAllele) {
-        return new SimpleVisualizableVariantAllele(writableSplicingAllele.variantAnnotations(), writableSplicingAllele.squirlsResult());
+    public static SplicingPredictionDataEmpty getInstance() {
+        return INSTANCE;
+    }
+
+    @Override
+    public Prediction getPrediction() {
+        return Prediction.emptyPrediction();
+    }
+
+    @Override
+    public void setPrediction(Prediction prediction) {
+        // no-op
+    }
+
+    @Override
+    public GenomeVariant getVariant() {
+        return null;
+    }
+
+    @Override
+    public SplicingTranscript getTranscript() {
+        return SplicingTranscript.getDefaultInstance();
+    }
+
+    @Override
+    public SequenceInterval getSequence() {
+        return null;
+    }
+
+    @Override
+    public Set<String> getFeatureNames() {
+        return Set.of();
+    }
+
+    @Override
+    public <T> T getFeature(String featureName, Class<T> clz) {
+        return null;
+    }
+
+    @Override
+    public void putFeature(String name, Object value) {
+        // no-op
     }
 }

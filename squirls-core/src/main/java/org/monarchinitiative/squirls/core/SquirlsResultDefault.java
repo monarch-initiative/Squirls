@@ -73,75 +73,55 @@
  *
  * Daniel Danis, Peter N Robinson, 2020
  */
-
 package org.monarchinitiative.squirls.core;
 
-import de.charite.compbio.jannovar.reference.GenomeVariant;
-import org.monarchinitiative.squirls.core.classifier.Prediction;
-import org.monarchinitiative.squirls.core.model.SplicingTranscript;
-import xyz.ielis.hyperutil.reference.fasta.SequenceInterval;
-
+import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
-class EmptySplicingPredictionData implements SplicingPredictionData {
+class SquirlsResultDefault implements SquirlsResult {
 
-    private static final EmptySplicingPredictionData INSTANCE = new EmptySplicingPredictionData();
+    private final Set<SquirlsTxResult> results;
 
-    private EmptySplicingPredictionData() {
-        // private no-op
+    private SquirlsResultDefault(Set<SquirlsTxResult> results) {
+        int nUniqueTxAccessions = results.stream()
+                .map(SquirlsTxResult::accessionId)
+                .collect(Collectors.toSet()).size();
+
+        if (nUniqueTxAccessions != results.size()) {
+            throw new IllegalArgumentException("Inconsistent number of transcripts `" + nUniqueTxAccessions + "` and results `" + results.size() + '`');
+        }
+
+        this.results = Set.copyOf(results);
     }
 
-    public static EmptySplicingPredictionData getInstance() {
-        return INSTANCE;
-    }
-
-    @Override
-    public Prediction getPrediction() {
-        return Prediction.emptyPrediction();
-    }
-
-    @Override
-    public void setPrediction(Prediction prediction) {
-        // no-op
-    }
-
-    @Override
-    public GenomeVariant getVariant() {
-        return null;
+    static SquirlsResultDefault of(Set<SquirlsTxResult> squirlsTxResults) {
+        return new SquirlsResultDefault(squirlsTxResults);
     }
 
     @Override
-    public SplicingTranscript getTranscript() {
-        return SplicingTranscript.getDefaultInstance();
+    public Stream<SquirlsTxResult> results() {
+        return results.stream();
     }
 
     @Override
-    public SequenceInterval getSequence() {
-        return null;
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        SquirlsResultDefault that = (SquirlsResultDefault) o;
+        return Objects.equals(results, that.results);
     }
 
     @Override
-    public Metadata getMetadata() {
-        return Metadata.empty();
+    public int hashCode() {
+        return Objects.hash(results);
     }
 
     @Override
-    public void setMetadata(Metadata metadata) {
-        // no-op
-    }
-
-    @Override
-    public Set<String> getFeatureNames() {
-        return Set.of();
-    }
-
-    @Override
-    public <T> T getFeature(String featureName, Class<T> clz) {
-        return null;
-    }
-
-    @Override
-    public void putFeature(String name, Object value) {
-        // no-op
+    public String toString() {
+        return "SquirlsResultDefault{" +
+                "results=" + results +
+                '}';
     }
 }

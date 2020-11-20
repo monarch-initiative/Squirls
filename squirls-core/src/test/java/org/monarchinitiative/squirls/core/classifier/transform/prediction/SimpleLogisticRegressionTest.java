@@ -79,9 +79,9 @@ package org.monarchinitiative.squirls.core.classifier.transform.prediction;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
-import org.monarchinitiative.squirls.core.classifier.PartialPrediction;
-import org.monarchinitiative.squirls.core.classifier.Prediction;
-import org.monarchinitiative.squirls.core.classifier.StandardPrediction;
+import org.monarchinitiative.squirls.core.PartialPrediction;
+import org.monarchinitiative.squirls.core.Prediction;
+import org.monarchinitiative.squirls.core.classifier.PredictionDefault;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
@@ -121,7 +121,7 @@ public class SimpleLogisticRegressionTest {
         double expectedThreshold = 0.871527;
 
         MutablePrediction mp = new SimpleMutablePrediction();
-        mp.setPrediction(StandardPrediction.of(PartialPrediction.of("bla", proba, threshold)));
+        mp.setPrediction(PredictionDefault.of(PartialPrediction.of("bla", proba, threshold)));
 
         Prediction transformed = transformer.transform(mp).getPrediction();
         assertThat(transformed.getPartialPredictions(), hasSize(1));

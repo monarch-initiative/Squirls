@@ -82,8 +82,8 @@ import com.zaxxer.hikari.HikariDataSource;
 import org.monarchinitiative.squirls.autoconfigure.exception.InvalidSquirlsResourceException;
 import org.monarchinitiative.squirls.autoconfigure.exception.MissingSquirlsResourceException;
 import org.monarchinitiative.squirls.autoconfigure.exception.UndefinedSquirlsResourceException;
-import org.monarchinitiative.squirls.core.StandardVariantSplicingEvaluator;
 import org.monarchinitiative.squirls.core.VariantSplicingEvaluator;
+import org.monarchinitiative.squirls.core.VariantSplicingEvaluatorDefault;
 import org.monarchinitiative.squirls.core.classifier.SquirlsClassifier;
 import org.monarchinitiative.squirls.core.classifier.transform.prediction.IdentityTransformer;
 import org.monarchinitiative.squirls.core.classifier.transform.prediction.PredictionTransformer;
@@ -238,7 +238,7 @@ public class SquirlsAutoConfiguration {
         }
 
         // make variant evaluator
-        return StandardVariantSplicingEvaluator.builder()
+        return VariantSplicingEvaluatorDefault.builder()
                 .accessor(genomeSequenceAccessor)
                 .txSource(splicingTranscriptSource)
                 .annotator(splicingAnnotator)

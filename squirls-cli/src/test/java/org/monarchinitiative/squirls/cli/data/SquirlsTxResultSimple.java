@@ -74,34 +74,62 @@
  * Daniel Danis, Peter N Robinson, 2020
  */
 
-package org.monarchinitiative.squirls.core.classifier;
+package org.monarchinitiative.squirls.cli.data;
 
-import java.util.Collection;
-import java.util.Collections;
+import org.monarchinitiative.squirls.core.Prediction;
+import org.monarchinitiative.squirls.core.SquirlsTxResult;
 
-/**
- * Class representing N/A prediction.
- */
-class EmptyPrediction implements Prediction {
+import java.util.Map;
+import java.util.Objects;
 
-    private static final EmptyPrediction INSTANCE = new EmptyPrediction();
+class SquirlsTxResultSimple implements SquirlsTxResult {
 
-    private EmptyPrediction() {
-        // private no-op
-    }
+    private final String accessionId;
+    private final Prediction prediction;
+    private final Map<String, Double> features;
 
-
-    static EmptyPrediction getInstance() {
-        return INSTANCE;
-    }
-
-    @Override
-    public Collection<PartialPrediction> getPartialPredictions() {
-        return Collections.emptySet();
+    SquirlsTxResultSimple(String accessionId, Prediction prediction, Map<String, Double> features) {
+        this.accessionId = accessionId;
+        this.prediction = prediction;
+        this.features = features;
     }
 
     @Override
-    public boolean isPositive() {
-        return false;
+    public String accessionId() {
+        return accessionId;
+    }
+
+    @Override
+    public Prediction prediction() {
+        return prediction;
+    }
+
+    @Override
+    public Map<String, Double> features() {
+        return features;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        SquirlsTxResultSimple that = (SquirlsTxResultSimple) o;
+        return Objects.equals(accessionId, that.accessionId) &&
+                Objects.equals(prediction, that.prediction) &&
+                Objects.equals(features, that.features);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(accessionId, prediction, features);
+    }
+
+    @Override
+    public String toString() {
+        return "SquirlsTxResultSimple{" +
+                "accessionId='" + accessionId + '\'' +
+                ", prediction=" + prediction +
+                ", features=" + features +
+                '}';
     }
 }

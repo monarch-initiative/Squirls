@@ -92,9 +92,9 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-public class StandardVariantSplicingEvaluator implements VariantSplicingEvaluator {
+public class VariantSplicingEvaluatorDefault implements VariantSplicingEvaluator {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(StandardVariantSplicingEvaluator.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(VariantSplicingEvaluatorDefault.class);
 
     private static final int PADDING = 150;
 
@@ -118,7 +118,7 @@ public class StandardVariantSplicingEvaluator implements VariantSplicingEvaluato
      */
     private final int padding;
 
-    private StandardVariantSplicingEvaluator(Builder builder) {
+    private VariantSplicingEvaluatorDefault(Builder builder) {
         accessor = Objects.requireNonNull(builder.accessor, "Accessor cannot be null");
         rd = builder.accessor.getReferenceDictionary();
         txSource = Objects.requireNonNull(builder.txSource, "Transcript source cannot be null");
@@ -139,6 +139,10 @@ public class StandardVariantSplicingEvaluator implements VariantSplicingEvaluato
         return new Builder();
     }
 
+    private static Function<SplicingPredictionData, SquirlsTxResult> toSquirlsTxResult() {
+        return spd -> SquirlsTxResultDefault.of(spd.getTranscript().getAccessionId(), spd.getPrediction(), spd.getFeatureMap());
+    }
+
     /**
      * Evaluate given variant with respect to transcripts in <code>txIds</code>. The method <em>attempts</em> to evaluate
      * the variant with respect to given <code>txIds</code>, but does not guarantee that results will be provided for
@@ -154,21 +158,21 @@ public class StandardVariantSplicingEvaluator implements VariantSplicingEvaluato
      * @return possibly empty map with {@link SplicingPredictionData} for transcript ID
      */
     @Override
-    public Map<String, SplicingPredictionData> evaluate(String contig, int pos, String ref, String alt, Set<String> txIds) {
+    public SquirlsResult evaluate(String contig, int pos, String ref, String alt, Set<String> txIds) {
         /*
          0 - perform some sanity checks at the beginning.
          */
         if (!rd.getContigNameToID().containsKey(contig)) {
             // unknown contig, nothing to be done here
             LOGGER.info("Unknown contig for variant {}:{}{}>{}", contig, pos, ref, alt);
-            return Map.of();
+            return SquirlsResult.empty();
         }
 
         // do not process variants that are longer than preset value
         if (ref.length() > maxVariantLength) {
             LOGGER.debug("Not evaluating variant longer than maximum variant length: `{}` > `{}` for `{}:{}{}>{}`",
                     ref.length(), maxVariantLength, contig, pos, ref, alt);
-            return Map.of();
+            return SquirlsResult.empty();
         }
 
         /*
@@ -180,7 +184,7 @@ public class StandardVariantSplicingEvaluator implements VariantSplicingEvaluato
 
         if (txMap.isEmpty()) {
             // shortcut, no transcripts to evaluate
-            return Map.of();
+            return SquirlsResult.empty();
         }
 
         /*
@@ -202,19 +206,20 @@ public class StandardVariantSplicingEvaluator implements VariantSplicingEvaluato
         final Optional<SequenceInterval> sio = accessor.fetchSequence(toFetch);
         if (sio.isEmpty()) {
             LOGGER.debug("Unable to get reference sequence for `{}` when evaluating variant `{}`", toFetch, variant);
-            return Map.of();
+            return SquirlsResult.empty();
         }
 
         /*
          3 - let's evaluate the variant with respect to all transcripts
          */
-        return txMap.keySet().stream()
-                .map(tx -> StandardSplicingPredictionData.of(variant, txMap.get(tx), sio.get()))
+        Set<SquirlsTxResult> squirlsTxResults = txMap.keySet().stream()
+                .map(tx -> SplicingPredictionDataDefault.of(variant, txMap.get(tx), sio.get()))
                 .map(annotator::annotate)
                 .map(classifier::predict)
                 .map(transformer::transform)
-                // drop the sequence
-                .collect(Collectors.toUnmodifiableMap(k -> k.getTranscript().getAccessionId(), NoRefSplicingPredictionData::copyOf));
+                .map(toSquirlsTxResult())
+                .collect(Collectors.toSet());
+        return SquirlsResultDefault.of(squirlsTxResults);
     }
 
     /**
@@ -251,7 +256,7 @@ public class StandardVariantSplicingEvaluator implements VariantSplicingEvaluato
                         txMap.put(txId, st);
                     }
                 } else {
-                    LOGGER.debug("Unknown transcript id `{}`", txId);
+                    LOGGER.warn("Unknown transcript id `{}` for variant {}", txId, variant);
                 }
             }
         }
@@ -300,8 +305,8 @@ public class StandardVariantSplicingEvaluator implements VariantSplicingEvaluato
             return this;
         }
 
-        public StandardVariantSplicingEvaluator build() {
-            return new StandardVariantSplicingEvaluator(this);
+        public VariantSplicingEvaluatorDefault build() {
+            return new VariantSplicingEvaluatorDefault(this);
         }
     }
 

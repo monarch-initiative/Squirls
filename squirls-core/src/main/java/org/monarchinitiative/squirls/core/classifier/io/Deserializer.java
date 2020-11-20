@@ -115,7 +115,7 @@ public class Deserializer {
     }
 
     public static SquirlsClassifier deserialize(OverallModelData data) {
-        return StandardSquirlsClassifier.of(
+        return SquirlsClassifierDefault.of(
                 ThresholdingBinaryClassifier.of(deserializeDonorPipeline(data.getDonorClf()), data.getDonorThreshold()),
                 ThresholdingBinaryClassifier.of(deserializeAcceptorPipeline(data.getAcceptorClf()), data.getAcceptorThreshold())
         );

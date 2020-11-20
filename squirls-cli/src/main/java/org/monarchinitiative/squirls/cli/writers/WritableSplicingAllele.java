@@ -79,10 +79,7 @@ package org.monarchinitiative.squirls.cli.writers;
 import de.charite.compbio.jannovar.annotation.VariantAnnotations;
 import htsjdk.variant.variantcontext.Allele;
 import htsjdk.variant.variantcontext.VariantContext;
-import org.monarchinitiative.squirls.core.SplicingPredictionData;
-
-import java.util.Comparator;
-import java.util.Map;
+import org.monarchinitiative.squirls.core.SquirlsResult;
 
 
 /**
@@ -109,27 +106,17 @@ public interface WritableSplicingAllele {
 
 
     /**
-     * Get map with Squirls predictions wrt. overlapping transcripts
+     * Get result of Squirls prediction wrt. overlapping transcripts
      *
-     * @return map where key -> transcript accession, value -> Squirls predictions for the transcript
+     * @return squirls result
      */
-    Map<String, SplicingPredictionData> squirlsPredictions();
-
-
-    default SplicingPredictionData getPrimaryPrediction() {
-        return squirlsPredictions().values().stream()
-                .max(Comparator.comparing(spd -> spd.getPrediction().getMaxPathogenicity()))
-                .orElse(SplicingPredictionData.emptyPredictionData());
-    }
+    SquirlsResult squirlsResult();
 
     /**
      * @return max Squirls score or {@link Double#NaN} if no prediction has been made
      */
     default double maxSquirlsScore() {
-        return squirlsPredictions().values().stream()
-                .map(e -> e.getPrediction().getMaxPathogenicity())
-                .max(Double::compareTo)
-                .orElse(Double.NaN);
+        return squirlsResult().maxPathogenicity();
     }
 
 }

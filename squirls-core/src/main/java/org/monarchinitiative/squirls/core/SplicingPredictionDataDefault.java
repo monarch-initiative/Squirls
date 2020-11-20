@@ -74,38 +74,102 @@
  * Daniel Danis, Peter N Robinson, 2020
  */
 
-package org.monarchinitiative.squirls.cli.visualization;
+package org.monarchinitiative.squirls.core;
 
-import de.charite.compbio.jannovar.annotation.VariantAnnotator;
-import de.charite.compbio.jannovar.annotation.builders.AnnotationBuilderOptions;
-import de.charite.compbio.jannovar.data.JannovarData;
-import org.junit.jupiter.api.BeforeEach;
-import org.monarchinitiative.squirls.cli.TestDataSourceConfig;
-import org.monarchinitiative.squirls.cli.writers.WritableSplicingAllele;
-import org.monarchinitiative.squirls.core.data.ic.SplicingPwmData;
-import org.monarchinitiative.vmvt.core.VmvtGenerator;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
+import de.charite.compbio.jannovar.reference.GenomeVariant;
+import org.monarchinitiative.squirls.core.model.SplicingTranscript;
+import xyz.ielis.hyperutil.reference.fasta.SequenceInterval;
 
-@SpringBootTest(classes = TestDataSourceConfig.class)
-public class GraphicsGeneratorTestBase {
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 
-    @Autowired
-    public JannovarData jannovarData;
+class SplicingPredictionDataDefault implements SplicingPredictionData {
 
-    @Autowired
-    public SplicingPwmData splicingPwmData;
+    private final GenomeVariant variant;
 
-    protected VmvtGenerator vmvtGenerator = new VmvtGenerator();
+    private final SplicingTranscript transcript;
 
-    protected VariantAnnotator annotator;
+    private final SequenceInterval sequence;
+    private final Map<String, Object> featureMap = new HashMap<>();
+    private Prediction prediction;
 
-    @BeforeEach
-    public void setUp() {
-        annotator = new VariantAnnotator(jannovarData.getRefDict(), jannovarData.getChromosomes(), new AnnotationBuilderOptions());
+    protected SplicingPredictionDataDefault(GenomeVariant variant, SplicingTranscript transcript, SequenceInterval sequence) {
+        this.variant = variant;
+        this.transcript = transcript;
+        this.sequence = sequence;
     }
 
-    protected static VisualizableVariantAllele toVisualizableAllele(WritableSplicingAllele writableSplicingAllele) {
-        return new SimpleVisualizableVariantAllele(writableSplicingAllele.variantAnnotations(), writableSplicingAllele.squirlsResult());
+    public static SplicingPredictionDataDefault of(GenomeVariant variant, SplicingTranscript transcript, SequenceInterval sequence) {
+        return new SplicingPredictionDataDefault(variant, transcript, sequence);
+    }
+
+    @Override
+    public Prediction getPrediction() {
+        return prediction;
+    }
+
+    @Override
+    public void setPrediction(Prediction prediction) {
+        this.prediction = prediction;
+    }
+
+    @Override
+    public GenomeVariant getVariant() {
+        return variant;
+    }
+
+    @Override
+    public SplicingTranscript getTranscript() {
+        return transcript;
+    }
+
+    @Override
+    public SequenceInterval getSequence() {
+        return sequence;
+    }
+
+    @Override
+    public Set<String> getFeatureNames() {
+        return featureMap.keySet();
+    }
+
+    @Override
+    public <T> T getFeature(String featureName, Class<T> clz) {
+        return clz.cast(featureMap.get(featureName));
+    }
+
+    @Override
+    public void putFeature(String name, Object value) {
+        featureMap.put(name, value);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        SplicingPredictionDataDefault that = (SplicingPredictionDataDefault) o;
+        return Objects.equals(variant, that.variant) &&
+                Objects.equals(transcript, that.transcript) &&
+                Objects.equals(sequence, that.sequence) &&
+                Objects.equals(featureMap, that.featureMap) &&
+                Objects.equals(prediction, that.prediction);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(variant, transcript, sequence, featureMap, prediction);
+    }
+
+    @Override
+    public String toString() {
+        return "SimpleSplicingPredictionData{" +
+                "variant=" + variant +
+                ", transcript=" + transcript +
+                ", sequence=" + sequence +
+                ", featureMap=" + featureMap +
+                ", prediction=" + prediction +
+                '}';
     }
 }

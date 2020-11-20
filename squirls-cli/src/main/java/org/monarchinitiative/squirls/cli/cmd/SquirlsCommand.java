@@ -81,7 +81,8 @@ import org.monarchinitiative.squirls.cli.visualization.panel.PanelGraphicsGenera
 import org.monarchinitiative.squirls.cli.visualization.selector.SimpleVisualizationContextSelector;
 import org.monarchinitiative.squirls.cli.visualization.selector.VisualizationContextSelector;
 import org.monarchinitiative.squirls.cli.writers.ResultWriterFactory;
-import org.monarchinitiative.squirls.core.SplicingPredictionData;
+import org.monarchinitiative.squirls.core.Prediction;
+import org.monarchinitiative.squirls.core.data.SplicingTranscriptSource;
 import org.monarchinitiative.squirls.core.data.ic.SplicingPwmData;
 import org.monarchinitiative.vmvt.core.VmvtGenerator;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -110,13 +111,13 @@ public abstract class SquirlsCommand implements Callable<Integer> {
     /**
      * Process predictions for transcripts into a single record in format <code>NM_123456.7=0.88;ENST00000123456.5=0.99</code>
      *
-     * @param predictionData map with predictions
+     * @param predictions map with predictions
      * @return record
      */
-    protected static String processScores(Map<String, SplicingPredictionData> predictionData) {
-        return predictionData.keySet().stream()
+    protected static String processScores(Map<String, Prediction> predictions) {
+        return predictions.keySet().stream()
                 .sorted()
-                .map(tx -> String.format("%s=%f", tx, predictionData.get(tx).getPrediction().getMaxPathogenicity()))
+                .map(tx -> String.format("%s=%f", tx, predictions.get(tx).getMaxPathogenicity()))
                 .collect(Collectors.joining(";"));
     }
 
@@ -131,8 +132,9 @@ public abstract class SquirlsCommand implements Callable<Integer> {
     public SplicingVariantGraphicsGenerator splicingVariantGraphicsGenerator(VmvtGenerator vmvtGenerator,
                                                                              SplicingPwmData splicingPwmData,
                                                                              VisualizationContextSelector visualizationContextSelector,
-                                                                             GenomeSequenceAccessor genomeSequenceAccessor) {
-        return new PanelGraphicsGenerator(vmvtGenerator, splicingPwmData, visualizationContextSelector, genomeSequenceAccessor);
+                                                                             GenomeSequenceAccessor genomeSequenceAccessor,
+                                                                             SplicingTranscriptSource splicingTranscriptSource) {
+        return new PanelGraphicsGenerator(vmvtGenerator, splicingPwmData, visualizationContextSelector, genomeSequenceAccessor, splicingTranscriptSource);
     }
 
     @Bean

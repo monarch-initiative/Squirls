@@ -74,96 +74,68 @@
  * Daniel Danis, Peter N Robinson, 2020
  */
 
-package org.monarchinitiative.squirls.core.classifier;
+package org.monarchinitiative.squirls.core;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
-public class StandardSquirlsClassifier implements SquirlsClassifier {
+/**
+ * Squirls prediction results wrt. single transcript.
+ */
+class SquirlsTxResultDefault implements SquirlsTxResult {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(StandardSquirlsClassifier.class);
+    private final String accessionId;
+    private final Prediction prediction;
+    private final Map<String, Double> features;
 
-    private static final AtomicBoolean MISSING_FEATURE_REPORTED = new AtomicBoolean(false);
-
-    private final ThresholdingBinaryClassifier<Classifiable> donorClf, acceptorClf;
-
-    private final Set<String> usedFeatures;
-
-    private StandardSquirlsClassifier(ThresholdingBinaryClassifier<Classifiable> donorClf,
-                                      ThresholdingBinaryClassifier<Classifiable> acceptorClf) {
-        this.donorClf = Objects.requireNonNull(donorClf, "Donor classifier cannot be null");
-        this.acceptorClf = Objects.requireNonNull(acceptorClf, "Acceptor classifier cannot be null");
-
-        usedFeatures = Stream.concat(donorClf.usedFeatureNames().stream(), acceptorClf.usedFeatureNames().stream())
-                .collect(Collectors.toUnmodifiableSet());
-        LOGGER.debug("Initialized classifier with the following features: {}",
-                usedFeatures.stream().sorted().collect(Collectors.joining(", ", "[", "]")));
+    private SquirlsTxResultDefault(String accessionId,
+                                   Prediction prediction,
+                                   Map<String, Double> features) {
+        this.accessionId = accessionId;
+        this.prediction = prediction;
+        this.features = features;
     }
 
-    public static StandardSquirlsClassifier of(ThresholdingBinaryClassifier<Classifiable> donorClf, ThresholdingBinaryClassifier<Classifiable> acceptorClf) {
-        return new StandardSquirlsClassifier(donorClf, acceptorClf);
+    static SquirlsTxResultDefault of(String accessionId, Prediction prediction, Map<String, Double> featureMap) {
+        return new SquirlsTxResultDefault(accessionId, prediction, featureMap);
     }
 
     @Override
-    public Set<String> usedFeatureNames() {
-        return usedFeatures;
+    public String accessionId() {
+        return accessionId;
     }
 
     @Override
-    public <T extends Classifiable> T predict(T data) {
-        if (data.getFeatureNames().containsAll(usedFeatures)) {
-            // we have all the features we need for making a prediction here
-            try {
-                data.setPrediction(StandardPrediction.of(donorClf.runPrediction(data), acceptorClf.runPrediction(data)));
-            } catch (PredictionException e) {
-                LOGGER.debug("Error: ", e);
-                data.setPrediction(Prediction.emptyPrediction());
-            }
-        } else {
-            // at least one from the required features is missing. Let's report that, but only once, in order not to
-            // flood the console
-            if (MISSING_FEATURE_REPORTED.compareAndExchange(false, true)) {
-                Set<String> difference = usedFeatures.stream()
-                        .filter(fname -> !data.getFeatureNames()
-                                .contains(fname)).collect(Collectors.toSet());
-                // report the error
-                String errorMsg = String.format("Missing one or more required features `[%s]`",
-                        String.join(",", difference));
-                LOGGER.warn(errorMsg);
-            }
-            data.setPrediction(EmptyPrediction.getInstance());
-        }
+    public Prediction prediction() {
+        return prediction;
+    }
 
-        return data;
+    @Override
+    public Map<String, Double> features() {
+        return features;
     }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        StandardSquirlsClassifier that = (StandardSquirlsClassifier) o;
-        return Objects.equals(donorClf, that.donorClf) &&
-                Objects.equals(acceptorClf, that.acceptorClf) &&
-                Objects.equals(usedFeatures, that.usedFeatures);
+        SquirlsTxResultDefault that = (SquirlsTxResultDefault) o;
+        return Objects.equals(accessionId, that.accessionId) &&
+                Objects.equals(prediction, that.prediction) &&
+                Objects.equals(features, that.features);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(donorClf, acceptorClf, usedFeatures);
+        return Objects.hash(accessionId, prediction, features);
     }
 
     @Override
     public String toString() {
-        return "StandardSquirlsClassifier{" +
-                "donorClf=" + donorClf +
-                ", acceptorClf=" + acceptorClf +
-                ", usedFeatures=" + usedFeatures +
+        return "SquirlsTxResultDefault{" +
+                "accessionId='" + accessionId + '\'' +
+                ", prediction=" + prediction +
+                ", features=" + features +
                 '}';
     }
 }

@@ -76,10 +76,10 @@
 
 package org.monarchinitiative.squirls.core.classifier.transform.prediction;
 
+import org.monarchinitiative.squirls.core.PartialPrediction;
+import org.monarchinitiative.squirls.core.Prediction;
 import org.monarchinitiative.squirls.core.classifier.Constants;
-import org.monarchinitiative.squirls.core.classifier.PartialPrediction;
-import org.monarchinitiative.squirls.core.classifier.Prediction;
-import org.monarchinitiative.squirls.core.classifier.StandardPrediction;
+import org.monarchinitiative.squirls.core.classifier.PredictionDefault;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -157,7 +157,7 @@ public class RegularLogisticRegression implements PredictionTransformer {
 
         // then scale the threshold
         double threshold = logistic(donor.getThreshold(), acceptor.getThreshold());
-        return StandardPrediction.of(PartialPrediction.of(getName(), patho, threshold));
+        return PredictionDefault.of(PartialPrediction.of(getName(), patho, threshold));
     }
 
     private double logistic(double donor, double acceptor) {

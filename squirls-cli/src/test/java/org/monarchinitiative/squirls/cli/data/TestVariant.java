@@ -74,38 +74,165 @@
  * Daniel Danis, Peter N Robinson, 2020
  */
 
-package org.monarchinitiative.squirls.cli.visualization;
+package org.monarchinitiative.squirls.cli.data;
 
-import de.charite.compbio.jannovar.annotation.VariantAnnotator;
-import de.charite.compbio.jannovar.annotation.builders.AnnotationBuilderOptions;
-import de.charite.compbio.jannovar.data.JannovarData;
-import org.junit.jupiter.api.BeforeEach;
-import org.monarchinitiative.squirls.cli.TestDataSourceConfig;
+import de.charite.compbio.jannovar.annotation.VariantAnnotations;
+import de.charite.compbio.jannovar.reference.GenomeVariant;
+import htsjdk.variant.variantcontext.Allele;
+import htsjdk.variant.variantcontext.VariantContext;
 import org.monarchinitiative.squirls.cli.writers.WritableSplicingAllele;
-import org.monarchinitiative.squirls.core.data.ic.SplicingPwmData;
-import org.monarchinitiative.vmvt.core.VmvtGenerator;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.monarchinitiative.squirls.core.SplicingPredictionData;
+import org.monarchinitiative.squirls.core.SquirlsResult;
+import org.monarchinitiative.squirls.core.model.SplicingTranscript;
+import org.monarchinitiative.squirls.core.scoring.Annotatable;
+import xyz.ielis.hyperutil.reference.fasta.SequenceInterval;
 
-@SpringBootTest(classes = TestDataSourceConfig.class)
-public class GraphicsGeneratorTestBase {
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 
-    @Autowired
-    public JannovarData jannovarData;
+/**
+ * This class is a POJO for a single ALT allele of the variant and all the associated data.
+ * <p>
+ * <b>BEWARE</b> - This class contains variant data that uses 2 separate and possibly different
+ * {@link de.charite.compbio.jannovar.data.ReferenceDictionary} objects!
+ * <p>
+ * The first dictionary comes from Jannovar and is within
+ * {@link VariantAnnotations} object.
+ * <p>
+ * The second dictionary comes from SQUIRLS database and is used by all objects present within
+ * {@link SplicingPredictionData}.
+ */
+class TestVariant implements WritableSplicingAllele, Annotatable {
 
-    @Autowired
-    public SplicingPwmData splicingPwmData;
+    /**
+     * The base variant context that is being analyzed.
+     */
+    private final VariantContext base;
 
-    protected VmvtGenerator vmvtGenerator = new VmvtGenerator();
+    /**
+     * The ALT allele of the variant context that is being analyzed.
+     */
+    private final Allele altAllele;
 
-    protected VariantAnnotator annotator;
+    private final GenomeVariant variant;
 
-    @BeforeEach
-    public void setUp() {
-        annotator = new VariantAnnotator(jannovarData.getRefDict(), jannovarData.getChromosomes(), new AnnotationBuilderOptions());
+    private final SplicingTranscript tx;
+
+    private final SequenceInterval si;
+
+    private final Map<String, Object> features;
+    /**
+     * Results of the splicing analysis.
+     */
+    private SquirlsResult squirlsResult;
+    /**
+     * Results of Jannovar's functional annotation with respect to transcripts this variant overlaps with.
+     */
+    private VariantAnnotations annotations;
+    /**
+     * The primary graphics presented to the user for this variant.
+     */
+    private String graphics;
+
+    TestVariant(VariantContext base, Allele altAllele, GenomeVariant variant, SplicingTranscript tx, SequenceInterval si, Map<String, Object> features) {
+        this.base = base;
+        this.altAllele = altAllele;
+        this.variant = variant;
+        this.tx = tx;
+        this.si = si;
+        this.features = features;
     }
 
-    protected static VisualizableVariantAllele toVisualizableAllele(WritableSplicingAllele writableSplicingAllele) {
-        return new SimpleVisualizableVariantAllele(writableSplicingAllele.variantAnnotations(), writableSplicingAllele.squirlsResult());
+    public String getGraphics() {
+        return graphics;
+    }
+
+    public void setGraphics(String graphics) {
+        this.graphics = graphics;
+    }
+
+    public void setSquirlsResult(SquirlsResult squirlsResult) {
+        this.squirlsResult = squirlsResult;
+    }
+
+    @Override
+    public Allele allele() {
+        return altAllele;
+    }
+
+    @Override
+    public VariantContext variantContext() {
+        return base;
+    }
+
+    @Override
+    public VariantAnnotations variantAnnotations() {
+        return annotations;
+    }
+
+    public void setAnnotations(VariantAnnotations annotations) {
+        this.annotations = annotations;
+    }
+
+    @Override
+    public SquirlsResult squirlsResult() {
+        return squirlsResult;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        TestVariant that = (TestVariant) o;
+        return Objects.equals(base, that.base) &&
+                Objects.equals(altAllele, that.altAllele) &&
+                Objects.equals(squirlsResult, that.squirlsResult) &&
+                Objects.equals(annotations, that.annotations);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(base, altAllele, squirlsResult, annotations);
+    }
+
+    @Override
+    public String toString() {
+        return "TestVariant{" +
+                "base=" + base +
+                ", altAllele=" + altAllele +
+                ", squirlsResult=" + squirlsResult +
+                ", annotations=" + annotations +
+                '}';
+    }
+
+    @Override
+    public GenomeVariant getVariant() {
+        return variant;
+    }
+
+    @Override
+    public SplicingTranscript getTranscript() {
+        return tx;
+    }
+
+    @Override
+    public SequenceInterval getSequence() {
+        return si;
+    }
+
+    @Override
+    public Set<String> getFeatureNames() {
+        return features.keySet();
+    }
+
+    @Override
+    public <T> T getFeature(String featureName, Class<T> clz) {
+        return clz.cast(features.get(featureName));
+    }
+
+    @Override
+    public void putFeature(String name, Object value) {
+        features.put(name, value);
     }
 }

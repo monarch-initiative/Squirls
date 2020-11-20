@@ -94,7 +94,7 @@ import htsjdk.variant.vcf.VCFFileReader;
 import org.monarchinitiative.squirls.cli.Main;
 import org.monarchinitiative.squirls.cli.cmd.SquirlsCommand;
 import org.monarchinitiative.squirls.cli.writers.*;
-import org.monarchinitiative.squirls.core.SplicingPredictionData;
+import org.monarchinitiative.squirls.core.SquirlsResult;
 import org.monarchinitiative.squirls.core.VariantSplicingEvaluator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -104,6 +104,8 @@ import picocli.CommandLine;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ForkJoinPool;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -127,13 +129,18 @@ public class AnnotateVcfCommand extends SquirlsCommand {
 
     @CommandLine.Option(names = {"-f", "--output-format"},
             paramLabel = "html",
-            description = "Comma separated list of output formats to use for writing the results [html,vcf]")
+            description = "Comma separated list of output formats to use for writing the results")
     public String outputFormats = "html";
 
     @CommandLine.Option(names = {"-n", "--n-variants-to-report"},
             paramLabel = "100",
             description = "N most pathogenic variants to include into HTML report")
     public int nVariantsToReport = 100;
+
+    @CommandLine.Option(names = {"-t", "--n-threads"},
+            paramLabel = "4",
+            description = "Process variants using n threads")
+    public int nThreads = 4;
 
     @CommandLine.Parameters(index = "0",
             paramLabel = "input.vcf",
@@ -191,25 +198,29 @@ public class AnnotateVcfCommand extends SquirlsCommand {
                 }
 
                 // Squirls scores
-                Map<String, SplicingPredictionData> squirlsScores;
+                SquirlsResult squirlsResult;
                 if (!variantAnnotations.getHighestImpactEffect().isOffTranscript()) {
                     Set<String> txAccessions = variantAnnotations.getAnnotations().stream()
                             .map(Annotation::getTranscript)
                             .map(TranscriptModel::getAccession)
                             .collect(Collectors.toSet());
-                    squirlsScores = evaluator.evaluate(vc.getContig(), vc.getStart(), vc.getReference().getBaseString(), allele.getBaseString(), txAccessions);
+                    squirlsResult = evaluator.evaluate(vc.getContig(), vc.getStart(), vc.getReference().getBaseString(), allele.getBaseString(), txAccessions);
                 } else {
                     // don't bother with annotating an off-exome variant
-                    squirlsScores = Map.of();
+                    squirlsResult = SquirlsResult.empty();
                 }
 
-
-                evaluations.add(new WritableSplicingAlleleDefault(vc, allele, variantAnnotations, squirlsScores));
+                evaluations.add(new WritableSplicingAlleleDefault(vc, allele, variantAnnotations, squirlsResult));
             }
 
             return evaluations;
         };
     }
+
+    private static ForkJoinPool makePool(int parallelism) {
+        return new ForkJoinPool(parallelism, SquirlsWorkerThread::new, null, false);
+    }
+
 
     @Override
     public Integer call() {
@@ -217,6 +228,11 @@ public class AnnotateVcfCommand extends SquirlsCommand {
             LOGGER.info("Reading variants from `{}`", inputPath);
             Set<OutputFormat> outputFormats = parseOutputFormats();
             VariantSplicingEvaluator evaluator = context.getBean(VariantSplicingEvaluator.class);
+
+            if (nThreads < 1) {
+                LOGGER.error("Thread number must be positive: {}", nThreads);
+                return 1;
+            }
 
             JannovarData jd;
             try {
@@ -232,18 +248,23 @@ public class AnnotateVcfCommand extends SquirlsCommand {
             // TODO: 29. 5. 2020 improve behavior & logging
             //  e.g. report progress in % if variant index and thus count is available
             AnnotateVcfProgressReporter progressReporter = new AnnotateVcfProgressReporter(5_000);
-            List<WritableSplicingAllele> annotated = Collections.synchronizedList(new ArrayList<>());
+            List<WritableSplicingAllele> annotated; // = Collections.synchronizedList(new ArrayList<>());
             ArrayList<String> sampleNames;
 
             // annotate the variants
-            LOGGER.info("Annotating variants");
+            int procsAvail = Runtime.getRuntime().availableProcessors();
+            if (nThreads > procsAvail) {
+                LOGGER.warn("You asked for more threads ({}) than processors ({}) available on the system", nThreads, procsAvail);
+            }
+            LOGGER.info("Annotating variants on {} threads", nThreads);
             try (VCFFileReader reader = new VCFFileReader(inputPath, false);
                  CloseableIterator<VariantContext> variantIterator = reader.iterator()) {
 
                 sampleNames = reader.getFileHeader().getSampleNamesInOrder();
 
+
                 try (Stream<VariantContext> stream = variantIterator.stream()) {
-                    stream.parallel()
+                    Stream<WritableSplicingAllele> alleleStream = stream.parallel()
                             .onClose(progressReporter.summarize())
                             .peek(progressReporter::logVariant)
 
@@ -254,12 +275,16 @@ public class AnnotateVcfCommand extends SquirlsCommand {
                             .map(annotateVariant(evaluator, jd.getRefDict(), annotator))
                             .flatMap(Collection::stream)
                             .peek(wa -> {
-                                if (!wa.squirlsPredictions().isEmpty()) {
+                                if (!wa.squirlsResult().isEmpty()) {
                                     progressReporter.logAnnotatedAllele(wa);
                                 }
-                            })
+                            });
 
-                            .forEach(annotated::add);
+                    ForkJoinPool pool = makePool(nThreads);
+                    annotated = pool.submit(() -> alleleStream.collect(Collectors.toList())).get();
+                } catch (InterruptedException | ExecutionException e) {
+                    LOGGER.warn("Error: ", e);
+                    return 1;
                 }
             }
 
@@ -296,7 +321,7 @@ public class AnnotateVcfCommand extends SquirlsCommand {
             try {
                 formats.add(OutputFormat.valueOf(format.toUpperCase()));
             } catch (IllegalArgumentException e) {
-                LOGGER.warn("Invalid output format `{}`", format);
+                LOGGER.warn("Ignoring invalid output format `{}`", format);
             }
         }
         return formats;

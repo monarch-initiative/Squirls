@@ -76,8 +76,8 @@
 
 package org.monarchinitiative.squirls.core.classifier.transform.prediction;
 
-import org.monarchinitiative.squirls.core.classifier.PartialPrediction;
-import org.monarchinitiative.squirls.core.classifier.StandardPrediction;
+import org.monarchinitiative.squirls.core.PartialPrediction;
+import org.monarchinitiative.squirls.core.classifier.PredictionDefault;
 
 import java.util.Iterator;
 import java.util.Objects;
@@ -146,7 +146,7 @@ public class SimpleLogisticRegression implements PredictionTransformer {
             predictions[i] = transformed;
             i++;
         }
-        data.setPrediction(StandardPrediction.of(predictions));
+        data.setPrediction(PredictionDefault.of(predictions));
 
         return data;
     }

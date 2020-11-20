@@ -74,58 +74,68 @@
  * Daniel Danis, Peter N Robinson, 2020
  */
 
-package org.monarchinitiative.squirls.core.classifier;
+package org.monarchinitiative.squirls.core;
 
-import java.util.Collection;
 import java.util.Objects;
-import java.util.Set;
 
-public class StandardPrediction implements Prediction {
+/**
+ * This class represents a fragment of information from the decision function, a single prediction of an ensemble
+ * which calculated pathogenicity probability.
+ */
+@SquirlsApi
+public class PartialPrediction {
 
-    /**
-     * List of pairs of prediction & thresholds.
-     */
-    protected final Set<PartialPrediction> partialPredictions;
+    private final String name;
+    private final double pathoProba;
+    private final double threshold;
 
-    private StandardPrediction(Set<PartialPrediction> partialPredictions) {
-        this.partialPredictions = partialPredictions;
+    private PartialPrediction(String name, double pathoProba, double threshold) {
+        this.name = name;
+        this.pathoProba = pathoProba;
+        this.threshold = threshold;
     }
 
-
-    public static StandardPrediction of(PartialPrediction... partialPrediction) {
-        return new StandardPrediction(Set.of(partialPrediction));
+    public static PartialPrediction of(String name, double pathoProba, double threshold) {
+        return new PartialPrediction(name, pathoProba, threshold);
     }
 
-    @Override
-    public Collection<PartialPrediction> getPartialPredictions() {
-        return partialPredictions;
+    public String getName() {
+        return name;
     }
 
-    @Override
-    public boolean isPositive() {
-        return partialPredictions.stream()
-                .anyMatch(PartialPrediction::isPathogenic);
+    public double getThreshold() {
+        return threshold;
+    }
+
+    public double getPathoProba() {
+        return pathoProba;
+    }
+
+    public boolean isPathogenic() {
+        return pathoProba > threshold;
     }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        StandardPrediction that = (StandardPrediction) o;
-        return Objects.equals(partialPredictions, that.partialPredictions);
+        PartialPrediction that = (PartialPrediction) o;
+        return Double.compare(that.pathoProba, pathoProba) == 0 &&
+                Double.compare(that.threshold, threshold) == 0 &&
+                Objects.equals(name, that.name);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(partialPredictions);
+        return Objects.hash(name, pathoProba, threshold);
     }
-
 
     @Override
     public String toString() {
-        return "StandardPrediction{" +
-                "partialPredictions=" + partialPredictions +
+        return "PartialPrediction{" +
+                "name='" + name + '\'' +
+                ", pathoProba=" + pathoProba +
+                ", threshold=" + threshold +
                 '}';
     }
-
 }

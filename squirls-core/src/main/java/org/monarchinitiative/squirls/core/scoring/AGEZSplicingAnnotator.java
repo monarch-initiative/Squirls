@@ -78,8 +78,8 @@ package org.monarchinitiative.squirls.core.scoring;
 
 import org.monarchinitiative.squirls.core.data.ic.SplicingPwmData;
 import org.monarchinitiative.squirls.core.reference.allele.AlleleGenerator;
-import org.monarchinitiative.squirls.core.reference.transcript.NaiveSplicingTranscriptLocator;
 import org.monarchinitiative.squirls.core.reference.transcript.SplicingTranscriptLocator;
+import org.monarchinitiative.squirls.core.reference.transcript.SplicingTranscriptLocatorNaive;
 import org.monarchinitiative.squirls.core.scoring.calculators.ExclusionZoneFeatureCalculator;
 import org.monarchinitiative.squirls.core.scoring.calculators.FeatureCalculator;
 import org.monarchinitiative.squirls.core.scoring.calculators.PptIsTruncated;
@@ -103,7 +103,7 @@ public class AGEZSplicingAnnotator extends AbstractSplicingAnnotator {
                                  Map<String, Double> hexamerMap,
                                  Map<String, Double> septamerMap,
                                  BigWigAccessor bigWigAccessor) {
-        super(new NaiveSplicingTranscriptLocator(splicingPwmData.getParameters()),
+        super(new SplicingTranscriptLocatorNaive(splicingPwmData.getParameters()),
                 Stream.of(
                         makeCalculatorMap(splicingPwmData).entrySet(), // agez calculators
                         RichSplicingAnnotator.makeCalculatorMap(splicingPwmData).entrySet(), // rich
@@ -113,7 +113,7 @@ public class AGEZSplicingAnnotator extends AbstractSplicingAnnotator {
     }
 
     static Map<String, FeatureCalculator> makeCalculatorMap(SplicingPwmData splicingPwmData) {
-        SplicingTranscriptLocator locator = new NaiveSplicingTranscriptLocator(splicingPwmData.getParameters());
+        SplicingTranscriptLocator locator = new SplicingTranscriptLocatorNaive(splicingPwmData.getParameters());
         AlleleGenerator generator = new AlleleGenerator(splicingPwmData.getParameters());
         // TODO - consider externalizing the AGEZ region definitions
         return Map.of(

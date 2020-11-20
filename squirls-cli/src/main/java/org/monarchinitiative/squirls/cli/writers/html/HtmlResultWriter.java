@@ -82,7 +82,7 @@ import htsjdk.variant.variantcontext.VariantContext;
 import org.monarchinitiative.squirls.cli.visualization.SplicingVariantGraphicsGenerator;
 import org.monarchinitiative.squirls.cli.visualization.VisualizableVariantAllele;
 import org.monarchinitiative.squirls.cli.writers.*;
-import org.monarchinitiative.squirls.core.SplicingPredictionData;
+import org.monarchinitiative.squirls.core.SquirlsResult;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 import org.thymeleaf.templatemode.TemplateMode;
@@ -94,7 +94,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.NumberFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -121,7 +124,7 @@ public class HtmlResultWriter implements ResultWriter {
     }
 
     private static VisualizableVariantAllele toVisualizableAllele(WritableSplicingAllele writableSplicingAllele) {
-        return new SimpleVisualizableAllele(writableSplicingAllele.variantAnnotations(), writableSplicingAllele.squirlsPredictions());
+        return new SimpleVisualizableAllele(writableSplicingAllele.variantAnnotations(), writableSplicingAllele.squirlsResult());
     }
 
     private static String getRepresentation(WritableSplicingAllele writableSplicingAllele) {
@@ -174,11 +177,11 @@ public class HtmlResultWriter implements ResultWriter {
 
         private final VariantAnnotations annotations;
 
-        private final Map<String, SplicingPredictionData> squirlsPredictions;
+        private final SquirlsResult squirlsResult;
 
-        private SimpleVisualizableAllele(VariantAnnotations annotations, Map<String, SplicingPredictionData> squirlsPredictions) {
+        private SimpleVisualizableAllele(VariantAnnotations annotations, SquirlsResult squirlsResult) {
             this.annotations = annotations;
-            this.squirlsPredictions = squirlsPredictions;
+            this.squirlsResult = squirlsResult;
         }
 
         @Override
@@ -187,8 +190,8 @@ public class HtmlResultWriter implements ResultWriter {
         }
 
         @Override
-        public Map<String, SplicingPredictionData> squirlsPredictions() {
-            return squirlsPredictions;
+        public SquirlsResult squirlsResults() {
+            return squirlsResult;
         }
 
         @Override
@@ -197,19 +200,19 @@ public class HtmlResultWriter implements ResultWriter {
             if (o == null || getClass() != o.getClass()) return false;
             SimpleVisualizableAllele that = (SimpleVisualizableAllele) o;
             return Objects.equals(annotations, that.annotations) &&
-                    Objects.equals(squirlsPredictions, that.squirlsPredictions);
+                    Objects.equals(squirlsResult, that.squirlsResult);
         }
 
         @Override
         public int hashCode() {
-            return Objects.hash(annotations, squirlsPredictions);
+            return Objects.hash(annotations, squirlsResult);
         }
 
         @Override
         public String toString() {
             return "SimpleVisualizableAllele{" +
                     "annotations=" + annotations +
-                    ", squirlsPredictions=" + squirlsPredictions +
+                    ", squirlsResult=" + squirlsResult +
                     '}';
         }
     }

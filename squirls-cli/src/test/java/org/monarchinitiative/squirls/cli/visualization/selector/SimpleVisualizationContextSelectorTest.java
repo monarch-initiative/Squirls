@@ -85,8 +85,11 @@ import org.junit.jupiter.api.Test;
 import org.monarchinitiative.squirls.cli.TestDataSourceConfig;
 import org.monarchinitiative.squirls.cli.data.VariantsForTesting;
 import org.monarchinitiative.squirls.cli.writers.WritableSplicingAllele;
+import org.monarchinitiative.squirls.core.SquirlsTxResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+
+import java.util.Map;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
@@ -115,21 +118,24 @@ public class SimpleVisualizationContextSelectorTest {
     @Test
     public void donorQuidVariant() throws Exception {
         final WritableSplicingAllele ve = VariantsForTesting.BRCA2DonorExon15plus2QUID(rd, annotator);
-        final VisualizationContext ctx = selector.selectContext(ve.getPrimaryPrediction().getFeatureMap());
+        Map<String, Double> featureMap = ve.squirlsResult().maxPathogenicityResult().map(SquirlsTxResult::features).orElseThrow();
+        final VisualizationContext ctx = selector.selectContext(featureMap);
         assertThat(ctx, is(VisualizationContext.CANONICAL_DONOR));
     }
 
     @Test
     public void donorNonQuidVariantThatDisruptsTheSite() throws Exception {
         final WritableSplicingAllele ve = VariantsForTesting.ALPLDonorExon7Minus2(rd, annotator);
-        final VisualizationContext ctx = selector.selectContext(ve.getPrimaryPrediction().getFeatureMap());
+        Map<String, Double> featureMap = ve.squirlsResult().maxPathogenicityResult().map(SquirlsTxResult::features).orElseThrow();
+        final VisualizationContext ctx = selector.selectContext(featureMap);
         assertThat(ctx, is(VisualizationContext.CANONICAL_DONOR));
     }
 
     @Test
     public void donorNonQuidVariantThatCreatesACrypticDonor() throws Exception {
         final WritableSplicingAllele ve = VariantsForTesting.HBBcodingExon1UpstreamCrypticInCanonical(rd, annotator);
-        final VisualizationContext ctx = selector.selectContext(ve.getPrimaryPrediction().getFeatureMap());
+        Map<String, Double> featureMap = ve.squirlsResult().maxPathogenicityResult().map(SquirlsTxResult::features).orElseThrow();
+        final VisualizationContext ctx = selector.selectContext(featureMap);
         assertThat(ctx, is(VisualizationContext.CRYPTIC_DONOR));
     }
 
@@ -137,7 +143,8 @@ public class SimpleVisualizationContextSelectorTest {
     @Test
     public void codingNonQuidVariantThatCreatesACrypticDonor() throws Exception {
         final WritableSplicingAllele ve = VariantsForTesting.HBBcodingExon1UpstreamCryptic(rd, annotator);
-        final VisualizationContext ctx = selector.selectContext(ve.getPrimaryPrediction().getFeatureMap());
+        Map<String, Double> featureMap = ve.squirlsResult().maxPathogenicityResult().map(SquirlsTxResult::features).orElseThrow();
+        final VisualizationContext ctx = selector.selectContext(featureMap);
         assertThat(ctx, is(VisualizationContext.CRYPTIC_DONOR));
     }
 
@@ -146,21 +153,24 @@ public class SimpleVisualizationContextSelectorTest {
     @Test
     public void acceptorQuidVariant() throws Exception {
         final WritableSplicingAllele ve = VariantsForTesting.VWFAcceptorExon26minus2QUID(rd, annotator);
-        final VisualizationContext ctx = selector.selectContext(ve.getPrimaryPrediction().getFeatureMap());
+        Map<String, Double> featureMap = ve.squirlsResult().maxPathogenicityResult().map(SquirlsTxResult::features).orElseThrow();
+        final VisualizationContext ctx = selector.selectContext(featureMap);
         assertThat(ctx, is(VisualizationContext.CANONICAL_ACCEPTOR));
     }
 
     @Test
     public void acceptorNonQuidVariantThatDisruptsTheSite() throws Exception {
         final WritableSplicingAllele ve = VariantsForTesting.TSC2AcceptorExon11Minus3(rd, annotator);
-        final VisualizationContext ctx = selector.selectContext(ve.getPrimaryPrediction().getFeatureMap());
+        Map<String, Double> featureMap = ve.squirlsResult().maxPathogenicityResult().map(SquirlsTxResult::features).orElseThrow();
+        final VisualizationContext ctx = selector.selectContext(featureMap);
         assertThat(ctx, is(VisualizationContext.CANONICAL_ACCEPTOR));
     }
 
     @Test
     public void acceptorNonQuidVariantThatCreatesACrypticAcceptor() throws Exception {
         final WritableSplicingAllele ve = VariantsForTesting.COL4A5AcceptorExon11Minus8(rd, annotator);
-        final VisualizationContext ctx = selector.selectContext(ve.getPrimaryPrediction().getFeatureMap());
+        Map<String, Double> featureMap = ve.squirlsResult().maxPathogenicityResult().map(SquirlsTxResult::features).orElseThrow();
+        final VisualizationContext ctx = selector.selectContext(featureMap);
         assertThat(ctx, is(VisualizationContext.CRYPTIC_ACCEPTOR));
     }
 
@@ -168,7 +178,8 @@ public class SimpleVisualizationContextSelectorTest {
     @Disabled // TODO: 17. 11. 2020 check
     public void codingNonQuidVariantThatCreatesACrypticAcceptor() throws Exception {
         final WritableSplicingAllele ve = VariantsForTesting.RYR1codingExon102crypticAcceptor(rd, annotator);
-        final VisualizationContext ctx = selector.selectContext(ve.getPrimaryPrediction().getFeatureMap());
+        Map<String, Double> featureMap = ve.squirlsResult().maxPathogenicityResult().map(SquirlsTxResult::features).orElseThrow();
+        final VisualizationContext ctx = selector.selectContext(featureMap);
         assertThat(ctx, is(VisualizationContext.CRYPTIC_ACCEPTOR));
     }
 
@@ -177,7 +188,8 @@ public class SimpleVisualizationContextSelectorTest {
     @Test
     public void sreVariant() throws Exception {
         final WritableSplicingAllele ve = VariantsForTesting.NF1codingExon9coding_SRE(rd, annotator);
-        final VisualizationContext ctx = selector.selectContext(ve.getPrimaryPrediction().getFeatureMap());
+        Map<String, Double> featureMap = ve.squirlsResult().maxPathogenicityResult().map(SquirlsTxResult::features).orElseThrow();
+        final VisualizationContext ctx = selector.selectContext(featureMap);
         assertThat(ctx, is(VisualizationContext.SRE));
     }
 }

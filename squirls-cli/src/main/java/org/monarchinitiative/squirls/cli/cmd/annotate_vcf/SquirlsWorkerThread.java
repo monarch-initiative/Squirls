@@ -74,38 +74,24 @@
  * Daniel Danis, Peter N Robinson, 2020
  */
 
-package org.monarchinitiative.squirls.cli.visualization;
+package org.monarchinitiative.squirls.cli.cmd.annotate_vcf;
 
-import de.charite.compbio.jannovar.annotation.VariantAnnotator;
-import de.charite.compbio.jannovar.annotation.builders.AnnotationBuilderOptions;
-import de.charite.compbio.jannovar.data.JannovarData;
-import org.junit.jupiter.api.BeforeEach;
-import org.monarchinitiative.squirls.cli.TestDataSourceConfig;
-import org.monarchinitiative.squirls.cli.writers.WritableSplicingAllele;
-import org.monarchinitiative.squirls.core.data.ic.SplicingPwmData;
-import org.monarchinitiative.vmvt.core.VmvtGenerator;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
+import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.ForkJoinWorkerThread;
+import java.util.concurrent.atomic.AtomicInteger;
 
-@SpringBootTest(classes = TestDataSourceConfig.class)
-public class GraphicsGeneratorTestBase {
+class SquirlsWorkerThread extends ForkJoinWorkerThread {
 
-    @Autowired
-    public JannovarData jannovarData;
+    private static final AtomicInteger THREAD_COUNTER = new AtomicInteger(1);
 
-    @Autowired
-    public SplicingPwmData splicingPwmData;
-
-    protected VmvtGenerator vmvtGenerator = new VmvtGenerator();
-
-    protected VariantAnnotator annotator;
-
-    @BeforeEach
-    public void setUp() {
-        annotator = new VariantAnnotator(jannovarData.getRefDict(), jannovarData.getChromosomes(), new AnnotationBuilderOptions());
-    }
-
-    protected static VisualizableVariantAllele toVisualizableAllele(WritableSplicingAllele writableSplicingAllele) {
-        return new SimpleVisualizableVariantAllele(writableSplicingAllele.variantAnnotations(), writableSplicingAllele.squirlsResult());
+    /**
+     * Creates a ForkJoinWorkerThread operating in the given pool.
+     *
+     * @param pool the pool this thread works in
+     * @throws NullPointerException if pool is null
+     */
+    protected SquirlsWorkerThread(ForkJoinPool pool) {
+        super(pool);
+        setName("splice-worker-" + THREAD_COUNTER.getAndIncrement());
     }
 }

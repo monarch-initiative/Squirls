@@ -83,9 +83,8 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
-import org.monarchinitiative.squirls.core.classifier.PartialPrediction;
+import org.monarchinitiative.squirls.core.classifier.PredictionDefault;
 import org.monarchinitiative.squirls.core.classifier.SquirlsClassifier;
-import org.monarchinitiative.squirls.core.classifier.StandardPrediction;
 import org.monarchinitiative.squirls.core.classifier.transform.prediction.IdentityTransformer;
 import org.monarchinitiative.squirls.core.data.SplicingTranscriptSource;
 import org.monarchinitiative.squirls.core.model.SplicingTranscript;
@@ -94,11 +93,15 @@ import org.springframework.boot.test.context.SpringBootTest;
 import xyz.ielis.hyperutil.reference.fasta.GenomeSequenceAccessor;
 import xyz.ielis.hyperutil.reference.fasta.SequenceInterval;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -107,7 +110,7 @@ import static org.mockito.Mockito.when;
  * Here we test some real-world variants.
  */
 @SpringBootTest(classes = TestDataSourceConfig.class)
-class StandardVariantSplicingEvaluatorTest {
+class VariantSplicingEvaluatorDefaultTest {
 
     /**
      * Tolerance for numeric comparisons.
@@ -130,7 +133,7 @@ class StandardVariantSplicingEvaluatorTest {
     @Mock
     private SquirlsClassifier classifier;
 
-    private StandardVariantSplicingEvaluator evaluator;
+    private VariantSplicingEvaluatorDefault evaluator;
 
 
     @BeforeAll
@@ -150,7 +153,7 @@ class StandardVariantSplicingEvaluatorTest {
     void setUp() {
         // genome sequence accessor
         when(accessor.getReferenceDictionary()).thenReturn(RD);
-        evaluator = StandardVariantSplicingEvaluator.builder()
+        evaluator = VariantSplicingEvaluatorDefault.builder()
                 .accessor(accessor)
                 .txSource(transcriptSource)
                 .annotator(annotator)
@@ -173,38 +176,38 @@ class StandardVariantSplicingEvaluatorTest {
         when(accessor.fetchSequence(any(GenomeInterval.class))).thenReturn(Optional.of(SI));
 
         // 2 - splicing annotator
-        SplicingPredictionData plain = StandardSplicingPredictionData.of(variant, stx, SI);
-        SplicingPredictionData annotated = StandardSplicingPredictionData.of(variant, stx, SI);
+        SplicingPredictionData plain = SplicingPredictionDataDefault.of(variant, stx, SI);
+        SplicingPredictionData annotated = SplicingPredictionDataDefault.of(variant, stx, SI);
         annotated.putFeature("donor_offset", 5);
         annotated.putFeature("acceptor_offset", 1234); // not real
         when(annotator.annotate(plain)).thenReturn(annotated);
 
         // 3 - classifier
-        StandardPrediction prediction = StandardPrediction.of(
+        PredictionDefault prediction = PredictionDefault.of(
                 PartialPrediction.of("donor", .6, .7),
                 PartialPrediction.of("acceptor", .1, .6));
-        SplicingPredictionData predicted = NoRefSplicingPredictionData.of(variant, stx);
+        SplicingPredictionData predicted = SplicingPredictionDataDefault.of(variant, stx, SI);
         predicted.putFeature("donor_offset", 5);
         predicted.putFeature("acceptor_offset", 1234); // not real
         predicted.setPrediction(prediction);
         when(classifier.predict(annotated)).thenReturn(predicted);
 
         // act
-        final Map<String, SplicingPredictionData> predictions = evaluator.evaluate("chr9", 136_223_949, "G", "C", Set.of("NM_017503.5"));
+        SquirlsResult squirlsResult = evaluator.evaluate("chr9", 136_223_949, "G", "C", Set.of("NM_017503.5"));
 
 
         // assert
-        assertThat(predictions.size(), is(1));
-        assertThat(predictions, hasKey("NM_017503.5"));
+        assertThat(squirlsResult.txAccessionIds().size(), is(1));
+        assertThat(squirlsResult.txAccessionIds(), hasItem("NM_017503.5"));
 
-        SplicingPredictionData actual = predictions.get("NM_017503.5");
-        assertThat(actual.getVariant(), is(variant));
-        assertThat(actual.getTranscript(), is(stx));
-        assertThat(actual.getSequence(), is(SequenceInterval.empty()));
-        assertThat(actual.getFeatureAsInt("donor_offset"), is(5));
-        assertThat(actual.getFeatureAsInt("acceptor_offset"), is(1234));
-        assertThat(actual.getPrediction(), is(prediction));
-        assertThat(actual.getMetadata(), is(nullValue()));
+
+        Optional<SquirlsTxResult> predOpt = squirlsResult.resultForTranscript("NM_017503.5");
+        assertThat(predOpt.isPresent(), is(true));
+        SquirlsTxResult actual = predOpt.get();
+
+        assertThat(actual.featureValue("donor_offset").orElseThrow(), is(5.));
+        assertThat(actual.featureValue("acceptor_offset").orElseThrow(), is(1234.));
+        assertThat(actual.prediction(), is(prediction));
 
         verify(accessor).fetchSequence(new GenomeInterval(RD, Strand.FWD, 9, 136_223_176, 136_228_284, PositionType.ONE_BASED));
         verify(annotator).annotate(plain);
@@ -213,10 +216,10 @@ class StandardVariantSplicingEvaluatorTest {
     @Test
     void evaluateWrtTx_unknownContig() {
         // arrange & act
-        final Map<String, SplicingPredictionData> predictionMap = evaluator.evaluate("BLA", 100, "G", "C");
+        SquirlsResult squirlsResult = evaluator.evaluate("BLA", 100, "G", "C");
 
         // assert
-        assertThat(predictionMap, is(anEmptyMap()));
+        assertThat(squirlsResult.isEmpty(), is(true));
     }
 
     @Test
@@ -225,10 +228,10 @@ class StandardVariantSplicingEvaluatorTest {
         when(transcriptSource.fetchTranscriptByAccession("BLABLA", RD)).thenReturn(Optional.empty());
 
         // act
-        final Map<String, SplicingPredictionData> predictionMap = evaluator.evaluate("chr9", 136_223_949, "G", "C", Set.of("BLABLA"));
+        SquirlsResult squirlsResult = evaluator.evaluate("chr9", 136_223_949, "G", "C", Set.of("BLABLA"));
 
         // assert
-        assertThat(predictionMap, is(anEmptyMap()));
+        assertThat(squirlsResult.isEmpty(), is(true));
     }
 
     @Test
@@ -242,10 +245,10 @@ class StandardVariantSplicingEvaluatorTest {
         when(accessor.fetchSequence(any(GenomeInterval.class))).thenReturn(Optional.empty());
 
         // act
-        final Map<String, SplicingPredictionData> predictionMap = evaluator.evaluate("chr9", 136_223_949, "G", "C", Set.of("NM_017503.5"));
+        SquirlsResult squirlsResult = evaluator.evaluate("chr9", 136_223_949, "G", "C", Set.of("NM_017503.5"));
 
         // assert
-        assertThat(predictionMap, is(anEmptyMap()));
+        assertThat(squirlsResult.isEmpty(), is(true));
     }
 
     /**
@@ -265,18 +268,18 @@ class StandardVariantSplicingEvaluatorTest {
         when(accessor.fetchSequence(any(GenomeInterval.class))).thenReturn(Optional.of(SI));
 
         // 2 - splicing annotator
-        final SplicingPredictionData plain = StandardSplicingPredictionData.of(variant, stx, SI);
-        final SplicingPredictionData annotated = StandardSplicingPredictionData.of(variant, stx, SI);
+        final SplicingPredictionData plain = SplicingPredictionDataDefault.of(variant, stx, SI);
+        final SplicingPredictionData annotated = SplicingPredictionDataDefault.of(variant, stx, SI);
         annotated.putFeature("donor_offset", 5);
         annotated.putFeature("acceptor_offset", 1234); // not real
 
         when(annotator.annotate(plain)).thenReturn(annotated);
 
         // 3 - classifier
-        StandardPrediction prediction = StandardPrediction.of(
+        PredictionDefault prediction = PredictionDefault.of(
                 PartialPrediction.of("donor", .6, .7),
                 PartialPrediction.of("acceptor", .1, .6));
-        SplicingPredictionData predicted = StandardSplicingPredictionData.of(variant, stx, SI);
+        SplicingPredictionData predicted = SplicingPredictionDataDefault.of(variant, stx, SI);
         predicted.putFeature("donor_offset", 5);
         predicted.putFeature("acceptor_offset", 1234); // not real
         predicted.setPrediction(prediction);
@@ -284,20 +287,20 @@ class StandardVariantSplicingEvaluatorTest {
         when(classifier.predict(annotated)).thenReturn(predicted);
 
         // act
-        final Map<String, SplicingPredictionData> predictions = evaluator.evaluate("chr9", 136_223_949, "G", "C");
+        SquirlsResult squirlsResult = evaluator.evaluate("chr9", 136_223_949, "G", "C");
 
         // assert
-        assertThat(predictions.size(), is(1));
-        assertThat(predictions, hasKey("NM_017503.5"));
+        assertThat(squirlsResult.txAccessionIds(), hasSize(1));
+        assertThat(squirlsResult.txAccessionIds(), hasItem("NM_017503.5"));
 
-        SplicingPredictionData actual = predictions.get("NM_017503.5");
-        assertThat(actual.getVariant(), is(variant));
-        assertThat(actual.getTranscript(), is(stx));
-        assertThat(actual.getSequence(), is(SequenceInterval.empty()));
-        assertThat(actual.getFeatureAsInt("donor_offset"), is(5));
-        assertThat(actual.getFeatureAsInt("acceptor_offset"), is(1234));
-        assertThat(actual.getPrediction(), is(prediction));
-        assertThat(actual.getMetadata(), is(nullValue()));
+        Optional<SquirlsTxResult> resOpt = squirlsResult.resultForTranscript("NM_017503.5");
+        assertThat(resOpt.isPresent(), is(true));
+
+        SquirlsTxResult actual = resOpt.get();
+
+        assertThat(actual.featureValue("donor_offset").orElseThrow(), is(5.));
+        assertThat(actual.featureValue("acceptor_offset").orElseThrow(), is(1234.));
+        assertThat(actual.prediction(), is(prediction));
 
         verify(accessor).fetchSequence(new GenomeInterval(RD, Strand.FWD, 9, 136_223_176, 136_228_284, PositionType.ONE_BASED));
         verify(annotator).annotate(plain);

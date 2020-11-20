@@ -76,9 +76,9 @@
 
 package org.monarchinitiative.squirls.core;
 
-import java.util.Map;
 import java.util.Set;
 
+@SquirlsApi
 public interface VariantSplicingEvaluator {
 
     /**
@@ -92,7 +92,7 @@ public interface VariantSplicingEvaluator {
      * @param txIds  set of transcript accession IDs with respect to which the variant should be evaluated
      * @return splicing prediction data
      */
-    Map<String, SplicingPredictionData> evaluate(String contig, int pos, String ref, String alt, Set<String> txIds);
+    SquirlsResult evaluate(String contig, int pos, String ref, String alt, Set<String> txIds);
 
     /**
      * Calculate splicing scores for given variant with respect to all transcripts the variant overlaps with.
@@ -103,7 +103,7 @@ public interface VariantSplicingEvaluator {
      * @param alt    alternate allele, e.g. `T`, `AA`
      * @return map with splicing pathogenicity data mapped to transcript accession id
      */
-    default Map<String, SplicingPredictionData> evaluate(String contig, int pos, String ref, String alt) {
+    default SquirlsResult evaluate(String contig, int pos, String ref, String alt) {
         return evaluate(contig, pos, ref, alt, Set.of());
     }
 }

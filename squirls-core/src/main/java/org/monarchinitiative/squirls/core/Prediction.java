@@ -74,18 +74,23 @@
  * Daniel Danis, Peter N Robinson, 2020
  */
 
-package org.monarchinitiative.squirls.core.classifier;
+package org.monarchinitiative.squirls.core;
 
 import java.util.Collection;
+import java.util.Comparator;
 
 /**
- * The implementing classes represent predictions made by the {@link BinaryClassifier} with respect
+ * A prediction made by the {@link org.monarchinitiative.squirls.core.classifier.SquirlsClassifier} with respect
  * to a single transcript.
  */
-public interface Prediction {
+@SquirlsApi
+public interface Prediction extends Comparable<Prediction> {
+
+    Comparator<Prediction> PREDICTION_COMPARATOR = Comparator.comparing(Prediction::getMaxPathogenicity)
+            .thenComparing(Prediction::isPositive);
 
     static Prediction emptyPrediction() {
-        return EmptyPrediction.getInstance();
+        return PredictionEmpty.getInstance();
     }
 
     /**
@@ -101,13 +106,27 @@ public interface Prediction {
      */
     boolean isPositive();
 
+    default boolean isEmpty() {
+        return this.equals(emptyPrediction());
+    }
+
     /**
-     * @return the maximum pathogenicity prediction value
+     * @return <code>true</code> if the prediction was made and max pathogenicity is available
+     */
+    default boolean maxPathogenicityNotNaN() {
+        return !Double.isNaN(getMaxPathogenicity());
+    }
+
+    /**
+     * @return the maximum pathogenicity prediction value or <code>NaN</code>
      */
     default double getMaxPathogenicity() {
         double max = Double.NaN;
         for (PartialPrediction pp : getPartialPredictions()) {
-            final double proba = pp.getPathoProba();
+            double proba = pp.getPathoProba();
+            if (Double.isNaN(proba)) {
+                continue;
+            }
             if (Double.isNaN(max)) {
                 max = proba;
             } else {
@@ -119,4 +138,8 @@ public interface Prediction {
         return max;
     }
 
+    @Override
+    default int compareTo(Prediction o) {
+        return PREDICTION_COMPARATOR.compare(this, o);
+    }
 }

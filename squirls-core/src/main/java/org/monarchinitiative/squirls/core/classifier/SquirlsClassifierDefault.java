@@ -74,132 +74,98 @@
  * Daniel Danis, Peter N Robinson, 2020
  */
 
-package org.monarchinitiative.squirls.core;
+package org.monarchinitiative.squirls.core.classifier;
 
-import de.charite.compbio.jannovar.reference.GenomePosition;
-import org.monarchinitiative.squirls.core.model.SplicingTranscript;
+import org.monarchinitiative.squirls.core.Prediction;
+import org.monarchinitiative.squirls.core.PredictionEmpty;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
-// TODO: 8. 6. 2020 - revise docs
+public class SquirlsClassifierDefault implements SquirlsClassifier {
 
-/**
- * This class is a kitchen sink for all data we need to make a nice figures or anything else downstream.
- * <p>
- * Each instance contains information with respect to a single
- * {@link de.charite.compbio.jannovar.reference.GenomeVariant} and a single
- * {@link SplicingTranscript}.
- * <p>
- * Therefore, it is necessary for it to reside within {@link SplicingPredictionData} instance which contains these
- * information.
- */
-public class Metadata {
+    private static final Logger LOGGER = LoggerFactory.getLogger(SquirlsClassifierDefault.class);
 
-    /**
-     * A singleton empty instance.
-     */
-    private static final Metadata EMPTY = new Metadata();
+    private static final AtomicBoolean MISSING_FEATURE_REPORTED = new AtomicBoolean(false);
 
-    /**
-     * Map with transcript accession ID to coordinates of the donor site closest to the variant.
-     * <p>
-     * The coordinate represents the 1-based position of the first intronic base. In 0-based coordinate system,
-     * the coordinate represents the exon|intron boundary.
-     */
-    private final Map<String, GenomePosition> donorCoordinateMap;
+    private final ThresholdingBinaryClassifier<Classifiable> donorClf, acceptorClf;
 
-    /**
-     * Map with transcript accession ID to coordinates of the acceptor site closest to the variant.
-     * <p>
-     * The coordinate represents the 1-based position of the first exonic base. In 0-based coordinate system,
-     * the coordinate represents the intron|exon boundary.
-     */
-    private final Map<String, GenomePosition> acceptorCoordinateMap;
+    private final Set<String> usedFeatures;
 
+    private SquirlsClassifierDefault(ThresholdingBinaryClassifier<Classifiable> donorClf,
+                                     ThresholdingBinaryClassifier<Classifiable> acceptorClf) {
+        this.donorClf = Objects.requireNonNull(donorClf, "Donor classifier cannot be null");
+        this.acceptorClf = Objects.requireNonNull(acceptorClf, "Acceptor classifier cannot be null");
 
-    /**
-     * Special private constructor for creating {@link #EMPTY} singleton instance.
-     */
-    private Metadata() {
-        donorCoordinateMap = Map.of();
-        acceptorCoordinateMap = Map.of();
+        usedFeatures = Stream.concat(donorClf.usedFeatureNames().stream(), acceptorClf.usedFeatureNames().stream())
+                .collect(Collectors.toUnmodifiableSet());
+        LOGGER.debug("Initialized classifier with the following features: {}",
+                usedFeatures.stream().sorted().collect(Collectors.joining(", ", "[", "]")));
     }
 
-    private Metadata(Builder builder) {
-        donorCoordinateMap = Map.copyOf(builder.donorCoordinateMap);
-        acceptorCoordinateMap = Map.copyOf(builder.acceptorCoordinateMap);
+    public static SquirlsClassifierDefault of(ThresholdingBinaryClassifier<Classifiable> donorClf, ThresholdingBinaryClassifier<Classifiable> acceptorClf) {
+        return new SquirlsClassifierDefault(donorClf, acceptorClf);
     }
 
-    public static Metadata empty() {
-        return EMPTY;
+    @Override
+    public Set<String> usedFeatureNames() {
+        return usedFeatures;
     }
 
-    public static Builder builder() {
-        return new Builder();
-    }
+    @Override
+    public <T extends Classifiable> T predict(T data) {
+        if (data.getFeatureNames().containsAll(usedFeatures)) {
+            // we have all the features we need for making a prediction here
+            try {
+                data.setPrediction(PredictionDefault.of(donorClf.runPrediction(data), acceptorClf.runPrediction(data)));
+            } catch (PredictionException e) {
+                LOGGER.debug("Error: ", e);
+                data.setPrediction(Prediction.emptyPrediction());
+            }
+        } else {
+            // at least one from the required features is missing. Let's report that, but only once, in order not to
+            // flood the console
+            if (MISSING_FEATURE_REPORTED.compareAndExchange(false, true)) {
+                Set<String> difference = usedFeatures.stream()
+                        .filter(fname -> !data.getFeatureNames()
+                                .contains(fname)).collect(Collectors.toSet());
+                // report the error
+                String errorMsg = String.format("Missing one or more required features `[%s]`",
+                        String.join(",", difference));
+                LOGGER.warn(errorMsg);
+            }
+            data.setPrediction(PredictionEmpty.getInstance());
+        }
 
-
-    public Map<String, GenomePosition> getDonorCoordinateMap() {
-        return donorCoordinateMap;
-    }
-
-    public Map<String, GenomePosition> getAcceptorCoordinateMap() {
-        return acceptorCoordinateMap;
-    }
-
-    /**
-     * @return <code>true</code> if the metadata instance is equal to the empty/singleton metadata instance
-     */
-    public boolean isEmpty() {
-        return equals(EMPTY);
+        return data;
     }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        Metadata metadata = (Metadata) o;
-        return Objects.equals(donorCoordinateMap, metadata.donorCoordinateMap) &&
-                Objects.equals(acceptorCoordinateMap, metadata.acceptorCoordinateMap);
+        SquirlsClassifierDefault that = (SquirlsClassifierDefault) o;
+        return Objects.equals(donorClf, that.donorClf) &&
+                Objects.equals(acceptorClf, that.acceptorClf) &&
+                Objects.equals(usedFeatures, that.usedFeatures);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(donorCoordinateMap, acceptorCoordinateMap);
+        return Objects.hash(donorClf, acceptorClf, usedFeatures);
     }
 
-    public static final class Builder {
-        private final Map<String, GenomePosition> donorCoordinateMap = new HashMap<>();
-        private final Map<String, GenomePosition> acceptorCoordinateMap = new HashMap<>();
-
-        private Builder() {
-        }
-
-
-        public Builder putDonorCoordinate(String txAccession, GenomePosition donorPosition) {
-            this.donorCoordinateMap.put(txAccession, donorPosition);
-            return this;
-        }
-
-        public Builder putAllDonorCoordinates(Map<String, GenomePosition> donorCoordinateMap) {
-            this.donorCoordinateMap.putAll(donorCoordinateMap);
-            return this;
-        }
-
-        public Builder putAcceptorCoordinate(String txAccession, GenomePosition acceptorPosition) {
-            this.acceptorCoordinateMap.put(txAccession, acceptorPosition);
-            return this;
-        }
-
-        public Builder putAllAcceptorCoordinates(Map<String, GenomePosition> acceptorCoordinateMap) {
-            this.acceptorCoordinateMap.putAll(acceptorCoordinateMap);
-            return this;
-        }
-
-        public Metadata build() {
-            return new Metadata(this);
-        }
+    @Override
+    public String toString() {
+        return "StandardSquirlsClassifier{" +
+                "donorClf=" + donorClf +
+                ", acceptorClf=" + acceptorClf +
+                ", usedFeatures=" + usedFeatures +
+                '}';
     }
 }

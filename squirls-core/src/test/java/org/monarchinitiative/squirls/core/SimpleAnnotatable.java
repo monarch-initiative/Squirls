@@ -91,7 +91,6 @@ public class SimpleAnnotatable implements Annotatable {
     private final SplicingTranscript transcript;
     private final SequenceInterval sequence;
     private final Map<String, Object> features = new HashMap<>();
-    private Metadata metadata;
 
     public SimpleAnnotatable(GenomeVariant variant, SplicingTranscript transcript, SequenceInterval sequence) {
         this.variant = variant;
@@ -112,16 +111,6 @@ public class SimpleAnnotatable implements Annotatable {
     @Override
     public SequenceInterval getSequence() {
         return sequence;
-    }
-
-    @Override
-    public Metadata getMetadata() {
-        return metadata;
-    }
-
-    @Override
-    public void setMetadata(Metadata metadata) {
-        this.metadata = metadata;
     }
 
     @Override

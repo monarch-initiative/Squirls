@@ -87,7 +87,7 @@ import xyz.ielis.hyperutil.reference.fasta.SequenceInterval;
 public interface SplicingPredictionData extends Annotatable, Classifiable {
 
     static SplicingPredictionData emptyPredictionData() {
-        return EmptySplicingPredictionData.getInstance();
+        return SplicingPredictionDataEmpty.getInstance();
     }
 
     /**

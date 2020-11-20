@@ -79,9 +79,9 @@ package org.monarchinitiative.squirls.core.classifier.transform.prediction;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.monarchinitiative.squirls.core.PartialPrediction;
 import org.monarchinitiative.squirls.core.classifier.Constants;
-import org.monarchinitiative.squirls.core.classifier.PartialPrediction;
-import org.monarchinitiative.squirls.core.classifier.StandardPrediction;
+import org.monarchinitiative.squirls.core.classifier.PredictionDefault;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
@@ -126,7 +126,7 @@ public class RegularLogisticRegressionTest {
         double expectedThreshold = .01339395;
 
         final MutablePrediction mutablePrediction = new SimpleMutablePrediction();
-        final StandardPrediction sp = StandardPrediction.of(
+        final PredictionDefault sp = PredictionDefault.of(
                 PartialPrediction.of(Constants.DONOR_PIPE_NAME, donor, donorThreshold),
                 PartialPrediction.of(Constants.ACCEPTOR_PIPE_NAME, acceptor, acceptorThreshold));
         mutablePrediction.setPrediction(sp);
@@ -146,7 +146,7 @@ public class RegularLogisticRegressionTest {
     })
     public void predictionWithMissingProbaThresholdIsNotTransformed(String one, String two) {
         final MutablePrediction mutablePrediction = new SimpleMutablePrediction();
-        final StandardPrediction prediction = StandardPrediction.of(
+        final PredictionDefault prediction = PredictionDefault.of(
                 PartialPrediction.of(one, .5, .5),
                 PartialPrediction.of(two, .6, .6));
         mutablePrediction.setPrediction(prediction);
