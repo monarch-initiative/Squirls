@@ -7,7 +7,7 @@
     <groupId>org.monarchinitiative.squirls</groupId>
     <artifactId>Squirls</artifactId>
     <packaging>pom</packaging>
-    <version>1.0.0-RC2</version>
+    <version>1.0.0-RC3</version>
     <modules>
         <module>squirls-core</module>
         <module>squirls-ingest</module>
@@ -21,11 +21,11 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <java.version>11</java.version>
 
-        <hyperutil.version>0.1.3</hyperutil.version>
-        <htsjdk.version>2.19.0</htsjdk.version>
-        <jannovar.version>0.29</jannovar.version>
+        <hyperutil.version>0.1.4</hyperutil.version>
+        <htsjdk.version>2.23.0</htsjdk.version>
+        <jannovar.version>0.35</jannovar.version>
         <argparse.version>0.8.1</argparse.version>
-        <slf4j.version>1.7.29</slf4j.version>
+        <slf4j.version>1.7.30</slf4j.version>
         <h2.version>1.4.200</h2.version>
         <junit-jupiter.version>5.6.2</junit-jupiter.version>
     </properties>

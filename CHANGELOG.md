@@ -2,6 +2,22 @@
 
 ## ✈ the latest
 
+## ✈ v1.0.0-RC3
+- `Squirls`
+  - improve documentation
+  - use Jannovar v0.35, SLF4J v1.7.30
+- `squirls-cli`
+  - use Picocli for CLI definition, prettify CLI
+  - support HTML and VCF output formats
+  - numerous bug fixes
+  - allow to specify # threads
+  - improve progress reporting
+- `squirls-core`
+  - mark API classes
+- `squirls-ingest`
+  - create a ZIP file after ingest
+  - add sanity checks for transcripts
+
 ## ✈ v1.0.0-RC2
 - `squirls-cli`
   - implement commands `annotate-csv`, `annotate-vcf`, and `annotate-pos`

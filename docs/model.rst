@@ -12,6 +12,7 @@ the acceptor site) followed by a *logistic regression*. Both site-specific estim
 (SSDE) for a variant, which are subsequently transformed by the logistic regression to produce the final Squirls score.
 The variant is always evaluated wrt. specific transcript.
 
+.. _splice-features-ref:
 
 Splice features
 ^^^^^^^^^^^^^^^
@@ -67,7 +68,7 @@ Creates ``AG`` in :term:`AGEZ`
    ``1`` if the variant creates a novel ``AG`` di-nucleotide in :term:`AGEZ`, ``0`` otherwise.
 Creates ``YAG`` in :term:`AGEZ`
    ``1`` if the variant creates a novel ``YAG`` tri-nucleotide in :term:`AGEZ` where ``Y`` stands for a pyrimidine
-   derivative (cytosine or thymine), ``0`` otherwise.
+   derivative (cytosine or thymine), ``0`` otherwise (see `Wimmer et al., 2020`_).
 ESRSeq
    Estimate of impact of random hexamer sequences on splicing efficiency when inserted into five distinct positions of
    two different minigene exons obtained by in vitro screening (`Ke et al., 2011`_).
@@ -118,3 +119,4 @@ Glossary
 .. _Ke et al., 2011: https://pubmed.ncbi.nlm.nih.gov/21659425
 .. _Ke et al., 2018: https://pubmed.ncbi.nlm.nih.gov/29242188
 .. _Gooding et al., 2006: https://pubmed.ncbi.nlm.nih.gov/16507133
+.. _Wimmer et al., 2020: https://pubmed.ncbi.nlm.nih.gov/32126153

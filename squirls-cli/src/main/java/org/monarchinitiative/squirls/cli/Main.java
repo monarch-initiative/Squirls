@@ -1,162 +1,129 @@
+/*
+ * SOFTWARE LICENSE AGREEMENT
+ * FOR NON-COMMERCIAL USE
+ * 	This Software License Agreement (this “Agreement”) is made between you (“You,” “Your,” or “Licensee”) and The
+ * 	Jackson Laboratory (“Licensor”). This Agreement grants to You a license to the Licensed Software subject to Your
+ * 	acceptance of all the terms and conditions contained in this Agreement. Please read the terms and conditions
+ * 	carefully. You accept the terms and conditions set forth herein by using, downloading or opening the software
+ *
+ * 1. LICENSE
+ *
+ * 1.1	Grant. Subject to the terms and conditions of this Agreement, Licensor hereby grants to Licensee a worldwide,
+ * royalty-free, non-exclusive, non-transferable, non-sublicensable license to download, copy, display, and use the
+ * Licensed Software for Non-Commercial purposes only. “Licensed Software” means the current version of the software.
+ * “Non-Commercial” means not intended or directed toward commercial advantage or monetary compensation.
+ *
+ * 1.2	License Limitations. Nothing in this Agreement shall be construed to confer any rights upon Licensee except as
+ * expressly granted herein. Licensee may not use or exploit the Licensed Software other than expressly permitted by this
+ * Agreement. Licensee may not, nor may Licensee permit any third party, to modify, translate, reverse engineer, decompile,
+ * disassemble or create derivative works based on the Licensed Software or any portion thereof. Subject to Section 1.1,
+ * Licensee may distribute the Licensed Software to a third party, provided that the recipient agrees to use the Licensed
+ * Software on the terms and conditions of this Agreement. Licensee acknowledges that Licensor reserves the right to offer
+ * to Licensee or any third party a license for commercial use and distribution of the Licensed Software on terms and
+ * conditions different than those contained in this Agreement.
+ *
+ * 2. OWNERSHIP OF INTELLECTUAL PROPERTY
+ *
+ * 2.1	Ownership Rights. Except for the limited license rights expressly granted to Licensee under this Agreement, Licensee
+ * acknowledges that all right, title and interest in and to the Licensed Software and all intellectual property rights
+ * therein shall remain with Licensor or its licensors, as applicable.
+ *
+ * 3. DISCLAIMER OF WARRANTY AND LIMITATION OF LIABILITY
+ *
+ * 3.1 	Disclaimer of Warranty. LICENSOR PROVIDES THE LICENSED SOFTWARE ON A NO-FEE BASIS “AS IS” WITHOUT WARRANTY OF
+ * ANY KIND, EXPRESS OR IMPLIED. LICENSOR EXPRESSLY DISCLAIMS ALL WARRANTIES OR CONDITIONS OF ANY KIND, INCLUDING ANY
+ * WARRANTY OF MERCHANTABILITY, TITLE, SECURITY, ACCURACY, NON-INFRINGEMENT OR FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ * 3,2	Limitation of Liability.  LICENSEE ASSUMES FULL RESPONSIBILITY AND RISK FOR ANY LOSS RESULTING FROM LICENSEE’s
+ * DOWNLOADING AND USE OF THE LICENSED SOFTWARE.  IN NO EVENT SHALL LICENSOR BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, ARISING FROM THE LICENSED SOFTWARE OR LICENSEE’S USE OF
+ * THE LICENSED SOFTWARE, REGARDLESS OF WHETHER LICENSOR IS ADVISED, OR HAS OTHER REASON TO KNOW, OR IN FACT KNOWS,
+ * OF THE POSSIBILITY OF THE FOREGOING.
+ *
+ * 3.3	Acknowledgement. Without limiting the generality of Section 3.1, Licensee acknowledges that the Licensed Software
+ * is provided as an information resource only, and should not be relied on for any diagnostic or treatment purposes.
+ *
+ * 4. TERM AND TERMINATION
+ *
+ * 4.1 	Term. This Agreement commences on the date this Agreement is executed and will continue until terminated in
+ * accordance with Section 4.2.
+ *
+ * 4.2	Termination. If Licensee breaches any provision hereunder, or otherwise engages in any unauthorized use of the
+ * Licensed Software, Licensor may terminate this Agreement immediately. Licensee may terminate this Agreement at any
+ * time upon written notice to Licensor. Upon termination, the license granted hereunder will terminate and Licensee will
+ * immediately cease using the Licensed Software and destroy all copies of the Licensed Software in its possession.
+ * Licensee will certify in writing that it has complied with the foregoing obligation.
+ *
+ * 5. MISCELLANEOUS
+ *
+ * 5.1	Future Updates. Use of the Licensed Software under this Agreement is subject to the terms and conditions contained
+ * herein. New or updated software may require additional or revised terms of use. Licensor will provide notice of and
+ * make available to Licensee any such revised terms.
+ *
+ * 5.2	Entire Agreement. This Agreement, including any Attachments hereto, constitutes the sole and entire agreement
+ * between the parties as to the subject matter set forth herein and supersedes are previous license agreements,
+ * understandings, or arrangements between the parties relating to such subject matter.
+ *
+ * 5.2 	Governing Law. This Agreement shall be construed, governed, interpreted and applied in accordance with the
+ * internal laws of the State of Maine, U.S.A., without regard to conflict of laws principles. The parties agree that
+ * any disputes between them may be heard only in the state or federal courts in the State of Maine, and the parties
+ * hereby consent to venue and jurisdiction in those courts.
+ *
+ * version:6-8-18
+ *
+ * Daniel Danis, Peter N Robinson, 2020
+ */
+
 package org.monarchinitiative.squirls.cli;
 
-import net.sourceforge.argparse4j.ArgumentParsers;
-import net.sourceforge.argparse4j.impl.Arguments;
-import net.sourceforge.argparse4j.inf.*;
-import org.monarchinitiative.squirls.cli.cmd.Command;
 import org.monarchinitiative.squirls.cli.cmd.GenerateConfigCommand;
-import org.monarchinitiative.squirls.cli.cmd.analyze_vcf.AnalyzeVcfCommand;
 import org.monarchinitiative.squirls.cli.cmd.annotate_csv.AnnotateCsvCommand;
 import org.monarchinitiative.squirls.cli.cmd.annotate_pos.AnnotatePosCommand;
 import org.monarchinitiative.squirls.cli.cmd.annotate_vcf.AnnotateVcfCommand;
-import org.monarchinitiative.squirls.cli.visualization.SimpleVisualizationContextSelector;
-import org.monarchinitiative.squirls.cli.visualization.SplicingVariantGraphicsGenerator;
-import org.monarchinitiative.squirls.cli.visualization.panel.PanelGraphicsGenerator;
-import org.monarchinitiative.squirls.core.data.ic.SplicingPwmData;
-import org.monarchinitiative.vmvt.core.VmvtGenerator;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.builder.SpringApplicationBuilder;
-import org.springframework.context.ConfigurableApplicationContext;
-import org.springframework.context.annotation.Bean;
+import picocli.CommandLine;
+import picocli.CommandLine.Help.ColorScheme.Builder;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Locale;
-import java.util.Map;
+import java.util.concurrent.Callable;
 
-/**
- *
- */
-@SpringBootApplication
-public class Main {
+import static picocli.CommandLine.Help.Ansi.Style.*;
 
-    private static final String EPILOG = "";
+@CommandLine.Command(name = "squirls-cli.jar",
+        header = "Super-quick Information Content and Random Forest Learning for Splice Variants\n",
+        mixinStandardHelpOptions = true,
+        version = Main.VERSION,
+        usageHelpWidth = Main.WIDTH,
+        footer = Main.FOOTER)
+// TODO: 18. 11. 2020 fix documentation link
+public class Main implements Callable<Integer> {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(Main.class);
+    public static final String VERSION = "squirls v1.0.0-RC3-SNAPSHOT";
+    public static final int WIDTH = 120;
 
-    public static void main(String[] args) throws Exception {
+    public static final String FOOTER = "See the full documentation at https://github.com/TheJacksonLaboratory/Squirls/blob/master";
+
+    private static final CommandLine.Help.ColorScheme COLOR_SCHEME = new Builder()
+            .commands(bold, fg_blue, underline)
+            .options(fg_yellow)
+            .parameters(fg_yellow)
+            .optionParams(italic)
+            .build();
+
+    public static void main(String[] args) {
         Locale.setDefault(Locale.US);
-
-        /*
-         1. define CLI interface
-         */
-        ArgumentParser parser = ArgumentParsers.newFor("java -jar squirls-cli.jar").build();
-        parser.description("Super-quick Information Content and Random Forest Learning for Splice Variants");
-        parser.defaultHelp(true);
-        parser.epilog(EPILOG);
-
-        /*
-        This CLI has 2 command groups: {generate-config, run}
-        - a) - generate-config - generate a config file for commands from the `run` group
-        - b) - run - commands that do useful things, e.g. annotate a single variant, a VCF file, etc.
-         */
-        Subparsers mainSubparsers = parser.addSubparsers();
-
-        // a) - `generate-config`
-        GenerateConfigCommand.setupSubparsers(mainSubparsers);
-
-        // b) - `run` command group
-        final Subparser runParser = mainSubparsers.addParser("run")
-                .setDefault("cmd", "run")
-                .help("run a command");
-        final Subparsers runCommandGroupSubparsers = runParser.addSubparsers();
-        AnnotatePosCommand.setupSubparsers(runCommandGroupSubparsers);
-        AnnotateVcfCommand.setupSubparsers(runCommandGroupSubparsers);
-        AnnotateCsvCommand.setupSubparsers(runCommandGroupSubparsers);
-        AnalyzeVcfCommand.setupSubparsers(runCommandGroupSubparsers);
-
-        // - we require 3S properties to be provided
-        runParser.addArgument("-c", "--config")
-                .required(true)
-                .metavar("/path/to/application.yml")
-                .help("path to configuration file generated by `generate-config` command");
-        runParser.addArgument("--log-level")
-                .type(Arguments.enumStringType(LogLevel.class))
-                .setDefault(LogLevel.INFO)
-                .help("set verbosity of the program");
-        /*
-         2. Parse the command line arguments
-         */
-        Namespace namespace = null;
-        List<String> unknownArgsList = new ArrayList<>();
-        try {
-            namespace = parser.parseKnownArgs(args, unknownArgsList);
-        } catch (ArgumentParserException e) {
-            parser.handleError(e);
-            System.exit(1);
-        }
-
-        /*
-         3. run the command
-         */
-        final Command command;
-        final String cmdName = namespace.get("cmd");
-        if (cmdName.equals("generate-config")) {
-            command = new GenerateConfigCommand();
-        } else {
-            final String configPath = namespace.getString("config");
-            // TODO: 16. 10. 2020 make the logging system work
-            final LogLevel level = namespace.get("log_level");
-            LOGGER.info("Reading Squirls configuration from `{}`", configPath);
-            if (!unknownArgsList.isEmpty()) {
-                LOGGER.debug("Passing the following args to Spring: '{}'",
-                        String.join(", ", unknownArgsList));
-            }
-
-            // bootstrap Spring application context
-            ConfigurableApplicationContext appContext = new SpringApplicationBuilder(Main.class)
-                    .properties(Map.of("spring.config.location", configPath,
-                            "logging.level.org.monarchinitiative.threes", level.name()))
-                    .run(args);
-
-            // get the selected command and run it
-            switch (cmdName) {
-                case "annotate-pos":
-                    command = appContext.getBean(AnnotatePosCommand.class);
-                    break;
-                case "annotate-vcf":
-                    command = appContext.getBean(AnnotateVcfCommand.class);
-                    break;
-                case "annotate-csv":
-                    command = appContext.getBean(AnnotateCsvCommand.class);
-                    break;
-                case "analyze-vcf":
-                    command = appContext.getBean(AnalyzeVcfCommand.class);
-                    break;
-                default:
-                    LOGGER.warn("Unknown command '{}'", cmdName);
-                    System.exit(1);
-                    return; // unreachable, but still required
-            }
-        }
-
-        command.run(namespace);
-        LOGGER.info("Done!");
+        CommandLine cline = new CommandLine(new Main())
+                .setColorScheme(COLOR_SCHEME)
+                .addSubcommand("generate-config", new GenerateConfigCommand())
+                .addSubcommand("annotate-pos", new AnnotatePosCommand())
+                .addSubcommand("annotate-csv", new AnnotateCsvCommand())
+                .addSubcommand("annotate-vcf", new AnnotateVcfCommand());
+        System.exit(cline.execute(args));
     }
 
-    @Bean
-    public SplicingVariantGraphicsGenerator graphicsGenerator(SplicingPwmData splicingPwmData) {
-        //        return new SimpleSplicingVariantGraphicsGenerator(splicingPwmData);
 
-        final VmvtGenerator generator = new VmvtGenerator();
-        final SimpleVisualizationContextSelector selector = new SimpleVisualizationContextSelector();
-        return new PanelGraphicsGenerator(generator, splicingPwmData, selector);
+    @Override
+    public Integer call() throws Exception {
+        // work done in subcommands
+        return 0;
     }
-
-    /**
-     * Yet another enum for logging levels..
-     */
-    private enum LogLevel {
-        TRACE, DEBUG, INFO, WARN, ERROR, FATAL, OFF;
-
-
-        @Override
-        public String toString() {
-            return super.toString().toLowerCase();
-        }
-    }
-
 }
-

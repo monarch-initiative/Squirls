@@ -1,0 +1,82 @@
+<svg width="290" height="300" style="" xmlns="http://www.w3.org/2000/svg">
+    <!-- Created by vmvt -->
+    <style>
+        text { font: 24px courier, monospace; }
+        text.t20 { font: 20px courier, monospace; }
+        text.t14 { font: 14px courier, monospace; }
+    </style>
+    <g>
+        <rect x="15" y="10" rx="3" ry="3" width="120" height="50"
+              style="stroke: none; fill: #4dbbd5;fill-opacity: 0.1"></rect>
+        <text x="40" y="30" class="t20">R
+            <tspan dy="1" font-size="12">i</tspan>
+        </text>
+        <text x="58" y="30" class="t20">:6.10</text>
+        <text x="25" y="50" class="t20">
+            canonical
+        </text>
+        <g transform='translate(10,100) scale(1,0.522056)'>
+            <text x="0" y="0" fill="#4dbbd5">c</text>
+        </g>
+        <g transform='translate(40.000000,101)  scale(1,0.846843)  rotate(180)'>
+            <text x="0" y="0" fill="#e64b35">t</text>
+        </g>
+        <g transform='translate(40,100) scale(1,1.688852)'>
+            <text x="0" y="0" fill="#ff9900">g</text>
+        </g>
+        <g transform='translate(55,100) scale(1,1.994218)'>
+            <text x="0" y="0" fill="#ff9900">g</text>
+        </g>
+        <g transform='translate(70,100) scale(1,1.979660)'>
+            <text x="0" y="0" fill="#e64b35">t</text>
+        </g>
+        <g transform='translate(85,100) scale(1,1.255803)'>
+            <text x="0" y="0" fill="#00A087">a</text>
+        </g>
+        <g transform='translate(100,100) scale(1,1.449957)'>
+            <text x="0" y="0" fill="#00A087">a</text>
+        </g>
+        <g transform='translate(130.000000,101)  scale(1,1.457990)  rotate(180)'>
+            <text x="0" y="0" fill="#00A087">a</text>
+        </g>
+        <g transform='translate(145.000000,101)  scale(1,0.481969)  rotate(180)'>
+            <text x="0" y="0" fill="#00A087">a</text>
+        </g>
+        <rect x="15" y="160" rx="3" ry="3" width="120" height="50"
+              style="stroke: none; fill: #4dbbd5;fill-opacity: 0.1"></rect>
+        <text x="40" y="180" class="t20">R
+            <tspan dy="1" font-size="12">i</tspan>
+        </text>
+        <text x="58" y="180" class="t20">:8.59</text>
+        <text x="25" y="200" class="t20">
+            cryptic
+        </text>
+        <g transform='translate(10,250) scale(1,0.522056)'>
+            <text x="0" y="0" fill="#4dbbd5">c</text>
+        </g>
+        <g transform='translate(25,250) scale(1,1.351628)'>
+            <text x="0" y="0" fill="#00A087">a</text>
+        </g>
+        <g transform='translate(40,250) scale(1,1.688852)'>
+            <text x="0" y="0" fill="#ff9900">g</text>
+        </g>
+        <g transform='translate(55,250) scale(1,1.994218)'>
+            <text x="0" y="0" fill="#ff9900">g</text>
+        </g>
+        <g transform='translate(70,250) scale(1,1.979660)'>
+            <text x="0" y="0" fill="#e64b35">t</text>
+        </g>
+        <g transform='translate(85,250) scale(1,1.255803)'>
+            <text x="0" y="0" fill="#00A087">a</text>
+        </g>
+        <g transform='translate(115.000000,251)  scale(1,1.107803)  rotate(180)'>
+            <text x="0" y="0" fill="#e64b35">t</text>
+        </g>
+        <g transform='translate(115,250) scale(1,1.624803)'>
+            <text x="0" y="0" fill="#ff9900">g</text>
+        </g>
+        <g transform='translate(145.000000,251)  scale(1,0.717857)  rotate(180)'>
+            <text x="0" y="0" fill="#4dbbd5">c</text>
+        </g>
+    </g>
+</svg>

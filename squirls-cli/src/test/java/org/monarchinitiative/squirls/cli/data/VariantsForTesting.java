@@ -1,3 +1,79 @@
+/*
+ * SOFTWARE LICENSE AGREEMENT
+ * FOR NON-COMMERCIAL USE
+ * 	This Software License Agreement (this “Agreement”) is made between you (“You,” “Your,” or “Licensee”) and The
+ * 	Jackson Laboratory (“Licensor”). This Agreement grants to You a license to the Licensed Software subject to Your
+ * 	acceptance of all the terms and conditions contained in this Agreement. Please read the terms and conditions
+ * 	carefully. You accept the terms and conditions set forth herein by using, downloading or opening the software
+ *
+ * 1. LICENSE
+ *
+ * 1.1	Grant. Subject to the terms and conditions of this Agreement, Licensor hereby grants to Licensee a worldwide,
+ * royalty-free, non-exclusive, non-transferable, non-sublicensable license to download, copy, display, and use the
+ * Licensed Software for Non-Commercial purposes only. “Licensed Software” means the current version of the software.
+ * “Non-Commercial” means not intended or directed toward commercial advantage or monetary compensation.
+ *
+ * 1.2	License Limitations. Nothing in this Agreement shall be construed to confer any rights upon Licensee except as
+ * expressly granted herein. Licensee may not use or exploit the Licensed Software other than expressly permitted by this
+ * Agreement. Licensee may not, nor may Licensee permit any third party, to modify, translate, reverse engineer, decompile,
+ * disassemble or create derivative works based on the Licensed Software or any portion thereof. Subject to Section 1.1,
+ * Licensee may distribute the Licensed Software to a third party, provided that the recipient agrees to use the Licensed
+ * Software on the terms and conditions of this Agreement. Licensee acknowledges that Licensor reserves the right to offer
+ * to Licensee or any third party a license for commercial use and distribution of the Licensed Software on terms and
+ * conditions different than those contained in this Agreement.
+ *
+ * 2. OWNERSHIP OF INTELLECTUAL PROPERTY
+ *
+ * 2.1	Ownership Rights. Except for the limited license rights expressly granted to Licensee under this Agreement, Licensee
+ * acknowledges that all right, title and interest in and to the Licensed Software and all intellectual property rights
+ * therein shall remain with Licensor or its licensors, as applicable.
+ *
+ * 3. DISCLAIMER OF WARRANTY AND LIMITATION OF LIABILITY
+ *
+ * 3.1 	Disclaimer of Warranty. LICENSOR PROVIDES THE LICENSED SOFTWARE ON A NO-FEE BASIS “AS IS” WITHOUT WARRANTY OF
+ * ANY KIND, EXPRESS OR IMPLIED. LICENSOR EXPRESSLY DISCLAIMS ALL WARRANTIES OR CONDITIONS OF ANY KIND, INCLUDING ANY
+ * WARRANTY OF MERCHANTABILITY, TITLE, SECURITY, ACCURACY, NON-INFRINGEMENT OR FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ * 3,2	Limitation of Liability.  LICENSEE ASSUMES FULL RESPONSIBILITY AND RISK FOR ANY LOSS RESULTING FROM LICENSEE’s
+ * DOWNLOADING AND USE OF THE LICENSED SOFTWARE.  IN NO EVENT SHALL LICENSOR BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, ARISING FROM THE LICENSED SOFTWARE OR LICENSEE’S USE OF
+ * THE LICENSED SOFTWARE, REGARDLESS OF WHETHER LICENSOR IS ADVISED, OR HAS OTHER REASON TO KNOW, OR IN FACT KNOWS,
+ * OF THE POSSIBILITY OF THE FOREGOING.
+ *
+ * 3.3	Acknowledgement. Without limiting the generality of Section 3.1, Licensee acknowledges that the Licensed Software
+ * is provided as an information resource only, and should not be relied on for any diagnostic or treatment purposes.
+ *
+ * 4. TERM AND TERMINATION
+ *
+ * 4.1 	Term. This Agreement commences on the date this Agreement is executed and will continue until terminated in
+ * accordance with Section 4.2.
+ *
+ * 4.2	Termination. If Licensee breaches any provision hereunder, or otherwise engages in any unauthorized use of the
+ * Licensed Software, Licensor may terminate this Agreement immediately. Licensee may terminate this Agreement at any
+ * time upon written notice to Licensor. Upon termination, the license granted hereunder will terminate and Licensee will
+ * immediately cease using the Licensed Software and destroy all copies of the Licensed Software in its possession.
+ * Licensee will certify in writing that it has complied with the foregoing obligation.
+ *
+ * 5. MISCELLANEOUS
+ *
+ * 5.1	Future Updates. Use of the Licensed Software under this Agreement is subject to the terms and conditions contained
+ * herein. New or updated software may require additional or revised terms of use. Licensor will provide notice of and
+ * make available to Licensee any such revised terms.
+ *
+ * 5.2	Entire Agreement. This Agreement, including any Attachments hereto, constitutes the sole and entire agreement
+ * between the parties as to the subject matter set forth herein and supersedes are previous license agreements,
+ * understandings, or arrangements between the parties relating to such subject matter.
+ *
+ * 5.2 	Governing Law. This Agreement shall be construed, governed, interpreted and applied in accordance with the
+ * internal laws of the State of Maine, U.S.A., without regard to conflict of laws principles. The parties agree that
+ * any disputes between them may be heard only in the state or federal courts in the State of Maine, and the parties
+ * hereby consent to venue and jurisdiction in those courts.
+ *
+ * version:6-8-18
+ *
+ * Daniel Danis, Peter N Robinson, 2020
+ */
+
 package org.monarchinitiative.squirls.cli.data;
 
 import de.charite.compbio.jannovar.annotation.AnnotationException;
@@ -11,18 +87,14 @@ import de.charite.compbio.jannovar.reference.Strand;
 import htsjdk.variant.variantcontext.Allele;
 import htsjdk.variant.variantcontext.VariantContext;
 import htsjdk.variant.variantcontext.VariantContextBuilder;
-import org.monarchinitiative.squirls.cli.SimpleSplicingPredictionData;
-import org.monarchinitiative.squirls.cli.cmd.analyze_vcf.data.SplicingVariantAlleleEvaluation;
-import org.monarchinitiative.squirls.core.Metadata;
-import org.monarchinitiative.squirls.core.SplicingPredictionData;
-import org.monarchinitiative.squirls.core.classifier.PartialPrediction;
-import org.monarchinitiative.squirls.core.classifier.StandardPrediction;
+import org.monarchinitiative.squirls.core.PartialPrediction;
+import org.monarchinitiative.squirls.core.SquirlsTxResult;
+import org.monarchinitiative.squirls.core.classifier.PredictionDefault;
 import org.monarchinitiative.squirls.core.model.SplicingTranscript;
 import org.monarchinitiative.vmvt.core.VmvtGenerator;
 import xyz.ielis.hyperutil.reference.fasta.SequenceInterval;
 
 import java.util.*;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class VariantsForTesting {
@@ -35,162 +107,28 @@ public class VariantsForTesting {
         // no-op
     }
 
-
-    /**
-     * Get data for variant <code>chr9:136,224,586G>A</code>. The variant is at -1 position of the canonical acceptor
-     * site of the exon 3.
-     *
-     * @param rd        {@link ReferenceDictionary} to use
-     * @param annotator {@link VariantAnnotator} to use to perform functional annotation with respect to genes & transcripts
-     * @return evaluation object with all the data
-     * @throws Exception bla
-     */
-    public static SplicingVariantAlleleEvaluation SURF2Exon3AcceptorMinus1Evaluation(ReferenceDictionary rd, VariantAnnotator annotator) throws Exception {
-        /*
-        Prepare POJOs
-         */
-        Allele referenceAllele = Allele.create("G", true);
-        Allele alternateAllele = Allele.create("A", false);
-        final VariantContext vc = new VariantContextBuilder()
-                .chr("chr9")
-                .start(136_224_586)
-                .stop(136_224_586)
-                .id("rs993")
-                .alleles(List.of(referenceAllele, alternateAllele))
-                .make();
-
-        final SplicingVariantAlleleEvaluation evaluation = new SplicingVariantAlleleEvaluation(vc, alternateAllele);
-
-        final GenomePosition position = new GenomePosition(rd, Strand.FWD, rd.getContigNameToID().get("chr9"), 136_224_586, PositionType.ONE_BASED);
-        final GenomeVariant variant = new GenomeVariant(position, "G", "A");
-
-        /*
-        Make annotations map
-         */
-        final VariantAnnotations ann = annotator.buildAnnotations(variant);
-        evaluation.setAnnotations(ann);
-
-        /*
-        Make predictions map
-         */
-        final Map<String, SplicingPredictionData> predictions = Transcripts.surf2Transcripts(rd).stream()
-                .map(transcript -> new SimpleSplicingPredictionData(variant, transcript, Sequences.getSurf2Exon3Sequence(rd)))
-                .peek(data -> data.setPrediction(StandardPrediction.of(PartialPrediction.of("fake", 0.93, FAKE_THRESHOLD))))
-                .peek(data -> data.setMetadata(Metadata.builder()
-                        .putDonorCoordinate("NM_017503.4", new GenomePosition(rd, Strand.FWD, 9, 136_224_691, PositionType.ONE_BASED))
-                        .putAcceptorCoordinate("NM_017503.4", new GenomePosition(rd, Strand.FWD, 9, 136_224_587, PositionType.ONE_BASED))
-                        .putDonorCoordinate("NM_001278928.1", new GenomePosition(rd, Strand.FWD, 9, 136_224_691, PositionType.ONE_BASED))
-                        .putAcceptorCoordinate("NM_001278928.1", new GenomePosition(rd, Strand.FWD, 9, 136_224_587, PositionType.ONE_BASED))
-                        .build()))
-                .peek(data -> {
-                    data.putFeature("donor_offset", -2.);
-                    data.putFeature("canonical_donor", 2.44704789418146);
-                    data.putFeature("cryptic_donor", 0.);
-                    data.putFeature("acceptor_offset", 143.);
-                    data.putFeature("canonical_acceptor", 0.);
-                    data.putFeature("cryptic_acceptor", -12.4905210874462);
-                    data.putFeature("phylop", 3.5);
-                    data.putFeature("hexamer", -1.4957907);
-                    data.putFeature("septamer", -0.8844);
-                })
-                .collect(Collectors.toMap(k -> k.getTranscript().getAccessionId(), Function.identity()));
-        evaluation.putAllPredictionData(predictions);
-
-        return evaluation;
-    }
-
-
-    /**
-     * Get data for variant <code>chr9:136,224,694A>T</code>. The variant is located at +4 position of the canonical
-     * donor site of the exon 3.
-     *
-     * @param rd        {@link ReferenceDictionary} to use
-     * @param annotator {@link VariantAnnotator} to use to perform functional annotation with respect to genes & transcripts
-     * @return evaluation object with all the data
-     * @throws Exception bla
-     */
-    public static SplicingVariantAlleleEvaluation SURF2DonorExon3Plus4Evaluation(ReferenceDictionary rd, VariantAnnotator annotator) throws Exception {
-        final String chrom = "chr9";
-        final int chr = 9;
-        final int pos = 136_224_694;
-
-        /*
-        Prepare POJOs
-         */
-        Allele referenceAllele = Allele.create("A", true);
-        Allele altAlleleOne = Allele.create("T", false);
-        Allele altAlleleTwo = Allele.create("TC", false);
-        final VariantContext vc = new VariantContextBuilder()
-                .chr(chrom) // on hg19
-                .start(pos)
-                .stop(pos)
-                .id("rs993")
-                .alleles(List.of(referenceAllele, altAlleleOne, altAlleleTwo))
-                .make();
-
-        final SplicingVariantAlleleEvaluation evaluation = new SplicingVariantAlleleEvaluation(vc, altAlleleOne);
-        final GenomePosition position = new GenomePosition(rd, Strand.FWD, rd.getContigNameToID().get(chrom), pos, PositionType.ONE_BASED);
-        final GenomeVariant variant = new GenomeVariant(position, "A", "T");
-
-        /*
-        Make annotations map
-         */
-        final VariantAnnotations ann = annotator.buildAnnotations(variant);
-        evaluation.setAnnotations(ann);
-
-        /*
-        Make predictions map
-         */
-        final Map<String, SplicingPredictionData> predictions = Transcripts.surf2Transcripts(rd).stream()
-                .map(transcript -> new SimpleSplicingPredictionData(variant, transcript, Sequences.getSurf2Exon3Sequence(rd)))
-                .peek(data -> data.setPrediction(StandardPrediction.of(PartialPrediction.of("fake", 0.94, FAKE_THRESHOLD))))
-                .peek(data -> data.setMetadata(Metadata.builder()
-                        .putDonorCoordinate("NM_017503.4", new GenomePosition(rd, Strand.FWD, chr, 136_224_691, PositionType.ONE_BASED))
-                        .putAcceptorCoordinate("NM_017503.4", new GenomePosition(rd, Strand.FWD, chr, 136_224_587, PositionType.ONE_BASED))
-                        .putDonorCoordinate("NM_001278928.1", new GenomePosition(rd, Strand.FWD, chr, 136_224_691, PositionType.ONE_BASED))
-                        .putAcceptorCoordinate("NM_001278928.1", new GenomePosition(rd, Strand.FWD, chr, 136_224_587, PositionType.ONE_BASED))
-                        .build()))
-                .peek(data -> {
-                    data.putFeature("donor_offset", -2.);
-                    data.putFeature("canonical_donor", 2.44704789418146);
-                    data.putFeature("cryptic_donor", 0.);
-                    data.putFeature("acceptor_offset", 143.);
-                    data.putFeature("canonical_acceptor", 0.);
-                    data.putFeature("cryptic_acceptor", -12.4905210874462);
-                    data.putFeature("phylop", 3.5);
-                    data.putFeature("hexamer", -1.4957907);
-                    data.putFeature("septamer", -0.8844);
-                })
-                .collect(Collectors.toMap(k -> k.getTranscript().getAccessionId(), Function.identity()));
-        evaluation.putAllPredictionData(predictions);
-
-        return evaluation;
-    }
-
-
-    private static SplicingVariantAlleleEvaluation makeEvaluation(ReferenceDictionary rd,
-                                                                  String chrom,
-                                                                  int pos,
-                                                                  String variantId,
-                                                                  String ref,
-                                                                  String alt,
-                                                                  VariantAnnotator annotator,
-                                                                  Set<String> seqIds,
-                                                                  Collection<SplicingTranscript> transcripts,
-                                                                  SequenceInterval si,
-                                                                  double pathogenicity,
-                                                                  Metadata metadata,
-                                                                  Map<String, Double> featureMap,
-                                                                  String ruler,
-                                                                  String primary,
-                                                                  String secondary,
-                                                                  String title) throws AnnotationException {
+    private static TestVariant makeEvaluation(ReferenceDictionary rd,
+                                              String chrom,
+                                              int pos,
+                                              String variantId,
+                                              String ref,
+                                              String alt,
+                                              VariantAnnotator annotator,
+                                              Set<String> seqIds,
+                                              Collection<SplicingTranscript> transcripts,
+                                              SequenceInterval si,
+                                              double pathogenicity,
+                                              String featurePayload,
+                                              String ruler,
+                                              String primary,
+                                              String secondary,
+                                              String title) throws AnnotationException {
         /*
         Assemble data to POJOs
          */
         Allele referenceAllele = Allele.create(ref, true);
         Allele altAlleleOne = Allele.create(alt, false);
-        final VariantContext vc = new VariantContextBuilder()
+        VariantContext vc = new VariantContextBuilder()
                 .chr(chrom) // on hg19
                 .start(pos)
                 .stop(pos)
@@ -198,32 +136,47 @@ public class VariantsForTesting {
                 .alleles(List.of(referenceAllele, altAlleleOne))
                 .make();
 
-        final SplicingVariantAlleleEvaluation evaluation = new SplicingVariantAlleleEvaluation(vc, altAlleleOne);
-        final GenomePosition position = new GenomePosition(rd, Strand.FWD, rd.getContigNameToID().get(chrom), pos, PositionType.ONE_BASED);
-        final GenomeVariant variant = new GenomeVariant(position, ref, alt);
+        /*
+        Prepare features
+         */
+        Map<String, Double> featureMap = Arrays.stream(featurePayload.split("\n"))
+                .map(line -> line.split("="))
+                .collect(Collectors.toMap(v -> v[0], v -> Double.parseDouble(v[1])));
+        Map<String, Object> featureObjects = Arrays.stream(featurePayload.split("\n"))
+                .map(line -> line.split("="))
+                .collect(Collectors.toMap(v -> v[0], v -> Double.parseDouble(v[1])));
+
+        SplicingTranscript st = transcripts.stream().min(Comparator.comparing(SplicingTranscript::getAccessionId)).orElseThrow();
+        GenomePosition position = new GenomePosition(rd, Strand.FWD, rd.getContigNameToID().get(chrom), pos, PositionType.ONE_BASED);
+        GenomeVariant variant = new GenomeVariant(position, ref, alt);
 
         /*
-        Make annotations
+        Prepare test object
          */
-        final VariantAnnotations fullAnnotations = annotator.buildAnnotations(variant);
-        final VariantAnnotations smallAnnotations = new VariantAnnotations(fullAnnotations.getGenomeVariant(),
+        TestVariant evaluation = new TestVariant(vc, altAlleleOne, variant, st, si, featureObjects);
+
+
+        Set<SquirlsTxResult> txResults = new HashSet<>();
+        for (SplicingTranscript transcript : transcripts) {
+            SquirlsTxResultSimple squirlsTxResult = new SquirlsTxResultSimple(transcript.getAccessionId(),
+                    PredictionDefault.of(PartialPrediction.of("fake", pathogenicity, FAKE_THRESHOLD)),
+                    featureMap);
+            txResults.add(squirlsTxResult);
+        }
+        evaluation.setSquirlsResult(new SquirlsResultSimple(txResults));
+
+        /*
+         * Make Jannovar annotations.
+         */
+        VariantAnnotations fullAnnotations = annotator.buildAnnotations(variant);
+        VariantAnnotations smallAnnotations = new VariantAnnotations(fullAnnotations.getGenomeVariant(),
                 fullAnnotations.getAnnotations().stream()
                         .filter(ann -> seqIds.contains(ann.getTranscript().getAccession()))
                         .collect(Collectors.toList()));
         evaluation.setAnnotations(smallAnnotations);
 
-        /*
-        Prepare predictions
-         */
-        final Map<String, SplicingPredictionData> predictions = transcripts.stream()
-                .map(transcript -> new SimpleSplicingPredictionData(variant, transcript, si))
-                .peek(data -> data.setPrediction(StandardPrediction.of(PartialPrediction.of("fake", pathogenicity, FAKE_THRESHOLD))))
-                .peek(data -> data.setMetadata(metadata))
-                .peek(data -> featureMap.forEach(data::putFeature))
-                .collect(Collectors.toMap(k -> k.getTranscript().getAccessionId(), Function.identity()));
-        evaluation.putAllPredictionData(predictions);
 
-        // add graphics
+        // Add graphics
         evaluation.setGraphics(assembleFigures(title, ruler, primary, secondary));
 
         return evaluation;
@@ -264,7 +217,7 @@ public class VariantsForTesting {
      * @return evaluation object with all the data
      * @throws Exception bla
      */
-    public static SplicingVariantAlleleEvaluation BRCA2DonorExon15plus2QUID(ReferenceDictionary rd, VariantAnnotator annotator) throws Exception {
+    public static TestVariant BRCA2DonorExon15plus2QUID(ReferenceDictionary rd, VariantAnnotator annotator) throws Exception {
 
         // *********************************** PARAMETRIZE *************************************************************
 
@@ -281,10 +234,6 @@ public class VariantsForTesting {
 
         final SequenceInterval si = Sequences.getBrca2Exon15Sequence(rd);
         final Collection<SplicingTranscript> transcripts = Transcripts.brca2Transcripts(rd);
-        final Metadata metadata = Metadata.builder()
-                .putDonorCoordinate("NM_000059.3", new GenomePosition(rd, Strand.FWD, chr, 32_930_747, PositionType.ONE_BASED))
-                .putAcceptorCoordinate("NM_000059.3", new GenomePosition(rd, Strand.FWD, chr, 32_930_565, PositionType.ONE_BASED))
-                .build();
         final String featurePayload = "acceptor_offset=184.0\n" +
                 "alt_ri_best_window_acceptor=6.24199227902568\n" +
                 "alt_ri_best_window_donor=1.6462531025600458\n" +
@@ -306,9 +255,6 @@ public class VariantsForTesting {
                 "wt_ri_acceptor=8.763946772871673\n" +
                 "wt_ri_donor=10.244297856891256\n" +
                 "yag_at_acceptor_minus_three=0.0";
-        final Map<String, Double> featureMap = Arrays.stream(featurePayload.split("\n"))
-                .map(line -> line.split("="))
-                .collect(Collectors.toMap(v -> v[0], v -> Double.parseDouble(v[1])));
 
         // generate graphics using Vmvt
         final String ruler = GENERATOR.getDonorSequenceRuler(
@@ -324,7 +270,7 @@ public class VariantsForTesting {
 
         // *************************************************************************************************************
 
-        return makeEvaluation(rd, chrom, pos, variantId, ref, alt, annotator, seqIds, transcripts, si, pathogenicity, metadata, featureMap, ruler, primary, secondary, "Canonical donor");
+        return makeEvaluation(rd, chrom, pos, variantId, ref, alt, annotator, seqIds, transcripts, si, pathogenicity, featurePayload, ruler, primary, secondary, "Canonical donor");
     }
 
     /**
@@ -336,7 +282,7 @@ public class VariantsForTesting {
      * @return evaluation object with all the data
      * @throws Exception bla
      */
-    public static SplicingVariantAlleleEvaluation ALPLDonorExon7Minus2(ReferenceDictionary rd, VariantAnnotator annotator) throws Exception {
+    public static TestVariant ALPLDonorExon7Minus2(ReferenceDictionary rd, VariantAnnotator annotator) throws Exception {
 
         // *********************************** PARAMETRIZE *************************************************************
 
@@ -353,21 +299,27 @@ public class VariantsForTesting {
 
         final SequenceInterval si = Sequences.getAlplExon7Sequence(rd);
         final Collection<SplicingTranscript> transcripts = Transcripts.alplTranscripts(rd);
-        final Metadata metadata = Metadata.builder()
-                .putDonorCoordinate("NM_000478.4", new GenomePosition(rd, Strand.FWD, chr, 21_894_741, PositionType.ONE_BASED))
-                .putAcceptorCoordinate("NM_000478.4", new GenomePosition(rd, Strand.FWD, chr, 21_894_597, PositionType.ONE_BASED))
-                .build();
-        final Map<String, Double> featureMap = Map.of(
-                "donor_offset", -2.,
-                "canonical_donor", 2.44704789418146,
-                "cryptic_donor", 0.,
-                "acceptor_offset", 143.,
-                "canonical_acceptor", 0.,
-                "cryptic_acceptor", -12.4905210874462,
-                "phylop", 3.5,
-                "hexamer", -1.4957907,
-                "septamer", -0.8844
-        );
+        String featurePayload = "acceptor_offset=143.0\n" +
+                "alt_ri_best_window_acceptor=-3.06184416990555\n" +
+                "alt_ri_best_window_donor=2.4205699538253014\n" +
+                "canonical_acceptor=0.0\n" +
+                "canonical_donor=2.447047894181465\n" +
+                "creates_ag_in_agez=0.0\n" +
+                "creates_yag_in_agez=0.0\n" +
+                "cryptic_acceptor=-12.4905210874462\n" +
+                "cryptic_donor=0.0\n" +
+                "donor_offset=-2.0\n" +
+                "exon_length=144.0\n" +
+                "hexamer=-1.4957907\n" +
+                "intron_length=2057.0\n" +
+                "phylop=3.5\n" +
+                "ppt_is_truncated=0.0\n" +
+                "s_strength_diff_acceptor=0.0\n" +
+                "s_strength_diff_donor=0.0\n" +
+                "septamer=-0.8844000000000001\n" +
+                "wt_ri_acceptor=9.42867691754065\n" +
+                "wt_ri_donor=4.867617848006766\n" +
+                "yag_at_acceptor_minus_three=0.0";
 
         // generate graphics using Vmvt
         final String ruler = GENERATOR.getDonorSequenceRuler("AAGgtagcc", "AGGgtagcc");
@@ -376,7 +328,7 @@ public class VariantsForTesting {
 
         // *************************************************************************************************************
 
-        return makeEvaluation(rd, chrom, pos, variantId, ref, alt, annotator, seqIds, transcripts, si, pathogenicity, metadata, featureMap, ruler, primary, secondary, "Canonical donor");
+        return makeEvaluation(rd, chrom, pos, variantId, ref, alt, annotator, seqIds, transcripts, si, pathogenicity, featurePayload, ruler, primary, secondary, "Canonical donor");
     }
 
     /**
@@ -388,7 +340,7 @@ public class VariantsForTesting {
      * @return evaluation object with all the data
      * @throws Exception bla
      */
-    public static SplicingVariantAlleleEvaluation HBBcodingExon1UpstreamCrypticInCanonical(ReferenceDictionary rd, VariantAnnotator annotator) throws Exception {
+    public static TestVariant HBBcodingExon1UpstreamCrypticInCanonical(ReferenceDictionary rd, VariantAnnotator annotator) throws Exception {
 
         // *********************************** PARAMETRIZE *************************************************************
 
@@ -405,21 +357,27 @@ public class VariantsForTesting {
 
         final SequenceInterval si = Sequences.getHbbExon1Sequence(rd);
         final Collection<SplicingTranscript> transcripts = Transcripts.hbbTranscripts(rd);
-        final Metadata metadata = Metadata.builder()
-                .putDonorCoordinate("NM_000518.4", new GenomePosition(rd, Strand.FWD, chr, 5_248_159, PositionType.ONE_BASED))
-                .putAcceptorCoordinate("NM_000518.4", new GenomePosition(rd, Strand.FWD, chr, 5_248_029, PositionType.ONE_BASED))
-                .build();
-        final Map<String, Double> featureMap = Map.of(
-                "donor_offset", -3.,
-                "canonical_donor", 1.54532552848381,
-                "cryptic_donor", 1.77453922708334,
-                "acceptor_offset", -133.,
-                "canonical_acceptor", Double.NaN, // the first exon, thus N/A
-                "cryptic_acceptor", Double.NaN, // the first exon, thus N/A
-                "phylop", 3.1489999294281,
-                "hexamer", -2.1175716,
-                "septamer", -1.8121
-        );
+        String featurePayload = "acceptor_offset=-133.0\n" +
+                "alt_ri_best_window_acceptor=-1.781069482220321\n" +
+                "alt_ri_best_window_donor=6.324680776661294\n" +
+                "canonical_acceptor=0.0\n" +
+                "canonical_donor=1.5453255284838114\n" +
+                "creates_ag_in_agez=0.0\n" +
+                "creates_yag_in_agez=0.0\n" +
+                "cryptic_acceptor=0.0\n" +
+                "cryptic_donor=1.7745392270833396\n" +
+                "donor_offset=-3.0\n" +
+                "exon_length=142.0\n" +
+                "hexamer=-2.1175715999999998\n" +
+                "intron_length=130.0\n" +
+                "phylop=3.1489999294281006\n" +
+                "ppt_is_truncated=0.0\n" +
+                "s_strength_diff_acceptor=0.0\n" +
+                "s_strength_diff_donor=0.0\n" +
+                "septamer=-1.8120999999999998\n" +
+                "wt_ri_acceptor=0.0\n" +
+                "wt_ri_donor=6.095467078061766\n" +
+                "yag_at_acceptor_minus_three=0.0";
 
         // generate graphics using Vmvt
 //        final String ruler = GENERATOR.getDonorSequenceRuler();
@@ -434,7 +392,7 @@ public class VariantsForTesting {
 
         // *************************************************************************************************************
 
-        return makeEvaluation(rd, chrom, pos, variantId, ref, alt, annotator, seqIds, transcripts, si, pathogenicity, metadata, featureMap, ruler, primary, secondary, "Cryptic donor");
+        return makeEvaluation(rd, chrom, pos, variantId, ref, alt, annotator, seqIds, transcripts, si, pathogenicity, featurePayload, ruler, primary, secondary, "Cryptic donor");
     }
 
     /**
@@ -446,7 +404,7 @@ public class VariantsForTesting {
      * @return evaluation object with all the data
      * @throws Exception bla
      */
-    public static SplicingVariantAlleleEvaluation HBBcodingExon1UpstreamCryptic(ReferenceDictionary rd, VariantAnnotator annotator) throws Exception {
+    public static TestVariant HBBcodingExon1UpstreamCryptic(ReferenceDictionary rd, VariantAnnotator annotator) throws Exception {
 
         // *********************************** PARAMETRIZE *************************************************************
 
@@ -463,21 +421,27 @@ public class VariantsForTesting {
 
         final SequenceInterval si = Sequences.getHbbExon1Sequence(rd);
         final Collection<SplicingTranscript> transcripts = Transcripts.hbbTranscripts(rd);
-        final Metadata metadata = Metadata.builder()
-                .putDonorCoordinate("NM_000518.4", new GenomePosition(rd, Strand.FWD, chr, 5_248_159, PositionType.ONE_BASED))
-                .putAcceptorCoordinate("NM_000518.4", new GenomePosition(rd, Strand.FWD, chr, 5_248_029, PositionType.ONE_BASED))
-                .build();
-        final Map<String, Double> featureMap = Map.of(
-                "donor_offset", -14.,
-                "canonical_donor", 0.,
-                "cryptic_donor", 2.23600080829063,
-                "acceptor_offset", 129.,
-                "canonical_acceptor", 0.,
-                "cryptic_acceptor", 1.559654824986,
-                "phylop", 1.30299997329712,
-                "hexamer", -2.4162754,
-                "septamer", -1.5387
-        );
+        String featurePayload = "acceptor_offset=-144.0\n" +
+                "alt_ri_best_window_acceptor=-1.679406754820472\n" +
+                "alt_ri_best_window_donor=8.331467886352396\n" +
+                "canonical_acceptor=0.0\n" +
+                "canonical_donor=0.0\n" +
+                "creates_ag_in_agez=0.0\n" +
+                "creates_yag_in_agez=0.0\n" +
+                "cryptic_acceptor=0.0\n" +
+                "cryptic_donor=2.2360008082906297\n" +
+                "donor_offset=-14.0\n" +
+                "exon_length=142.0\n" +
+                "hexamer=-2.4162754\n" +
+                "intron_length=130.0\n" +
+                "phylop=1.3029999732971191\n" +
+                "ppt_is_truncated=0.0\n" +
+                "s_strength_diff_acceptor=-29.198764241874063\n" +
+                "s_strength_diff_donor=0.0\n" +
+                "septamer=-1.5387\n" +
+                "wt_ri_acceptor=0.0\n" +
+                "wt_ri_donor=6.095467078061766\n" +
+                "yag_at_acceptor_minus_three=0.0";
 
         // generate graphics using Vmvt
 //        final String ruler = GENERATOR.getDonorSequenceRuler();
@@ -492,7 +456,7 @@ public class VariantsForTesting {
 
         // *************************************************************************************************************
 
-        return makeEvaluation(rd, chrom, pos, variantId, ref, alt, annotator, seqIds, transcripts, si, pathogenicity, metadata, featureMap, ruler, primary, secondary, "Cryptic donor");
+        return makeEvaluation(rd, chrom, pos, variantId, ref, alt, annotator, seqIds, transcripts, si, pathogenicity, featurePayload, ruler, primary, secondary, "Cryptic donor");
     }
 
     /**
@@ -504,7 +468,7 @@ public class VariantsForTesting {
      * @return evaluation object with all the data
      * @throws Exception bla
      */
-    public static SplicingVariantAlleleEvaluation VWFAcceptorExon26minus2QUID(ReferenceDictionary rd, VariantAnnotator annotator) throws Exception {
+    public static TestVariant VWFAcceptorExon26minus2QUID(ReferenceDictionary rd, VariantAnnotator annotator) throws Exception {
 
         // *********************************** PARAMETRIZE *************************************************************
 
@@ -521,20 +485,27 @@ public class VariantsForTesting {
 
         final SequenceInterval si = Sequences.getVwfExon26Sequence(rd);
         final Collection<SplicingTranscript> transcripts = Transcripts.vwfTranscripts(rd);
-        final Metadata metadata = Metadata.builder()
-                .putDonorCoordinate("NM_000552.3", new GenomePosition(rd, Strand.FWD, chr, 6_131_905, PositionType.ONE_BASED).withStrand(Strand.REV))
-                .putAcceptorCoordinate("NM_000552.3", new GenomePosition(rd, Strand.FWD, chr, 6_132_064, PositionType.ONE_BASED).withStrand(Strand.REV))
-                .build();
-        final Map<String, Double> featureMap = Map.of(
-                "donor_offset", 161.,
-                "canonical_donor", 0.,
-                "cryptic_donor", -18.6949261480754,
-                "acceptor_offset", -2.,
-                "canonical_acceptor", 9.96144969439819,
-                "cryptic_acceptor", 6.44688781842892,
-                "phylop", 7.60500001907349,
-                "hexamer", 1.7675138,
-                "septamer", 0.6934);
+        String featurePayload = "acceptor_offset=-2.0\n" +
+                "alt_ri_best_window_acceptor=3.648124750022908\n" +
+                "alt_ri_best_window_donor=-8.032751156095085\n" +
+                "canonical_acceptor=9.961449694398194\n" +
+                "canonical_donor=0.0\n" +
+                "creates_ag_in_agez=0.0\n" +
+                "creates_yag_in_agez=0.0\n" +
+                "cryptic_acceptor=6.446887818428917\n" +
+                "cryptic_donor=-18.6949261480754\n" +
+                "donor_offset=-161.0\n" +
+                "exon_length=159.0\n" +
+                "hexamer=1.7675138\n" +
+                "intron_length=73536.0\n" +
+                "phylop=7.605000019073486\n" +
+                "ppt_is_truncated=0.0\n" +
+                "s_strength_diff_acceptor=0.0\n" +
+                "s_strength_diff_donor=0.0\n" +
+                "septamer=0.6933999999999999\n" +
+                "wt_ri_acceptor=7.162686625992186\n" +
+                "wt_ri_donor=10.662174991980315\n" +
+                "yag_at_acceptor_minus_three=0.0";
 
         // generate graphics using Vmvt
         final String logo = GENERATOR.getAcceptorSequenceRuler(
@@ -550,7 +521,7 @@ public class VariantsForTesting {
 
         // *************************************************************************************************************
 
-        return makeEvaluation(rd, chrom, pos, variantId, ref, alt, annotator, seqIds, transcripts, si, pathogenicity, metadata, featureMap, logo, primary, secondary, "Canonical acceptor");
+        return makeEvaluation(rd, chrom, pos, variantId, ref, alt, annotator, seqIds, transcripts, si, pathogenicity, featurePayload, logo, primary, secondary, "Canonical acceptor");
     }
 
     /**
@@ -562,7 +533,7 @@ public class VariantsForTesting {
      * @return evaluation object with all the data
      * @throws Exception bla
      */
-    public static SplicingVariantAlleleEvaluation TSC2AcceptorExon11Minus3(ReferenceDictionary rd, VariantAnnotator annotator) throws Exception {
+    public static TestVariant TSC2AcceptorExon11Minus3(ReferenceDictionary rd, VariantAnnotator annotator) throws Exception {
 
         // *********************************** PARAMETRIZE *************************************************************
 
@@ -579,12 +550,7 @@ public class VariantsForTesting {
 
         final SequenceInterval si = Sequences.getTsc2Exon11Sequence(rd);
         final Collection<SplicingTranscript> transcripts = Transcripts.tsc2Transcripts(rd);
-        final Metadata metadata = Metadata.builder()
-                .putDonorCoordinate("NM_000548.3", new GenomePosition(rd, Strand.FWD, chr, 2_110_815, PositionType.ONE_BASED))
-                .putAcceptorCoordinate("NM_000548.3", new GenomePosition(rd, Strand.FWD, chr, 2_110_671, PositionType.ONE_BASED))
-                .build();
-
-        final String featurePayload = "acceptor_offset=-3.0\n" +
+        String featurePayload = "acceptor_offset=-3.0\n" +
                 "alt_ri_best_window_acceptor=-2.95580052736842\n" +
                 "alt_ri_best_window_donor=-1.9417000079717732\n" +
                 "canonical_acceptor=6.745954377393462\n" +
@@ -605,9 +571,6 @@ public class VariantsForTesting {
                 "wt_ri_acceptor=3.7901538500250416\n" +
                 "wt_ri_donor=8.17717056125311\n" +
                 "yag_at_acceptor_minus_three=1.0";
-        final Map<String, Double> featureMap = Arrays.stream(featurePayload.split("\n"))
-                .map(line -> line.split("="))
-                .collect(Collectors.toMap(v -> v[0], v -> Double.parseDouble(v[1])));
 
         // generate graphics using Vmvt
         final String logo = GENERATOR.getAcceptorSequenceRuler("tgtgctggccgggctcgtgttccagGC", "tgtgctggccgggctcgtgttcgagGC");
@@ -616,7 +579,7 @@ public class VariantsForTesting {
 
         // *************************************************************************************************************
 
-        return makeEvaluation(rd, chrom, pos, variantId, ref, alt, annotator, seqIds, transcripts, si, pathogenicity, metadata, featureMap, logo, primary, secondary, "Cryptic acceptor");
+        return makeEvaluation(rd, chrom, pos, variantId, ref, alt, annotator, seqIds, transcripts, si, pathogenicity, featurePayload, logo, primary, secondary, "Cryptic acceptor");
     }
 
 
@@ -629,7 +592,7 @@ public class VariantsForTesting {
      * @return evaluation object with all the data
      * @throws Exception bla
      */
-    public static SplicingVariantAlleleEvaluation COL4A5AcceptorExon11Minus8(ReferenceDictionary rd, VariantAnnotator annotator) throws Exception {
+    public static TestVariant COL4A5AcceptorExon11Minus8(ReferenceDictionary rd, VariantAnnotator annotator) throws Exception {
 
         // *********************************** PARAMETRIZE *************************************************************
 
@@ -646,20 +609,28 @@ public class VariantsForTesting {
 
         final SequenceInterval si = Sequences.getCol4a5Exon29Sequence(rd);
         final Collection<SplicingTranscript> transcripts = Transcripts.col4a5Transcripts(rd);
-        final Metadata metadata = Metadata.builder()
-                .putDonorCoordinate("NM_000495.4", new GenomePosition(rd, Strand.FWD, chr, 107_850_122, PositionType.ONE_BASED))
-                .putAcceptorCoordinate("NM_000495.4", new GenomePosition(rd, Strand.FWD, chr, 107_849_971, PositionType.ONE_BASED))
-                .build();
-        final Map<String, Double> featureMap = Map.of(
-                "donor_offset", -159.,
-                "canonical_donor", 0.,
-                "cryptic_donor", -5.19742493336859,
-                "acceptor_offset", -8.,
-                "canonical_acceptor", 2.06667103964529,
-                "cryptic_acceptor", 2.35570268707377,
-                "phylop", 3.81599998474121,
-                "hexamer", -0.4040078,
-                "septamer", -0.9911);
+
+        String featurePayload = "acceptor_offset=-8.0\n" +
+                "alt_ri_best_window_acceptor=4.2276385348389045\n" +
+                "alt_ri_best_window_donor=3.610634341101537\n" +
+                "canonical_acceptor=2.066671039645288\n" +
+                "canonical_donor=0.0\n" +
+                "creates_ag_in_agez=1.0\n" +
+                "creates_yag_in_agez=0.0\n" +
+                "cryptic_acceptor=2.3557026870737716\n" +
+                "cryptic_donor=-5.197424933368591\n" +
+                "donor_offset=-159.0\n" +
+                "exon_length=151.0\n" +
+                "hexamer=-0.40400780000000003\n" +
+                "intron_length=89404.0\n" +
+                "phylop=3.815999984741211\n" +
+                "ppt_is_truncated=0.0\n" +
+                "s_strength_diff_acceptor=0.0\n" +
+                "s_strength_diff_donor=0.0\n" +
+                "septamer=-0.9911\n" +
+                "wt_ri_acceptor=3.9386068874104208\n" +
+                "wt_ri_donor=8.808059274470128\n" +
+                "yag_at_acceptor_minus_three=0.0";
 
         // generate graphics using Vmvt
 //        final String ruler = GENERATOR.getAcceptorLogoSvg();
@@ -674,7 +645,7 @@ public class VariantsForTesting {
 
         // *************************************************************************************************************
 
-        return makeEvaluation(rd, chrom, pos, variantId, ref, alt, annotator, seqIds, transcripts, si, pathogenicity, metadata, featureMap, ruler, primary, secondary, "Cryptic acceptor");
+        return makeEvaluation(rd, chrom, pos, variantId, ref, alt, annotator, seqIds, transcripts, si, pathogenicity, featurePayload, ruler, primary, secondary, "Cryptic acceptor");
     }
 
     /**
@@ -686,7 +657,7 @@ public class VariantsForTesting {
      * @return evaluation object with all the data
      * @throws Exception bla
      */
-    public static SplicingVariantAlleleEvaluation RYR1codingExon102crypticAcceptor(ReferenceDictionary rd, VariantAnnotator annotator) throws Exception {
+    public static TestVariant RYR1codingExon102crypticAcceptor(ReferenceDictionary rd, VariantAnnotator annotator) throws Exception {
 
         // *********************************** PARAMETRIZE *************************************************************
 
@@ -703,21 +674,27 @@ public class VariantsForTesting {
 
         final SequenceInterval si = Sequences.getRyr1Exon102Sequence(rd);
         final Collection<SplicingTranscript> transcripts = Transcripts.ryr1Transcripts(rd);
-        final Metadata metadata = Metadata.builder()
-                .putDonorCoordinate("NM_000540.2", new GenomePosition(rd, Strand.FWD, chr, 39_075_583, PositionType.ONE_BASED))
-                .putAcceptorCoordinate("NM_000540.2", new GenomePosition(rd, Strand.FWD, chr, 39_075_740, PositionType.ONE_BASED))
-                .build();
-        final Map<String, Double> featureMap = Map.of(
-                "donor_offset", -137.,
-                "canonical_donor", 0.,
-                "cryptic_donor", 1.68046369019604,
-                "acceptor_offset", 21.,
-                "canonical_acceptor", 0.,
-                "cryptic_acceptor", 1.92197740139571,
-                "phylop", -1.72699999809265,
-                "hexamer", -4.2242608,
-                "septamer", -3.4074
-        );
+        String featurePayload = "acceptor_offset=21.0\n" +
+                "alt_ri_best_window_acceptor=8.15014683108099\n" +
+                "alt_ri_best_window_donor=7.955283012714299\n" +
+                "canonical_acceptor=0.0\n" +
+                "canonical_donor=0.0\n" +
+                "creates_ag_in_agez=0.0\n" +
+                "creates_yag_in_agez=0.0\n" +
+                "cryptic_acceptor=1.921977401395714\n" +
+                "cryptic_donor=1.9804636901960437\n" +
+                "donor_offset=-137.0\n" +
+                "exon_length=157.0\n" +
+                "hexamer=-4.2242608\n" +
+                "intron_length=2225.0\n" +
+                "phylop=-1.7269999980926514\n" +
+                "ppt_is_truncated=0.0\n" +
+                "s_strength_diff_acceptor=0.0\n" +
+                "s_strength_diff_donor=0.0\n" +
+                "septamer=-3.4074\n" +
+                "wt_ri_acceptor=6.228169429685276\n" +
+                "wt_ri_donor=5.974819322518255\n" +
+                "yag_at_acceptor_minus_three=0.0";
 
         // generate graphics using Vmvt
 //        final String ruler = GENERATOR.getAcceptorLogoSvg();
@@ -733,7 +710,7 @@ public class VariantsForTesting {
 
         // *************************************************************************************************************
 
-        return makeEvaluation(rd, chrom, pos, variantId, ref, alt, annotator, seqIds, transcripts, si, pathogenicity, metadata, featureMap, ruler, primary, secondary, "Cryptic acceptor");
+        return makeEvaluation(rd, chrom, pos, variantId, ref, alt, annotator, seqIds, transcripts, si, pathogenicity, featurePayload, ruler, primary, secondary, "Cryptic acceptor");
     }
 
 
@@ -746,7 +723,7 @@ public class VariantsForTesting {
      * @return evaluation object with all the data
      * @throws Exception bla
      */
-    public static SplicingVariantAlleleEvaluation NF1codingExon9coding_SRE(ReferenceDictionary rd, VariantAnnotator annotator) throws Exception {
+    public static TestVariant NF1codingExon9coding_SRE(ReferenceDictionary rd, VariantAnnotator annotator) throws Exception {
 
         // *********************************** PARAMETRIZE *************************************************************
 
@@ -763,21 +740,27 @@ public class VariantsForTesting {
 
         final SequenceInterval si = Sequences.getNf1Exon9Sequence(rd);
         final Collection<SplicingTranscript> transcripts = Transcripts.nf1Transcripts(rd);
-        final Metadata metadata = Metadata.builder()
-                .putDonorCoordinate("NM_000267.3", new GenomePosition(rd, Strand.FWD, chr, 29_527_614, PositionType.ONE_BASED))
-                .putAcceptorCoordinate("NM_000267.3", new GenomePosition(rd, Strand.FWD, chr, 29_527_440, PositionType.ONE_BASED))
-                .build();
-        final Map<String, Double> featureMap = Map.of(
-                "donor_offset", -153.,
-                "canonical_donor", 0.,
-                "cryptic_donor", -10.4378653224383,
-                "acceptor_offset", 22.,
-                "canonical_acceptor", 0.,
-                "cryptic_acceptor", -8.01047083607081,
-                "phylop", 1.65199995040894,
-                "hexamer", -1.2524385,
-                "septamer", -1.619
-        );
+        String featurePayload = "acceptor_offset=22.0\n" +
+                "alt_ri_best_window_acceptor=-1.0318475740969986\n" +
+                "alt_ri_best_window_donor=-2.8493547798837007\n" +
+                "canonical_acceptor=0.0\n" +
+                "canonical_donor=0.0\n" +
+                "creates_ag_in_agez=0.0\n" +
+                "creates_yag_in_agez=0.0\n" +
+                "cryptic_acceptor=-8.01047083607081\n" +
+                "cryptic_donor=-10.437865322438341\n" +
+                "donor_offset=-153.0\n" +
+                "exon_length=174.0\n" +
+                "hexamer=-1.2524385\n" +
+                "intron_length=173417.0\n" +
+                "phylop=1.6519999504089355\n" +
+                "ppt_is_truncated=0.0\n" +
+                "s_strength_diff_acceptor=0.0\n" +
+                "s_strength_diff_donor=0.0\n" +
+                "septamer=-1.6190000000000002\n" +
+                "wt_ri_acceptor=6.978623261973812\n" +
+                "wt_ri_donor=7.588510542554641\n" +
+                "yag_at_acceptor_minus_three=0.0";
 
         // generate graphics using Vmvt
         final String ruler = "";
@@ -801,7 +784,7 @@ public class VariantsForTesting {
 
         // *************************************************************************************************************
 
-        return makeEvaluation(rd, chrom, pos, variantId, ref, alt, annotator, seqIds, transcripts, si, pathogenicity, metadata, featureMap, ruler, primary, secondary, "Splicing regulatory elements");
+        return makeEvaluation(rd, chrom, pos, variantId, ref, alt, annotator, seqIds, transcripts, si, pathogenicity, featurePayload, ruler, primary, secondary, "Splicing regulatory elements");
     }
 
 }
