@@ -24,9 +24,9 @@ copyright = '2020, Daniel Danis, Peter N Robinson'
 author = 'Daniel Danis, Peter N Robinson'
 
 # The short X.Y version
-version = '1.0.0-RC2'
+version = '1.0.0'
 # The full version, including alpha/beta/rc tags
-release = 'v1.0.0-RC2'
+release = 'v1.0.0-RC4-SNAPSHOT'
 
 
 # -- General configuration ---------------------------------------------------

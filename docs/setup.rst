@@ -27,10 +27,10 @@ Squirls database files
 Squirls database files are available for download from:
 
 **hg19/GRCh37**
-  `2011_hg19`_ (~10.5 GB for download, ~15 GB unpacked)
+  `Download 2011_hg19 <https://squirls.s3.amazonaws.com/2011_hg19.zip>`_ (~10.5 GB for download, ~15 GB unpacked)
 
 **hg38/GRCh38**
-  `2011_hg38`_ (~11.1 GB for download, ~16.5 GB unpacked)
+  `Download 2011_hg38 <https://squirls.s3.amazonaws.com/2011_hg38.zip>`_ (~11.1 GB for download, ~16.5 GB unpacked)
 
 After the download, unzip the archive(s) content into a folder and note the folder path.
 
@@ -44,8 +44,9 @@ annotation, Jannovar transcript database files need to be provided. The Jannovar
 tested to work with Squirls.
 
 For your convenience, the files containing *UCSC*, *RefSeq*, or *ENSEMBL* transcripts
-for *hg19* or *hg38* genome assemblies are available for download from
-`here <https://squirls.s3.amazonaws.com/jannovar_v0.35.zip>`_ (~330 MB for download, ~330 MB unpacked).
+for *hg19* or *hg38* genome assemblies are available for download (~330 MB for download, ~330 MB unpacked).
+
+`Download Jannovar files from here <https://squirls.s3.amazonaws.com/jannovar_v0.35.zip>`_.
 
 
 Build Squirls from source
@@ -124,5 +125,3 @@ where ``1902_hg19``, ``1902_hg38`` correspond to content of the ZIP files downlo
 ``squirls.max-variant-length`` - set the maximal length of the variant to be analyzed, this is ``100`` by default
 
 .. _Jannovar: https://pubmed.ncbi.nlm.nih.gov/24677618
-.. _2011_hg19: https://squirls.s3.amazonaws.com/2011_hg19.zip
-.. _2011_hg38: https://squirls.s3.amazonaws.com/2011_hg38.zip

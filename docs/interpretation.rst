@@ -20,7 +20,7 @@ Then, content of the box consists of three parts:
 
 * **Variant effects on overlapping transcripts:** we use `Jannovar`_ to perform functional annotation of the variant and
   to compute variant's effect on transcript using `HGVS Sequence Variant Nomenclature`_, and we list variant effects on
-  all overlapping transcripts. We also report Squirls score calculated wrt. given transcript.
+  all overlapping transcripts. We also report Squirls score calculated *wrt.* given transcript.
 * **Splicing features:** we show raw values of the splicing features in a table, see :ref:`splice-features-ref` section
   for more details regarding the features.
 * **Figures:** graphics that show the most important predicted effects (see below).
@@ -41,7 +41,7 @@ For a variant that is likely to disrupt a canonical donor site, we create :ref:`
 changes to sequences of the same length (see :ref:`delta-ri-ref`).
 
 *Sequence trekker* summarizes the sequence context and the impact of the variant on the binding site. Let's consider
-a ``G>C`` variant located at -1 position wrt. exon/intron border. The *ref* allele represented by normal ``c`` character
+a ``G>C`` variant located at -1 position *wrt.* exon/intron border. The *ref* allele represented by normal ``c`` character
 is substituted by ``g`` (*alt*). The unfavourable contact between spliceosome and the *alt* allele is represented by
 drawing ``g`` upside down (see :ref:`sequence-logo-ref`):
 
@@ -84,8 +84,8 @@ introduces a cryptic donor site into gene *MSH2*.
 
 The site consists of these alleles:
 
-* ``CAGGCATGC`` (*ref*)
-* ``CAGGTATGC`` (*alt*)
+* ``CAGG``\ **C**\ ``ATGC`` (*ref*)
+* ``CAGG``\ **T**\ ``ATGC`` (*alt*)
 
 where the ``C>T`` change located at position 5 of the *alt* allele increases the information of the allele to
 :math:`R_i = 8.59`. The increase is shown on *sequence walker*, where the upside-down ``c`` from *ref* allele (an unfavorable
@@ -163,8 +163,8 @@ acceptor site into the *EPHA2* gene.
 
 The site consists of these alleles:
 
-* ``ctaactctccctctctccctcccggCC`` (*ref*)
-* ``ctaactctccctctctccctcccagCC`` (*alt*)
+* ``ctaactctccctctctccctccc``\ **g**\ ``gCC`` (*ref*)
+* ``ctaactctccctctctccctccc``\ **a**\ ``gCC`` (*alt*)
 
 where the ``G>A`` change is located at position 24 of the *ref* allele. The change increases the information of the allele to
 :math:`R_i = 11.98`. The increase is displayed on *sequence walker*, where the upside-down ``g`` from *ref* allele
@@ -185,8 +185,8 @@ as we are interested in comparing the sites and not the alleles.
 .. figure:: _static/crypticAcceptorCanCrypt.svg
   :alt: comparison of canonical acceptor and cryptic acceptor sites for variant chr1:16,451,824C>T
   :align: center
-  :width: 420
-  :height: 220
+  :width: 590
+  :height: 310
 
 
 

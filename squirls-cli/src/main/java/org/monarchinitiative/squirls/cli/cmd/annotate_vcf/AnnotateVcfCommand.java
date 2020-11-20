@@ -234,6 +234,11 @@ public class AnnotateVcfCommand extends SquirlsCommand {
                 return 1;
             }
 
+            if (nVariantsToReport <= 0) {
+                LOGGER.error("Number of variants to report must be positive: {}", nVariantsToReport);
+                return 1;
+            }
+
             JannovarData jd;
             try {
                 jd = new JannovarDataSerializer(jannovarDataPath).load();

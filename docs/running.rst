@@ -24,9 +24,9 @@ Squirls analysis (see :ref:`generate-config-ref`). Then, the other commands can 
 
 Squirls annotates variants using the following commands:
 
-* ``annotate-vcf``,
-* ``annotate-pos``, and
-* ``annotate-csv``,
+* ``annotate-vcf``
+* ``annotate-pos``
+* ``annotate-csv``
 
 We use ``squirls_config.yml`` placeholder to indicate the location of the YAML configuration file in all command
 examples below.
@@ -46,32 +46,32 @@ path to Jannovar transcript database (``-d`` option). See :ref:`download-jannova
 
 After the annotation, the results are stored at ``output.html``.
 
-Run ``java -jar squirls-cli.jar annotate-vcf --help`` to see all the available options.
-
 Output formats
 ##############
 The ``annotate-vcf`` command writes results in 2 formats: *HTML* and *VCF*. Use the ``-f`` option to select the output format.
 
 HTML output format
 ~~~~~~~~~~~~~~~~~~
-A *HTML* report containing the 100 most deleterious variants is produced when ``-f`` option is not specified.
+Without specifying the ``-f`` option, a *HTML* report containing the 100 most deleterious variants is produced.
+The number of the reported variants is adjusted by the ``-n`` option.
+
 See the :ref:`rstinterpretation` section for getting help with interpretation of the report.
 
-Number of reported variants can be adjusted using ``-n`` option
 
 VCF output format
 ~~~~~~~~~~~~~~~~~
-When using the ``-f vcf`` option, a VCF file with all input variants is created. The annotation adds two novel ``INFO``
-fields to each variant that overlaps with at least single transcript region:
+When using the ``-f vcf`` option, a VCF file with all input variants is created. The annotation process adds two novel
+``INFO`` fields to each variant that overlaps with at least single transcript region:
 
 * ``SQUIRLS`` - a flag indicating that the variant is considered to have a deleterious effect on >=1 overlapping transcript
 * ``SQUIRLS_SCORE`` - a string containing SQUIRLS scores for each variant-transcript combination. For a hypothetical variant
   ``chr1:1234C>A,G``, the field might look like::
 
-    SQUIRLS_SCORE=A|NM_123456.1=0.988654|ENST00000987654.1=0.988654&G|NM_12356.1=0.330112|ENST00000987654.1=0.330112
+    SQUIRLS_SCORE=A|NM_123456.1=0.988654|ENST00000987654.1=0.988654
+    SQUIRLS_SCORE=G|NM_12356.1=0.330112|ENST00000987654.1=0.330112
 
-  Predictions for the individual ``ALT`` alleles are delimited by the ``&`` symbol and grouped with respect to the
-  accession ID of the affected transcript
+Multiallelic variants are broken down into separate records and processed individually. Predictions with respect to
+the overlapping transcripts are separated by a pipe (``|``) symbol.
 
 Command options
 ###############
@@ -90,11 +90,11 @@ The input VCF and output prefix are provided as positional parameters.
 ``annotate-pos`` - Annotate variant positions
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The easiest way to quickly calculate Squirls scores for a couple of variants is to use the ``annotate-pos`` command ::
+The easiest way to quickly calculate Squirls scores for a couple of variants is to use the ``annotate-pos`` command::
 
   $java -jar squirls-cli.jar annotate-pos --config squirls_config.yml "chr9:136224694A>T" "chr3:52676065CA>C"
 
-An output similar to this is produced ::
+An output similar to this is produced::
 
   ...
   2000-01-01 12:34:56.309  INFO 12345 --- [           main] o.m.s.c.c.a.AnnotatePosCommand           : Analyzing 2 change(s): `chr9:136224694A>T, chr3:52676065CA>C`
@@ -117,11 +117,11 @@ Let's consider 4 variants stored in a CSV file ``example.csv``::
   chr3,165504107,A,C
   chr17,41197805,ACATCTGCC,A
 
-then, by running command the ``annotate-csv`` command ::
+then, by running command the ``annotate-csv`` command::
 
   java -jar squirls-cli.jar annotate-csv --config squirls_config.yml example.csv output.csv
 
-Squirls performs the variant classification and predicts pathogenicity wrt. all overlapping transcripts ::
+Squirls performs the variant classification and predicts pathogenicity wrt. all overlapping transcripts::
 
   CHROM,POS,REF,ALT,PATHOGENIC,MAX_SCORE,SCORES
   chr9,136224694,A,T,true,0.9663857211265289,ENST00000371964.4.4=0.966386;ENST00000486887.1.1=0.966386;ENST00000495524.1.1=0.966386;NM_001278928.1=0.966386;NM_017503.4=0.966386;uc004cdi.2=0.966386

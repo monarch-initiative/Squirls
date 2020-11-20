@@ -28,13 +28,13 @@ provided that the environment properties
 
 are set to valid values.
 
-The ``VariantSplicingEvaluator`` provides methods:
+The ``VariantSplicingEvaluator`` provides methods for calculating ``SquirlsResult`` from variant coordinates described
+using Java primitives:
 
-- ``SquirlsResult evaluate(String contig, int pos, String ref, String alt)`` - calculate
-  splicing scores for given variant with respect to all transcripts the variant overlaps with
+- ``SquirlsResult evaluate(String contig, int pos, String ref, String alt)``
+- ``SquirlsResult evaluate(String contig, int pos, String ref, String alt, Set<String> txIds)``
 
-- ``SquirlsResult evaluate(String contig, int pos, String ref, String alt, Set<String> txIds)`` - calculate
-  splicing scores for given variant with respect to given transcript IDs ``txIds``. The variant is evaluated with
-  respect to all overlapping transcripts, if ``txIds`` is empty
+The first method calculates the results *wrt.* all transcripts that overlap the variant site, the second method narrows
+the calculation down to provided transcript accession IDs (e.g. ``NM_000111.2``).
 
 Please see the corresponding *Javadocs* to learn more about ``VariantSplicingEvaluator``, ``SquirlsResult``, etc.
