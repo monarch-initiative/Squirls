@@ -82,6 +82,7 @@ import java.util.OptionalDouble;
 /**
  * Result of Squirls prediction with respect to a single transcript.
  */
+@SquirlsApi
 public interface SquirlsTxResult {
 
     /**

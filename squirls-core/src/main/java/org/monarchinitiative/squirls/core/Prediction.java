@@ -83,6 +83,7 @@ import java.util.Comparator;
  * A prediction made by the {@link org.monarchinitiative.squirls.core.classifier.SquirlsClassifier} with respect
  * to a single transcript.
  */
+@SquirlsApi
 public interface Prediction extends Comparable<Prediction> {
 
     Comparator<Prediction> PREDICTION_COMPARATOR = Comparator.comparing(Prediction::getMaxPathogenicity)

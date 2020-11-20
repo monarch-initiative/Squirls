@@ -76,66 +76,19 @@
 
 package org.monarchinitiative.squirls.core;
 
-import java.util.Objects;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
- * This class represents a fragment of information from the decision function, a single prediction of an ensemble
- * which calculated pathogenicity probability.
+ * Classes marked by this annotations to indicate that they are part of the API.
  */
-@SquirlsApi
-public class PartialPrediction {
+@Retention(RetentionPolicy.SOURCE)
+@Target(ElementType.TYPE)
+public @interface SquirlsApi {
 
-    private final String name;
-    private final double pathoProba;
-    private final double threshold;
+    int major() default 1;
 
-    private PartialPrediction(String name, double pathoProba, double threshold) {
-        this.name = name;
-        this.pathoProba = pathoProba;
-        this.threshold = threshold;
-    }
-
-    public static PartialPrediction of(String name, double pathoProba, double threshold) {
-        return new PartialPrediction(name, pathoProba, threshold);
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public double getThreshold() {
-        return threshold;
-    }
-
-    public double getPathoProba() {
-        return pathoProba;
-    }
-
-    public boolean isPathogenic() {
-        return pathoProba > threshold;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        PartialPrediction that = (PartialPrediction) o;
-        return Double.compare(that.pathoProba, pathoProba) == 0 &&
-                Double.compare(that.threshold, threshold) == 0 &&
-                Objects.equals(name, that.name);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(name, pathoProba, threshold);
-    }
-
-    @Override
-    public String toString() {
-        return "PartialPrediction{" +
-                "name='" + name + '\'' +
-                ", pathoProba=" + pathoProba +
-                ", threshold=" + threshold +
-                '}';
-    }
+    int minor() default 0;
 }

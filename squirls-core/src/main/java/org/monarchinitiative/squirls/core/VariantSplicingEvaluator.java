@@ -78,6 +78,7 @@ package org.monarchinitiative.squirls.core;
 
 import java.util.Set;
 
+@SquirlsApi
 public interface VariantSplicingEvaluator {
 
     /**

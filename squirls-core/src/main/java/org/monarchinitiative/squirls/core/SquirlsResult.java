@@ -85,6 +85,7 @@ import java.util.stream.Stream;
 /**
  * Squirls results for a variant.
  */
+@SquirlsApi
 public interface SquirlsResult {
 
     /**
