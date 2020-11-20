@@ -74,63 +74,98 @@
  * Daniel Danis, Peter N Robinson, 2020
  */
 
-package org.monarchinitiative.squirls.core;
+package org.monarchinitiative.squirls.core.classifier;
 
-import de.charite.compbio.jannovar.reference.GenomeVariant;
-import org.monarchinitiative.squirls.core.model.SplicingTranscript;
-import xyz.ielis.hyperutil.reference.fasta.SequenceInterval;
+import org.monarchinitiative.squirls.core.Prediction;
+import org.monarchinitiative.squirls.core.PredictionEmpty;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
-class EmptySplicingPredictionData implements SplicingPredictionData {
+public class SquirlsClassifierDefault implements SquirlsClassifier {
 
-    private static final EmptySplicingPredictionData INSTANCE = new EmptySplicingPredictionData();
+    private static final Logger LOGGER = LoggerFactory.getLogger(SquirlsClassifierDefault.class);
 
-    private EmptySplicingPredictionData() {
-        // private no-op
+    private static final AtomicBoolean MISSING_FEATURE_REPORTED = new AtomicBoolean(false);
+
+    private final ThresholdingBinaryClassifier<Classifiable> donorClf, acceptorClf;
+
+    private final Set<String> usedFeatures;
+
+    private SquirlsClassifierDefault(ThresholdingBinaryClassifier<Classifiable> donorClf,
+                                     ThresholdingBinaryClassifier<Classifiable> acceptorClf) {
+        this.donorClf = Objects.requireNonNull(donorClf, "Donor classifier cannot be null");
+        this.acceptorClf = Objects.requireNonNull(acceptorClf, "Acceptor classifier cannot be null");
+
+        usedFeatures = Stream.concat(donorClf.usedFeatureNames().stream(), acceptorClf.usedFeatureNames().stream())
+                .collect(Collectors.toUnmodifiableSet());
+        LOGGER.debug("Initialized classifier with the following features: {}",
+                usedFeatures.stream().sorted().collect(Collectors.joining(", ", "[", "]")));
     }
 
-    public static EmptySplicingPredictionData getInstance() {
-        return INSTANCE;
-    }
-
-    @Override
-    public Prediction getPrediction() {
-        return Prediction.emptyPrediction();
-    }
-
-    @Override
-    public void setPrediction(Prediction prediction) {
-        // no-op
-    }
-
-    @Override
-    public GenomeVariant getVariant() {
-        return null;
-    }
-
-    @Override
-    public SplicingTranscript getTranscript() {
-        return SplicingTranscript.getDefaultInstance();
+    public static SquirlsClassifierDefault of(ThresholdingBinaryClassifier<Classifiable> donorClf, ThresholdingBinaryClassifier<Classifiable> acceptorClf) {
+        return new SquirlsClassifierDefault(donorClf, acceptorClf);
     }
 
     @Override
-    public SequenceInterval getSequence() {
-        return null;
+    public Set<String> usedFeatureNames() {
+        return usedFeatures;
     }
 
     @Override
-    public Set<String> getFeatureNames() {
-        return Set.of();
+    public <T extends Classifiable> T predict(T data) {
+        if (data.getFeatureNames().containsAll(usedFeatures)) {
+            // we have all the features we need for making a prediction here
+            try {
+                data.setPrediction(PredictionDefault.of(donorClf.runPrediction(data), acceptorClf.runPrediction(data)));
+            } catch (PredictionException e) {
+                LOGGER.debug("Error: ", e);
+                data.setPrediction(Prediction.emptyPrediction());
+            }
+        } else {
+            // at least one from the required features is missing. Let's report that, but only once, in order not to
+            // flood the console
+            if (MISSING_FEATURE_REPORTED.compareAndExchange(false, true)) {
+                Set<String> difference = usedFeatures.stream()
+                        .filter(fname -> !data.getFeatureNames()
+                                .contains(fname)).collect(Collectors.toSet());
+                // report the error
+                String errorMsg = String.format("Missing one or more required features `[%s]`",
+                        String.join(",", difference));
+                LOGGER.warn(errorMsg);
+            }
+            data.setPrediction(PredictionEmpty.getInstance());
+        }
+
+        return data;
     }
 
     @Override
-    public <T> T getFeature(String featureName, Class<T> clz) {
-        return null;
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        SquirlsClassifierDefault that = (SquirlsClassifierDefault) o;
+        return Objects.equals(donorClf, that.donorClf) &&
+                Objects.equals(acceptorClf, that.acceptorClf) &&
+                Objects.equals(usedFeatures, that.usedFeatures);
     }
 
     @Override
-    public void putFeature(String name, Object value) {
-        // no-op
+    public int hashCode() {
+        return Objects.hash(donorClf, acceptorClf, usedFeatures);
+    }
+
+    @Override
+    public String toString() {
+        return "StandardSquirlsClassifier{" +
+                "donorClf=" + donorClf +
+                ", acceptorClf=" + acceptorClf +
+                ", usedFeatures=" + usedFeatures +
+                '}';
     }
 }

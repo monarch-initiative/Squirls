@@ -76,9 +76,6 @@
 
 package org.monarchinitiative.squirls.core;
 
-import org.monarchinitiative.squirls.core.classifier.EmptyPrediction;
-import org.monarchinitiative.squirls.core.classifier.PartialPrediction;
-
 import java.util.Collection;
 import java.util.Comparator;
 
@@ -92,7 +89,7 @@ public interface Prediction extends Comparable<Prediction> {
             .thenComparing(Prediction::isPositive);
 
     static Prediction emptyPrediction() {
-        return EmptyPrediction.getInstance();
+        return PredictionEmpty.getInstance();
     }
 
     /**

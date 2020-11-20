@@ -74,36 +74,63 @@
  * Daniel Danis, Peter N Robinson, 2020
  */
 
-package org.monarchinitiative.squirls.core.classifier;
+package org.monarchinitiative.squirls.core;
 
-import org.monarchinitiative.squirls.core.Prediction;
+import de.charite.compbio.jannovar.reference.GenomeVariant;
+import org.monarchinitiative.squirls.core.model.SplicingTranscript;
+import xyz.ielis.hyperutil.reference.fasta.SequenceInterval;
 
-import java.util.Collection;
-import java.util.Collections;
+import java.util.Set;
 
-/**
- * Class representing N/A prediction.
- */
-public class EmptyPrediction implements Prediction {
+class SplicingPredictionDataEmpty implements SplicingPredictionData {
 
-    private static final EmptyPrediction INSTANCE = new EmptyPrediction();
+    private static final SplicingPredictionDataEmpty INSTANCE = new SplicingPredictionDataEmpty();
 
-    private EmptyPrediction() {
+    private SplicingPredictionDataEmpty() {
         // private no-op
     }
 
-
-    public static EmptyPrediction getInstance() {
+    public static SplicingPredictionDataEmpty getInstance() {
         return INSTANCE;
     }
 
     @Override
-    public Collection<PartialPrediction> getPartialPredictions() {
-        return Collections.emptySet();
+    public Prediction getPrediction() {
+        return Prediction.emptyPrediction();
     }
 
     @Override
-    public boolean isPositive() {
-        return false;
+    public void setPrediction(Prediction prediction) {
+        // no-op
+    }
+
+    @Override
+    public GenomeVariant getVariant() {
+        return null;
+    }
+
+    @Override
+    public SplicingTranscript getTranscript() {
+        return SplicingTranscript.getDefaultInstance();
+    }
+
+    @Override
+    public SequenceInterval getSequence() {
+        return null;
+    }
+
+    @Override
+    public Set<String> getFeatureNames() {
+        return Set.of();
+    }
+
+    @Override
+    public <T> T getFeature(String featureName, Class<T> clz) {
+        return null;
+    }
+
+    @Override
+    public void putFeature(String name, Object value) {
+        // no-op
     }
 }

@@ -87,9 +87,9 @@ import de.charite.compbio.jannovar.reference.Strand;
 import htsjdk.variant.variantcontext.Allele;
 import htsjdk.variant.variantcontext.VariantContext;
 import htsjdk.variant.variantcontext.VariantContextBuilder;
+import org.monarchinitiative.squirls.core.PartialPrediction;
 import org.monarchinitiative.squirls.core.SquirlsTxResult;
-import org.monarchinitiative.squirls.core.classifier.PartialPrediction;
-import org.monarchinitiative.squirls.core.classifier.StandardPrediction;
+import org.monarchinitiative.squirls.core.classifier.PredictionDefault;
 import org.monarchinitiative.squirls.core.model.SplicingTranscript;
 import org.monarchinitiative.vmvt.core.VmvtGenerator;
 import xyz.ielis.hyperutil.reference.fasta.SequenceInterval;
@@ -159,7 +159,7 @@ public class VariantsForTesting {
         Set<SquirlsTxResult> txResults = new HashSet<>();
         for (SplicingTranscript transcript : transcripts) {
             SquirlsTxResultSimple squirlsTxResult = new SquirlsTxResultSimple(transcript.getAccessionId(),
-                    StandardPrediction.of(PartialPrediction.of("fake", pathogenicity, FAKE_THRESHOLD)),
+                    PredictionDefault.of(PartialPrediction.of("fake", pathogenicity, FAKE_THRESHOLD)),
                     featureMap);
             txResults.add(squirlsTxResult);
         }

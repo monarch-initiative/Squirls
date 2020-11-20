@@ -76,26 +76,27 @@
 
 package org.monarchinitiative.squirls.core.classifier;
 
+import org.monarchinitiative.squirls.core.PartialPrediction;
 import org.monarchinitiative.squirls.core.Prediction;
 
 import java.util.Collection;
 import java.util.Objects;
 import java.util.Set;
 
-public class StandardPrediction implements Prediction {
+public class PredictionDefault implements Prediction {
 
     /**
      * List of pairs of prediction & thresholds.
      */
     protected final Set<PartialPrediction> partialPredictions;
 
-    private StandardPrediction(Set<PartialPrediction> partialPredictions) {
+    private PredictionDefault(Set<PartialPrediction> partialPredictions) {
         this.partialPredictions = partialPredictions;
     }
 
 
-    public static StandardPrediction of(PartialPrediction... partialPrediction) {
-        return new StandardPrediction(Set.of(partialPrediction));
+    public static PredictionDefault of(PartialPrediction... partialPrediction) {
+        return new PredictionDefault(Set.of(partialPrediction));
     }
 
     @Override
@@ -113,7 +114,7 @@ public class StandardPrediction implements Prediction {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        StandardPrediction that = (StandardPrediction) o;
+        PredictionDefault that = (PredictionDefault) o;
         return Objects.equals(partialPredictions, that.partialPredictions);
     }
 

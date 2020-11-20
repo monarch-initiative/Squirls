@@ -78,8 +78,8 @@ package org.monarchinitiative.squirls.core.scoring;
 
 import org.monarchinitiative.squirls.core.data.ic.SplicingPwmData;
 import org.monarchinitiative.squirls.core.reference.allele.AlleleGenerator;
-import org.monarchinitiative.squirls.core.reference.transcript.NaiveSplicingTranscriptLocator;
 import org.monarchinitiative.squirls.core.reference.transcript.SplicingTranscriptLocator;
+import org.monarchinitiative.squirls.core.reference.transcript.SplicingTranscriptLocatorNaive;
 import org.monarchinitiative.squirls.core.scoring.calculators.*;
 import org.monarchinitiative.squirls.core.scoring.calculators.conservation.BigWigAccessor;
 import org.monarchinitiative.squirls.core.scoring.calculators.ic.SplicingInformationContentCalculator;
@@ -121,7 +121,7 @@ public class RichSplicingAnnotator extends AbstractSplicingAnnotator {
                                  Map<String, Double> hexamerMap,
                                  Map<String, Double> septamerMap,
                                  BigWigAccessor bigWigAccessor) {
-        super(new NaiveSplicingTranscriptLocator(splicingPwmData.getParameters()),
+        super(new SplicingTranscriptLocatorNaive(splicingPwmData.getParameters()),
                 Stream.of(
                         // rich
                         makeCalculatorMap(splicingPwmData).entrySet(),
@@ -133,7 +133,7 @@ public class RichSplicingAnnotator extends AbstractSplicingAnnotator {
 
     static Map<String, FeatureCalculator> makeCalculatorMap(SplicingPwmData splicingPwmData) {
 
-        SplicingTranscriptLocator locator = new NaiveSplicingTranscriptLocator(splicingPwmData.getParameters());
+        SplicingTranscriptLocator locator = new SplicingTranscriptLocatorNaive(splicingPwmData.getParameters());
         SplicingInformationContentCalculator calculator = new SplicingInformationContentCalculator(splicingPwmData);
         AlleleGenerator generator = new AlleleGenerator(splicingPwmData.getParameters());
 

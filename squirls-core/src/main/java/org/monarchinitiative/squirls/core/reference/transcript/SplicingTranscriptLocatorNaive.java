@@ -99,12 +99,12 @@ import org.monarchinitiative.squirls.core.reference.SplicingLocationData;
  * </ul>
  * </p>
  */
-public class NaiveSplicingTranscriptLocator implements SplicingTranscriptLocator {
+public class SplicingTranscriptLocatorNaive implements SplicingTranscriptLocator {
 
     private final SplicingParameters parameters;
 
 
-    public NaiveSplicingTranscriptLocator(SplicingParameters parameters) {
+    public SplicingTranscriptLocatorNaive(SplicingParameters parameters) {
         this.parameters = parameters;
     }
 

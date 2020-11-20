@@ -90,8 +90,8 @@ import org.monarchinitiative.squirls.core.data.ic.SplicingPwmData;
 import org.monarchinitiative.squirls.core.data.kmer.FileKMerParser;
 import org.monarchinitiative.squirls.core.model.SplicingParameters;
 import org.monarchinitiative.squirls.core.reference.allele.AlleleGenerator;
-import org.monarchinitiative.squirls.core.reference.transcript.NaiveSplicingTranscriptLocator;
 import org.monarchinitiative.squirls.core.reference.transcript.SplicingTranscriptLocator;
+import org.monarchinitiative.squirls.core.reference.transcript.SplicingTranscriptLocatorNaive;
 import org.monarchinitiative.squirls.core.scoring.DenseSplicingAnnotator;
 import org.monarchinitiative.squirls.core.scoring.SplicingAnnotator;
 import org.monarchinitiative.squirls.core.scoring.calculators.conservation.BigWigAccessor;
@@ -200,7 +200,7 @@ public class TestDataSourceConfig {
 
     @Bean
     public SplicingTranscriptLocator splicingTranscriptLocator(SplicingParameters splicingParameters) {
-        return new NaiveSplicingTranscriptLocator(splicingParameters);
+        return new SplicingTranscriptLocatorNaive(splicingParameters);
     }
 
     @Bean

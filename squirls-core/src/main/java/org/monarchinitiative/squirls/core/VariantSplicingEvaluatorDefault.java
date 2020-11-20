@@ -256,7 +256,7 @@ public class VariantSplicingEvaluatorDefault implements VariantSplicingEvaluator
                         txMap.put(txId, st);
                     }
                 } else {
-                    LOGGER.debug("Unknown transcript id `{}`", txId);
+                    LOGGER.warn("Unknown transcript id `{}` for variant {}", txId, variant);
                 }
             }
         }

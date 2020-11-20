@@ -83,9 +83,8 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
-import org.monarchinitiative.squirls.core.classifier.PartialPrediction;
+import org.monarchinitiative.squirls.core.classifier.PredictionDefault;
 import org.monarchinitiative.squirls.core.classifier.SquirlsClassifier;
-import org.monarchinitiative.squirls.core.classifier.StandardPrediction;
 import org.monarchinitiative.squirls.core.classifier.transform.prediction.IdentityTransformer;
 import org.monarchinitiative.squirls.core.data.SplicingTranscriptSource;
 import org.monarchinitiative.squirls.core.model.SplicingTranscript;
@@ -184,7 +183,7 @@ class VariantSplicingEvaluatorDefaultTest {
         when(annotator.annotate(plain)).thenReturn(annotated);
 
         // 3 - classifier
-        StandardPrediction prediction = StandardPrediction.of(
+        PredictionDefault prediction = PredictionDefault.of(
                 PartialPrediction.of("donor", .6, .7),
                 PartialPrediction.of("acceptor", .1, .6));
         SplicingPredictionData predicted = SplicingPredictionDataDefault.of(variant, stx, SI);
@@ -277,7 +276,7 @@ class VariantSplicingEvaluatorDefaultTest {
         when(annotator.annotate(plain)).thenReturn(annotated);
 
         // 3 - classifier
-        StandardPrediction prediction = StandardPrediction.of(
+        PredictionDefault prediction = PredictionDefault.of(
                 PartialPrediction.of("donor", .6, .7),
                 PartialPrediction.of("acceptor", .1, .6));
         SplicingPredictionData predicted = SplicingPredictionDataDefault.of(variant, stx, SI);

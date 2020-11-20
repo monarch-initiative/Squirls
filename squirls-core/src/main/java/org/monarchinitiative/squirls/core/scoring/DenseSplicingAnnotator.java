@@ -78,8 +78,8 @@ package org.monarchinitiative.squirls.core.scoring;
 
 import org.monarchinitiative.squirls.core.data.ic.SplicingPwmData;
 import org.monarchinitiative.squirls.core.reference.allele.AlleleGenerator;
-import org.monarchinitiative.squirls.core.reference.transcript.NaiveSplicingTranscriptLocator;
 import org.monarchinitiative.squirls.core.reference.transcript.SplicingTranscriptLocator;
+import org.monarchinitiative.squirls.core.reference.transcript.SplicingTranscriptLocatorNaive;
 import org.monarchinitiative.squirls.core.scoring.calculators.*;
 import org.monarchinitiative.squirls.core.scoring.calculators.conservation.BigWigAccessor;
 import org.monarchinitiative.squirls.core.scoring.calculators.ic.SplicingInformationContentCalculator;
@@ -115,7 +115,7 @@ public class DenseSplicingAnnotator extends AbstractSplicingAnnotator {
                                   Map<String, Double> hexamerMap,
                                   Map<String, Double> septamerMap,
                                   BigWigAccessor bigWigAccessor) {
-        super(new NaiveSplicingTranscriptLocator(splicingPwmData.getParameters()), makeDenseCalculatorMap(splicingPwmData, hexamerMap, septamerMap, bigWigAccessor));
+        super(new SplicingTranscriptLocatorNaive(splicingPwmData.getParameters()), makeDenseCalculatorMap(splicingPwmData, hexamerMap, septamerMap, bigWigAccessor));
     }
 
     static Map<String, FeatureCalculator> makeDenseCalculatorMap(SplicingPwmData splicingPwmData,
@@ -123,7 +123,7 @@ public class DenseSplicingAnnotator extends AbstractSplicingAnnotator {
                                                                  Map<String, Double> septamerMap,
                                                                  BigWigAccessor bigWigAccessor) {
 
-        SplicingTranscriptLocator locator = new NaiveSplicingTranscriptLocator(splicingPwmData.getParameters());
+        SplicingTranscriptLocator locator = new SplicingTranscriptLocatorNaive(splicingPwmData.getParameters());
         SplicingInformationContentCalculator calculator = new SplicingInformationContentCalculator(splicingPwmData);
         AlleleGenerator generator = new AlleleGenerator(splicingPwmData.getParameters());
 

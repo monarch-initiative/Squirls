@@ -90,8 +90,8 @@ import org.monarchinitiative.squirls.core.data.SplicingTranscriptSource;
 import org.monarchinitiative.squirls.core.data.ic.SplicingPwmData;
 import org.monarchinitiative.squirls.core.model.SplicingTranscript;
 import org.monarchinitiative.squirls.core.reference.SplicingLocationData;
-import org.monarchinitiative.squirls.core.reference.transcript.NaiveSplicingTranscriptLocator;
 import org.monarchinitiative.squirls.core.reference.transcript.SplicingTranscriptLocator;
+import org.monarchinitiative.squirls.core.reference.transcript.SplicingTranscriptLocatorNaive;
 import org.monarchinitiative.vmvt.core.VmvtGenerator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -128,7 +128,7 @@ public class PanelGraphicsGenerator extends AbstractGraphicsGenerator {
                                   SplicingTranscriptSource splicingTranscriptSource) {
         super(vmvtGenerator, splicingPwmData, contextSelector, genomeSequenceAccessor);
         this.splicingTranscriptSource = splicingTranscriptSource;
-        this.locator = new NaiveSplicingTranscriptLocator(splicingPwmData.getParameters());
+        this.locator = new SplicingTranscriptLocatorNaive(splicingPwmData.getParameters());
 
         ClassLoaderTemplateResolver templateResolver = new ClassLoaderTemplateResolver();
         templateResolver.setTemplateMode(TemplateMode.HTML);

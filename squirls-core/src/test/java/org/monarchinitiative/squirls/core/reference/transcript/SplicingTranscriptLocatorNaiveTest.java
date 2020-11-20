@@ -95,9 +95,9 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
 @SpringBootTest(classes = {TestDataSourceConfig.class})
-class NaiveSplicingTranscriptLocatorTest {
+class SplicingTranscriptLocatorNaiveTest {
 
-    private NaiveSplicingTranscriptLocator locator;
+    private SplicingTranscriptLocatorNaive locator;
 
     @Autowired
     private SplicingParameters splicingParameters;
@@ -114,7 +114,7 @@ class NaiveSplicingTranscriptLocatorTest {
     void setUp() {
         fwdTranscript = PojosForTesting.getTranscriptWithThreeExons(referenceDictionary);
         revTranscript = PojosForTesting.getTranscriptWithThreeExonsOnRevStrand(referenceDictionary);
-        locator = new NaiveSplicingTranscriptLocator(splicingParameters);
+        locator = new SplicingTranscriptLocatorNaive(splicingParameters);
     }
 
 

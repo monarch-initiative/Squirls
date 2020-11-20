@@ -74,7 +74,7 @@
  * Daniel Danis, Peter N Robinson, 2020
  */
 
-package org.monarchinitiative.squirls.core.classifier;
+package org.monarchinitiative.squirls.core;
 
 import java.util.Objects;
 
