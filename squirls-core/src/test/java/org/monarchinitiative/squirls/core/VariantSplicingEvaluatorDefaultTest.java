@@ -205,8 +205,8 @@ class VariantSplicingEvaluatorDefaultTest {
         assertThat(predOpt.isPresent(), is(true));
         SquirlsTxResult actual = predOpt.get();
 
-        assertThat(actual.featureValue("donor_offset"), is(5.));
-        assertThat(actual.featureValue("acceptor_offset"), is(1234.));
+        assertThat(actual.featureValue("donor_offset").orElseThrow(), is(5.));
+        assertThat(actual.featureValue("acceptor_offset").orElseThrow(), is(1234.));
         assertThat(actual.prediction(), is(prediction));
 
         verify(accessor).fetchSequence(new GenomeInterval(RD, Strand.FWD, 9, 136_223_176, 136_228_284, PositionType.ONE_BASED));
@@ -298,8 +298,8 @@ class VariantSplicingEvaluatorDefaultTest {
 
         SquirlsTxResult actual = resOpt.get();
 
-        assertThat(actual.featureValue("donor_offset"), is(5.));
-        assertThat(actual.featureValue("acceptor_offset"), is(1234.));
+        assertThat(actual.featureValue("donor_offset").orElseThrow(), is(5.));
+        assertThat(actual.featureValue("acceptor_offset").orElseThrow(), is(1234.));
         assertThat(actual.prediction(), is(prediction));
 
         verify(accessor).fetchSequence(new GenomeInterval(RD, Strand.FWD, 9, 136_223_176, 136_228_284, PositionType.ONE_BASED));

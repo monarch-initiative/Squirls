@@ -87,59 +87,109 @@ import java.util.stream.Stream;
  */
 public interface SquirlsResult {
 
+    /**
+     * @return an empty result
+     */
     static SquirlsResult empty() {
         return SquirlsResultEmpty.instance();
     }
 
+    /**
+     * @return stream with results wrt. all transcripts
+     */
     Stream<SquirlsTxResult> results();
 
+    /**
+     * @return <code>true</code> if Squirls calculated no prediction for given input
+     */
     default boolean isEmpty() {
         return this.equals(empty()) || results().map(SquirlsTxResult::prediction).allMatch(Prediction::isEmpty);
     }
 
+    /**
+     * Get {@link SquirlsTxResult} for given transcript accession.
+     *
+     * @param accessionId string with transcript accession ID, e.g. <code>NM_123456.2</code>
+     * @return optional with results for the specified transcript or empty optional if prediction for the transcript
+     * is not present
+     */
     default Optional<SquirlsTxResult> resultForTranscript(String accessionId) {
         return results()
                 .filter(e -> e.accessionId().equals(accessionId))
                 .findFirst();
     }
 
+    /**
+     * Get {@link Prediction} for given transcript accession.
+     *
+     * @param accessionId string with transcript accession ID, e.g. <code>NM_123456.2</code>
+     * @return optional with prediction for the specified transcript or empty optional if prediction for the
+     * transcript is not present
+     */
     default Optional<Prediction> predictionForTranscript(String accessionId) {
         return resultForTranscript(accessionId)
                 .map(SquirlsTxResult::prediction);
     }
 
+    /**
+     * Get pathogenicity for given transcript accession.
+     *
+     * @param accessionId string with transcript accession ID, e.g. <code>NM_123456.2</code>
+     * @return optional with pathogenicity for the specified transcript or empty optional if prediction for the
+     * transcript is not present
+     */
     default Optional<Double> pathogenicityForTranscript(String accessionId) {
         return predictionForTranscript(accessionId)
                 .map(Prediction::getMaxPathogenicity);
     }
 
+    /**
+     * @return stream with predictions
+     */
+    default Stream<Prediction> predictions() {
+        return results()
+                .map(SquirlsTxResult::prediction);
+    }
+
+    /**
+     * @return <code>true</code> the variant is predicted as pathogenic wrt. at least transcript from
+     * {@link #txAccessionIds()}
+     */
+    default boolean isPathogenic() {
+        return predictions()
+                .anyMatch(Prediction::isPositive);
+    }
+
+    /**
+     * @return set with transcription IDs wrt. which Squirls made the prediction
+     */
     default Set<String> txAccessionIds() {
         return results()
                 .map(SquirlsTxResult::accessionId)
                 .collect(Collectors.toSet());
     }
 
-    default Stream<Prediction> predictions() {
-        return results()
-                .map(SquirlsTxResult::prediction);
-    }
-
-    default boolean isPathogenic() {
-        return predictions()
-                .anyMatch(Prediction::isPositive);
-    }
-
+    /**
+     * @return optional with result that has the highest pathogenicity or empty optional if there is no prediction or
+     * all predictions are <code>NaN</code>
+     */
     default Optional<SquirlsTxResult> maxPathogenicityResult() {
         return results()
                 .filter(e -> e.prediction().maxPathogenicityNotNaN())
                 .max(Comparator.comparing(SquirlsTxResult::prediction));
     }
 
+    /**
+     * @return optional with accession ID belonging to the most pathogenic prediction
+     */
     default Optional<String> maxPathogenicityTranscriptAccession() {
         return maxPathogenicityResult()
                 .map(SquirlsTxResult::accessionId);
     }
 
+    /**
+     * @return the pathogenicity belonging to {@link #maxPathogenicityTranscriptAccession()} or <code>NaN</code>
+     */
     default double maxPathogenicity() {
         return maxPathogenicityResult()
                 .map(SquirlsTxResult::prediction)

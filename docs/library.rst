@@ -30,11 +30,11 @@ are set to valid values.
 
 The ``VariantSplicingEvaluator`` provides methods:
 
-- ``Map<String, SplicingPredictionData> evaluate(String contig, int pos, String ref, String alt)`` - calculate
+- ``SquirlsResult evaluate(String contig, int pos, String ref, String alt)`` - calculate
   splicing scores for given variant with respect to all transcripts the variant overlaps with
 
-- ``Map<String, SplicingPredictionData> evaluate(String contig, int pos, String ref, String alt, Set<String> txIds)`` - calculate
+- ``SquirlsResult evaluate(String contig, int pos, String ref, String alt, Set<String> txIds)`` - calculate
   splicing scores for given variant with respect to given transcript IDs ``txIds``. The variant is evaluated with
   respect to all overlapping transcripts, if ``txIds`` is empty
 
-Please see the corresponding *Javadocs* to learn more about ``SplicingPredictionData``, etc.
+Please see the corresponding *Javadocs* to learn more about ``SquirlsResult``, etc.

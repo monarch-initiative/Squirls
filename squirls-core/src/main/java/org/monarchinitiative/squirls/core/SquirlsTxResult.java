@@ -77,20 +77,35 @@
 package org.monarchinitiative.squirls.core;
 
 import java.util.Map;
+import java.util.OptionalDouble;
 
+/**
+ * Result of Squirls prediction with respect to a single transcript.
+ */
 public interface SquirlsTxResult {
 
+    /**
+     * @return string with transcript accession ID
+     */
     String accessionId();
 
+    /**
+     * @return prediction made wrt. Squirls
+     */
     Prediction prediction();
 
+    /**
+     * @return map with feature values
+     */
     Map<String, Double> features();
 
-    default Double featureValue(String featureName, Double defaultValue) {
-        return features().getOrDefault(featureName, defaultValue);
-    }
-
-    default Double featureValue(String featureName) {
-        return featureValue(featureName, Double.NaN);
+    /**
+     * @param featureName string with feature name
+     * @return optional with feature value or empty optional if the feature is not available
+     */
+    default OptionalDouble featureValue(String featureName) {
+        return features().containsKey(featureName)
+                ? OptionalDouble.of(features().get(featureName))
+                : OptionalDouble.empty();
     }
 }

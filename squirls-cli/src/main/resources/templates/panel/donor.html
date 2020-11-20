@@ -26,38 +26,52 @@
             </div>
             <!-- SPLICING FEATURES TABLE -->
             <h5 class="effects-title">Squirls features</h5>
-            <table class="table table-striped feature-table">
+            <table class="table table-striped feature-table" th:with="missing='NaN'">
                 <tr>
                     <th>Feature</th>
                     <th>Value</th>
                 </tr>
                 <tr>
                     <td>Donor offset</td>
-                    <td th:text="${#numbers.formatInteger(highest_prediction.featureValue('donor_offset'), 1)}">2</td>
+                    <td th:text="${feature.isPresent()} ? ${#numbers.formatInteger(feature.getAsDouble(), 1)} : missing"
+                        th:with="feature=${highest_prediction.featureValue('donor_offset')}">2
+                    </td>
                 </tr>
                 <tr>
                     <td><i>R<sub>i</sub> wt</i> donor</td>
-                    <td th:text="${#numbers.formatDecimal(highest_prediction.featureValue('wt_ri_donor'), 1, 2)}">1.23</td>
+                    <td th:text="${feature.isPresent()} ? ${#numbers.formatDecimal(feature.getAsDouble(), 1, 2)} : missing"
+                        th:with="feature=${highest_prediction.featureValue('wt_ri_donor')}">1.23
+                    </td>
                 </tr>
                 <tr>
                     <td>max <i>R<sub>i</sub></i> cryptic donor window</td>
-                    <td th:text="${#numbers.formatDecimal(highest_prediction.featureValue('alt_ri_best_window_donor'), 1, 2)}">3.4</td>
+                    <td th:text="${feature.isPresent()} ? ${#numbers.formatDecimal(feature.getAsDouble(), 1, 2)}: missing"
+                        th:with="feature=${highest_prediction.featureValue('alt_ri_best_window_donor')}">3.4
+                    </td>
                 </tr>
                 <tr>
                     <td><i>&Delta;R<sub>i</sub></i> canonical donor</td>
-                    <td th:text="${#numbers.formatDecimal(highest_prediction.featureValue('canonical_donor'), 1, 2)}">-2.1</td>
+                    <td th:text="${feature.isPresent()} ? ${#numbers.formatDecimal(feature.getAsDouble(), 1, 2)}:missing"
+                        th:with="feature=${highest_prediction.featureValue('canonical_donor')}">-2.1
+                    </td>
                 </tr>
                 <tr>
                     <td><i>&Delta;R<sub>i</sub></i> cryptic donor</td>
-                    <td th:text="${#numbers.formatDecimal(highest_prediction.featureValue('cryptic_donor'), 1, 2)}">3.4</td>
+                    <td th:text="${feature.isPresent()} ? ${#numbers.formatDecimal(feature.getAsDouble(), 1, 2)}:missing"
+                        th:with="feature=${highest_prediction.featureValue('cryptic_donor')}">3.4
+                    </td>
                 </tr>
                 <tr>
                     <td><i>&Delta;R<sub>i</sub> wt</i> closest donor</td>
-                    <td th:text="${#numbers.formatDecimal(highest_prediction.featureValue('s_strength_diff_donor'), 1, 2)}">3.4</td>
+                    <td th:text="${feature.isPresent()} ? ${#numbers.formatDecimal(feature.getAsDouble(), 1, 2)}:missing"
+                        th:with="feature=${highest_prediction.featureValue('s_strength_diff_donor')}">3.4
+                    </td>
                 </tr>
                 <tr>
                     <td>phyloP</td>
-                    <td th:text="${#numbers.formatDecimal(highest_prediction.featureValue('phylop'), 1, 2)}">3.4</td>
+                    <td th:text="${feature.isPresent()} ? ${#numbers.formatDecimal(feature.getAsDouble(), 1, 2)} : missing"
+                        th:with="feature=${highest_prediction.featureValue('phylop')}">3.4
+                    </td>
                 </tr>
             </table>
         </div>
