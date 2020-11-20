@@ -229,6 +229,11 @@ public class AnnotateVcfCommand extends SquirlsCommand {
             Set<OutputFormat> outputFormats = parseOutputFormats();
             VariantSplicingEvaluator evaluator = context.getBean(VariantSplicingEvaluator.class);
 
+            if (nThreads < 1) {
+                LOGGER.error("Thread number must be positive: {}", nThreads);
+                return 1;
+            }
+
             JannovarData jd;
             try {
                 jd = new JannovarDataSerializer(jannovarDataPath).load();
@@ -257,30 +262,30 @@ public class AnnotateVcfCommand extends SquirlsCommand {
 
                 sampleNames = reader.getFileHeader().getSampleNamesInOrder();
 
-                ForkJoinPool pool = makePool(nThreads);
+
                 try (Stream<VariantContext> stream = variantIterator.stream()) {
-                    annotated = pool.submit(() ->
-                            stream.parallel()
-                                    .onClose(progressReporter.summarize())
-                                    .peek(progressReporter::logVariant)
+                    Stream<WritableSplicingAllele> alleleStream = stream.parallel()
+                            .onClose(progressReporter.summarize())
+                            .peek(progressReporter::logVariant)
 
-                                    .map(meltToSingleAltVariants())
-                                    .flatMap(Collection::stream)
-                                    .peek(progressReporter::logAllele)
+                            .map(meltToSingleAltVariants())
+                            .flatMap(Collection::stream)
+                            .peek(progressReporter::logAllele)
 
-                                    .map(annotateVariant(evaluator, jd.getRefDict(), annotator))
-                                    .flatMap(Collection::stream)
-                                    .peek(wa -> {
-                                        if (!wa.squirlsResult().isEmpty()) {
-                                            progressReporter.logAnnotatedAllele(wa);
-                                        }
-                                    })
-                                    .collect(Collectors.toList())).get();
+                            .map(annotateVariant(evaluator, jd.getRefDict(), annotator))
+                            .flatMap(Collection::stream)
+                            .peek(wa -> {
+                                if (!wa.squirlsResult().isEmpty()) {
+                                    progressReporter.logAnnotatedAllele(wa);
+                                }
+                            });
+
+                    ForkJoinPool pool = makePool(nThreads);
+                    annotated = pool.submit(() -> alleleStream.collect(Collectors.toList())).get();
                 } catch (InterruptedException | ExecutionException e) {
                     LOGGER.warn("Error: ", e);
                     return 1;
                 }
-                pool.shutdown();
             }
 
             // write out the results
@@ -316,7 +321,7 @@ public class AnnotateVcfCommand extends SquirlsCommand {
             try {
                 formats.add(OutputFormat.valueOf(format.toUpperCase()));
             } catch (IllegalArgumentException e) {
-                LOGGER.warn("Invalid output format `{}`", format);
+                LOGGER.warn("Ignoring invalid output format `{}`", format);
             }
         }
         return formats;
