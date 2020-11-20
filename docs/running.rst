@@ -60,11 +60,11 @@ See the :ref:`rstinterpretation` section for getting help with interpretation of
 
 VCF output format
 ~~~~~~~~~~~~~~~~~
-When using the ``-f vcf`` option, a VCF file with all input variants is created. The annotation process adds two novel
-``INFO`` fields to each variant that overlaps with at least single transcript region:
+When using the ``-f vcf`` option, a VCF file with all input variants is created. The annotation process adds a novel
+*FILTER* and *INFO* field to each variant that overlaps with at least single transcript region:
 
-* ``SQUIRLS`` - a flag indicating that the variant is considered to have a deleterious effect on >=1 overlapping transcript
-* ``SQUIRLS_SCORE`` - a string containing SQUIRLS scores for each variant-transcript combination. For a hypothetical variant
+* ``SQUIRLS`` - a *FILTER* flag indicating that the variant is considered to have a deleterious effect on >=1 overlapping transcript
+* ``SQUIRLS_SCORE`` - an *INFO* string containing SQUIRLS scores for each variant-transcript combination. For a hypothetical variant
   ``chr1:1234C>A,G``, the field might look like::
 
     SQUIRLS_SCORE=A|NM_123456.1=0.988654|ENST00000987654.1=0.988654

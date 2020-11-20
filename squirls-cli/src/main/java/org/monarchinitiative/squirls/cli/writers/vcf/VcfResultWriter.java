@@ -95,11 +95,8 @@ public class VcfResultWriter implements ResultWriter {
 
     private static final String SQUIRLS_FLAG_FIELD_NAME = "SQUIRLS";
 
-    private static final VCFInfoHeaderLine FLAG_LINE = new VCFInfoHeaderLine(
-            SQUIRLS_FLAG_FIELD_NAME,
-            VCFHeaderLineCount.A,
-            VCFHeaderLineType.Flag,
-            "Variant is considered as pathogenic if the flag is present");
+    private static final VCFFilterHeaderLine FLAG_LINE = new VCFFilterHeaderLine(SQUIRLS_FLAG_FIELD_NAME,
+            "Squirls considers the variant as pathogenic if the filter is present");
 
     private static final String SQUIRLS_SCORE_FIELD_NAME = "SQUIRLS_SCORE";
 
@@ -138,7 +135,9 @@ public class VcfResultWriter implements ResultWriter {
             }
 
             // is the ALT allele pathogenic wrt any overlapping transcript?
-            boolean isPathogenic = squirlsScores.isPathogenic();
+            builder = squirlsScores.isPathogenic()
+                    ? builder.filter(SQUIRLS_FLAG_FIELD_NAME)
+                    : builder;
 
             // prediction string wrt all overlapping transcripts
             String txPredictions = squirlsScores.results()
@@ -146,9 +145,7 @@ public class VcfResultWriter implements ResultWriter {
                     .map(sq -> String.format("%s=%f", sq.accessionId(), sq.prediction().getMaxPathogenicity()))
                     .collect(Collectors.joining("|", String.format("%s|", ve.allele().getBaseString()), ""));
 
-            return builder.attribute(SQUIRLS_FLAG_FIELD_NAME, isPathogenic)
-                    .attribute(SQUIRLS_SCORE_FIELD_NAME, txPredictions)
-                    .make();
+            return builder.attribute(SQUIRLS_SCORE_FIELD_NAME, txPredictions).make();
         };
     }
 
