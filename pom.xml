@@ -7,7 +7,7 @@
     <groupId>org.monarchinitiative.squirls</groupId>
     <artifactId>Squirls</artifactId>
     <packaging>pom</packaging>
-    <version>1.0.0-RC3-SNAPSHOT</version>
+    <version>1.0.0-RC3</version>
     <modules>
         <module>squirls-core</module>
         <module>squirls-ingest</module>
