@@ -19,7 +19,7 @@ When the dependency::
     <version>1.0.0</version>
   </dependency>
 
-is added into the ``pom.xml`` file, then a ``VariantSplicingEvaluator`` bean is automatically configured by Spring,
+is added into the ``pom.xml`` file, then the ``VariantSplicingEvaluator`` bean is automatically configured by Spring,
 provided that the environment properties
 
 - ``squirls.data-directory``
@@ -37,4 +37,4 @@ The ``VariantSplicingEvaluator`` provides methods:
   splicing scores for given variant with respect to given transcript IDs ``txIds``. The variant is evaluated with
   respect to all overlapping transcripts, if ``txIds`` is empty
 
-Please see the corresponding *Javadocs* to learn more about ``SquirlsResult``, etc.
+Please see the corresponding *Javadocs* to learn more about ``VariantSplicingEvaluator``, ``SquirlsResult``, etc.
