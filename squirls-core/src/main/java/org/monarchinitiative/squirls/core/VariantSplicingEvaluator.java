@@ -76,9 +76,11 @@
 
 package org.monarchinitiative.squirls.core;
 
+import org.apiguardian.api.API;
+
 import java.util.Set;
 
-@SquirlsApi
+@API(status = API.Status.STABLE, since = "1.0.0")
 public interface VariantSplicingEvaluator {
 
     /**

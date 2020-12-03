@@ -76,13 +76,15 @@
 
 package org.monarchinitiative.squirls.core;
 
+import org.apiguardian.api.API;
+
 import java.util.Objects;
 
 /**
  * This class represents a fragment of information from the decision function, a single prediction of an ensemble
  * which calculated pathogenicity probability.
  */
-@SquirlsApi
+@API(status = API.Status.STABLE, since = "1.0.0")
 public class PartialPrediction {
 
     private final String name;

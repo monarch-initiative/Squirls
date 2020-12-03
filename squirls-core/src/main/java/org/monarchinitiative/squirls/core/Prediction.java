@@ -76,6 +76,8 @@
 
 package org.monarchinitiative.squirls.core;
 
+import org.apiguardian.api.API;
+
 import java.util.Collection;
 import java.util.Comparator;
 
@@ -83,7 +85,7 @@ import java.util.Comparator;
  * A prediction made by the {@link org.monarchinitiative.squirls.core.classifier.SquirlsClassifier} with respect
  * to a single transcript.
  */
-@SquirlsApi
+@API(status = API.Status.STABLE, since = "1.0.0")
 public interface Prediction extends Comparable<Prediction> {
 
     Comparator<Prediction> PREDICTION_COMPARATOR = Comparator.comparing(Prediction::getMaxPathogenicity)

@@ -76,6 +76,8 @@
 
 package org.monarchinitiative.squirls.core;
 
+import org.apiguardian.api.API;
+
 import java.util.Comparator;
 import java.util.Optional;
 import java.util.Set;
@@ -85,7 +87,7 @@ import java.util.stream.Stream;
 /**
  * Squirls results for a variant.
  */
-@SquirlsApi
+@API(status = API.Status.STABLE, since = "1.0.0")
 public interface SquirlsResult {
 
     /**
