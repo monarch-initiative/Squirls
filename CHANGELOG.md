@@ -10,7 +10,7 @@
   - use Picocli for CLI definition, prettify CLI
   - support HTML and VCF output formats
   - numerous bug fixes
-  - allow to specify # threads
+  - allow specifying # threads
   - improve progress reporting
 - `squirls-core`
   - mark API classes
