@@ -2,9 +2,11 @@
 
 ## ✈ the latest
 
+- `Squirls`
+  - make the code repository public, enable *Read the Docs* integration
 - `squirls-cli`
-    - add distribution
-    - use `apiguardian-api` to label the API elements
+  - add distribution
+  - use `apiguardian-api` to label the API elements
 
 ## ✈ v1.0.0-RC3
 
