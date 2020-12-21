@@ -15,7 +15,7 @@
                     </thead>
                     <tbody th:with="maxScore=${squirls_results.maxPathogenicity()}">
                     <tr th:each="txAnn: ${variantAnnotations}"
-                        th:styleappend="${squirls_results.pathogenicityForTranscript(accession_id).orElse(0.) >= maxScore} ? 'color: red; background-color: #fff4f4;'"
+                        th:styleappend="${squirls_results.pathogenicityForTranscript(accession_id).orElse(0.) >= maxScore} ? 'color: #black; background-color: #d8ecf6;'"
                         th:with="accession_id=${txAnn.getTranscript().getAccession()}">
 
                         <td><em th:text="${accession_id}">NM_0012234.5</em></td>
