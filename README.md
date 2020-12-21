@@ -1,5 +1,7 @@
 # SQUIRLS
 
+[![Documentation Status](https://readthedocs.org/projects/squirls/badge/?version=latest)](https://squirls.readthedocs.io/en/latest/?badge=latest)
+
 Super-quick Information Content and Random Forest Learning for Splice Variants
 
 Most users should download the latest *SQUIRLS.jar* file from
