@@ -34,8 +34,7 @@ examples below.
 ``annotate-vcf`` - Annotate variants in a VCF file
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The aim of this command is to annotate variants in a VCF file. The results are then stored in *HTML* and/or
-*VCF* format.
+The aim of this command is to annotate variants in a VCF file. The results are then stored in one or more output formats.
 
 To annotate variants in the `example.vcf`_ file (a file with 6 variants stored in Squirls repository), run ::
 
@@ -48,7 +47,8 @@ After the annotation, the results are stored at ``output.html``.
 
 Output formats
 ##############
-The ``annotate-vcf`` command writes results in 2 formats: *HTML* and *VCF*. Use the ``-f`` option to select the output format.
+The ``annotate-vcf`` command writes results in 4 output formats: *HTML*, *VCF*, *CSV*, and *TSV*. Use the ``-f`` option
+to select one or more of the desired output formats (e.g. ``-d html,vcf``).
 
 HTML output format
 ~~~~~~~~~~~~~~~~~~
@@ -60,8 +60,8 @@ See the :ref:`rstinterpretation` section for getting help with interpretation of
 
 VCF output format
 ~~~~~~~~~~~~~~~~~
-When using the ``-f vcf`` option, a VCF file with all input variants is created. The annotation process adds a novel
-*FILTER* and *INFO* field to each variant that overlaps with at least single transcript region:
+When including ``vcf`` into the ``-f`` option, a VCF file with all input variants is created. The annotation process
+adds a novel *FILTER* and *INFO* field to each variant that overlaps with at least single transcript region:
 
 * ``SQUIRLS`` - a *FILTER* flag indicating that the variant is considered to have a deleterious effect on >=1 overlapping transcript
 * ``SQUIRLS_SCORE`` - an *INFO* string containing SQUIRLS scores for each variant-transcript combination. For a hypothetical variant
@@ -72,6 +72,21 @@ When using the ``-f vcf`` option, a VCF file with all input variants is created.
 
 Multiallelic variants are broken down into separate records and processed individually. Predictions with respect to
 the overlapping transcripts are separated by a pipe (``|``) symbol.
+
+CSV/TSV output format
+~~~~~~~~~~~~~~~~~~~~~
+To write *n* most deleterious variants into a *CSV* (or *TSV*) file, use ``csv`` (``tsv``) in the ``-f`` option.
+
+In result, the tabular files with the following columns are created:
+
+.. table:: Tabular output
+
+  ====== =========== ===== ===== ============= ============== ============ ================
+  chrom   pos	       ref   alt   gene_symbol   tx_accession   pathogenic   squirls_score
+  ====== =========== ===== ===== ============= ============== ============ ================
+  chr3    165504107   A     C     *BCHE*        NM_000055.2    true         0.99997203304
+  ...     ...         ...   ...   ...           ...            ...          ...
+  ====== =========== ===== ===== ============= ============== ============ ================
 
 Command options
 ###############
