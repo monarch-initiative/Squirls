@@ -129,17 +129,17 @@ public class AnnotateVcfCommand extends SquirlsCommand {
 
     @CommandLine.Option(names = {"-f", "--output-format"},
             paramLabel = "html",
-            description = "Comma separated list of output formats to use for writing the results")
+            description = "Comma separated list of output formats to use for writing the results (default: ${DEFAULT-VALUE})")
     public String outputFormats = "html";
 
     @CommandLine.Option(names = {"-n", "--n-variants-to-report"},
             paramLabel = "100",
-            description = "N most pathogenic variants to include into HTML report")
+            description = "N most pathogenic variants to include into HTML report (default: ${DEFAULT-VALUE})")
     public int nVariantsToReport = 100;
 
     @CommandLine.Option(names = {"-t", "--n-threads"},
             paramLabel = "4",
-            description = "Process variants using n threads")
+            description = "Process variants using n threads (default: ${DEFAULT-VALUE})")
     public int nThreads = 4;
 
     @CommandLine.Parameters(index = "0",
@@ -217,16 +217,38 @@ public class AnnotateVcfCommand extends SquirlsCommand {
         };
     }
 
+    /**
+     * Prepare <code>ForkJoinPool</code> for variant annotation.
+     *
+     * @param parallelism number of threads to use for variant annotation
+     * @return the pool
+     */
     private static ForkJoinPool makePool(int parallelism) {
         return new ForkJoinPool(parallelism, SquirlsWorkerThread::new, null, false);
     }
 
+    /**
+     * Parse input argument that specifies the desired output formats into a collection of {@link OutputFormat}s.
+     *
+     * @return a collection of output formats
+     */
+    private static Collection<OutputFormat> parseOutputFormats(String outputFormats) {
+        Set<OutputFormat> formats = new HashSet<>(2);
+        for (String format : outputFormats.split(",")) {
+            try {
+                formats.add(OutputFormat.valueOf(format.toUpperCase()));
+            } catch (IllegalArgumentException e) {
+                LOGGER.warn("Ignoring invalid output format `{}`", format);
+            }
+        }
+        return formats;
+    }
 
     @Override
     public Integer call() {
         try (ConfigurableApplicationContext context = getContext()) {
             LOGGER.info("Reading variants from `{}`", inputPath);
-            Set<OutputFormat> outputFormats = parseOutputFormats();
+            Collection<OutputFormat> outputFormats = parseOutputFormats(this.outputFormats);
             VariantSplicingEvaluator evaluator = context.getBean(VariantSplicingEvaluator.class);
 
             if (nThreads < 1) {
@@ -318,17 +340,5 @@ public class AnnotateVcfCommand extends SquirlsCommand {
         }
 
         return 0;
-    }
-
-    private Set<OutputFormat> parseOutputFormats() {
-        Set<OutputFormat> formats = new HashSet<>(2);
-        for (String format : outputFormats.split(",")) {
-            try {
-                formats.add(OutputFormat.valueOf(format.toUpperCase()));
-            } catch (IllegalArgumentException e) {
-                LOGGER.warn("Ignoring invalid output format `{}`", format);
-            }
-        }
-        return formats;
     }
 }
