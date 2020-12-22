@@ -322,15 +322,14 @@ public class AnnotateVcfCommand extends SquirlsCommand {
                             .nReported(nVariantsToReport)
                             .build())
                     .analysisStats(progressReporter.getAnalysisStats())
-                    .variants(annotated)
+                    .addAllVariants(annotated)
                     .build();
 
             ResultWriterFactory resultWriterFactory = context.getBean(ResultWriterFactory.class);
-            OutputSettings settings = new OutputSettings(outputPrefix, nVariantsToReport);
             for (OutputFormat format : outputFormats) {
                 ResultWriter writer = resultWriterFactory.resultWriterForFormat(format);
                 try {
-                    writer.write(results, settings);
+                    writer.write(results, outputPrefix);
                 } catch (IOException e) {
                     LOGGER.warn("Error writing {} results: {}", format, e.getMessage());
                 }

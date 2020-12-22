@@ -74,47 +74,94 @@
  * Daniel Danis, Peter N Robinson, 2020
  */
 
-package org.monarchinitiative.squirls.cli.writers;
+package org.monarchinitiative.squirls.cli.writers.tabular;
 
-import java.util.Objects;
+import de.charite.compbio.jannovar.annotation.VariantAnnotator;
+import de.charite.compbio.jannovar.annotation.builders.AnnotationBuilderOptions;
+import de.charite.compbio.jannovar.data.JannovarData;
+import de.charite.compbio.jannovar.data.ReferenceDictionary;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.monarchinitiative.squirls.cli.TestDataSourceConfig;
+import org.monarchinitiative.squirls.cli.data.VariantsForTesting;
+import org.monarchinitiative.squirls.cli.writers.AnalysisResults;
+import org.monarchinitiative.squirls.cli.writers.AnalysisStats;
+import org.monarchinitiative.squirls.cli.writers.SettingsData;
+import org.monarchinitiative.squirls.cli.writers.WritableSplicingAllele;
+import org.monarchinitiative.squirls.core.data.ic.SplicingPwmData;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 
-public class OutputSettings {
+import java.io.BufferedReader;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.List;
+import java.util.stream.Collectors;
 
-    private final String outputPrefix;
-    private final int nVariantsToReport;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.*;
 
-    public OutputSettings(String outputPrefix, int nVariantsToReport) {
-        this.outputPrefix = outputPrefix;
-        this.nVariantsToReport = nVariantsToReport;
+@SpringBootTest(classes = TestDataSourceConfig.class)
+public class TabularResultWriterTest {
+
+    private static final Path OUTPUT = Path.of("target/test-classes/tabular_output").toAbsolutePath();
+    @Autowired
+    public SplicingPwmData splicingPwmData;
+    @Autowired
+    public JannovarData jannovarData;
+    private TabularResultWriter writer;
+    private ReferenceDictionary rd;
+
+    private VariantAnnotator annotator;
+
+    @BeforeEach
+    public void setUp() {
+        writer = new TabularResultWriter("tsv", '\t');
+        rd = jannovarData.getRefDict();
+        annotator = new VariantAnnotator(jannovarData.getRefDict(), jannovarData.getChromosomes(), new AnnotationBuilderOptions());
     }
 
-    public int nVariantsToReport() {
-        return nVariantsToReport;
+    @AfterEach
+    public void tearDown() {
+        if (OUTPUT.toFile().isFile()) {
+            if (!OUTPUT.toFile().delete()) {
+                throw new IllegalStateException("Unable to delete the temporary output file at " + OUTPUT);
+            }
+        }
     }
 
-    public String outputPrefix() {
-        return outputPrefix;
-    }
+    @Test
+    public void write() throws Exception {
+        int nVariantsToReport = 2;
+        List<? extends WritableSplicingAllele> variants = List.of(
+                VariantsForTesting.BRCA2DonorExon15plus2QUID(rd, annotator),
+                VariantsForTesting.ALPLDonorExon7Minus2(rd, annotator),
+                VariantsForTesting.VWFAcceptorExon26minus2QUID(rd, annotator),
+                VariantsForTesting.TSC2AcceptorExon11Minus3(rd, annotator));
+        AnalysisResults results = AnalysisResults.builder()
+                .addAllVariants(variants)
+                .analysisStats(new AnalysisStats(10, 8, 7))
+                .settingsData(SettingsData.builder()
+                        .nReported(nVariantsToReport)
+                        .build())
+                .build();
+        writer.write(results, OUTPUT.toString());
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        OutputSettings that = (OutputSettings) o;
-        return nVariantsToReport == that.nVariantsToReport &&
-                Objects.equals(outputPrefix, that.outputPrefix);
-    }
+        // the file must exist
+        Path expectedOutputFilePath = Paths.get("target/test-classes/tabular_output.tsv");
+        assertThat(expectedOutputFilePath.toFile().isFile(), equalTo(true));
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(outputPrefix, nVariantsToReport);
-    }
+        // the file content must match the expectations
+        List<String> lines;
+        try (BufferedReader reader = Files.newBufferedReader(expectedOutputFilePath)) {
+            lines = reader.lines().collect(Collectors.toList());
+        }
 
-    @Override
-    public String toString() {
-        return "OutputSettings{" +
-                "outputPrefix='" + outputPrefix + '\'' +
-                ", nVariantsToReport=" + nVariantsToReport +
-                '}';
+        assertThat(lines, hasSize(nVariantsToReport + 1)); // + header line
+        assertThat(lines, hasItem("chrom\tpos\tref\talt\tgene_symbol\ttx_accession\tpathogenic\tsquirls_score"));
+        assertThat(lines, hasItem("chr13\t32930748\tT\tG\tBRCA2\tNM_000059.3\ttrue\t0.95"));
+        assertThat(lines, hasItem("chr1\t21894739\tA\tG\tALPL\tNM_000478.4\ttrue\t0.94"));
     }
 }
