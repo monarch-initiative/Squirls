@@ -1,6 +1,6 @@
 # SQUIRLS
 
-![CI](https://github.com/TheJacksonLaboratory/Squirls/workflows/.github/workflows/maven.yml/badge.svg)
+[![CI](https://github.com/TheJacksonLaboratory/Squirls/workflows/.github/workflows/maven.yml/badge.svg)](https://github.com/TheJacksonLaboratory/Squirls/actions?query=workflow%3A%22Java+CI+with+Maven%22)
 [![Documentation Status](https://readthedocs.org/projects/squirls/badge/?version=latest)](https://squirls.readthedocs.io/en/latest/?badge=latest)
 
 Super-quick Information Content and Random Forest Learning for Splice Variants
