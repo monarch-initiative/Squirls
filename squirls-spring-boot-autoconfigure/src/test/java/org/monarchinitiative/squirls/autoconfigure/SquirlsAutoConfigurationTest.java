@@ -86,8 +86,8 @@ import xyz.ielis.hyperutil.reference.fasta.GenomeSequenceAccessor;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class SquirlsAutoConfigurationTest extends AbstractAutoConfigurationTest {
@@ -116,7 +116,7 @@ class SquirlsAutoConfigurationTest extends AbstractAutoConfigurationTest {
          * Optional - default values
          */
         SquirlsProperties properties = context.getBean(SquirlsProperties.class);
-        assertThat(properties.getClassifier().getVersion(), is("v0.4.4"));
+        assertThat(properties.getClassifier().getVersion(), is("v0.4.6"));
 
         /*
          * High-level beans
@@ -127,8 +127,7 @@ class SquirlsAutoConfigurationTest extends AbstractAutoConfigurationTest {
         SplicingTranscriptSource splicingTranscriptSource = context.getBean("splicingTranscriptSource", SplicingTranscriptSource.class);
         assertThat(splicingTranscriptSource, is(notNullValue()));
 
-        SplicingAnnotator splicingAnnotator = context.getBean("splicingAnnotator", SplicingAnnotator.class);
-        assertThat(splicingAnnotator, is(notNullValue()));
+        assertThat(context.getBean("splicingAnnotator").getClass(), typeCompatibleWith(SplicingAnnotator.class));
 
         VariantSplicingEvaluator evaluator = context.getBean("variantSplicingEvaluator", VariantSplicingEvaluator.class);
         assertThat(evaluator, is(notNullValue()));
@@ -139,13 +138,13 @@ class SquirlsAutoConfigurationTest extends AbstractAutoConfigurationTest {
         load(SquirlsAutoConfiguration.class, "squirls.data-directory=" + TEST_DATA,
                 "squirls.genome-assembly=hg19",
                 "squirls.data-version=1710",
-                "squirls.classifier.version=v1.1",
+                "squirls.classifier.version=v0.4.4",
                 "squirls.classifier.max-variant-length=50",
                 "squirls.annotator.version=agez"
         );
 
         SquirlsProperties properties = context.getBean(SquirlsProperties.class);
-        assertThat(properties.getClassifier().getVersion(), is("v1.1"));
+        assertThat(properties.getClassifier().getVersion(), is("v0.4.4"));
         assertThat(properties.getClassifier().getMaxVariantLength(), is(50));
         assertThat(properties.getAnnotator().getVersion(), is("agez"));
     }
@@ -193,8 +192,18 @@ class SquirlsAutoConfigurationTest extends AbstractAutoConfigurationTest {
                 "squirls.data-directory=" + TEST_DATA,
                 "squirls.genome-assembly=hg19",
                 "squirls.data-version=1710",
-                "squirls.classifier.version=puddle"));
-        assertThat(thrown.getMessage(), containsString("Classifier version `puddle` is not available, choose one from "));
+                "squirls.classifier.version=v0.0.0"));
+        assertThat(thrown.getMessage(), containsString("Classifier with version v0.0.0 has never been used in Squirls"));
+    }
+
+    @Test
+    void testNonPresentClassifier() {
+        Throwable thrown = assertThrows(BeanCreationException.class, () -> load(SquirlsAutoConfiguration.class,
+                "squirls.data-directory=" + TEST_DATA,
+                "squirls.genome-assembly=hg19",
+                "squirls.data-version=1710",
+                "squirls.classifier.version=v0.4.1"));
+        assertThat(thrown.getMessage(), containsString("Classifier version `v0_4_1` is not available, choose one from {v0_4_4, v0_4_6}"));
     }
 
     @Test

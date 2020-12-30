@@ -81,8 +81,8 @@ import de.charite.compbio.jannovar.reference.GenomePosition;
 import de.charite.compbio.jannovar.reference.GenomeVariant;
 import org.monarchinitiative.squirls.cli.visualization.selector.VisualizationContext;
 import org.monarchinitiative.squirls.cli.visualization.selector.VisualizationContextSelector;
-import org.monarchinitiative.squirls.core.SplicingPredictionData;
 import org.monarchinitiative.squirls.core.Utils;
+import org.monarchinitiative.squirls.core.VariantOnTranscript;
 import org.monarchinitiative.squirls.core.data.ic.SplicingPwmData;
 import org.monarchinitiative.squirls.core.model.SplicingParameters;
 import org.monarchinitiative.squirls.core.model.SplicingTranscript;
@@ -469,7 +469,7 @@ public abstract class AbstractGraphicsGenerator implements SplicingVariantGraphi
         return makeCrypticContextGraphics(context.getTitle(), trekker, walkers);
     }
 
-    protected String makeSreContextGraphics(SplicingPredictionData predictionData) {
+    protected String makeSreContextGraphics(VariantOnTranscript predictionData) {
         VisualizationContext context = VisualizationContext.SRE;
 
         GenomeVariant variant = predictionData.getVariant();

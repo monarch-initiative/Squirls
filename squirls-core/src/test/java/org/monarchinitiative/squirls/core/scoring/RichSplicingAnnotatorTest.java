@@ -84,8 +84,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.monarchinitiative.squirls.core.PojosForTesting;
-import org.monarchinitiative.squirls.core.SimpleAnnotatable;
+import org.monarchinitiative.squirls.core.SimpleAnnotatableSquirlsFeatures;
 import org.monarchinitiative.squirls.core.TestDataSourceConfig;
+import org.monarchinitiative.squirls.core.classifier.SquirlsFeatures;
 import org.monarchinitiative.squirls.core.data.ic.SplicingPwmData;
 import org.monarchinitiative.squirls.core.model.SplicingTranscript;
 import org.monarchinitiative.squirls.core.scoring.calculators.conservation.BigWigAccessor;
@@ -103,26 +104,26 @@ import static org.hamcrest.Matchers.closeTo;
 import static org.mockito.Mockito.when;
 
 @SpringBootTest(classes = TestDataSourceConfig.class)
-class RichSplicingAnnotatorTest {
+public class RichSplicingAnnotatorTest {
 
     private static final double EPSILON = 0.0005;
 
     @Autowired
-    private ReferenceDictionary rd;
+    public ReferenceDictionary rd;
 
     @Autowired
-    private SplicingPwmData splicingPwmData;
+    public SplicingPwmData splicingPwmData;
 
     @Qualifier("hexamerMap")
     @Autowired
-    private Map<String, Double> hexamerMap;
+    public Map<String, Double> hexamerMap;
 
     @Qualifier("septamerMap")
     @Autowired
-    private Map<String, Double> septamerMap;
+    public Map<String, Double> septamerMap;
 
     @Mock
-    private BigWigAccessor accessor;
+    public BigWigAccessor accessor;
 
     private SplicingTranscript st;
 
@@ -131,49 +132,49 @@ class RichSplicingAnnotatorTest {
     private RichSplicingAnnotator annotator;
 
     @BeforeEach
-    void setUp() {
+    public void setUp() {
         st = PojosForTesting.getTranscriptWithThreeExons(rd);
         sequence = PojosForTesting.getSequenceIntervalForTranscriptWithThreeExons(rd);
         annotator = new RichSplicingAnnotator(splicingPwmData, hexamerMap, septamerMap, accessor);
     }
 
     @Test
-    void firstExonDonor() {
+    public void firstExonDonor() {
         final GenomeVariant variant = new GenomeVariant(new GenomePosition(rd, Strand.FWD, 1, 1199), "G", "A");
 
-        SimpleAnnotatable ann = new SimpleAnnotatable(variant, st, sequence);
-        ann = annotator.annotate(ann);
+        SimpleAnnotatableSquirlsFeatures ann = new SimpleAnnotatableSquirlsFeatures(variant, st, sequence);
+        SquirlsFeatures features = annotator.annotate(ann);
 
-        assertThat(ann.getFeature("cryptic_donor", Double.class), is(closeTo(0., EPSILON)));
-        assertThat(ann.getFeature("canonical_donor", Double.class), is(closeTo(3.0547, EPSILON)));
+        assertThat(features.getFeature("cryptic_donor", Double.class), is(closeTo(0., EPSILON)));
+        assertThat(features.getFeature("canonical_donor", Double.class), is(closeTo(3.0547, EPSILON)));
     }
 
 
     @Test
-    void secondExonDonor() throws Exception {
+    public void secondExonDonor() throws Exception {
         final GenomeVariant variant = new GenomeVariant(new GenomePosition(rd, Strand.FWD, 1, 1599), "C", "A");
         when(accessor.getScores(variant.getGenomeInterval())).thenReturn(List.of(.12345F));
 
-        final Annotatable ann = annotator.annotate(new SimpleAnnotatable(variant, st, sequence));
+        SquirlsFeatures features = annotator.annotate(new SimpleAnnotatableSquirlsFeatures(variant, st, sequence));
 
-        assertThat(ann.getFeature("cryptic_donor", Double.class), is(closeTo(0., EPSILON)));
-        assertThat(ann.getFeature("canonical_donor", Double.class), is(closeTo(-1.7926, EPSILON)));
-        assertThat(ann.getFeature("donor_offset", Double.class), is(closeTo(-1., EPSILON)));
-        assertThat(ann.getFeature("cryptic_acceptor", Double.class), is(closeTo(-8.1159, EPSILON)));
-        assertThat(ann.getFeature("canonical_acceptor", Double.class), is(closeTo(0., EPSILON)));
-        assertThat(ann.getFeature("acceptor_offset", Double.class), is(closeTo(200., EPSILON)));
+        assertThat(features.getFeature("cryptic_donor", Double.class), is(closeTo(0., EPSILON)));
+        assertThat(features.getFeature("canonical_donor", Double.class), is(closeTo(-1.7926, EPSILON)));
+        assertThat(features.getFeature("donor_offset", Double.class), is(closeTo(-1., EPSILON)));
+        assertThat(features.getFeature("cryptic_acceptor", Double.class), is(closeTo(-8.1159, EPSILON)));
+        assertThat(features.getFeature("canonical_acceptor", Double.class), is(closeTo(0., EPSILON)));
+        assertThat(features.getFeature("acceptor_offset", Double.class), is(closeTo(200., EPSILON)));
 
-        assertThat(ann.getFeature("hexamer", Double.class), is(closeTo(-1.306309, EPSILON)));
-        assertThat(ann.getFeature("septamer", Double.class), is(closeTo(-.339600, EPSILON)));
-        assertThat(ann.getFeature("phylop", Double.class), is(closeTo(.12345, EPSILON)));
+        assertThat(features.getFeature("hexamer", Double.class), is(closeTo(-1.306309, EPSILON)));
+        assertThat(features.getFeature("septamer", Double.class), is(closeTo(-.339600, EPSILON)));
+        assertThat(features.getFeature("phylop", Double.class), is(closeTo(.12345, EPSILON)));
 
-        assertThat(ann.getFeature("wt_ri_donor", Double.class), is(closeTo(2.8938, EPSILON)));
-        assertThat(ann.getFeature("wt_ri_acceptor", Double.class), is(closeTo(4.1148, EPSILON)));
-        assertThat(ann.getFeature("alt_ri_best_window_donor", Double.class), is(closeTo(4.6864, EPSILON)));
-        assertThat(ann.getFeature("alt_ri_best_window_acceptor", Double.class), is(closeTo(-4.0011, EPSILON)));
-        assertThat(ann.getFeature("s_strength_diff_donor", Double.class), is(closeTo(0., EPSILON)));
-        assertThat(ann.getFeature("s_strength_diff_acceptor", Double.class), is(closeTo(0., EPSILON)));
-        assertThat(ann.getFeature("exon_length", Double.class), is(closeTo(200., EPSILON)));
-        assertThat(ann.getFeature("intron_length", Double.class), is(closeTo(200., EPSILON)));
+        assertThat(features.getFeature("wt_ri_donor", Double.class), is(closeTo(2.8938, EPSILON)));
+        assertThat(features.getFeature("wt_ri_acceptor", Double.class), is(closeTo(4.1148, EPSILON)));
+        assertThat(features.getFeature("alt_ri_best_window_donor", Double.class), is(closeTo(4.6864, EPSILON)));
+        assertThat(features.getFeature("alt_ri_best_window_acceptor", Double.class), is(closeTo(-4.0011, EPSILON)));
+        assertThat(features.getFeature("s_strength_diff_donor", Double.class), is(closeTo(0., EPSILON)));
+        assertThat(features.getFeature("s_strength_diff_acceptor", Double.class), is(closeTo(0., EPSILON)));
+        assertThat(features.getFeature("exon_length", Double.class), is(closeTo(200., EPSILON)));
+        assertThat(features.getFeature("intron_length", Double.class), is(closeTo(200., EPSILON)));
     }
 }

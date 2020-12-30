@@ -86,9 +86,10 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.monarchinitiative.squirls.cli.TestDataSourceConfig;
+import org.monarchinitiative.squirls.core.VariantOnTranscript;
+import org.monarchinitiative.squirls.core.classifier.SquirlsFeatures;
 import org.monarchinitiative.squirls.core.data.ic.SplicingPwmData;
 import org.monarchinitiative.squirls.core.scoring.AGEZSplicingAnnotator;
-import org.monarchinitiative.squirls.core.scoring.Annotatable;
 import org.monarchinitiative.squirls.core.scoring.SplicingAnnotator;
 import org.monarchinitiative.squirls.core.scoring.calculators.conservation.BigWigAccessor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -134,15 +135,15 @@ public class GenerateSplicingAnnotatorValues {
 
     private VariantAnnotator variantAnnotator;
 
-    private SplicingAnnotator annotator;
+    private SplicingAnnotator<VariantOnTranscript, SquirlsFeatures> annotator;
 
     @BeforeAll
     public static void beforeAll() throws Exception {
         ACCESSOR = new BigWigAccessor(PHYLOP);
     }
 
-    private static <T extends Annotatable> void printFeatureMap(T annotatable) {
-        annotatable.getFeatureMap().entrySet()
+    private static <T extends SquirlsFeatures> void printFeatureMap(T features) {
+        features.getFeatureMap().entrySet()
                 .stream().sorted(Map.Entry.comparingByKey())
                 .forEach(e -> System.err.printf("%s=%s\n", e.getKey(), e.getValue()));
     }
@@ -156,75 +157,66 @@ public class GenerateSplicingAnnotatorValues {
     @Test
     public void BRCA2DonorExon15plus2QUID() throws Exception {
         TestVariant allele = VariantsForTesting.BRCA2DonorExon15plus2QUID(RD, variantAnnotator);
-        TestVariant annotatable = annotator.annotate(allele);
 
-        printFeatureMap(annotatable);
+        printFeatureMap(annotator.annotate(allele));
     }
 
     @Test
     public void ALPLDonorExon7Minus2() throws Exception {
         TestVariant allele = VariantsForTesting.ALPLDonorExon7Minus2(RD, variantAnnotator);
-        TestVariant annotatable = annotator.annotate(allele);
 
-        printFeatureMap(annotatable);
+        printFeatureMap(annotator.annotate(allele));
     }
 
     @Test
     public void HBBcodingExon1UpstreamCrypticInCanonical() throws Exception {
         TestVariant allele = VariantsForTesting.HBBcodingExon1UpstreamCrypticInCanonical(RD, variantAnnotator);
-        TestVariant annotatable = annotator.annotate(allele);
 
-        printFeatureMap(annotatable);
+        printFeatureMap(annotator.annotate(allele));
     }
 
     @Test
     public void HBBcodingExon1UpstreamCryptic() throws Exception {
         TestVariant allele = VariantsForTesting.HBBcodingExon1UpstreamCryptic(RD, variantAnnotator);
-        TestVariant annotatable = annotator.annotate(allele);
 
-        printFeatureMap(annotatable);
+        printFeatureMap(annotator.annotate(allele));
     }
 
     @Test
     public void VWFAcceptorExon26minus2QUID() throws Exception {
         TestVariant allele = VariantsForTesting.VWFAcceptorExon26minus2QUID(RD, variantAnnotator);
-        TestVariant annotatable = annotator.annotate(allele);
 
-        printFeatureMap(annotatable);
+        printFeatureMap(annotator.annotate(allele));
     }
 
 
     @Test
     public void TSC2AcceptorExon11Minus3() throws Exception {
         TestVariant allele = VariantsForTesting.TSC2AcceptorExon11Minus3(RD, variantAnnotator);
-        TestVariant annotatable = annotator.annotate(allele);
 
-        printFeatureMap(annotatable);
+        printFeatureMap(annotator.annotate(allele));
     }
 
 
     @Test
     public void COL4A5AcceptorExon11Minus8() throws Exception {
         TestVariant allele = VariantsForTesting.COL4A5AcceptorExon11Minus8(RD, variantAnnotator);
-        TestVariant annotatable = annotator.annotate(allele);
 
-        printFeatureMap(annotatable);
+        printFeatureMap(annotator.annotate(allele));
     }
 
     @Test
     public void RYR1codingExon102crypticAcceptor() throws Exception {
         TestVariant allele = VariantsForTesting.RYR1codingExon102crypticAcceptor(RD, variantAnnotator);
-        TestVariant annotatable = annotator.annotate(allele);
 
-        printFeatureMap(annotatable);
+        printFeatureMap(annotator.annotate(allele));
     }
 
 
     @Test
     public void NF1codingExon9coding_SRE() throws Exception {
         TestVariant allele = VariantsForTesting.NF1codingExon9coding_SRE(RD, variantAnnotator);
-        TestVariant annotatable = annotator.annotate(allele);
 
-        printFeatureMap(annotatable);
+        printFeatureMap(annotator.annotate(allele));
     }
 }

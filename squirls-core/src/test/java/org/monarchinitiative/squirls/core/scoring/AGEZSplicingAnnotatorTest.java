@@ -86,8 +86,9 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.Mock;
 import org.monarchinitiative.squirls.core.PojosForTesting;
-import org.monarchinitiative.squirls.core.SimpleAnnotatable;
+import org.monarchinitiative.squirls.core.SimpleAnnotatableSquirlsFeatures;
 import org.monarchinitiative.squirls.core.TestDataSourceConfig;
+import org.monarchinitiative.squirls.core.classifier.SquirlsFeatures;
 import org.monarchinitiative.squirls.core.data.ic.SplicingPwmData;
 import org.monarchinitiative.squirls.core.model.SplicingTranscript;
 import org.monarchinitiative.squirls.core.scoring.calculators.conservation.BigWigAccessor;
@@ -151,23 +152,23 @@ public class AGEZSplicingAnnotatorTest {
 
         final GenomeVariant variant = new GenomeVariant(new GenomePosition(rd, Strand.FWD, 1, pos), ref, alt);
 
-        SimpleAnnotatable ann = new SimpleAnnotatable(variant, st, sequence);
-        ann = annotator.annotate(ann);
+        SimpleAnnotatableSquirlsFeatures ann = new SimpleAnnotatableSquirlsFeatures(variant, st, sequence);
+        SquirlsFeatures features = annotator.annotate(ann);
 
-        assertThat(ann.getFeature("creates_ag_in_agez", Double.class), is(closeTo(createsAgInAgez, EPSILON)));
-        assertThat(ann.getFeature("ppt_is_truncated", Double.class), is(closeTo(pptIsTruncated, EPSILON)));
-        assertThat(ann.getFeature("yag_at_acceptor_minus_three", Double.class), is(closeTo(purineAtMinusThree, EPSILON)));
-        assertThat(ann.getFeature("creates_yag_in_agez", Double.class), is(closeTo(createsYagInAgez, EPSILON)));
+        assertThat(features.getFeature("creates_ag_in_agez", Double.class), is(closeTo(createsAgInAgez, EPSILON)));
+        assertThat(features.getFeature("ppt_is_truncated", Double.class), is(closeTo(pptIsTruncated, EPSILON)));
+        assertThat(features.getFeature("yag_at_acceptor_minus_three", Double.class), is(closeTo(purineAtMinusThree, EPSILON)));
+        assertThat(features.getFeature("creates_yag_in_agez", Double.class), is(closeTo(createsYagInAgez, EPSILON)));
     }
 
     @Test
     public void allFeaturesAreCalculated() {
         final GenomeVariant variant = new GenomeVariant(new GenomePosition(rd, Strand.FWD, 1, 1389), "c", "cag");
 
-        SimpleAnnotatable ann = new SimpleAnnotatable(variant, st, sequence);
-        ann = annotator.annotate(ann);
+        SimpleAnnotatableSquirlsFeatures ann = new SimpleAnnotatableSquirlsFeatures(variant, st, sequence);
+        SquirlsFeatures features = annotator.annotate(ann);
 
         // we expect the agez calculator to compute the following features:
-        assertThat(ann.getFeatureNames(), hasItems("creates_ag_in_agez", "ppt_is_truncated", "yag_at_acceptor_minus_three", "creates_yag_in_agez"));
+        assertThat(features.getFeatureNames(), hasItems("creates_ag_in_agez", "ppt_is_truncated", "yag_at_acceptor_minus_three", "creates_yag_in_agez"));
     }
 }

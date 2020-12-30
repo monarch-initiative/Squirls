@@ -76,6 +76,8 @@
 
 package org.monarchinitiative.squirls.core.classifier;
 
+import org.monarchinitiative.squirls.core.Prediction;
+
 import java.util.Set;
 
 public interface SquirlsClassifier {
@@ -83,8 +85,9 @@ public interface SquirlsClassifier {
     /**
      * @return set with expected feature names
      */
+    // TODO - evaluate
     Set<String> usedFeatureNames();
 
-    <T extends Classifiable> T predict(T data);
+    Prediction predict(SquirlsFeatures feature);
 
 }

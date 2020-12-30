@@ -18,6 +18,7 @@
             <version>1.2.3</version>
         </dependency>
 
+        <!--  TODO - remove  -->
         <dependency>
             <groupId>org.yaml</groupId>
             <artifactId>snakeyaml</artifactId>

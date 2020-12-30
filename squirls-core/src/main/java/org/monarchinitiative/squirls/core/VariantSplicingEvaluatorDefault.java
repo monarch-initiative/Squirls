@@ -79,7 +79,7 @@ package org.monarchinitiative.squirls.core;
 import de.charite.compbio.jannovar.data.ReferenceDictionary;
 import de.charite.compbio.jannovar.reference.*;
 import org.monarchinitiative.squirls.core.classifier.SquirlsClassifier;
-import org.monarchinitiative.squirls.core.classifier.transform.prediction.PredictionTransformer;
+import org.monarchinitiative.squirls.core.classifier.SquirlsFeatures;
 import org.monarchinitiative.squirls.core.data.SplicingTranscriptSource;
 import org.monarchinitiative.squirls.core.model.SplicingTranscript;
 import org.monarchinitiative.squirls.core.scoring.SplicingAnnotator;
@@ -92,6 +92,7 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+// TODO - move into the autoconfigure module
 public class VariantSplicingEvaluatorDefault implements VariantSplicingEvaluator {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(VariantSplicingEvaluatorDefault.class);
@@ -104,11 +105,9 @@ public class VariantSplicingEvaluatorDefault implements VariantSplicingEvaluator
 
     private final SplicingTranscriptSource txSource;
 
-    private final SplicingAnnotator annotator;
+    private final SplicingAnnotator<VariantOnTranscript, ? extends SquirlsFeatures> annotator;
 
     private final SquirlsClassifier classifier;
-
-    private final PredictionTransformer transformer;
 
     private final int maxVariantLength;
 
@@ -124,7 +123,6 @@ public class VariantSplicingEvaluatorDefault implements VariantSplicingEvaluator
         txSource = Objects.requireNonNull(builder.txSource, "Transcript source cannot be null");
         annotator = Objects.requireNonNull(builder.annotator, "Annotator cannot be null");
         classifier = Objects.requireNonNull(builder.classifier, "Classifier cannot be null");
-        transformer = Objects.requireNonNull(builder.transformer, "Prediction transformer cannot be null");
 
         if (builder.maxVariantLength < 1) {
             String msg = String.format("Maximum variant length cannot be less than 1: %d", builder.maxVariantLength);
@@ -139,10 +137,6 @@ public class VariantSplicingEvaluatorDefault implements VariantSplicingEvaluator
         return new Builder();
     }
 
-    private static Function<SplicingPredictionData, SquirlsTxResult> toSquirlsTxResult() {
-        return spd -> SquirlsTxResultDefault.of(spd.getTranscript().getAccessionId(), spd.getPrediction(), spd.getFeatureMap());
-    }
-
     /**
      * Evaluate given variant with respect to transcripts in <code>txIds</code>. The method <em>attempts</em> to evaluate
      * the variant with respect to given <code>txIds</code>, but does not guarantee that results will be provided for
@@ -155,7 +149,7 @@ public class VariantSplicingEvaluatorDefault implements VariantSplicingEvaluator
      * @param ref    reference allele, e.g. `C`, `CCT`
      * @param alt    alternate allele, e.g. `T`, `AA`
      * @param txIds  set of transcript accession IDs with respect to which the variant should be evaluated
-     * @return possibly empty map with {@link SplicingPredictionData} for transcript ID
+     * @return possibly empty map with {@link SquirlsResult} for transcript ID
      */
     @Override
     public SquirlsResult evaluate(String contig, int pos, String ref, String alt, Set<String> txIds) {
@@ -213,11 +207,12 @@ public class VariantSplicingEvaluatorDefault implements VariantSplicingEvaluator
          3 - let's evaluate the variant with respect to all transcripts
          */
         Set<SquirlsTxResult> squirlsTxResults = txMap.keySet().stream()
-                .map(tx -> SplicingPredictionDataDefault.of(variant, txMap.get(tx), sio.get()))
-                .map(annotator::annotate)
-                .map(classifier::predict)
-                .map(transformer::transform)
-                .map(toSquirlsTxResult())
+                .map(tx -> {
+                    VariantOnTranscript vtx = new VariantOnTranscriptDefault(variant, txMap.get(tx), sio.get());
+                    SquirlsFeatures annotations = annotator.annotate(vtx);
+                    Prediction prediction = classifier.predict(annotations);
+                    return SquirlsTxResultDefault.of(tx, prediction, annotations.getFeatureMap());
+                })
                 .collect(Collectors.toSet());
         return SquirlsResultDefault.of(squirlsTxResults);
     }
@@ -263,12 +258,63 @@ public class VariantSplicingEvaluatorDefault implements VariantSplicingEvaluator
         return txMap;
     }
 
+    // TODO - move out
+    private static class VariantOnTranscriptDefault implements VariantOnTranscript {
+
+        private final GenomeVariant variant;
+        private final SplicingTranscript transcript;
+        private final SequenceInterval sequenceInterval;
+
+        private VariantOnTranscriptDefault(GenomeVariant variant, SplicingTranscript transcript, SequenceInterval sequenceInterval) {
+            this.variant = variant;
+            this.transcript = transcript;
+            this.sequenceInterval = sequenceInterval;
+        }
+
+        @Override
+        public GenomeVariant getVariant() {
+            return variant;
+        }
+
+        @Override
+        public SplicingTranscript getTranscript() {
+            return transcript;
+        }
+
+        @Override
+        public SequenceInterval getSequence() {
+            return sequenceInterval;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            VariantOnTranscriptDefault that = (VariantOnTranscriptDefault) o;
+            return Objects.equals(variant, that.variant) && Objects.equals(transcript, that.transcript) && Objects.equals(sequenceInterval, that.sequenceInterval);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(variant, transcript, sequenceInterval);
+        }
+
+        @Override
+        public String toString() {
+            return "VariantOnTranscriptDefault{" +
+                    "variant=" + variant +
+                    ", transcript=" + transcript +
+                    ", sequenceInterval=" + sequenceInterval +
+                    '}';
+        }
+    }
+
     public static final class Builder {
+
         private GenomeSequenceAccessor accessor;
         private SplicingTranscriptSource txSource;
-        private SplicingAnnotator annotator;
+        private SplicingAnnotator<VariantOnTranscript, ? extends SquirlsFeatures> annotator;
         private SquirlsClassifier classifier;
-        private PredictionTransformer transformer;
 
         private int maxVariantLength = 100;
 
@@ -285,18 +331,13 @@ public class VariantSplicingEvaluatorDefault implements VariantSplicingEvaluator
             return this;
         }
 
-        public Builder annotator(SplicingAnnotator annotator) {
+        public Builder annotator(SplicingAnnotator<VariantOnTranscript, ? extends SquirlsFeatures> annotator) {
             this.annotator = annotator;
             return this;
         }
 
         public Builder classifier(SquirlsClassifier classifier) {
             this.classifier = classifier;
-            return this;
-        }
-
-        public Builder transformer(PredictionTransformer transformer) {
-            this.transformer = transformer;
             return this;
         }
 

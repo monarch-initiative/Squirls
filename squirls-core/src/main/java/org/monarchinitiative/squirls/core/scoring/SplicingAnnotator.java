@@ -76,16 +76,19 @@
 
 package org.monarchinitiative.squirls.core.scoring;
 
+import org.monarchinitiative.squirls.core.VariantOnTranscript;
+import org.monarchinitiative.squirls.core.classifier.SquirlsFeatures;
+
 /**
- * Implementors calculate a set of features for each {@link Annotatable}.
+ * Implementors calculate a set of features for each {@link VariantOnTranscript}.
  */
-public interface SplicingAnnotator {
+public interface SplicingAnnotator<T extends VariantOnTranscript, U extends SquirlsFeatures> {
 
     /**
      * Evaluate the <code>data</code> and annotate with the available features.
      *
-     * @return splicing pathogenicity data
+     * @return squirls features for given coordinates
      */
-    <T extends Annotatable> T annotate(T data);
+    U annotate(T data);
 
 }

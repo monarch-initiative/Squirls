@@ -106,7 +106,9 @@ public interface Prediction extends Comparable<Prediction> {
     /**
      * @return <code>true</code> if binary classifier considers this {@link Prediction} to be positive
      */
-    boolean isPositive();
+    default boolean isPositive() {
+        return getPartialPredictions().stream().anyMatch(PartialPrediction::isPathogenic);
+    }
 
     default boolean isEmpty() {
         return this.equals(emptyPrediction());

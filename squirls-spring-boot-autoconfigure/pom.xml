@@ -15,7 +15,7 @@
     <dependencies>
         <dependency>
             <groupId>org.monarchinitiative.squirls</groupId>
-            <artifactId>squirls-core</artifactId>
+            <artifactId>squirls-io</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
 

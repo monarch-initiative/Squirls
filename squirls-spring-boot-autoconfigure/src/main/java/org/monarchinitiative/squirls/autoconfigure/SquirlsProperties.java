@@ -153,7 +153,7 @@ public class SquirlsProperties {
     @ConfigurationProperties(prefix = "squirls.classifier")
     public static class ClassifierProperties {
 
-        private String version = "v0.4.4";
+        private String version = "v0.4.6";
 
         private int maxVariantLength = 100;
 

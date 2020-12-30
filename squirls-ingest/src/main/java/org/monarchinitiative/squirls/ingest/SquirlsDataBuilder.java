@@ -82,13 +82,6 @@ import de.charite.compbio.jannovar.data.ReferenceDictionary;
 import de.charite.compbio.jannovar.reference.TranscriptModel;
 import org.flywaydb.core.Flyway;
 import org.monarchinitiative.squirls.core.SquirlsException;
-import org.monarchinitiative.squirls.core.classifier.io.Deserializer;
-import org.monarchinitiative.squirls.core.classifier.io.OverallModelData;
-import org.monarchinitiative.squirls.core.classifier.io.PredictionTransformationParameters;
-import org.monarchinitiative.squirls.core.classifier.transform.prediction.PredictionTransformer;
-import org.monarchinitiative.squirls.core.classifier.transform.prediction.RegularLogisticRegression;
-import org.monarchinitiative.squirls.core.classifier.transform.prediction.SimpleLogisticRegression;
-import org.monarchinitiative.squirls.core.data.DbClassifierDataManager;
 import org.monarchinitiative.squirls.core.data.ic.InputStreamBasedPositionalWeightMatrixParser;
 import org.monarchinitiative.squirls.core.data.ic.SplicingPositionalWeightMatrixParser;
 import org.monarchinitiative.squirls.core.data.ic.SplicingPwmData;
@@ -105,19 +98,19 @@ import org.monarchinitiative.squirls.ingest.transcripts.JannovarDataManager;
 import org.monarchinitiative.squirls.ingest.transcripts.SplicingCalculator;
 import org.monarchinitiative.squirls.ingest.transcripts.SplicingCalculatorImpl;
 import org.monarchinitiative.squirls.ingest.transcripts.TranscriptsIngestRunner;
+import org.monarchinitiative.squirls.io.DbClassifierDataManager;
+import org.monarchinitiative.squirls.io.SquirlsClassifierVersion;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import xyz.ielis.hyperutil.reference.fasta.GenomeSequenceAccessor;
 import xyz.ielis.hyperutil.reference.fasta.GenomeSequenceAccessorBuilder;
 
 import javax.sql.DataSource;
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -226,37 +219,22 @@ public class SquirlsDataBuilder {
      * @param clfVersion classifier version
      * @param clfBytes   all data required to construct {@link org.monarchinitiative.squirls.core.VariantSplicingEvaluator}
      */
-    private static void processClassifier(DataSource dataSource, String clfVersion, byte[] clfBytes) {
-        final DbClassifierDataManager manager = new DbClassifierDataManager(dataSource);
-        final OverallModelData data = Deserializer.deserializeOverallModelData(new ByteArrayInputStream(clfBytes));
+    private static void processClassifier(DataSource dataSource, SquirlsClassifierVersion clfVersion, byte[] clfBytes) {
+        DbClassifierDataManager manager = new DbClassifierDataManager(dataSource);
+
 
         // squirls classifier
         LOGGER.info("Inserting classifier `{}`", clfVersion);
         int updated = manager.storeClassifier(clfVersion, clfBytes);
 
-        // prediction transformer
-        final PredictionTransformationParameters params = data.getLogisticRegressionParameters();
-        final PredictionTransformer transformer;
-        if (params.getSlope().get(0).size() < 2) {
-            // this must be simple logistic regression
-            double slope = params.getSlope().get(0).get(0);
-            double intercept = params.getInterceptScalar();
-            transformer = SimpleLogisticRegression.getInstance(slope, intercept);
-        } else {
-            // this is regular logistic regression
-            transformer = RegularLogisticRegression.getInstance(params.getDonorSlope(), params.getAcceptorSlope(), params.getInterceptScalar());
-        }
-
-        updated += manager.storeTransformer(clfVersion, transformer);
-
         LOGGER.info("Updated {} rows", updated);
     }
 
-    private static Map<String, byte[]> readClassifiers(Map<String, String> clfs) throws IOException {
-        final Map<String, byte[]> classifiers = new HashMap<>();
-        for (Map.Entry<String, String> entry : clfs.entrySet()) {
+    private static Map<SquirlsClassifierVersion, byte[]> readClassifiers(Map<SquirlsClassifierVersion, Path> clfs) throws IOException {
+        Map<SquirlsClassifierVersion, byte[]> classifiers = new HashMap<>();
+        for (Map.Entry<SquirlsClassifierVersion, Path> entry : clfs.entrySet()) {
             LOGGER.info("Reading classifier `{}` from `{}`", entry.getKey(), entry.getValue());
-            try (final InputStream is = Files.newInputStream(Paths.get(entry.getValue()))) {
+            try (InputStream is = Files.newInputStream(entry.getValue())) {
                 classifiers.put(entry.getKey(), is.readAllBytes());
             }
         }
@@ -275,7 +253,7 @@ public class SquirlsDataBuilder {
      */
     public static void buildDatabase(Path buildDir, URL genomeUrl, URL phylopUrl, Path jannovarDbDir, Path yamlPath,
                                      Path hexamerPath, Path septamerPath,
-                                     Map<String, String> classifiers,
+                                     Map<SquirlsClassifierVersion, Path> classifiers,
                                      String versionedAssembly) throws SquirlsException {
 
         // 0 - initiate download of reference genome FASTA file & PhyloP bigwig file
@@ -332,8 +310,8 @@ public class SquirlsDataBuilder {
         // 3e - store classifier
         try {
             LOGGER.info("Inserting classifiers");
-            final Map<String, byte[]> clfData = readClassifiers(classifiers);
-            for (Map.Entry<String, byte[]> entry : clfData.entrySet()) {
+            Map<SquirlsClassifierVersion, byte[]> clfData = readClassifiers(classifiers);
+            for (Map.Entry<SquirlsClassifierVersion, byte[]> entry : clfData.entrySet()) {
                 processClassifier(dataSource, entry.getKey(), entry.getValue());
             }
         } catch (IOException e) {

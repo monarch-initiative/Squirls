@@ -10,6 +10,7 @@
     <version>1.0.0-RC4-SNAPSHOT</version>
     <modules>
         <module>squirls-core</module>
+        <module>squirls-io</module>
         <module>squirls-ingest</module>
         <module>squirls-cli</module>
         <module>squirls-spring-boot-autoconfigure</module>

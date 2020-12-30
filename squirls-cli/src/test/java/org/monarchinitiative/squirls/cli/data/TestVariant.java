@@ -81,10 +81,10 @@ import de.charite.compbio.jannovar.reference.GenomeVariant;
 import htsjdk.variant.variantcontext.Allele;
 import htsjdk.variant.variantcontext.VariantContext;
 import org.monarchinitiative.squirls.cli.writers.WritableSplicingAllele;
-import org.monarchinitiative.squirls.core.SplicingPredictionData;
 import org.monarchinitiative.squirls.core.SquirlsResult;
+import org.monarchinitiative.squirls.core.VariantOnTranscript;
+import org.monarchinitiative.squirls.core.classifier.SquirlsFeatures;
 import org.monarchinitiative.squirls.core.model.SplicingTranscript;
-import org.monarchinitiative.squirls.core.scoring.Annotatable;
 import xyz.ielis.hyperutil.reference.fasta.SequenceInterval;
 
 import java.util.Map;
@@ -101,9 +101,9 @@ import java.util.Set;
  * {@link VariantAnnotations} object.
  * <p>
  * The second dictionary comes from SQUIRLS database and is used by all objects present within
- * {@link SplicingPredictionData}.
+ * {@link VariantOnTranscript}.
  */
-class TestVariant implements WritableSplicingAllele, Annotatable {
+class TestVariant implements WritableSplicingAllele, SquirlsFeatures, VariantOnTranscript {
 
     /**
      * The base variant context that is being analyzed.
@@ -229,10 +229,5 @@ class TestVariant implements WritableSplicingAllele, Annotatable {
     @Override
     public <T> T getFeature(String featureName, Class<T> clz) {
         return clz.cast(features.get(featureName));
-    }
-
-    @Override
-    public void putFeature(String name, Object value) {
-        features.put(name, value);
     }
 }

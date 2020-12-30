@@ -77,16 +77,20 @@
 package org.monarchinitiative.squirls.core.scoring;
 
 import de.charite.compbio.jannovar.reference.GenomeVariant;
+import org.monarchinitiative.squirls.core.VariantOnTranscript;
+import org.monarchinitiative.squirls.core.classifier.SquirlsFeatures;
+import org.monarchinitiative.squirls.core.classifier.SquirlsFeaturesDefault;
 import org.monarchinitiative.squirls.core.model.SplicingTranscript;
 import org.monarchinitiative.squirls.core.reference.SplicingLocationData;
 import org.monarchinitiative.squirls.core.reference.transcript.SplicingTranscriptLocator;
 import org.monarchinitiative.squirls.core.scoring.calculators.FeatureCalculator;
 import xyz.ielis.hyperutil.reference.fasta.SequenceInterval;
 
+import java.util.HashMap;
 import java.util.Map;
 
 
-abstract class AbstractSplicingAnnotator implements SplicingAnnotator {
+abstract class AbstractSplicingAnnotator implements SplicingAnnotator<VariantOnTranscript, SquirlsFeatures> {
 
     private final SplicingTranscriptLocator locator;
     private final Map<String, FeatureCalculator> calculatorMap;
@@ -97,7 +101,7 @@ abstract class AbstractSplicingAnnotator implements SplicingAnnotator {
     }
 
     @Override
-    public <T extends Annotatable> T annotate(T data) {
+    public SquirlsFeatures annotate(VariantOnTranscript data) {
         final GenomeVariant variant = data.getVariant();
         final SplicingTranscript transcript = data.getTranscript();
         final SequenceInterval sequence = data.getSequence();
@@ -105,9 +109,11 @@ abstract class AbstractSplicingAnnotator implements SplicingAnnotator {
         final SplicingLocationData locationData = locator.locate(variant, transcript);
         final GenomeVariant variantOnStrand = variant.withStrand(transcript.getStrand());
 
-        // calculate the features
-        calculatorMap.forEach((name, calculator) -> data.putFeature(name, calculator.score(variantOnStrand, transcript, sequence)));
+        Map<String, Object> features = new HashMap<>(calculatorMap.size());
+        for (String feature : calculatorMap.keySet()) {
+            features.put(feature, calculatorMap.get(feature).score(variantOnStrand, transcript, sequence));
+        }
 
-        return data;
+        return SquirlsFeaturesDefault.of(features);
     }
 }

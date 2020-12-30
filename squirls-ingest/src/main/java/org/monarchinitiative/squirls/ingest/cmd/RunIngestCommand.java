@@ -83,6 +83,7 @@ import org.monarchinitiative.squirls.core.SquirlsException;
 import org.monarchinitiative.squirls.ingest.IngestProperties;
 import org.monarchinitiative.squirls.ingest.SquirlsDataBuilder;
 import org.monarchinitiative.squirls.ingest.data.ZipCompressionWrapper;
+import org.monarchinitiative.squirls.io.SquirlsClassifierVersion;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -178,8 +179,10 @@ public class RunIngestCommand extends IngestCommand {
         LOGGER.info("Building resources in `{}`", versionedAssemblyBuildPath);
 
         // 2 - read classifier data
-        Map<String, String> classifiers = ingestProperties.getClassifiers().stream()
-                .collect(Collectors.toMap(IngestProperties.ClassifierData::getVersion, IngestProperties.ClassifierData::getClassifierPath));
+        Map<SquirlsClassifierVersion, Path> classifiers = ingestProperties.getClassifiers().stream()
+                .collect(Collectors.toMap(
+                        clfData -> SquirlsClassifierVersion.parseString(clfData.getVersion()),
+                        clfData -> Paths.get(clfData.getClassifierPath())));
 
         // 3 - build database
         SquirlsDataBuilder.buildDatabase(genomeBuildDir, genomeUrl, phylopUrl,

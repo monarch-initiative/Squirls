@@ -82,13 +82,11 @@ import com.zaxxer.hikari.HikariDataSource;
 import org.monarchinitiative.squirls.autoconfigure.exception.InvalidSquirlsResourceException;
 import org.monarchinitiative.squirls.autoconfigure.exception.MissingSquirlsResourceException;
 import org.monarchinitiative.squirls.autoconfigure.exception.UndefinedSquirlsResourceException;
+import org.monarchinitiative.squirls.core.VariantOnTranscript;
 import org.monarchinitiative.squirls.core.VariantSplicingEvaluator;
 import org.monarchinitiative.squirls.core.VariantSplicingEvaluatorDefault;
 import org.monarchinitiative.squirls.core.classifier.SquirlsClassifier;
-import org.monarchinitiative.squirls.core.classifier.transform.prediction.IdentityTransformer;
-import org.monarchinitiative.squirls.core.classifier.transform.prediction.PredictionTransformer;
-import org.monarchinitiative.squirls.core.data.ClassifierDataManager;
-import org.monarchinitiative.squirls.core.data.DbClassifierDataManager;
+import org.monarchinitiative.squirls.core.classifier.SquirlsFeatures;
 import org.monarchinitiative.squirls.core.data.DbSplicingTranscriptSource;
 import org.monarchinitiative.squirls.core.data.SplicingTranscriptSource;
 import org.monarchinitiative.squirls.core.data.ic.CorruptedPwmException;
@@ -99,6 +97,9 @@ import org.monarchinitiative.squirls.core.scoring.AGEZSplicingAnnotator;
 import org.monarchinitiative.squirls.core.scoring.DenseSplicingAnnotator;
 import org.monarchinitiative.squirls.core.scoring.SplicingAnnotator;
 import org.monarchinitiative.squirls.core.scoring.calculators.conservation.BigWigAccessor;
+import org.monarchinitiative.squirls.io.ClassifierDataManager;
+import org.monarchinitiative.squirls.io.DbClassifierDataManager;
+import org.monarchinitiative.squirls.io.SquirlsClassifierVersion;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -116,6 +117,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collection;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -202,16 +204,21 @@ public class SquirlsAutoConfiguration {
     public VariantSplicingEvaluator variantSplicingEvaluator(SquirlsProperties properties,
                                                              GenomeSequenceAccessor genomeSequenceAccessor,
                                                              SplicingTranscriptSource splicingTranscriptSource,
-                                                             SplicingAnnotator splicingAnnotator,
+                                                             SplicingAnnotator<VariantOnTranscript, SquirlsFeatures> splicingAnnotator,
                                                              ClassifierDataManager classifierDataManager) throws InvalidSquirlsResourceException, UndefinedSquirlsResourceException {
         final SquirlsProperties.ClassifierProperties classifierProperties = properties.getClassifier();
 
-        final String clfVersion = classifierProperties.getVersion();
-        final Collection<String> avail = classifierDataManager.getAvailableClassifiers();
+        SquirlsClassifierVersion clfVersion;
+        try {
+            clfVersion = SquirlsClassifierVersion.parseString(classifierProperties.getVersion());
+        } catch (IllegalArgumentException e) {
+            throw new UndefinedSquirlsResourceException(e.getMessage(), e);
+        }
+        Collection<SquirlsClassifierVersion> avail = classifierDataManager.getAvailableClassifiers();
         if (!avail.contains(clfVersion)) {
-            String msg = String.format("Classifier version `%s` is not available, choose one from `%s`",
+            String msg = String.format("Classifier version `%s` is not available, choose one from %s",
                     clfVersion,
-                    avail.stream().sorted().collect(Collectors.joining(", ", "[ ", " ]")));
+                    avail.stream().map(Objects::toString).sorted().collect(Collectors.joining(", ", "{", "}")));
             LOGGER.error(msg);
             throw new UndefinedSquirlsResourceException(msg);
         }
@@ -227,23 +234,12 @@ public class SquirlsAutoConfiguration {
             throw new InvalidSquirlsResourceException(msg);
         }
 
-        // get transformer
-        final Optional<PredictionTransformer> transOpt = classifierDataManager.readTransformer(clfVersion);
-        final PredictionTransformer transformer;
-        if (transOpt.isPresent()) {
-            transformer = transOpt.get();
-        } else {
-            LOGGER.warn("Transformer for classifier `{}` is not available. Using identity transformer", clfVersion);
-            transformer = IdentityTransformer.getInstance();
-        }
-
         // make variant evaluator
         return VariantSplicingEvaluatorDefault.builder()
                 .accessor(genomeSequenceAccessor)
                 .txSource(splicingTranscriptSource)
                 .annotator(splicingAnnotator)
                 .classifier(clf)
-                .transformer(transformer)
                 .maxVariantLength(classifierProperties.getMaxVariantLength())
                 .build();
     }
@@ -254,10 +250,10 @@ public class SquirlsAutoConfiguration {
     }
 
     @Bean
-    public SplicingAnnotator splicingAnnotator(SquirlsProperties properties,
-                                               SplicingPwmData splicingPwmData,
-                                               DbKMerDao dbKMerDao,
-                                               BigWigAccessor phylopBigwigAccessor) throws UndefinedSquirlsResourceException {
+    public SplicingAnnotator<VariantOnTranscript, SquirlsFeatures> splicingAnnotator(SquirlsProperties properties,
+                                                                                     SplicingPwmData splicingPwmData,
+                                                                                     DbKMerDao dbKMerDao,
+                                                                                     BigWigAccessor phylopBigwigAccessor) throws UndefinedSquirlsResourceException {
         final SquirlsProperties.AnnotatorProperties annotatorProperties = properties.getAnnotator();
         final String version = annotatorProperties.getVersion();
         LOGGER.debug("Using `{}` splicing annotator", version);

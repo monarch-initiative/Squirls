@@ -90,6 +90,7 @@ import org.monarchinitiative.squirls.core.data.ic.InputStreamBasedPositionalWeig
 import org.monarchinitiative.squirls.core.data.ic.SplicingPositionalWeightMatrixParser;
 import org.monarchinitiative.squirls.core.data.ic.SplicingPwmData;
 import org.monarchinitiative.squirls.core.scoring.calculators.ic.SplicingInformationContentCalculator;
+import org.monarchinitiative.squirls.io.SquirlsClassifierVersion;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -110,9 +111,9 @@ import java.util.Map;
 @Configuration
 public class TestDataSourceConfig {
 
-    public static final Map<String, String> MODEL_PATHS = Map.of(
-            "v0.4.4", FakeUpDatabase.class.getResource("example_model.v0.4.4.yaml").getPath(),
-            "v1.1", FakeUpDatabase.class.getResource("example_model.v1.1.sklearn-0.23.1-slope-intercept-array.yaml").getPath());
+    public static final Map<SquirlsClassifierVersion, Path> MODEL_PATHS = Map.of(
+            SquirlsClassifierVersion.v0_4_4, Paths.get("src/test/resources/org/monarchinitiative/squirls/ingest/example_model.v0.4.4.yaml"),
+            SquirlsClassifierVersion.v0_4_6, Paths.get("src/test/resources/org/monarchinitiative/squirls/ingest/ensemble.lr.rf.v0.4.6.yaml"));
 
     @Bean
     public SplicingPwmData splicingPwmData() {
@@ -133,7 +134,6 @@ public class TestDataSourceConfig {
      */
     @Bean
     public DataSource dataSource() {
-//        String jdbcUrl = "jdbc:h2:mem:splicing;INIT=CREATE SCHEMA IF NOT EXISTS SPLICING";
         String jdbcUrl = "jdbc:h2:mem:splicing";
         final HikariConfig config = new HikariConfig();
         config.setUsername("sa");

@@ -84,7 +84,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
-public abstract class AbstractBinaryClassifier<T extends Classifiable> implements BinaryClassifier<T> {
+public abstract class AbstractBinaryClassifier<T extends SquirlsFeatures> implements BinaryClassifier<T> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractBinaryClassifier.class);
 

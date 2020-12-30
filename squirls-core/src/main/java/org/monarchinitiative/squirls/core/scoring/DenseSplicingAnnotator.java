@@ -76,6 +76,7 @@
 
 package org.monarchinitiative.squirls.core.scoring;
 
+import org.monarchinitiative.squirls.core.VariantOnTranscript;
 import org.monarchinitiative.squirls.core.data.ic.SplicingPwmData;
 import org.monarchinitiative.squirls.core.reference.allele.AlleleGenerator;
 import org.monarchinitiative.squirls.core.reference.transcript.SplicingTranscriptLocator;
@@ -87,7 +88,7 @@ import org.monarchinitiative.squirls.core.scoring.calculators.ic.SplicingInforma
 import java.util.Map;
 
 /**
- * This annotator calculates the following splicing features for each {@link Annotatable}:
+ * This annotator calculates the following splicing features for each {@link VariantOnTranscript}:
  * <ul>
  *     <li><code>canonical_donor</code></li>
  *     <li><code>cryptic_donor</code></li>
