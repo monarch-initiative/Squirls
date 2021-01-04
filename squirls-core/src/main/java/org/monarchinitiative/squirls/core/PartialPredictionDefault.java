@@ -74,9 +74,7 @@
  * Daniel Danis, Peter N Robinson, 2020
  */
 
-package org.monarchinitiative.squirls.io.predictions;
-
-import org.monarchinitiative.squirls.core.PartialPrediction;
+package org.monarchinitiative.squirls.core;
 
 import java.util.Objects;
 
@@ -84,8 +82,7 @@ import java.util.Objects;
  * This class represents a fragment of information from the decision function, a single prediction of an ensemble
  * which calculated pathogenicity probability.
  */
-// TODO - move to core as a default implementation
-public class PartialPredictionDefault implements PartialPrediction {
+class PartialPredictionDefault implements PartialPrediction {
 
     private final String name;
     private final double pathoProba;
@@ -97,7 +94,7 @@ public class PartialPredictionDefault implements PartialPrediction {
         this.threshold = threshold;
     }
 
-    public static PartialPredictionDefault of(String name, double pathoProba, double threshold) {
+    static PartialPredictionDefault of(String name, double pathoProba, double threshold) {
         return new PartialPredictionDefault(name, pathoProba, threshold);
     }
 

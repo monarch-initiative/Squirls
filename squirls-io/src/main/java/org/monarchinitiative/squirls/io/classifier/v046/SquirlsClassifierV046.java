@@ -5,7 +5,6 @@ import org.monarchinitiative.squirls.core.classifier.BinaryClassifier;
 import org.monarchinitiative.squirls.core.classifier.PredictionException;
 import org.monarchinitiative.squirls.core.classifier.SquirlsClassifier;
 import org.monarchinitiative.squirls.core.classifier.SquirlsFeatures;
-import org.monarchinitiative.squirls.io.predictions.PredictionDefault;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -107,7 +106,7 @@ class SquirlsClassifierV046 implements SquirlsClassifier {
 
                 double pathogenicity = 1 / (1 + Math.exp(-dotSum));
 
-                return PredictionDefault.of("standard_scaler__logistic_regression", pathogenicity, threshold);
+                return Prediction.of("standard_scaler__logistic_regression", pathogenicity, threshold);
             } catch (PredictionException e) {
                 LOGGER.debug("Error: ", e);
                 return Prediction.emptyPrediction();

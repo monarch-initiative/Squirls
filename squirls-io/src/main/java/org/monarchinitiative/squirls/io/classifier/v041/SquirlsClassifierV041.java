@@ -76,13 +76,12 @@
 
 package org.monarchinitiative.squirls.io.classifier.v041;
 
+import org.monarchinitiative.squirls.core.PartialPrediction;
 import org.monarchinitiative.squirls.core.Prediction;
 import org.monarchinitiative.squirls.core.classifier.BinaryClassifier;
 import org.monarchinitiative.squirls.core.classifier.PredictionException;
 import org.monarchinitiative.squirls.core.classifier.SquirlsClassifier;
 import org.monarchinitiative.squirls.core.classifier.SquirlsFeatures;
-import org.monarchinitiative.squirls.io.predictions.PartialPredictionDefault;
-import org.monarchinitiative.squirls.io.predictions.PredictionDefault;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -159,7 +158,7 @@ class SquirlsClassifierV041 implements SquirlsClassifier {
     }
 
     private Prediction transform(double donor, double acceptor) {
-        return PredictionDefault.of(PartialPredictionDefault.of(PREDICTOR_NAME, logistic(donor, acceptor), threshold));
+        return Prediction.of(PartialPrediction.of(PREDICTOR_NAME, logistic(donor, acceptor), threshold));
     }
 
     private double logistic(double donor, double acceptor) {

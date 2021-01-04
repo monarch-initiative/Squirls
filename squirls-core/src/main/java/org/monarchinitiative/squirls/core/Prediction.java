@@ -78,6 +78,7 @@ package org.monarchinitiative.squirls.core;
 
 import org.apiguardian.api.API;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
 
@@ -90,6 +91,18 @@ public interface Prediction extends Comparable<Prediction> {
 
     Comparator<Prediction> PREDICTION_COMPARATOR = Comparator.comparing(Prediction::getMaxPathogenicity)
             .thenComparing(Prediction::isPositive);
+
+    static Prediction of(String name, double value, double threshold) {
+        return of(PartialPrediction.of(name, value, threshold));
+    }
+
+    static Prediction of(PartialPrediction... partials) {
+        return of(Arrays.asList(partials));
+    }
+
+    static Prediction of(Collection<PartialPrediction> partials) {
+        return PredictionDefault.of(partials);
+    }
 
     static Prediction emptyPrediction() {
         return PredictionEmpty.getInstance();

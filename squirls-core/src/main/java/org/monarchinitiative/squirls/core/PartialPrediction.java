@@ -80,8 +80,11 @@ import org.apiguardian.api.API;
 import org.monarchinitiative.squirls.core.classifier.Named;
 
 @API(status = API.Status.STABLE, since = "1.0.0")
-// TODO - consider removing partial prediction altogether
 public interface PartialPrediction extends Named {
+
+    static PartialPrediction of(String name, double score, double threshold) {
+        return PartialPredictionDefault.of(name, score, threshold);
+    }
 
     double getThreshold();
 

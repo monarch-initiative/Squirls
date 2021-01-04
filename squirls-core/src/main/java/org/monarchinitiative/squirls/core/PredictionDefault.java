@@ -74,34 +74,26 @@
  * Daniel Danis, Peter N Robinson, 2020
  */
 
-package org.monarchinitiative.squirls.io.predictions;
-
-import org.monarchinitiative.squirls.core.PartialPrediction;
-import org.monarchinitiative.squirls.core.Prediction;
+package org.monarchinitiative.squirls.core;
 
 import java.util.Collection;
 import java.util.Objects;
 import java.util.Set;
 
-// TODO - move to core as a default implementation
-public class PredictionDefault implements Prediction {
+class PredictionDefault implements Prediction {
 
     /**
      * List of pairs of prediction & thresholds.
      */
     protected final Set<PartialPrediction> partialPredictions;
 
-    private PredictionDefault(Set<PartialPrediction> partialPredictions) {
-        this.partialPredictions = partialPredictions;
+    private PredictionDefault(Collection<PartialPrediction> partialPredictions) {
+        this.partialPredictions = Set.copyOf(partialPredictions);
     }
 
 
-    public static PredictionDefault of(PartialPrediction... partialPrediction) {
-        return new PredictionDefault(Set.of(partialPrediction));
-    }
-
-    public static PredictionDefault of(String name, double value, double threshold) {
-        return of(PartialPredictionDefault.of(name, value, threshold));
+    static PredictionDefault of(Collection<PartialPrediction> partials) {
+        return new PredictionDefault(partials);
     }
 
     @Override
