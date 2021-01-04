@@ -78,15 +78,19 @@ package org.monarchinitiative.squirls.core.reference;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.monarchinitiative.squirls.core.PojosForTesting;
 import org.monarchinitiative.squirls.core.TestDataSourceConfig;
 import org.monarchinitiative.variant.api.*;
 import org.springframework.boot.test.context.SpringBootTest;
 
+import java.util.Optional;
+
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 
-// TODO - parametrize
 @SpringBootTest(classes = {TestDataSourceConfig.class})
 public class TranscriptModelLocatorNaiveTest {
 
@@ -126,229 +130,68 @@ public class TranscriptModelLocatorNaiveTest {
         assertThat(data, is(SplicingLocationData.outside()));
     }
 
+    @ParameterizedTest
+    @CsvSource({
+            " 999,     OUTSIDE,  -1, -1, false,   -1,   -1, false,    -1,   -1",
+            "1000,        EXON,   0, -1,  true, 1197, 1206, false,    -1,   -1",
+            "1196,        EXON,   0, -1,  true, 1197, 1206, false,    -1,   -1",
+            "1197,       DONOR,   0,  0,  true, 1197, 1206, false,    -1,   -1",
+            "1205,       DONOR,   0,  0,  true, 1197, 1206, false,    -1,   -1",
+            "1206,      INTRON,  -1,  0,  true, 1197, 1206,  true,  1375, 1402",
+            "1374,      INTRON,  -1,  0,  true, 1197, 1206,  true,  1375, 1402",
+            "1375,    ACCEPTOR,   1,  0,  true, 1597, 1606,  true,  1375, 1402",
+            "1401,    ACCEPTOR,   1,  0,  true, 1597, 1606,  true,  1375, 1402",
+            "1402,        EXON,   1, -1,  true, 1597, 1606,  true,  1375, 1402",
+            "1596,        EXON,   1, -1,  true, 1597, 1606,  true,  1375, 1402",
+            "1597,       DONOR,   1,  1,  true, 1597, 1606,  true,  1375, 1402",
+            "1605,       DONOR,   1,  1,  true, 1597, 1606,  true,  1375, 1402",
+            "1606,      INTRON,  -1,  1,  true, 1597, 1606,  true,  1775, 1802",
+            "1774,      INTRON,  -1,  1,  true, 1597, 1606,  true,  1775, 1802",
+            "1775,    ACCEPTOR,   2,  1, false,   -1,   -1,  true,  1775, 1802",
+            "1801,    ACCEPTOR,   2,  1, false,   -1,   -1,  true,  1775, 1802",
+            "1802,        EXON,   2, -1, false,   -1,   -1,  true,  1775, 1802",
+            "1999,        EXON,   2, -1, false,   -1,   -1,  true,  1775, 1802",
+            "2000,     OUTSIDE,  -1, -1, false,   -1,   -1,  false,   -1,   -1",
+    })
+    public void threeExonTranscript(int pos,
+                                    SplicingLocationData.SplicingPosition position, int exonIdx, int intronIdx,
+                                    boolean donorIsPresent, int donorStart, int donorEnd,
+                                    boolean acceptorIsPresent, int acceptorStart, int acceptorEnd) {
+        SplicingLocationData data = locator.locate(makeSnpRegion(pos), fwdTranscript);
+        assertThat(data.getPosition(), is(position));
+        assertThat(data.getExonIdx(), is(exonIdx));
+        assertThat(data.getIntronIdx(), is(intronIdx));
 
-    @Test
-    public void oneBaseBeforeCds() {
-        SplicingLocationData data = locator.locate(makeSnpRegion(999), fwdTranscript);
-        assertThat(data, is(SplicingLocationData.outside()));
+        Optional<GenomicRegion> dr = data.getDonorRegion();
+        assertThat(dr.isPresent(), equalTo(donorIsPresent));
+        if (donorIsPresent) {
+            assertThat(dr.get().start(), equalTo(donorStart));
+            assertThat(dr.get().end(), equalTo(donorEnd));
+        }
+
+        Optional<GenomicRegion> ar = data.getAcceptorRegion();
+        assertThat(ar.isPresent(), equalTo(acceptorIsPresent));
+        if (acceptorIsPresent) {
+            assertThat(ar.get().start(), equalTo(acceptorStart));
+            assertThat(ar.get().end(), equalTo(acceptorEnd));
+        }
     }
 
-
-    @Test
-    public void firstBaseOfCds() {
-        SplicingLocationData data = locator.locate(makeSnpRegion(1000), fwdTranscript);
-        assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.EXON));
-        assertThat(data.getExonIdx(), is(0));
-        assertThat(data.getIntronIdx(), is(-1));
-        assertThat(data.getDonorRegion().get(), is(makeInterval(1197, 1206)));
-        assertThat(data.getAcceptorRegion().isEmpty(), is(true));
-    }
-
-
-    @Test
-    public void oneBaseBeforeFirstDonor() {
-        SplicingLocationData data = locator.locate(makeSnpRegion(1196), fwdTranscript);
-        assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.EXON));
-        assertThat(data.getExonIdx(), is(0));
-        assertThat(data.getIntronIdx(), is(-1));
-        assertThat(data.getDonorRegion().get(), is(makeInterval(1197, 1206)));
-        assertThat(data.getAcceptorRegion().isEmpty(), is(true));
-    }
-
-    @Test
-    public void firstBaseOfFirstDonor() {
-        SplicingLocationData data = locator.locate(makeSnpRegion(1197), fwdTranscript);
-        assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.DONOR));
-        assertThat(data.getIntronIdx(), is(0));
-        assertThat(data.getExonIdx(), is(0));
-        assertThat(data.getDonorRegion().get(), is(makeInterval(1197, 1206)));
-        assertThat(data.getAcceptorRegion().isEmpty(), is(true));
-    }
-
-    @Test
-    public void lastBaseOfFirstDonor() {
-        SplicingLocationData data = locator.locate(makeSnpRegion(1205), fwdTranscript);
-        assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.DONOR));
-        assertThat(data.getIntronIdx(), is(0));
-        assertThat(data.getExonIdx(), is(0));
-        assertThat(data.getDonorRegion().get(), is(makeInterval(1197, 1206)));
-        assertThat(data.getAcceptorRegion().isEmpty(), is(true));
-    }
-
-
-    @Test
-    public void firstBaseAfterFirstDonor() {
-        SplicingLocationData data = locator.locate(makeSnpRegion(1206), fwdTranscript);
-        assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.INTRON));
-        assertThat(data.getIntronIdx(), is(0));
-        assertThat(data.getExonIdx(), is(-1));
-        assertThat(data.getDonorRegion().get(), is(makeInterval(1197, 1206)));
-        assertThat(data.getAcceptorRegion().get(), is(makeInterval(1375, 1402)));
-    }
-
-    @Test
-    public void oneBaseBeforeFirstAcceptor() {
-        SplicingLocationData data = locator.locate(makeSnpRegion(1374), fwdTranscript);
-        assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.INTRON));
-        assertThat(data.getIntronIdx(), is(0));
-        assertThat(data.getExonIdx(), is(-1));
-        assertThat(data.getDonorRegion().get(), is(makeInterval(1197, 1206)));
-        assertThat(data.getAcceptorRegion().get(), is(makeInterval(1375, 1402)));
-    }
-
-    @Test
-    public void firstBaseOfFirstAcceptor() {
-        SplicingLocationData data = locator.locate(makeSnpRegion(1375), fwdTranscript);
-        assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.ACCEPTOR));
-        assertThat(data.getIntronIdx(), is(0));
-        assertThat(data.getExonIdx(), is(1));
-        assertThat(data.getDonorRegion().get(), is(makeInterval(1597, 1606)));
-        assertThat(data.getAcceptorRegion().get(), is(makeInterval(1375, 1402)));
-    }
-
-
-    @Test
-    public void lastBaseOfFirstAcceptor() {
-        SplicingLocationData data = locator.locate(makeSnpRegion(1401), fwdTranscript);
-        assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.ACCEPTOR));
-        assertThat(data.getIntronIdx(), is(0));
-        assertThat(data.getExonIdx(), is(1));
-        assertThat(data.getDonorRegion().get(), is(makeInterval(1597, 1606)));
-        assertThat(data.getAcceptorRegion().get(), is(makeInterval(1375, 1402)));
-    }
-
-    @Test
-    public void oneBaseAfterFirstAcceptor() {
-        SplicingLocationData data = locator.locate(makeSnpRegion(1402), fwdTranscript);
-        assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.EXON));
-        assertThat(data.getExonIdx(), is(1));
-        assertThat(data.getIntronIdx(), is(-1));
-        assertThat(data.getDonorRegion().get(), is(makeInterval(1597, 1606)));
-        assertThat(data.getAcceptorRegion().get(), is(makeInterval(1375, 1402)));
-    }
-
-    @Test
-    public void oneBaseBeforeSecondDonor() {
-        SplicingLocationData data = locator.locate(makeSnpRegion(1596), fwdTranscript);
-        assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.EXON));
-        assertThat(data.getExonIdx(), is(1));
-        assertThat(data.getIntronIdx(), is(-1));
-        assertThat(data.getDonorRegion().get(), is(makeInterval(1597, 1606)));
-        assertThat(data.getAcceptorRegion().get(), is(makeInterval(1375, 1402)));
-    }
-
-    @Test
-    public void firstBaseOfSecondDonor() {
-        SplicingLocationData data = locator.locate(makeSnpRegion(1597), fwdTranscript);
-        assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.DONOR));
-        assertThat(data.getIntronIdx(), is(1));
-        assertThat(data.getExonIdx(), is(1));
-        assertThat(data.getDonorRegion().get(), is(makeInterval(1597, 1606)));
-        assertThat(data.getAcceptorRegion().get(), is(makeInterval(1375, 1402)));
-    }
-
-    @Test
-    public void lastBaseOfSecondDonor() {
-        SplicingLocationData data = locator.locate(makeSnpRegion(1605), fwdTranscript);
-        assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.DONOR));
-        assertThat(data.getExonIdx(), is(1));
-        assertThat(data.getIntronIdx(), is(1));
-        assertThat(data.getDonorRegion().get(), is(makeInterval(1597, 1606)));
-        assertThat(data.getAcceptorRegion().get(), is(makeInterval(1375, 1402)));
-    }
-
-    @Test
-    public void oneBaseAfterSecondDonor() {
-        SplicingLocationData data = locator.locate(makeSnpRegion(1606), fwdTranscript);
-        assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.INTRON));
-        assertThat(data.getIntronIdx(), is(1));
-        assertThat(data.getExonIdx(), is(-1));
-        assertThat(data.getDonorRegion().get(), is(makeInterval(1597, 1606)));
-        assertThat(data.getAcceptorRegion().get(), is(makeInterval(1775, 1802)));
-    }
-
-
-    @Test
-    public void oneBaseBeforeSecondAcceptor() {
-        SplicingLocationData data = locator.locate(makeSnpRegion(1774), fwdTranscript);
-        assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.INTRON));
-        assertThat(data.getIntronIdx(), is(1));
-        assertThat(data.getExonIdx(), is(-1));
-        assertThat(data.getDonorRegion().get(), is(makeInterval(1597, 1606)));
-        assertThat(data.getAcceptorRegion().get(), is(makeInterval(1775, 1802)));
-    }
-
-
-    @Test
-    public void firstBaseOfSecondAcceptor() {
-        SplicingLocationData data = locator.locate(makeSnpRegion(1775), fwdTranscript);
-        assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.ACCEPTOR));
-        assertThat(data.getIntronIdx(), is(1));
-        assertThat(data.getExonIdx(), is(2));
-        assertThat(data.getDonorRegion().isEmpty(), is(true));
-        assertThat(data.getAcceptorRegion().get(), is(makeInterval(1775, 1802)));
-    }
-
-    @Test
-    public void lastBaseOfSecondAcceptor() {
-        SplicingLocationData data = locator.locate(makeSnpRegion(1801), fwdTranscript);
-        assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.ACCEPTOR));
-        assertThat(data.getIntronIdx(), is(1));
-        assertThat(data.getExonIdx(), is(2));
-        assertThat(data.getDonorRegion().isEmpty(), is(true));
-        assertThat(data.getAcceptorRegion().get(), is(makeInterval(1775, 1802)));
-    }
-
-
-    @Test
-    public void oneBaseAfterSecondAcceptor() {
-        SplicingLocationData data = locator.locate(makeSnpRegion(1802), fwdTranscript);
-        assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.EXON));
-        assertThat(data.getIntronIdx(), is(-1));
-        assertThat(data.getExonIdx(), is(2));
-        assertThat(data.getDonorRegion().isEmpty(), is(true));
-        assertThat(data.getAcceptorRegion().get(), is(makeInterval(1775, 1802)));
-    }
-
-
-    @Test
-    public void lastBaseOfCds() {
-        SplicingLocationData data = locator.locate(makeSnpRegion(1999), fwdTranscript);
-        assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.EXON));
-        assertThat(data.getIntronIdx(), is(-1));
-        assertThat(data.getExonIdx(), is(2));
-        assertThat(data.getDonorRegion().isEmpty(), is(true));
-        assertThat(data.getAcceptorRegion().get(), is(makeInterval(1775, 1802)));
-    }
-
-    @Test
-    public void oneBaseAfterCds() {
-        SplicingLocationData data = locator.locate(makeSnpRegion(2000), fwdTranscript);
-        assertThat(data, is(SplicingLocationData.outside()));
-    }
-
-    @Test
-    public void firstBaseOfSingleExonTranscript() {
+    @ParameterizedTest
+    @CsvSource({
+            "1000,    EXON, 0, -1, false, false",
+            "1999,    EXON, 0, -1, false, false"})
+    public void firstBaseOfSingleExonTranscript(int pos,
+                                                SplicingLocationData.SplicingPosition position,
+                                                int exonIdx, int intronIdx,
+                                                boolean donorIsPresent, boolean acceptorIsPresent) {
         TranscriptModel se = PojosForTesting.getTranscriptWithSingleExon(contig);
-        SplicingLocationData data = locator.locate(makeSnpRegion(1000), se);
-        assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.EXON));
-        assertThat(data.getExonIdx(), is(0));
-        assertThat(data.getIntronIdx(), is(-1));
-        assertThat(data.getDonorRegion().isEmpty(), is(true));
-        assertThat(data.getAcceptorRegion().isEmpty(), is(true));
+        SplicingLocationData data = locator.locate(makeSnpRegion(pos), se);
+
+        assertThat(data.getPosition(), equalTo(position));
+        assertThat(data.getExonIdx(), equalTo(exonIdx));
+        assertThat(data.getIntronIdx(), equalTo(intronIdx));
+        assertThat(data.getDonorRegion().isPresent(), is(donorIsPresent));
+        assertThat(data.getAcceptorRegion().isPresent(), is(acceptorIsPresent));
     }
-
-
-    @Test
-    public void lastBaseOfSingleExonTranscript() {
-        TranscriptModel se = PojosForTesting.getTranscriptWithSingleExon(contig);
-
-        SplicingLocationData data = locator.locate(makeSnpRegion(1999), se);
-        assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.EXON));
-        assertThat(data.getExonIdx(), is(0));
-        assertThat(data.getIntronIdx(), is(-1));
-        assertThat(data.getDonorRegion().isEmpty(), is(true));
-        assertThat(data.getAcceptorRegion().isEmpty(), is(true));
-    }
-
 }
