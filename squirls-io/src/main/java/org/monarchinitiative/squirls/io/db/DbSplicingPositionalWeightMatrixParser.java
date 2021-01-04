@@ -141,7 +141,7 @@ public class DbSplicingPositionalWeightMatrixParser implements SplicingPositiona
     }
 
     private static SplicingParameters parseSplicingParameters(DataSource dataSource) throws CorruptedPwmException {
-        SplicingParameters.Builder builder = SplicingParameters.builder();
+        int donorExonic = -1, donorIntronic = -1, acceptorExonic = -1, acceptorIntronic = -1;
         String sql = "SELECT PWM_NAME, PWM_KEY, PWM_VALUE FROM SQUIRLS.PWM_METADATA";
         try (Connection connection = dataSource.getConnection();
              PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -155,10 +155,10 @@ public class DbSplicingPositionalWeightMatrixParser implements SplicingPositiona
                     case "SPLICE_DONOR_SITE":
                         switch (key) {
                             case "EXON":
-                                builder.setDonorExonic(Integer.parseInt(value));
+                                donorExonic = Integer.parseInt(value);
                                 break outer;
                             case "INTRON":
-                                builder.setDonorIntronic(Integer.parseInt(value));
+                                donorIntronic = Integer.parseInt(value);
                                 break outer;
                             default:
                                 throw new CorruptedPwmException(String.format("Unknown key - %s", key));
@@ -166,10 +166,10 @@ public class DbSplicingPositionalWeightMatrixParser implements SplicingPositiona
                     case "SPLICE_ACCEPTOR_SITE":
                         switch (key) {
                             case "EXON":
-                                builder.setAcceptorExonic(Integer.parseInt(value));
+                                acceptorExonic = Integer.parseInt(value);
                                 break outer;
                             case "INTRON":
-                                builder.setAcceptorIntronic(Integer.parseInt(value));
+                                acceptorIntronic = Integer.parseInt(value);
                                 break outer;
                             default:
                                 throw new CorruptedPwmException(String.format("Unknown key - %s", key));
@@ -178,11 +178,15 @@ public class DbSplicingPositionalWeightMatrixParser implements SplicingPositiona
                         throw new CorruptedPwmException(String.format("Unknown name - %s", name));
                 }
             }
-
         } catch (SQLException e) {
             throw new CorruptedPwmException(e);
         }
-        return builder.build();
+
+        if (donorExonic < 0 || donorIntronic < 0 || acceptorExonic < 0 || acceptorIntronic < 0) {
+            throw new CorruptedPwmException("Missing splice site definition data");
+        }
+
+        return SplicingParameters.of(donorExonic, donorIntronic, acceptorExonic, acceptorIntronic);
     }
 
     /**

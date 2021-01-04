@@ -114,12 +114,7 @@ public class PojosForTesting {
     }
 
     public static SplicingParameters makeSplicingParameters() {
-        return SplicingParameters.builder()
-                .setDonorExonic(3)
-                .setDonorIntronic(6)
-                .setAcceptorExonic(2)
-                .setAcceptorIntronic(25)
-                .build();
+        return SplicingParameters.of(3, 6, 2, 25);
     }
 
 }

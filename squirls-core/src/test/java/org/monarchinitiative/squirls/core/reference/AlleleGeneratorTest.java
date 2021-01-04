@@ -119,13 +119,7 @@ public class AlleleGeneratorTest {
                 "atggcaaacactgttccttctctctttcagGTGGCCCTGC");
 
         anchor = GenomicPosition.zeroBased(contig, Strand.POSITIVE, Position.of(100));
-        SplicingParameters parameters = SplicingParameters.builder()
-                .setDonorExonic(3)
-                .setDonorIntronic(6)
-                .setAcceptorExonic(2)
-                .setAcceptorIntronic(25)
-                .build();
-        generator = new AlleleGenerator(parameters);
+        generator = new AlleleGenerator(SplicingParameters.of(3, 6, 2, 25));
     }
 
     // --------------------------      DONOR ALLELE     ---------------------------

@@ -92,10 +92,7 @@ public class SplicingParametersTest {
 
     @BeforeEach
     public void setUp() {
-        parameters = SplicingParameters.builder()
-                .setDonorExonic(3).setDonorIntronic(5)
-                .setAcceptorIntronic(4).setAcceptorExonic(2)
-                .build();
+        parameters = SplicingParameters.of(3, 5, 2, 4);
     }
 
     @Test

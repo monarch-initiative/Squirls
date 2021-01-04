@@ -127,12 +127,9 @@ public class InputStreamBasedPositionalWeightMatrixParser implements SplicingPos
         Map<String, PositionWeightMatrix> matrixMap = parseAll(is);
         this.donorMatrix = Utils.mapToDoubleMatrix(matrixMap.get(DONOR_M_NAME).getMatrix(), EPSILON);
         this.acceptorMatrix = Utils.mapToDoubleMatrix(matrixMap.get(ACCEPTOR_M_NAME).getMatrix(), EPSILON);
-        this.splicingParameters = SplicingParameters.builder()
-                .setDonorExonic(matrixMap.get(DONOR_M_NAME).getExon())
-                .setDonorIntronic(matrixMap.get(DONOR_M_NAME).getIntron())
-                .setAcceptorExonic(matrixMap.get(ACCEPTOR_M_NAME).getExon())
-                .setAcceptorIntronic(matrixMap.get(ACCEPTOR_M_NAME).getIntron())
-                .build();
+        this.splicingParameters = SplicingParameters.of(
+                matrixMap.get(DONOR_M_NAME).getExon(), matrixMap.get(DONOR_M_NAME).getIntron(),
+                matrixMap.get(ACCEPTOR_M_NAME).getExon(), matrixMap.get(ACCEPTOR_M_NAME).getIntron());
     }
 
 

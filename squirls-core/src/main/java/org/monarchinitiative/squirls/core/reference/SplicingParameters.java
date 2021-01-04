@@ -84,7 +84,6 @@ import org.monarchinitiative.variant.api.GenomicRegion;
  *
  * @author <a href="mailto:daniel.danis@jax.org">Daniel Danis</a>
  */
-// TODO - move to `reference` package, remove builder
 public class SplicingParameters {
 
     /**
@@ -107,19 +106,16 @@ public class SplicingParameters {
      */
     private final int acceptorExonic;
 
-
-    private SplicingParameters(Builder builder) {
-        this.donorExonic = builder.donorExonic;
-        this.donorIntronic = builder.donorIntronic;
-        this.acceptorIntronic = builder.acceptorIntronic;
-        this.acceptorExonic = builder.acceptorExonic;
+    private SplicingParameters(int donorExonic, int donorIntronic, int acceptorExonic, int acceptorIntronic) {
+        this.donorExonic = donorExonic;
+        this.donorIntronic = donorIntronic;
+        this.acceptorExonic = acceptorExonic;
+        this.acceptorIntronic = acceptorIntronic;
     }
 
-
-    public static Builder builder() {
-        return new Builder();
+    public static SplicingParameters of(int donorExonic, int donorIntronic, int acceptorExonic, int acceptorIntronic) {
+        return new SplicingParameters(donorExonic, donorIntronic, acceptorExonic, acceptorIntronic);
     }
-
 
     public int getDonorExonic() {
         return donorExonic;
@@ -200,48 +196,4 @@ public class SplicingParameters {
                 ", acceptorExonic=" + acceptorExonic +
                 '}';
     }
-
-    public static final class Builder {
-
-        private int donorExonic = 3;
-
-        private int donorIntronic = 6;
-
-        private int acceptorIntronic = 25;
-
-        private int acceptorExonic = 2;
-
-
-        private Builder() {
-        }
-
-
-        public Builder setDonorExonic(int donorExonic) {
-            this.donorExonic = donorExonic;
-            return this;
-        }
-
-
-        public Builder setDonorIntronic(int donorIntronic) {
-            this.donorIntronic = donorIntronic;
-            return this;
-        }
-
-
-        public Builder setAcceptorIntronic(int acceptorIntronic) {
-            this.acceptorIntronic = acceptorIntronic;
-            return this;
-        }
-
-
-        public Builder setAcceptorExonic(int acceptorExonic) {
-            this.acceptorExonic = acceptorExonic;
-            return this;
-        }
-
-        public SplicingParameters build() {
-            return new SplicingParameters(this);
-        }
-    }
-
 }

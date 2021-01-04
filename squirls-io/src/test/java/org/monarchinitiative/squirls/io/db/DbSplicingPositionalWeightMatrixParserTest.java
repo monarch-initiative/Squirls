@@ -106,12 +106,7 @@ public class DbSplicingPositionalWeightMatrixParserTest {
         SplicingPwmData data = parser.getSplicingPwmData();
         // ----------        SPLICING PARAMETERS --------
         SplicingParameters sp = data.getParameters();
-        assertThat(sp, is(SplicingParameters.builder()
-                .setDonorExonic(3)
-                .setDonorIntronic(2)
-                .setAcceptorExonic(1)
-                .setAcceptorIntronic(2)
-                .build()));
+        assertThat(sp, is(SplicingParameters.of(3, 2, 1, 2)));
 
         // ----------        DONOR         --------
         DoubleMatrix donorMatrix = data.getDonor();
