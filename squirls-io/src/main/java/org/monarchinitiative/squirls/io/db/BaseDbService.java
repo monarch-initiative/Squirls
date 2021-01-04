@@ -77,6 +77,7 @@
 package org.monarchinitiative.squirls.io.db;
 
 import org.monarchinitiative.squirls.core.reference.GenomicAssemblyAware;
+import org.monarchinitiative.squirls.core.reference.GenomicAssemblySquirls;
 import org.monarchinitiative.squirls.io.SquirlsResourceException;
 import org.monarchinitiative.variant.api.Contig;
 import org.monarchinitiative.variant.api.GenomicAssembly;
@@ -134,7 +135,7 @@ public abstract class BaseDbService implements GenomicAssemblyAware {
                             rs.getInt(5), rs.getString(6), rs.getString(7), rs.getString(8)));
                 }
             }
-            return new GenomicAssemblyDefault(name, organismName, taxonId, submitter, date, genbankAccession, refseq, contigs);
+            return new GenomicAssemblySquirls(name, organismName, taxonId, submitter, date, genbankAccession, refseq, contigs);
         } catch (SQLException e) {
             throw new SquirlsResourceException("Error getting genomic assembly: " + e.getMessage());
         }

@@ -79,9 +79,9 @@ package org.monarchinitiative.squirls.ingest;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.monarchinitiative.squirls.core.reference.GenomicAssemblySquirls;
 import org.monarchinitiative.squirls.core.reference.TranscriptModel;
 import org.monarchinitiative.squirls.ingest.data.GenomeAssemblyDownloaderTest;
-import org.monarchinitiative.squirls.io.db.GenomicAssemblyDefault;
 import org.monarchinitiative.variant.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -133,7 +133,7 @@ public class SquirlsDataBuilderTest {
     private static GenomicAssembly makeGenomicAssembly() {
         List<Contig> contigs = List.of(Contig.of(2, "2", SequenceRole.ASSEMBLED_MOLECULE, 100_000, "", "", "chr2"),
                 Contig.of(3, "3", SequenceRole.ASSEMBLED_MOLECULE, 200_000, "", "", "chr3"));
-        return new GenomicAssemblyDefault("", "", "", "", "", "", "", contigs);
+        return new GenomicAssemblySquirls("", "", "", "", "", "", "", contigs);
     }
 
     @BeforeEach

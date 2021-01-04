@@ -74,127 +74,53 @@
  * Daniel Danis, Peter N Robinson, 2021
  */
 
-package org.monarchinitiative.squirls.io.db;
+package org.monarchinitiative.squirls.core.reference;
 
+import org.junit.jupiter.api.Test;
 import org.monarchinitiative.variant.api.Contig;
 import org.monarchinitiative.variant.api.GenomicAssembly;
+import org.monarchinitiative.variant.api.SequenceRole;
 
-import java.util.*;
+import java.util.List;
+import java.util.SortedSet;
 
-public class GenomicAssemblyDefault implements GenomicAssembly {
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasSize;
 
-    private final String name, organismName, taxId, submitter, date, genBankAccession, refSeqAccession;
+public class GenomicAssemblySquirlsTest {
 
-    private final SortedSet<Contig> contigs;
-    private final List<Contig> contigsById;
-    private final Map<String, Contig> contigsByName;
 
-    public GenomicAssemblyDefault(String name,
-                                  String organismName,
-                                  String taxId,
-                                  String submitter,
-                                  String date,
-                                  String genBankAccession,
-                                  String refSeqAccession,
-                                  Collection<Contig> contigs) {
-        this.name = name;
-        this.organismName = organismName;
-        this.taxId = taxId;
-        this.submitter = submitter;
-        this.date = date;
-        this.genBankAccession = genBankAccession;
-        this.refSeqAccession = refSeqAccession;
+    @Test
+    public void properties() {
+        Contig first = Contig.of(1, "1", SequenceRole.ASSEMBLED_MOLECULE, 100, "GB1", "RS1", "chr1");
+        Contig last = Contig.of(2, "2", SequenceRole.ASSEMBLED_MOLECULE, 200, "GB2", "RS2", "chr2");
+        GenomicAssembly assembly = new GenomicAssemblySquirls("name", "organism", "9606", "Me", "2020-12-31", "genbank", "refseq",
+                List.of(first, last));
 
-        this.contigs = Collections.unmodifiableSortedSet(new TreeSet<>(contigs));
-        this.contigsById = new ArrayList<>();
-        this.contigsById.add(Contig.unknown());
-        this.contigsById.addAll(this.contigs);
-        Map<String, Contig> contigsByName = new HashMap<>();
-        for (Contig contig : contigs) {
-            contigsByName.put(contig.name(), contig);
-            contigsByName.put(contig.genBankAccession(), contig);
-            contigsByName.put(contig.refSeqAccession(), contig);
-            contigsByName.put(contig.ucscName(), contig);
-        }
-        this.contigsByName = Map.copyOf(contigsByName);
-    }
+        assertThat(assembly.name(), equalTo("name"));
+        assertThat(assembly.organismName(), equalTo("organism"));
+        assertThat(assembly.taxId(), equalTo("9606"));
+        assertThat(assembly.submitter(), equalTo("Me"));
+        assertThat(assembly.date(), equalTo("2020-12-31"));
+        assertThat(assembly.genBankAccession(), equalTo("genbank"));
+        assertThat(assembly.refSeqAccession(), equalTo("refseq"));
+        assertThat(assembly.contigById(1), equalTo(first));
+        assertThat(assembly.contigByName("1"), equalTo(first));
+        assertThat(assembly.contigByName("GB1"), equalTo(first));
+        assertThat(assembly.contigByName("RS1"), equalTo(first));
+        assertThat(assembly.contigByName("chr1"), equalTo(first));
 
-    @Override
-    public String name() {
-        return name;
-    }
 
-    @Override
-    public String organismName() {
-        return organismName;
-    }
+        assertThat(assembly.contigById(2), equalTo(last));
+        assertThat(assembly.contigByName("2"), equalTo(last));
+        assertThat(assembly.contigByName("GB2"), equalTo(last));
+        assertThat(assembly.contigByName("RS2"), equalTo(last));
+        assertThat(assembly.contigByName("chr2"), equalTo(last));
 
-    @Override
-    public String taxId() {
-        return taxId;
-    }
-
-    @Override
-    public String submitter() {
-        return submitter;
-    }
-
-    @Override
-    public String date() {
-        return date;
-    }
-
-    @Override
-    public String genBankAccession() {
-        return genBankAccession;
-    }
-
-    @Override
-    public String refSeqAccession() {
-        return refSeqAccession;
-    }
-
-    @Override
-    public SortedSet<Contig> contigs() {
-        return contigs;
-    }
-
-    @Override
-    public Contig contigById(int i) {
-        return contigsById.get(i);
-    }
-
-    @Override
-    public Contig contigByName(String s) {
-        return contigsByName.getOrDefault(s, Contig.unknown());
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        GenomicAssemblyDefault that = (GenomicAssemblyDefault) o;
-        return Objects.equals(name, that.name) && Objects.equals(organismName, that.organismName) && Objects.equals(taxId, that.taxId) && Objects.equals(submitter, that.submitter) && Objects.equals(date, that.date) && Objects.equals(genBankAccession, that.genBankAccession) && Objects.equals(refSeqAccession, that.refSeqAccession) && Objects.equals(contigs, that.contigs) && Objects.equals(contigsById, that.contigsById) && Objects.equals(contigsByName, that.contigsByName);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(name, organismName, taxId, submitter, date, genBankAccession, refSeqAccession, contigs, contigsById, contigsByName);
-    }
-
-    @Override
-    public String toString() {
-        return "GenomicAssemblyDefault{" +
-                "name='" + name + '\'' +
-                ", organismName='" + organismName + '\'' +
-                ", taxId='" + taxId + '\'' +
-                ", submitter='" + submitter + '\'' +
-                ", date='" + date + '\'' +
-                ", genBankAccession='" + genBankAccession + '\'' +
-                ", refSeqAccession='" + refSeqAccession + '\'' +
-                ", contigs=" + contigs +
-                ", contigsById=" + contigsById +
-                ", contigsByName=" + contigsByName +
-                '}';
+        SortedSet<Contig> ctgs = assembly.contigs();
+        assertThat(ctgs, hasSize(2));
+        assertThat(ctgs.first(), equalTo(first));
+        assertThat(ctgs.last(), equalTo(last));
     }
 }
