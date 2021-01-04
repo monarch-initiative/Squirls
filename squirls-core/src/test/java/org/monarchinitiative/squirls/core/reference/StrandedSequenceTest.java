@@ -81,8 +81,6 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.monarchinitiative.variant.api.*;
 
-import java.util.Optional;
-
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
@@ -104,34 +102,28 @@ public class StrandedSequenceTest {
 
     @ParameterizedTest
     @CsvSource({
-            "POSITIVE, ZERO_BASED, 100, 105,      true, ACGTA",
-            "POSITIVE,  ONE_BASED, 101, 105,      true, ACGTA",
+            "POSITIVE, ZERO_BASED, 100, 105,      ACGTA",
+            "POSITIVE,  ONE_BASED, 101, 105,      ACGTA",
 
-            "NEGATIVE, ZERO_BASED, 395, 400,      true, TACGT",
-            "NEGATIVE,  ONE_BASED, 396, 400,      true, TACGT",
+            "NEGATIVE, ZERO_BASED, 395, 400,      TACGT",
+            "NEGATIVE,  ONE_BASED, 396, 400,      TACGT",
 
-            "POSITIVE, ZERO_BASED, 103, 105,      true, TA",
-            "POSITIVE,  ONE_BASED, 104, 105,      true, TA",
+            "POSITIVE, ZERO_BASED, 103, 105,      TA",
+            "POSITIVE,  ONE_BASED, 104, 105,      TA",
 
-            "POSITIVE, ZERO_BASED, 100, 101,      true, A",
-            "POSITIVE,  ONE_BASED, 101, 101,      true, A",
+            "POSITIVE, ZERO_BASED, 100, 101,      A",
+            "POSITIVE,  ONE_BASED, 101, 101,      A",
 
-            "POSITIVE, ZERO_BASED, 104, 105,      true, A",
-            "POSITIVE,  ONE_BASED, 105, 105,      true, A",
+            "POSITIVE, ZERO_BASED, 104, 105,      A",
+            "POSITIVE,  ONE_BASED, 105, 105,      A",
 
-            "NEGATIVE, ZERO_BASED, 399, 400,      true, T",
-            "NEGATIVE,  ONE_BASED, 400, 400,      true, T",
-    })
+            "NEGATIVE, ZERO_BASED, 399, 400,      T",
+            "NEGATIVE,  ONE_BASED, 400, 400,      T"})
     public void subsequence(Strand strand, CoordinateSystem coordinateSystem, int start, int end,
-                            boolean isExpected, String expected) {
+                            String expected) {
         StrandedSequence sequence = StrandedSequence.of(CONTIG, Strand.POSITIVE, CoordinateSystem.ZERO_BASED, Position.of(100), Position.of(105), "ACGTA");
+        GenomicRegion query = GenomicRegion.of(CONTIG, strand, coordinateSystem, Position.of(start), Position.of(end));
 
-        GenomicRegion region = GenomicRegion.of(CONTIG, strand, coordinateSystem, Position.of(start), Position.of(end));
-        Optional<String> so = sequence.subsequence(region);
-
-        assertThat(so.isPresent(), equalTo(isExpected));
-        if (isExpected) {
-            assertThat(so.get(), equalTo(expected));
-        }
+        assertThat(sequence.subsequence(query), equalTo(expected));
     }
 }

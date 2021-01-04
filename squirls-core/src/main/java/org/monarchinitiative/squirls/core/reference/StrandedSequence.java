@@ -80,7 +80,6 @@ import org.monarchinitiative.variant.api.*;
 import org.monarchinitiative.variant.api.impl.Seq;
 
 import java.util.Objects;
-import java.util.Optional;
 
 public class StrandedSequence extends BaseGenomicRegion<StrandedSequence> {
 
@@ -106,17 +105,20 @@ public class StrandedSequence extends BaseGenomicRegion<StrandedSequence> {
         return sequence;
     }
 
-    // TODO - remove optional and return null if not enough sequence
-    public Optional<String> subsequence(GenomicRegion region) {
-        if (contains(region)) {
-            GenomicRegion onStrand = region.withStrand(strand()).toZeroBased();
-            String seq = sequence.substring(onStrand.start() - start(),
-                    onStrand.end() - start());
-            return region.strand() == strand()
-                    ? Optional.of(seq)
-                    : Optional.of(Seq.reverseComplement(seq));
+    /**
+     * @param query query region
+     * @return string with sequence that corresponds to <code>query</code> region or <code>null</code> if at least one
+     * base from the <code>region</code> is not available
+     */
+    public String subsequence(GenomicRegion query) {
+        if (contains(query)) {
+            GenomicRegion queryOnStrand = query.withStrand(strand()).toZeroBased();
+            String seq = sequence.substring(queryOnStrand.start() - start(), queryOnStrand.end() - start());
+            return query.strand() == strand()
+                    ? seq
+                    : Seq.reverseComplement(seq);
         }
-        return Optional.empty();
+        return null;
     }
 
     @Override

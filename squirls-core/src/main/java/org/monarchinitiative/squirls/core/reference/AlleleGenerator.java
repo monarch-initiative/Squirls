@@ -82,8 +82,6 @@ import org.monarchinitiative.variant.api.Variant;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Optional;
-
 /**
  * Class that creates nucleotide snippets for splice donor or acceptor site while incorporating alternate allele
  * into the snippet.
@@ -118,11 +116,11 @@ public class AlleleGenerator {
         interval = interval.toZeroBased();
         GenomicRegion upstream = GenomicRegion.zeroBased(interval.contig(), interval.strand(), interval.startPosition().shift(-padding), interval.startPosition());
         GenomicRegion downstream = GenomicRegion.zeroBased(interval.contig(), interval.strand(), interval.endPosition(), interval.endPosition().shift(padding));
-        Optional<String> useq = sequence.subsequence(upstream);
-        Optional<String> dseq = sequence.subsequence(downstream);
+        String useq = sequence.subsequence(upstream);
+        String dseq = sequence.subsequence(downstream);
 
-        return useq.isPresent() && dseq.isPresent()
-                ? useq.get() + allele + dseq.get()
+        return useq != null && dseq != null
+                ? useq + allele + dseq
                 : null;
     }
 
@@ -135,7 +133,7 @@ public class AlleleGenerator {
      * on different contig is provided
      */
     public String getDonorSiteSnippet(GenomicPosition anchor, StrandedSequence sequenceInterval) {
-        return sequenceInterval.subsequence(splicingParameters.makeDonorRegion(anchor)).orElse(null);
+        return sequenceInterval.subsequence(splicingParameters.makeDonorRegion(anchor));
     }
 
     /**
@@ -155,7 +153,7 @@ public class AlleleGenerator {
      * on different contig is provided
      */
     public String getAcceptorSiteSnippet(GenomicPosition anchor, StrandedSequence sequenceInterval) {
-        return sequenceInterval.subsequence(splicingParameters.makeAcceptorRegion(anchor)).orElse(null);
+        return sequenceInterval.subsequence(splicingParameters.makeAcceptorRegion(anchor));
     }
 
     /**
@@ -195,8 +193,7 @@ public class AlleleGenerator {
 
             if (!donor.overlapsWith(variant)) {
                 // shortcut, return wt donor sequence since variant does not change the site
-                return sequenceInterval.subsequence(donor)
-                        .orElse(null);
+                return sequenceInterval.subsequence(donor);
             }
 
             if (variant.contains(donor)) {
@@ -215,29 +212,29 @@ public class AlleleGenerator {
                 int missing = idx - result.length();
                 if (missing > 0) {
                     GenomicRegion interval = variant.startGenomicPosition().toRegion(-missing, 0);
-                    Optional<String> opSeq = sequenceInterval.subsequence(interval);
-                    if (opSeq.isEmpty()) {
+                    String seq = sequenceInterval.subsequence(interval);
+                    if (seq == null) {
                         if (LOGGER.isInfoEnabled())
                             LOGGER.info("Not enough of fasta sequence provided for variant `{}` - sequence: `{}`, required: `{}`",
                                     variant, sequenceInterval, interval);
                         return null;
                     }
-                    result = opSeq.get() + result;
+                    result = seq + result;
                 }
             } else {
                 // simple scenario when we just add bases between donor beginning and variant beginning
                 int length = donor.startGenomicPosition().distanceTo(variant.startGenomicPosition());
                 GenomicRegion interval = GenomicRegion.of(donor.startGenomicPosition(), length);
 
-                Optional<String> opSeq = sequenceInterval.subsequence(interval);
+                String seq = sequenceInterval.subsequence(interval);
 
-                if (opSeq.isEmpty()) {
+                if (seq == null) {
                     if (LOGGER.isInfoEnabled())
                         LOGGER.info("Not enough of fasta sequence provided for variant `{}` - sequence: `{}`, required: `{}`",
                                 variant, sequenceInterval, interval);
                     return null;
                 }
-                result = opSeq.get() + alt;
+                result = seq + alt;
 
             }
             // add nothing if the sequence is already longer than the SPLICE_DONOR_SITE_LENGTH
@@ -248,14 +245,14 @@ public class AlleleGenerator {
 
             GenomicRegion interval = GenomicRegion.of(variant.endGenomicPosition(), max);
 
-            Optional<String> opSeq = sequenceInterval.subsequence(interval);
-            if (opSeq.isEmpty()) {
+            String seq = sequenceInterval.subsequence(interval);
+            if (seq == null) {
                 if (LOGGER.isInfoEnabled())
                     LOGGER.info("Not enough of fasta sequence provided for variant `{}` - sequence: `{}`, required: `{}`",
                             variant, sequenceInterval, interval);
                 return null;
             }
-            result += opSeq.get();
+            result += seq;
                 /* if the variantRegion is a larger insertion, result.length() might be greater than SPLICE_DONOR_SITE_LENGTH after
                    appending 'alt' sequence. We need to make sure only 'SPLICE_DONOR_SITE_LENGTH' nucleotides are returned */
             return result.substring(0, splicingParameters.getDonorLength());
@@ -290,8 +287,7 @@ public class AlleleGenerator {
 
         if (!acceptor.overlapsWith(region)) {
             // shortcut, return wt acceptor sequence since variant does not change the site
-            return sequence.subsequence(acceptor)
-                    .orElse(null);
+            return sequence.subsequence(acceptor);
         }
 
         if (region.contains(acceptor)) {
@@ -309,26 +305,26 @@ public class AlleleGenerator {
             int missing = idx - result.length();
             if (missing > 0) {
                 GenomicRegion interval = GenomicRegion.of(region.endGenomicPosition(), missing);
-                Optional<String> opSeq = sequence.subsequence(interval);
-                if (opSeq.isEmpty()) {
+                String seq = sequence.subsequence(interval);
+                if (seq == null) {
                     if (LOGGER.isInfoEnabled())
                         LOGGER.info("Not enough of fasta sequence provided for variant `{}` - sequence: `{}`, required: `{}`",
                                 variant, sequence, interval);
                     return null;
                 }
-                result = result + opSeq.get();
+                result = result + seq;
             }
         } else {
             int length = region.endGenomicPosition().distanceTo(acceptor.endGenomicPosition());
             GenomicRegion interval = GenomicRegion.of(region.endGenomicPosition(), length);
-            Optional<String> opSeq = sequence.subsequence(interval);
-            if (opSeq.isEmpty()) {
+            String seq = sequence.subsequence(interval);
+            if (seq == null) {
                 if (LOGGER.isInfoEnabled())
                     LOGGER.info("Not enough of fasta sequence provided for variant `{}` - sequence: `{}`, required: `{}`",
                             variant, sequence, interval);
                 return null;
             }
-            result = alt + opSeq.get();
+            result = alt + seq;
         }
 
         // add nothing if the sequence is already longer than the SPLICE_ACCEPTOR_SITE_LENGTH
@@ -338,14 +334,14 @@ public class AlleleGenerator {
         }
         GenomicRegion interval = region.startGenomicPosition().toRegion(min, 0);
 
-        Optional<String> opSeq = sequence.subsequence(interval);
-        if (opSeq.isEmpty()) {
+        String seq = sequence.subsequence(interval);
+        if (seq == null) {
             if (LOGGER.isInfoEnabled())
                 LOGGER.info("Not enough of fasta sequence provided for variant `{}` - sequence: `{}`, required: `{}`",
                         variant, sequence, interval);
             return null;
         }
-        result = opSeq.get() + result;
+        result = seq + result;
                 /* if the variantRegion is a larger insertion, result.length() might be greater than SPLICE_ACCEPTOR_SITE_LENGTH after
                    appending 'alt' sequence. We need to make sure only last 'SPLICE_ACCEPTOR_SITE_LENGTH' nucleotides are returned */
         return result.substring(result.length() - splicingParameters.getAcceptorLength()); // last 'SPLICE_ACCEPTOR_SITE_LENGTH' nucleotides
