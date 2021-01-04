@@ -86,11 +86,6 @@ class SquirlsClassifierV046 implements SquirlsClassifier {
     }
 
     @Override
-    public Set<String> usedFeatureNames() {
-        return usedFeatures;
-    }
-
-    @Override
     public Prediction predict(SquirlsFeatures data) {
         if (data.getFeatureNames().containsAll(usedFeatures)) {
             // we have all the features we need for making a prediction here
