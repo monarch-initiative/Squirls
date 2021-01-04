@@ -76,20 +76,16 @@
 
 package org.monarchinitiative.squirls.core.scoring.calculators;
 
-import de.charite.compbio.jannovar.data.ReferenceDictionary;
-import de.charite.compbio.jannovar.reference.GenomeInterval;
-import de.charite.compbio.jannovar.reference.Strand;
 import org.junit.jupiter.api.BeforeEach;
 import org.monarchinitiative.squirls.core.PojosForTesting;
 import org.monarchinitiative.squirls.core.TestDataSourceConfig;
-import org.monarchinitiative.squirls.core.model.SplicingParameters;
-import org.monarchinitiative.squirls.core.model.SplicingTranscript;
-import org.monarchinitiative.squirls.core.reference.allele.AlleleGenerator;
-import org.monarchinitiative.squirls.core.reference.transcript.SplicingTranscriptLocator;
+import org.monarchinitiative.squirls.core.reference.*;
 import org.monarchinitiative.squirls.core.scoring.calculators.ic.SplicingInformationContentCalculator;
+import org.monarchinitiative.variant.api.Contig;
+import org.monarchinitiative.variant.api.GenomicRegion;
+import org.monarchinitiative.variant.api.SequenceRole;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import xyz.ielis.hyperutil.reference.fasta.SequenceInterval;
 
 /**
  *
@@ -97,35 +93,35 @@ import xyz.ielis.hyperutil.reference.fasta.SequenceInterval;
 @SpringBootTest(classes = {TestDataSourceConfig.class})
 public class CalculatorTestBase {
 
+    protected static final Contig contig = Contig.of(1, "1", SequenceRole.ASSEMBLED_MOLECULE, 10_000, "", "", "");
+
     protected static final double EPSILON = 5E-4;
 
     @Autowired
-    protected SplicingParameters splicingParameters;
+    public SplicingParameters splicingParameters;
 
     @Autowired
-    protected ReferenceDictionary rd;
+    public SplicingInformationContentCalculator calculator;
 
     @Autowired
-    protected SplicingInformationContentCalculator calculator;
+    public AlleleGenerator generator;
 
     @Autowired
-    protected AlleleGenerator generator;
+    public TranscriptModelLocator locator;
 
-    @Autowired
-    protected SplicingTranscriptLocator locator;
+    protected TranscriptModel tx;
 
-    protected SplicingTranscript st;
+    protected StrandedSequence sequenceInterval;
 
-    protected SequenceInterval sequenceInterval;
-
-    protected SequenceInterval sequenceOnOtherChrom;
+    protected StrandedSequence sequenceOnOtherChrom;
 
 
     @BeforeEach
     public void setUp() throws Exception {
-        st = PojosForTesting.getTranscriptWithThreeExons(rd);
-        sequenceInterval = PojosForTesting.getSequenceIntervalForTranscriptWithThreeExons(rd);
-        sequenceOnOtherChrom = SequenceInterval.of(new GenomeInterval(rd, Strand.FWD, 2, 0, 4), "ACGT");
+        tx = PojosForTesting.getTranscriptWithThreeExons(contig);
+        sequenceInterval = PojosForTesting.getSequenceIntervalForTranscriptWithThreeExons(contig);
+        Contig other = Contig.of(44, "44", SequenceRole.ASSEMBLED_MOLECULE, 100_000, "", "", "");
+        sequenceOnOtherChrom = StrandedSequence.of(GenomicRegion.zeroBased(other, 0, 4), "ACGT");
     }
 
 }

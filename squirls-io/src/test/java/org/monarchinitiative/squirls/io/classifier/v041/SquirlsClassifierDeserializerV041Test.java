@@ -82,7 +82,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.monarchinitiative.squirls.core.Prediction;
 import org.monarchinitiative.squirls.core.classifier.SquirlsClassifier;
-import org.monarchinitiative.squirls.io.SimpleSquirlsFeatures;
+import org.monarchinitiative.squirls.core.classifier.SquirlsFeatures;
 import org.monarchinitiative.squirls.io.SquirlsClassifierVersion;
 
 import java.io.InputStream;
@@ -98,14 +98,14 @@ import static org.hamcrest.Matchers.*;
 
 public class SquirlsClassifierDeserializerV041Test {
 
-    private static final Path TOY_MODEL_v0_4_1 = Paths.get("src/test/resources/example_model.v0.4.1.yaml");
+    private static final Path TOY_MODEL_v0_4_1 = Paths.get("src/test/resources/org/monarchinitiative/squirls/io/classifier/example_model.v0.4.1.yaml");
     private static final double TOLERANCE = 5E-10;
 
     private SquirlsClassifierDeserializerV041 deserializerV041;
 
     private SquirlsClassifier clf;
 
-    private static SimpleSquirlsFeatures makeFeature041(String payload) {
+    private static SquirlsFeatures makeFeature041(String payload) {
         double[] features = Arrays.stream(payload.split(",")).mapToDouble(Double::valueOf).toArray();
         return makeFeature041(features[0], features[1], features[2],
                 features[3], features[4], features[5],
@@ -114,11 +114,11 @@ public class SquirlsClassifierDeserializerV041Test {
                 features[13], features[14]);
     }
 
-    private static SimpleSquirlsFeatures makeFeature041(double donorOffset, double canonicalDonor, double crypticDonor,
-                                                        double sStrengthDiffDonor, double wtRiDonor, double altRiBestWindowDonor,
-                                                        double phylop, double exonLength, double hexamer, double septamer,
-                                                        double acceptorOffset, double canonicalAcceptor, double crypticAcceptor,
-                                                        double createsYagInAgez, double createsAgInAgez) {
+    private static SquirlsFeatures makeFeature041(double donorOffset, double canonicalDonor, double crypticDonor,
+                                                  double sStrengthDiffDonor, double wtRiDonor, double altRiBestWindowDonor,
+                                                  double phylop, double exonLength, double hexamer, double septamer,
+                                                  double acceptorOffset, double canonicalAcceptor, double crypticAcceptor,
+                                                  double createsYagInAgez, double createsAgInAgez) {
         /*
         The feature payload strings contain the features in this order:
         ['donor_offset', 'canonical_donor', 'cryptic_donor',
@@ -134,7 +134,7 @@ public class SquirlsClassifierDeserializerV041Test {
                 "hexamer", hexamer,
                 "septamer", septamer);
 
-        Map<String, Object> donorFeatures = Map.of(
+        Map<String, Double> donorFeatures = Map.of(
                 "donor_offset", donorOffset,
                 "canonical_donor", canonicalDonor,
                 "cryptic_donor", crypticDonor,
@@ -142,13 +142,13 @@ public class SquirlsClassifierDeserializerV041Test {
                 "wt_ri_donor", wtRiDonor,
                 "alt_ri_best_window_donor", altRiBestWindowDonor);
 
-        Map<String, Object> acceptorFeatures = Map.of("acceptor_offset", acceptorOffset, "canonical_acceptor", canonicalAcceptor,
+        Map<String, Double> acceptorFeatures = Map.of("acceptor_offset", acceptorOffset, "canonical_acceptor", canonicalAcceptor,
                 "cryptic_acceptor", crypticAcceptor, "creates_yag_in_agez", createsYagInAgez, "creates_ag_in_agez", createsAgInAgez);
 
-        Map<String, Object> features = new HashMap<>(general);
+        Map<String, Double> features = new HashMap<>(general);
         features.putAll(donorFeatures);
         features.putAll(acceptorFeatures);
-        return new SimpleSquirlsFeatures(features);
+        return SquirlsFeatures.of(features);
     }
 
     @BeforeEach

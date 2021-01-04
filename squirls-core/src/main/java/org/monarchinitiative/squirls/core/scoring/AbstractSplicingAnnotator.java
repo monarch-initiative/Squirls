@@ -76,44 +76,38 @@
 
 package org.monarchinitiative.squirls.core.scoring;
 
-import de.charite.compbio.jannovar.reference.GenomeVariant;
 import org.monarchinitiative.squirls.core.VariantOnTranscript;
 import org.monarchinitiative.squirls.core.classifier.SquirlsFeatures;
-import org.monarchinitiative.squirls.core.classifier.SquirlsFeaturesDefault;
-import org.monarchinitiative.squirls.core.model.SplicingTranscript;
-import org.monarchinitiative.squirls.core.reference.SplicingLocationData;
-import org.monarchinitiative.squirls.core.reference.transcript.SplicingTranscriptLocator;
+import org.monarchinitiative.squirls.core.reference.StrandedSequence;
+import org.monarchinitiative.squirls.core.reference.TranscriptModel;
 import org.monarchinitiative.squirls.core.scoring.calculators.FeatureCalculator;
-import xyz.ielis.hyperutil.reference.fasta.SequenceInterval;
+import org.monarchinitiative.variant.api.Variant;
 
 import java.util.HashMap;
 import java.util.Map;
 
 
-abstract class AbstractSplicingAnnotator implements SplicingAnnotator<VariantOnTranscript, SquirlsFeatures> {
+abstract class AbstractSplicingAnnotator implements SplicingAnnotator {
 
-    private final SplicingTranscriptLocator locator;
     private final Map<String, FeatureCalculator> calculatorMap;
 
-    protected AbstractSplicingAnnotator(SplicingTranscriptLocator locator, Map<String, FeatureCalculator> calculatorMap) {
-        this.locator = locator;
+    protected AbstractSplicingAnnotator(Map<String, FeatureCalculator> calculatorMap) {
         this.calculatorMap = calculatorMap;
     }
 
     @Override
     public SquirlsFeatures annotate(VariantOnTranscript data) {
-        final GenomeVariant variant = data.getVariant();
-        final SplicingTranscript transcript = data.getTranscript();
-        final SequenceInterval sequence = data.getSequence();
+        Variant variant = data.variant();
+        TranscriptModel transcript = data.transcript();
+        StrandedSequence sequence = data.sequence();
 
-        final SplicingLocationData locationData = locator.locate(variant, transcript);
-        final GenomeVariant variantOnStrand = variant.withStrand(transcript.getStrand());
+        Variant variantOnStrand = variant.withStrand(transcript.strand());
 
-        Map<String, Object> features = new HashMap<>(calculatorMap.size());
+        Map<String, Double> features = new HashMap<>(calculatorMap.size());
         for (String feature : calculatorMap.keySet()) {
             features.put(feature, calculatorMap.get(feature).score(variantOnStrand, transcript, sequence));
         }
 
-        return SquirlsFeaturesDefault.of(features);
+        return SquirlsFeatures.of(features);
     }
 }

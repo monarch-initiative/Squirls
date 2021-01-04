@@ -94,8 +94,13 @@ import htsjdk.variant.vcf.VCFFileReader;
 import org.monarchinitiative.squirls.cli.Main;
 import org.monarchinitiative.squirls.cli.cmd.SquirlsCommand;
 import org.monarchinitiative.squirls.cli.writers.*;
+import org.monarchinitiative.squirls.core.SquirlsDataService;
 import org.monarchinitiative.squirls.core.SquirlsResult;
 import org.monarchinitiative.squirls.core.VariantSplicingEvaluator;
+import org.monarchinitiative.variant.api.Contig;
+import org.monarchinitiative.variant.api.GenomicAssembly;
+import org.monarchinitiative.variant.api.Variant;
+import org.monarchinitiative.variant.api.impl.SequenceVariant;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ConfigurableApplicationContext;
@@ -176,41 +181,47 @@ public class AnnotateVcfCommand extends SquirlsCommand {
      */
     private static Function<VariantContext, Collection<WritableSplicingAllele>> annotateVariant(VariantSplicingEvaluator evaluator,
                                                                                                 ReferenceDictionary rd,
-                                                                                                VariantAnnotator annotator) {
+                                                                                                VariantAnnotator annotator,
+                                                                                                GenomicAssembly assembly) {
         return vc -> {
             List<WritableSplicingAllele> evaluations = new ArrayList<>(vc.getAlternateAlleles().size());
             for (Allele allele : vc.getAlternateAlleles()) {
+                String contigName = vc.getContig();
                 // jannovar annotations
-                Integer contigId = rd.getContigNameToID().get(vc.getContig());
+                Integer contigId = rd.getContigNameToID().get(contigName);
                 if (contigId == null) {
-                    LOGGER.warn("Jannovar does not recognize contig {} for variant {}", vc.getContig(), vc);
+                    LOGGER.warn("Jannovar does not recognize contig {} for variant {}", contigName, vc);
                     continue;
                 }
 
                 GenomePosition pos = new GenomePosition(rd, Strand.FWD, contigId, vc.getStart(), PositionType.ONE_BASED);
-                GenomeVariant variant = new GenomeVariant(pos, vc.getReference().getDisplayString(), allele.getDisplayString());
+                GenomeVariant genomeVariant = new GenomeVariant(pos, vc.getReference().getDisplayString(), allele.getDisplayString());
                 VariantAnnotations variantAnnotations;
                 try {
-                    variantAnnotations = annotator.buildAnnotations(variant);
+                    variantAnnotations = annotator.buildAnnotations(genomeVariant);
                 } catch (AnnotationException e) {
-                    LOGGER.warn("Unable to annotate variant {}: {}", variant, e.getMessage());
+                    LOGGER.warn("Unable to annotate variant {}: {}", genomeVariant, e.getMessage());
                     continue;
                 }
 
                 // Squirls scores
+                Variant variant;
                 SquirlsResult squirlsResult;
-                if (!variantAnnotations.getHighestImpactEffect().isOffTranscript()) {
+                Contig contig = assembly.contigByName(contigName);
+                if (contig.equals(Contig.unknown()) || variantAnnotations.getHighestImpactEffect().isOffTranscript()) {
+                    // don't bother with annotating an off-exome variant
+                    variant = null;
+                    squirlsResult = SquirlsResult.empty();
+                } else {
+                    variant = SequenceVariant.oneBased(contig, vc.getID(), vc.getStart(), vc.getReference().getDisplayString(), allele.getDisplayString());
                     Set<String> txAccessions = variantAnnotations.getAnnotations().stream()
                             .map(Annotation::getTranscript)
                             .map(TranscriptModel::getAccession)
                             .collect(Collectors.toSet());
-                    squirlsResult = evaluator.evaluate(vc.getContig(), vc.getStart(), vc.getReference().getBaseString(), allele.getBaseString(), txAccessions);
-                } else {
-                    // don't bother with annotating an off-exome variant
-                    squirlsResult = SquirlsResult.empty();
+                    squirlsResult = evaluator.evaluate(variant, txAccessions);
                 }
 
-                evaluations.add(new WritableSplicingAlleleDefault(vc, allele, variantAnnotations, squirlsResult));
+                evaluations.add(new WritableSplicingAlleleDefault(vc, allele, variantAnnotations, squirlsResult, variant));
             }
 
             return evaluations;
@@ -250,6 +261,8 @@ public class AnnotateVcfCommand extends SquirlsCommand {
             LOGGER.info("Reading variants from `{}`", inputPath);
             Collection<OutputFormat> outputFormats = parseOutputFormats(this.outputFormats);
             VariantSplicingEvaluator evaluator = context.getBean(VariantSplicingEvaluator.class);
+            SquirlsDataService dataService = context.getBean(SquirlsDataService.class);
+            GenomicAssembly assembly = dataService.genomicAssembly();
 
             if (nThreads < 1) {
                 LOGGER.error("Thread number must be positive: {}", nThreads);
@@ -275,7 +288,7 @@ public class AnnotateVcfCommand extends SquirlsCommand {
             // TODO: 29. 5. 2020 improve behavior & logging
             //  e.g. report progress in % if variant index and thus count is available
             AnnotateVcfProgressReporter progressReporter = new AnnotateVcfProgressReporter(5_000);
-            List<WritableSplicingAllele> annotated; // = Collections.synchronizedList(new ArrayList<>());
+            List<WritableSplicingAllele> annotated;
             ArrayList<String> sampleNames;
 
             // annotate the variants
@@ -299,7 +312,7 @@ public class AnnotateVcfCommand extends SquirlsCommand {
                             .flatMap(Collection::stream)
                             .peek(progressReporter::logAllele)
 
-                            .map(annotateVariant(evaluator, jd.getRefDict(), annotator))
+                            .map(annotateVariant(evaluator, jd.getRefDict(), annotator, assembly))
                             .flatMap(Collection::stream)
                             .peek(wa -> {
                                 if (!wa.squirlsResult().isEmpty()) {
@@ -334,7 +347,7 @@ public class AnnotateVcfCommand extends SquirlsCommand {
                 try {
                     writer.write(results, settings);
                 } catch (IOException e) {
-                    LOGGER.warn("Error writing {} results: {}", format, e.getMessage());
+                    if (LOGGER.isWarnEnabled()) LOGGER.warn("Error writing {} results: {}", format, e.getMessage());
                 }
             }
         }

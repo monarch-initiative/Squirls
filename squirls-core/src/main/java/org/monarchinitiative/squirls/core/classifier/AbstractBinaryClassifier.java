@@ -116,11 +116,6 @@ public abstract class AbstractBinaryClassifier<T extends SquirlsFeatures> implem
         return array;
     }
 
-    @Override
-    public String getName() {
-        return name;
-    }
-
     /**
      * Convert list of doubles to double array.
      *
@@ -133,6 +128,11 @@ public abstract class AbstractBinaryClassifier<T extends SquirlsFeatures> implem
             array[i] = doubles.get(i);
         }
         return array;
+    }
+
+    @Override
+    public String getName() {
+        return name;
     }
 
     /**
@@ -172,9 +172,8 @@ public abstract class AbstractBinaryClassifier<T extends SquirlsFeatures> implem
 
     public abstract static class Builder<A extends Builder<A>> {
 
-        private String name;
-
         private final List<Integer> classes = new ArrayList<>();
+        private String name;
 
         protected Builder() {
             // protected no-op

@@ -87,7 +87,7 @@ import org.monarchinitiative.squirls.cli.TestDataSourceConfig;
 import org.monarchinitiative.squirls.cli.data.VariantsForTesting;
 import org.monarchinitiative.squirls.cli.visualization.SplicingVariantGraphicsGenerator;
 import org.monarchinitiative.squirls.cli.writers.*;
-import org.monarchinitiative.squirls.core.data.ic.SplicingPwmData;
+import org.monarchinitiative.squirls.core.reference.SplicingPwmData;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
@@ -113,6 +113,9 @@ public class HtmlResultWriterTest {
     @Autowired
     public SplicingVariantGraphicsGenerator graphicsGenerator;
 
+    @Autowired
+    public VariantsForTesting variantsForTesting;
+
     private Set<WritableSplicingAllele> variantData;
 
     private HtmlResultWriter resultWriter;
@@ -130,17 +133,17 @@ public class HtmlResultWriterTest {
 
         variantData = Set.of(
                 // donor
-                VariantsForTesting.BRCA2DonorExon15plus2QUID(rd, annotator),
-                VariantsForTesting.ALPLDonorExon7Minus2(rd, annotator),
-                VariantsForTesting.HBBcodingExon1UpstreamCrypticInCanonical(rd, annotator),
-                VariantsForTesting.HBBcodingExon1UpstreamCryptic(rd, annotator),
+                variantsForTesting.BRCA2DonorExon15plus2QUID(),
+                variantsForTesting.ALPLDonorExon7Minus2(),
+                variantsForTesting.HBBcodingExon1UpstreamCrypticInCanonical(),
+                variantsForTesting.HBBcodingExon1UpstreamCryptic(),
                 // acceptor
-                VariantsForTesting.VWFAcceptorExon26minus2QUID(rd, annotator),
-                VariantsForTesting.TSC2AcceptorExon11Minus3(rd, annotator),
-                VariantsForTesting.COL4A5AcceptorExon11Minus8(rd, annotator),
-                VariantsForTesting.RYR1codingExon102crypticAcceptor(rd, annotator),
+                variantsForTesting.VWFAcceptorExon26minus2QUID(),
+                variantsForTesting.TSC2AcceptorExon11Minus3(),
+                variantsForTesting.COL4A5AcceptorExon11Minus8(),
+                variantsForTesting.RYR1codingExon102crypticAcceptor(),
                 // SRE
-                VariantsForTesting.NF1codingExon9coding_SRE(rd, annotator)
+                variantsForTesting.NF1codingExon9coding_SRE()
         );
     }
 

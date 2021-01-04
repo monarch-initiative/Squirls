@@ -77,21 +77,16 @@
 package org.monarchinitiative.squirls.cli.visualization.panel;
 
 import de.charite.compbio.jannovar.annotation.Annotation;
-import de.charite.compbio.jannovar.data.ReferenceDictionary;
-import de.charite.compbio.jannovar.reference.GenomePosition;
-import de.charite.compbio.jannovar.reference.GenomeVariant;
 import org.monarchinitiative.squirls.cli.visualization.AbstractGraphicsGenerator;
 import org.monarchinitiative.squirls.cli.visualization.MissingFeatureException;
 import org.monarchinitiative.squirls.cli.visualization.VisualizableVariantAllele;
 import org.monarchinitiative.squirls.cli.visualization.selector.VisualizationContext;
 import org.monarchinitiative.squirls.cli.visualization.selector.VisualizationContextSelector;
+import org.monarchinitiative.squirls.core.SquirlsDataService;
 import org.monarchinitiative.squirls.core.SquirlsTxResult;
-import org.monarchinitiative.squirls.core.data.SplicingTranscriptSource;
-import org.monarchinitiative.squirls.core.data.ic.SplicingPwmData;
-import org.monarchinitiative.squirls.core.model.SplicingTranscript;
-import org.monarchinitiative.squirls.core.reference.SplicingLocationData;
-import org.monarchinitiative.squirls.core.reference.transcript.SplicingTranscriptLocator;
-import org.monarchinitiative.squirls.core.reference.transcript.SplicingTranscriptLocatorNaive;
+import org.monarchinitiative.squirls.core.reference.*;
+import org.monarchinitiative.variant.api.GenomicPosition;
+import org.monarchinitiative.variant.api.Variant;
 import org.monarchinitiative.vmvt.core.VmvtGenerator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -99,7 +94,6 @@ import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 import org.thymeleaf.templatemode.TemplateMode;
 import org.thymeleaf.templateresolver.ClassLoaderTemplateResolver;
-import xyz.ielis.hyperutil.reference.fasta.GenomeSequenceAccessor;
 
 import java.util.List;
 import java.util.Optional;
@@ -117,18 +111,14 @@ public class PanelGraphicsGenerator extends AbstractGraphicsGenerator {
 
     private final TemplateEngine templateEngine;
 
-    private final SplicingTranscriptSource splicingTranscriptSource;
-
-    private final SplicingTranscriptLocator locator;
+    private final TranscriptModelLocator locator;
 
     public PanelGraphicsGenerator(VmvtGenerator vmvtGenerator,
                                   SplicingPwmData splicingPwmData,
                                   VisualizationContextSelector contextSelector,
-                                  GenomeSequenceAccessor genomeSequenceAccessor,
-                                  SplicingTranscriptSource splicingTranscriptSource) {
-        super(vmvtGenerator, splicingPwmData, contextSelector, genomeSequenceAccessor);
-        this.splicingTranscriptSource = splicingTranscriptSource;
-        this.locator = new SplicingTranscriptLocatorNaive(splicingPwmData.getParameters());
+                                  SquirlsDataService squirlsDataService) {
+        super(vmvtGenerator, splicingPwmData, contextSelector, squirlsDataService);
+        this.locator = new TranscriptModelLocatorNaive(splicingPwmData.getParameters());
 
         ClassLoaderTemplateResolver templateResolver = new ClassLoaderTemplateResolver();
         templateResolver.setTemplateMode(TemplateMode.HTML);
@@ -148,22 +138,18 @@ public class PanelGraphicsGenerator extends AbstractGraphicsGenerator {
         }
 
         SquirlsTxResult highestPrediction = mspOpt.get();
-        Optional<SplicingTranscript> stOpt = splicingTranscriptSource.fetchTranscriptByAccession(highestPrediction.accessionId(), genomeSequenceAccessor.getReferenceDictionary());
+        Optional<TranscriptModel> stOpt = squirlsDataService.getByAccession(highestPrediction.accessionId());
         if (stOpt.isEmpty()) {
             LOGGER.warn("Could not find transcript {} for variant {}", highestPrediction.accessionId(), allele.genomeVariant());
             return EMPTY_SVG_IMAGE;
         }
-        SplicingTranscript transcript = stOpt.get();
+        TranscriptModel transcript = stOpt.get();
 
-        GenomeVariant variant = convertRefDict(allele.genomeVariant());
-        if (variant == null) {
-            return EMPTY_SVG_IMAGE;
-        }
-
+        Variant variant = allele.variant();
 
         SplicingLocationData locationData = locator.locate(variant, transcript);
-        Optional<GenomePosition> dOpt = locationData.getDonorBoundary();
-        Optional<GenomePosition> aOpt = locationData.getAcceptorBoundary();
+        Optional<GenomicPosition> dOpt = locationData.getDonorBoundary();
+        Optional<GenomicPosition> aOpt = locationData.getAcceptorBoundary();
 
         /*
         To generate graphics, we first determine graphics type (visualization context).
@@ -214,35 +200,6 @@ public class PanelGraphicsGenerator extends AbstractGraphicsGenerator {
         context.setVariable("graphics", graphics);
 
         return templateEngine.process(templateName, context);
-    }
-
-    /**
-     * Convert genome variant from Jannovar's reference dictionary to Squirls' reference dictionary.
-     * <p>
-     * Conversion is performed if lengths of the corresponding contigs are the same.
-     *
-     * @param gv variant on Jannovar's reference dictionary
-     * @return variant converted to Squirls reference dictionary
-     */
-    private GenomeVariant convertRefDict(GenomeVariant gv) {
-        // match contigs by name and check that the contig lengths are the same
-
-        ReferenceDictionary jvRd = gv.getGenomeInterval().getRefDict();
-        int jvContigLength = jvRd.getContigIDToLength().getOrDefault(gv.getChr(), -1);
-        ReferenceDictionary sqRd = genomeSequenceAccessor.getReferenceDictionary();
-        Integer sqContigId = sqRd.getContigNameToID().get(gv.getChrName());
-        if (sqContigId == null) {
-            LOGGER.warn("Contig {} for variant {} not present in reference", gv.getChrName(), gv);
-            return null;
-        }
-        int sqContigLength = sqRd.getContigIDToLength().getOrDefault(sqContigId, -2);
-
-        if (jvContigLength == sqContigLength) {
-            // contig length match, let's convert
-            GenomePosition pos = new GenomePosition(sqRd, gv.getGenomePos().getStrand(), sqContigId, gv.getPos());
-            return new GenomeVariant(pos, gv.getRef(), gv.getAlt());
-        }
-        return null;
     }
 
 }

@@ -82,13 +82,13 @@ import org.monarchinitiative.squirls.core.classifier.SquirlsFeatures;
 /**
  * Implementors calculate a set of features for each {@link VariantOnTranscript}.
  */
-public interface SplicingAnnotator<T extends VariantOnTranscript, U extends SquirlsFeatures> {
+public interface SplicingAnnotator {
 
     /**
      * Evaluate the <code>data</code> and annotate with the available features.
      *
      * @return squirls features for given coordinates
      */
-    U annotate(T data);
+    SquirlsFeatures annotate(VariantOnTranscript data);
 
 }

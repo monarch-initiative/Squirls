@@ -77,11 +77,12 @@
 package org.monarchinitiative.squirls.autoconfigure;
 
 import org.junit.jupiter.api.Test;
+import org.monarchinitiative.squirls.core.SquirlsDataService;
 import org.monarchinitiative.squirls.core.VariantSplicingEvaluator;
-import org.monarchinitiative.squirls.core.data.SplicingTranscriptSource;
+import org.monarchinitiative.squirls.core.reference.StrandedSequenceService;
+import org.monarchinitiative.squirls.core.reference.TranscriptModelService;
 import org.monarchinitiative.squirls.core.scoring.SplicingAnnotator;
 import org.springframework.beans.factory.BeanCreationException;
-import xyz.ielis.hyperutil.reference.fasta.GenomeSequenceAccessor;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -121,13 +122,16 @@ class SquirlsAutoConfigurationTest extends AbstractAutoConfigurationTest {
         /*
          * High-level beans
          */
-        GenomeSequenceAccessor genomeSequenceAccessor = context.getBean("genomeSequenceAccessor", GenomeSequenceAccessor.class);
-        assertThat(genomeSequenceAccessor, is(notNullValue()));
-
-        SplicingTranscriptSource splicingTranscriptSource = context.getBean("splicingTranscriptSource", SplicingTranscriptSource.class);
-        assertThat(splicingTranscriptSource, is(notNullValue()));
-
         assertThat(context.getBean("splicingAnnotator").getClass(), typeCompatibleWith(SplicingAnnotator.class));
+
+        StrandedSequenceService strandedSequenceService = context.getBean("strandedSequenceService", StrandedSequenceService.class);
+        assertThat(strandedSequenceService, is(notNullValue()));
+
+        TranscriptModelService transcriptModelService = context.getBean("transcriptModelService", TranscriptModelService.class);
+        assertThat(transcriptModelService, is(notNullValue()));
+
+        SquirlsDataService squirlsDataService = context.getBean("squirlsDataService", SquirlsDataService.class);
+        assertThat(squirlsDataService, is(notNullValue()));
 
         VariantSplicingEvaluator evaluator = context.getBean("variantSplicingEvaluator", VariantSplicingEvaluator.class);
         assertThat(evaluator, is(notNullValue()));

@@ -82,7 +82,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 /**
  * Here we test some real-world variants.
  */
-@Disabled // move to autoconfigure
+// TODO - fix
+@Disabled("re-enable")
 @SpringBootTest(classes = TestDataSourceConfig.class)
 class VariantSplicingEvaluatorDefaultTest {
 
@@ -99,7 +100,7 @@ class VariantSplicingEvaluatorDefaultTest {
 //    private GenomeSequenceAccessor accessor;
 //
 //    @Mock
-//    private SplicingTranscriptSource transcriptSource;
+//    private TranscriptModelService transcriptSource;
 //
 //    @Mock
 //    private SplicingAnnotator annotator;

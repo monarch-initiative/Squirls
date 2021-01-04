@@ -80,10 +80,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.monarchinitiative.squirls.core.classifier.SquirlsFeatures;
 
-import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
@@ -99,56 +96,17 @@ public class SplicingDataImputerTest {
 
     @Test
     public void transform() throws Exception {
-        SquirlsFeatures feature = new SimpleSquirlsFeatures(new HashMap<>(Map.of(
-                "a", 1.,
-                "b", Double.NaN,
-                "c", Double.NaN)));
+        SquirlsFeatures feature = SquirlsFeatures.of(
+                Map.of("a", 1.,
+                        "b", Double.NaN,
+                        "c", Double.NaN));
         SquirlsFeatures imputed = splicingDataImputer.transform(feature);
-        assertThat(imputed.getFeature("b", Double.class), is(closeTo(1.5, .005)));
-        assertThat(imputed.getFeature("c", Double.class), is(notANumber())); // unknown feature is not imputed
+        assertThat(imputed.getFeature("b"), is(closeTo(1.5, .005)));
+        assertThat(imputed.getFeature("c"), is(notANumber())); // unknown feature is not imputed
     }
 
     @Test
     public void getSupportedFeatureNames() {
         assertThat(splicingDataImputer.usedFeatureNames(), hasItems("a", "b"));
-    }
-
-    private static class SimpleSquirlsFeatures implements SquirlsFeatures {
-
-        private final Map<String, Object> featureMap;
-
-        private SimpleSquirlsFeatures(Map<String, Object> featureMap) {
-            this.featureMap = featureMap;
-        }
-
-        @Override
-        public Set<String> getFeatureNames() {
-            return featureMap.keySet();
-        }
-
-        @Override
-        public <T> T getFeature(String featureName, Class<T> clz) {
-            return clz.cast(featureMap.get(featureName));
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-            SimpleSquirlsFeatures that = (SimpleSquirlsFeatures) o;
-            return Objects.equals(featureMap, that.featureMap);
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(featureMap);
-        }
-
-        @Override
-        public String toString() {
-            return "SimpleSquirlsFeatures{" +
-                    "featureMap=" + featureMap +
-                    '}';
-        }
     }
 }

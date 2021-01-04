@@ -76,17 +76,16 @@
 
 package org.monarchinitiative.squirls.core.scoring.calculators;
 
-import de.charite.compbio.jannovar.reference.GenomePosition;
-import de.charite.compbio.jannovar.reference.GenomeVariant;
-import de.charite.compbio.jannovar.reference.Strand;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.monarchinitiative.variant.api.Variant;
+import org.monarchinitiative.variant.api.impl.SequenceVariant;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.closeTo;
 
-class CrypticAcceptorScorerTest extends CalculatorTestBase {
+public class CrypticAcceptorScorerTest extends CalculatorTestBase {
 
     private CrypticAcceptor scorer;
 
@@ -98,29 +97,20 @@ class CrypticAcceptorScorerTest extends CalculatorTestBase {
     }
 
     @Test
-    void snpInAcceptor() {
-        GenomeVariant variant = new GenomeVariant(new GenomePosition(rd, Strand.FWD, 1, 1395), "c", "a");
-
-        final double score = scorer.score(variant, st, sequenceInterval);
-
-        assertThat(score, is(closeTo(0.0000, EPSILON)));
+    public void snpInAcceptor() {
+        Variant variant = SequenceVariant.zeroBased(contig, 1395, "c", "a");
+        assertThat(scorer.score(variant, tx, sequenceInterval), is(closeTo(0.0000, EPSILON)));
     }
 
     @Test
-    void snpDownstreamFromAcceptor() {
-        GenomeVariant variant = new GenomeVariant(new GenomePosition(rd, Strand.FWD, 1, 1404), "G", "A");
-
-        final double score = scorer.score(variant, st, sequenceInterval);
-
-        assertThat(score, is(closeTo(-3.6366, EPSILON)));
+    public void snpDownstreamFromAcceptor() {
+        Variant variant = SequenceVariant.zeroBased(contig, 1404, "G", "A");
+        assertThat(scorer.score(variant, tx, sequenceInterval), is(closeTo(-3.6366, EPSILON)));
     }
 
     @Test
-    void snpUpstreamFromAcceptor() {
-        GenomeVariant variant = new GenomeVariant(new GenomePosition(rd, Strand.FWD, 1, 1374), "c", "g");
-
-        final double score = scorer.score(variant, st, sequenceInterval);
-
-        assertThat(score, is(closeTo(-2.0725, EPSILON)));
+    public void snpUpstreamFromAcceptor() {
+        Variant variant = SequenceVariant.zeroBased(contig, 1374, "c", "g");
+        assertThat(scorer.score(variant, tx, sequenceInterval), is(closeTo(-2.0725, EPSILON)));
     }
 }

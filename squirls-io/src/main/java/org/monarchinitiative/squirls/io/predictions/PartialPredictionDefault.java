@@ -84,6 +84,7 @@ import java.util.Objects;
  * This class represents a fragment of information from the decision function, a single prediction of an ensemble
  * which calculated pathogenicity probability.
  */
+// TODO - move to core as a default implementation
 public class PartialPredictionDefault implements PartialPrediction {
 
     private final String name;

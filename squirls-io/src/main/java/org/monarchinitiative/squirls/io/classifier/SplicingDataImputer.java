@@ -78,7 +78,6 @@ package org.monarchinitiative.squirls.io.classifier;
 
 import org.monarchinitiative.squirls.core.classifier.PredictionException;
 import org.monarchinitiative.squirls.core.classifier.SquirlsFeatures;
-import org.monarchinitiative.squirls.core.classifier.SquirlsFeaturesDefault;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -120,13 +119,13 @@ public class SplicingDataImputer<T extends SquirlsFeatures> {
             throw new PredictionException(msg);
         }
 
-        Map<String, Object> imputed = new HashMap<>(features.getFeatureMap());
+        Map<String, Double> imputed = new HashMap<>(features.getFeatureMap());
         for (String featureName : usedFeatureNames()) { // we only impute the features we know about
-            double value = features.getFeature(featureName, Double.class);
+            double value = features.getFeature(featureName);
             imputed.put(featureName, Double.isNaN(value) ? medianMap.get(featureName) : value);
         }
 
-        return SquirlsFeaturesDefault.of(imputed);
+        return SquirlsFeatures.of(imputed);
     }
 
     @Override

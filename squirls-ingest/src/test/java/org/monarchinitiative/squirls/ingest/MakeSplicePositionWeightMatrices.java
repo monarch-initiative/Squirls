@@ -77,7 +77,7 @@
 package org.monarchinitiative.squirls.ingest;
 
 import org.jblas.DoubleMatrix;
-import org.monarchinitiative.squirls.core.model.SplicingParameters;
+import org.monarchinitiative.squirls.core.reference.SplicingParameters;
 
 
 public class MakeSplicePositionWeightMatrices {

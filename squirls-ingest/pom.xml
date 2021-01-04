@@ -18,6 +18,11 @@
             <artifactId>squirls-io</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
+        <dependency>
+            <groupId>de.charite.compbio</groupId>
+            <artifactId>jannovar-core</artifactId>
+            <version>${jannovar.version}</version>
+        </dependency>
 
         <dependency>
             <groupId>net.sourceforge.argparse4j</groupId>

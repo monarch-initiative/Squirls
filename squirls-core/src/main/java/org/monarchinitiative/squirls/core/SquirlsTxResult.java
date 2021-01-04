@@ -87,6 +87,10 @@ import java.util.OptionalDouble;
 @API(status = API.Status.STABLE, since = "1.0.0")
 public interface SquirlsTxResult {
 
+    static SquirlsTxResult of(String accessionId, Prediction prediction, Map<String, Double> featureMap) {
+        return SquirlsTxResultDefault.of(accessionId, prediction, featureMap);
+    }
+
     /**
      * @return string with transcript accession ID
      */

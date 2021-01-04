@@ -81,14 +81,12 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
-import org.monarchinitiative.squirls.cli.data.VariantsForTesting;
 import org.monarchinitiative.squirls.cli.visualization.GraphicsGeneratorTestBase;
 import org.monarchinitiative.squirls.cli.visualization.VisualizableVariantAllele;
 import org.monarchinitiative.squirls.cli.visualization.selector.VisualizationContext;
 import org.monarchinitiative.squirls.cli.visualization.selector.VisualizationContextSelector;
 import org.monarchinitiative.squirls.cli.writers.WritableSplicingAllele;
-import org.monarchinitiative.squirls.core.data.SplicingTranscriptSource;
-import xyz.ielis.hyperutil.reference.fasta.GenomeSequenceAccessor;
+import org.monarchinitiative.squirls.core.SquirlsDataService;
 
 import java.util.Optional;
 
@@ -96,35 +94,33 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.anyMap;
 import static org.mockito.Mockito.when;
 
-@Disabled // TODO: 19. 11. 2020 fix if necessary
+// TODO: 19. 11. 2020 fix if necessary
+@Disabled("graphics generator tests are disabled until we converge on the final functionality")
 public class PanelGraphicsGeneratorTest extends GraphicsGeneratorTestBase {
 
     @Mock
     public VisualizationContextSelector selector;
 
     @Mock
-    public GenomeSequenceAccessor accessor;
-
-    @Mock
-    public SplicingTranscriptSource source;
+    public SquirlsDataService squirlsDataService;
 
     private PanelGraphicsGenerator generator;
 
     @BeforeEach
     public void setUp() {
         super.setUp();
-        generator = new PanelGraphicsGenerator(vmvtGenerator, splicingPwmData, selector, accessor, source);
-        when(accessor.getReferenceDictionary()).thenReturn(null);
+        generator = new PanelGraphicsGenerator(vmvtGenerator, splicingPwmData, selector, squirlsDataService);
+        when(squirlsDataService.genomicAssembly()).thenReturn(null);
     }
 
     @Test
     public void canonicalDonor() throws Exception {
-        WritableSplicingAllele writableSplicingAllele = VariantsForTesting.BRCA2DonorExon15plus2QUID(jannovarData.getRefDict(), annotator);
+        WritableSplicingAllele writableSplicingAllele = variantsForTesting.BRCA2DonorExon15plus2QUID();
         String txAccession = writableSplicingAllele.squirlsResult().maxPathogenicityTranscriptAccession().orElseThrow();
 
         when(selector.selectContext(anyMap())).thenReturn(VisualizationContext.CANONICAL_DONOR);
-        when(accessor.fetchSequence(any())).thenReturn(Optional.empty());
-        when(source.fetchTranscriptByAccession(txAccession, null)).thenReturn(Optional.empty());
+        when(squirlsDataService.sequenceForRegion(any())).thenReturn(null);
+        when(squirlsDataService.getByAccession(txAccession)).thenReturn(Optional.empty());
 
         VisualizableVariantAllele allele = toVisualizableAllele(writableSplicingAllele);
 
@@ -145,9 +141,9 @@ public class PanelGraphicsGeneratorTest extends GraphicsGeneratorTestBase {
     @Test
     public void canonicalAcceptor() throws Exception {
         when(selector.selectContext(anyMap())).thenReturn(VisualizationContext.CANONICAL_ACCEPTOR);
-        when(accessor.fetchSequence(any())).thenReturn(Optional.empty()); // TODO: 17. 11. 2020 fix if necessary
+        when(squirlsDataService.sequenceForRegion(any())).thenReturn(null); // TODO: 17. 11. 2020 fix if necessary
 
-        WritableSplicingAllele writableSplicingAllele = VariantsForTesting.TSC2AcceptorExon11Minus3(jannovarData.getRefDict(), annotator);
+        WritableSplicingAllele writableSplicingAllele = variantsForTesting.TSC2AcceptorExon11Minus3();
         VisualizableVariantAllele allele = toVisualizableAllele(writableSplicingAllele);
         final String content = generator.generateGraphics(allele);
 

@@ -76,8 +76,10 @@
 
 package org.monarchinitiative.squirls.ingest.transcripts;
 
-import de.charite.compbio.jannovar.reference.TranscriptModel;
 import org.junit.jupiter.api.Test;
+import org.monarchinitiative.squirls.core.reference.TranscriptModel;
+import org.monarchinitiative.variant.api.GenomicAssembly;
+import org.monarchinitiative.variant.api.parsers.GenomicAssemblyParser;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -89,15 +91,17 @@ import static org.hamcrest.CoreMatchers.hasItems;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
 
-class JannovarDataManagerTest {
+public class JannovarDataManagerTest {
+
+    private static final GenomicAssembly genomicAssembly = GenomicAssemblyParser.parseAssembly(Paths.get("src/test/resources/org/monarchinitiative/squirls/ingest/GCF_000001405.25_GRCh37.p13_assembly_report.txt"));
 
     private final Path TEST_DBS = Paths.get(JannovarDataManagerTest.class.getResource("hg19").getPath());
 
     @Test
-    void fromDirectory() {
+    public void fromDirectory() {
         JannovarDataManager jannovarDataManager = JannovarDataManager.fromDirectory(TEST_DBS);
-        final Map<String, List<TranscriptModel>> txsByGene = jannovarDataManager.getAllTranscriptModels().stream()
-                .collect(Collectors.groupingBy(TranscriptModel::getGeneSymbol));
+        final Map<String, List<TranscriptModel>> txsByGene = jannovarDataManager.getAllTranscriptModels(genomicAssembly).stream()
+                .collect(Collectors.groupingBy(TranscriptModel::hgvsSymbol));
         assertThat(txsByGene.keySet(), hasItems("HNF4A", "GCK", "FBN1"));
         assertThat(txsByGene.get("HNF4A"), hasSize(24));
         assertThat(txsByGene.get("GCK"), hasSize(14));

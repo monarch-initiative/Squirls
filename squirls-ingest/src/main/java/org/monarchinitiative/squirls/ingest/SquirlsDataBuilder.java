@@ -78,34 +78,28 @@ package org.monarchinitiative.squirls.ingest;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
-import de.charite.compbio.jannovar.data.ReferenceDictionary;
-import de.charite.compbio.jannovar.reference.TranscriptModel;
 import org.flywaydb.core.Flyway;
 import org.monarchinitiative.squirls.core.SquirlsException;
-import org.monarchinitiative.squirls.core.data.ic.InputStreamBasedPositionalWeightMatrixParser;
-import org.monarchinitiative.squirls.core.data.ic.SplicingPositionalWeightMatrixParser;
-import org.monarchinitiative.squirls.core.data.ic.SplicingPwmData;
-import org.monarchinitiative.squirls.core.data.kmer.FileKMerParser;
-import org.monarchinitiative.squirls.core.model.SplicingParameters;
-import org.monarchinitiative.squirls.core.scoring.calculators.ic.SplicingInformationContentCalculator;
-import org.monarchinitiative.squirls.ingest.dao.KmerIngestDao;
-import org.monarchinitiative.squirls.ingest.dao.PwmIngestDao;
-import org.monarchinitiative.squirls.ingest.dao.ReferenceDictionaryIngestDao;
-import org.monarchinitiative.squirls.ingest.dao.TranscriptIngestDao;
+import org.monarchinitiative.squirls.core.reference.SplicingParameters;
+import org.monarchinitiative.squirls.core.reference.SplicingPwmData;
+import org.monarchinitiative.squirls.core.reference.TranscriptModel;
 import org.monarchinitiative.squirls.ingest.data.GenomeAssemblyDownloader;
 import org.monarchinitiative.squirls.ingest.data.UrlResourceDownloader;
+import org.monarchinitiative.squirls.ingest.parse.FileKMerParser;
+import org.monarchinitiative.squirls.ingest.parse.InputStreamBasedPositionalWeightMatrixParser;
 import org.monarchinitiative.squirls.ingest.transcripts.JannovarDataManager;
-import org.monarchinitiative.squirls.ingest.transcripts.SplicingCalculator;
-import org.monarchinitiative.squirls.ingest.transcripts.SplicingCalculatorImpl;
 import org.monarchinitiative.squirls.ingest.transcripts.TranscriptsIngestRunner;
-import org.monarchinitiative.squirls.io.DbClassifierDataManager;
+import org.monarchinitiative.squirls.io.SplicingPositionalWeightMatrixParser;
 import org.monarchinitiative.squirls.io.SquirlsClassifierVersion;
+import org.monarchinitiative.squirls.io.SquirlsResourceException;
+import org.monarchinitiative.squirls.io.db.*;
+import org.monarchinitiative.squirls.io.sequence.FastaStrandedSequenceService;
+import org.monarchinitiative.variant.api.GenomicAssembly;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import xyz.ielis.hyperutil.reference.fasta.GenomeSequenceAccessor;
-import xyz.ielis.hyperutil.reference.fasta.GenomeSequenceAccessorBuilder;
 
 import javax.sql.DataSource;
+import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -146,7 +140,6 @@ public class SquirlsDataBuilder {
     }
 
     static DataSource makeDataSource(Path databasePath) {
-        // TODO(optional) - add JDBC parameters?
         String jdbcUrl = String.format("jdbc:h2:file:%s", databasePath.toString());
         HikariConfig config = new HikariConfig();
         config.setUsername("sa");
@@ -171,10 +164,10 @@ public class SquirlsDataBuilder {
     }
 
     /**
-     * Download, uncompress, and concatenate contigs into a single FASTA file. Then, index the FASTA file.
+     * Download, decompress, and concatenate contigs into a single FASTA file. Then, index the FASTA file.
      *
      * @param genomeUrl         url pointing to reference genome FASTA file to be downloaded
-     * @param buildDir          path to directory where 3S data files will be created
+     * @param buildDir          path to directory where Squirls data files will be created
      * @param versionedAssembly a string like `1710_hg19`, etc.
      * @param overwrite         overwrite existing FASTA file if true
      */
@@ -184,28 +177,31 @@ public class SquirlsDataBuilder {
     }
 
     /**
-     * Process given <code>transcripts</code>.
+     * Store the transcripts in the database.
      */
-    static void ingestTranscripts(DataSource dataSource,
-                                  ReferenceDictionary referenceDictionary,
-                                  GenomeSequenceAccessor accessor,
-                                  Collection<TranscriptModel> transcripts,
-                                  SplicingInformationContentCalculator calculator) {
-        TranscriptIngestDao transcriptIngestDao = new TranscriptIngestDao(dataSource, referenceDictionary);
-        SplicingCalculator splicingCalculator = new SplicingCalculatorImpl(accessor, calculator);
-        TranscriptsIngestRunner transcriptsIngestRunner = new TranscriptsIngestRunner(splicingCalculator, transcriptIngestDao, transcripts);
+    static void ingestTranscripts(DataSource dataSource, Collection<TranscriptModel> transcripts) throws SquirlsResourceException {
+        TranscriptModelServiceDb transcriptIngestDao = new TranscriptModelServiceDb(dataSource);
+        TranscriptsIngestRunner transcriptsIngestRunner = new TranscriptsIngestRunner(transcriptIngestDao, transcripts);
         transcriptsIngestRunner.run();
     }
 
     /**
-     * Store data for septamers and hexamer methods.
+     * Store the genomic assembly in the database.
+     */
+    static int ingestGenomicAssembly(DataSource dataSource, GenomicAssembly genomicAssembly) {
+        GenomicAssemblyIngestDao ingestDao = new GenomicAssemblyIngestDao(dataSource);
+        return ingestDao.saveGenomicAssembly(genomicAssembly);
+    }
+
+    /**
+     * Store data for hexamer and septamer-dependent methods.
      *
      * @param dataSource  data source for a database
      * @param hexamerMap  map with hexamer scores
      * @param septamerMap map with septamer scores
      */
     private static void processKmers(DataSource dataSource, Map<String, Double> hexamerMap, Map<String, Double> septamerMap) {
-        KmerIngestDao dao = new KmerIngestDao(dataSource);
+        DbKMerDao dao = new DbKMerDao(dataSource);
         int updated = dao.insertHexamers(hexamerMap);
         LOGGER.info("Updated {} rows in hexamer table", updated);
         updated = dao.insertSeptamers(septamerMap);
@@ -221,7 +217,6 @@ public class SquirlsDataBuilder {
      */
     private static void processClassifier(DataSource dataSource, SquirlsClassifierVersion clfVersion, byte[] clfBytes) {
         DbClassifierDataManager manager = new DbClassifierDataManager(dataSource);
-
 
         // squirls classifier
         LOGGER.info("Inserting classifier `{}`", clfVersion);
@@ -251,7 +246,7 @@ public class SquirlsDataBuilder {
      * @param versionedAssembly a string like `1710_hg19`, etc.
      * @throws SquirlsException if anything goes wrong
      */
-    public static void buildDatabase(Path buildDir, URL genomeUrl, URL phylopUrl, Path jannovarDbDir, Path yamlPath,
+    public static void buildDatabase(Path buildDir, URL genomeUrl, URL genomeAssemblyReport, URL phylopUrl, Path jannovarDbDir, Path yamlPath,
                                      Path hexamerPath, Path septamerPath,
                                      Map<SquirlsClassifierVersion, Path> classifiers,
                                      String versionedAssembly) throws SquirlsException {
@@ -261,11 +256,13 @@ public class SquirlsDataBuilder {
         Path genomeFastaPath = buildDir.resolve(String.format("%s.fa", versionedAssembly));
         Path genomeFastaFaiPath = buildDir.resolve(String.format("%s.fa.fai", versionedAssembly));
         Path genomeFastaDictPath = buildDir.resolve(String.format("%s.fa.dict", versionedAssembly));
+        Path genomeAssemblyReportPath = buildDir.resolve(String.format("%s.assembly_report.txt", versionedAssembly));
         Path phyloPPath = buildDir.resolve(String.format("%s.phylop.bw", versionedAssembly));
 
-        final ExecutorService es = Executors.newFixedThreadPool(2);
+        ExecutorService es = Executors.newFixedThreadPool(3);
         es.submit(downloadReferenceGenome(genomeUrl, buildDir, versionedAssembly, false));
         es.submit(new UrlResourceDownloader(phylopUrl, phyloPPath, false));
+        es.submit(new UrlResourceDownloader(genomeAssemblyReport, genomeAssemblyReportPath, false));
 
         // 1 - deserialize Jannovar transcript databases
         JannovarDataManager manager = JannovarDataManager.fromDirectory(jannovarDbDir);
@@ -318,38 +315,38 @@ public class SquirlsDataBuilder {
             throw new SquirlsException(e);
         }
 
-        // now wait until the downloads are finished
+        // now wait until all the downloads complete
         try {
             es.shutdown();
-            System.out.print("Waiting for the downloads to finish ");
             while (!es.awaitTermination(5, TimeUnit.SECONDS)) {
                 System.out.print('.');
             }
             System.out.print('\n');
         } catch (InterruptedException e) {
-            LOGGER.info("Interrupting the download");
+            if (LOGGER.isWarnEnabled()) LOGGER.warn("Interrupting the download");
             es.shutdownNow();
         }
 
         // 3f - store reference dictionary and transcripts
-        SplicingInformationContentCalculator calculator = new SplicingInformationContentCalculator(splicingPwmData);
-        try (GenomeSequenceAccessor accessor = GenomeSequenceAccessorBuilder.builder()
-                .setFastaPath(genomeFastaPath)
-                .setFastaFaiPath(genomeFastaFaiPath)
-                .setFastaDictPath(genomeFastaDictPath)
-                .build()) {
-            final ReferenceDictionary rd = accessor.getReferenceDictionary();
-            LOGGER.info("Inserting reference dictionary");
-            ReferenceDictionaryIngestDao referenceDictionaryIngestDao = new ReferenceDictionaryIngestDao(dataSource);
-            referenceDictionaryIngestDao.saveReferenceDictionary(rd);
+        try (FastaStrandedSequenceService accessor = new FastaStrandedSequenceService(genomeAssemblyReportPath,
+                genomeFastaPath, genomeFastaFaiPath, genomeFastaDictPath)) {
+            if (LOGGER.isInfoEnabled()) LOGGER.info("Inserting the assembly {}", accessor.genomicAssembly().name());
+            int updated = ingestGenomicAssembly(dataSource, accessor.genomicAssembly());
+            if (LOGGER.isInfoEnabled()) LOGGER.info("Updated {} rows", updated);
 
-            LOGGER.info("Inserting transcripts");
-            ingestTranscripts(dataSource, rd, accessor, manager.getAllTranscriptModels(), calculator);
-        } catch (IOException e) {
+            if (LOGGER.isInfoEnabled()) LOGGER.info("Inserting transcripts");
+            ingestTranscripts(dataSource, manager.getAllTranscriptModels(accessor.genomicAssembly()));
+        } catch (Exception e) {
             throw new SquirlsException(e);
         }
-
-
+        if (dataSource instanceof Closeable) {
+            try {
+                if (LOGGER.isInfoEnabled()) LOGGER.info("Closing database connections");
+                ((Closeable) dataSource).close();
+            } catch (IOException e) {
+                if (LOGGER.isWarnEnabled()) LOGGER.warn("Could not close the datasource");
+            }
+        }
     }
 
 }

@@ -82,6 +82,10 @@ import java.util.Set;
 
 public interface SquirlsFeatures {
 
+    static SquirlsFeatures of(Map<String, Double> featureMap) {
+        return SquirlsFeaturesDefault.of(featureMap);
+    }
+
     /**
      * @return set of all feature names available within this instance
      */
@@ -91,13 +95,10 @@ public interface SquirlsFeatures {
      * Get feature value (check for presence before getting).
      *
      * @param featureName name of the feature
-     * @param clz         cast the feature value to class {@link T}
-     * @param <T>         class type
      * @return feature value
      * @throws NullPointerException if the <code>featureName</code> is not available.
      */
-    // TODO - evaluate whether not just use Doubles
-    <T> T getFeature(String featureName, Class<T> clz);
+    double getFeature(String featureName);
 
     /**
      * Get map with all available features.
@@ -106,20 +107,12 @@ public interface SquirlsFeatures {
      */
     default Map<String, Double> getFeatureMap() {
         Set<String> featureNames = getFeatureNames();
-        HashMap<String, Double> featureMap = new HashMap<>(featureNames.size());
+        HashMap<String, Double> builder = new HashMap<>(featureNames.size());
 
         for (String featureName : featureNames) {
-            Object rawFeature = getFeature(featureName, Object.class);
-            if (rawFeature instanceof Double) {
-                featureMap.put(featureName, (Double) rawFeature);
-            } else if (rawFeature instanceof Integer) {
-                double doubleValue = ((Integer) rawFeature).doubleValue();
-                featureMap.put(featureName, doubleValue);
-            } else {
-                throw new RuntimeException("Unexpected type " + rawFeature.getClass() + " for feature `" + featureName + '`');
-            }
+            builder.put(featureName, getFeature(featureName));
         }
-        return featureMap;
+        return Map.copyOf(builder);
     }
 
 }

@@ -102,16 +102,18 @@ public class FakeUpDatabase {
     @Test
     public void makeHg19Database() throws Exception {
         URL genomeUrl = new URL("http://hgdownload.soe.ucsc.edu/goldenPath/hg19/bigZips/chromFa.tar.gz");
+        URL assemblyUrl = new URL("https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/405/GCF_000001405.25_GRCh37.p13/GCF_000001405.25_GRCh37.p13_assembly_report.txt");
         URL phylopUrl = new URL("http://hgdownload.cse.ucsc.edu/goldenpath/hg19/phyloP100way/hg19.100way.phyloP100way.bw");
-        SquirlsDataBuilder.buildDatabase(BUILD_DIR, genomeUrl, phylopUrl, HG19_JANNOVAR_DB_DIR, SPLICING_IC_MATRIX_PATH,
+        SquirlsDataBuilder.buildDatabase(BUILD_DIR, genomeUrl, assemblyUrl, phylopUrl, HG19_JANNOVAR_DB_DIR, SPLICING_IC_MATRIX_PATH,
                 HEXAMER_TSV_PATH, SEPTAMER_TSV_PATH, TestDataSourceConfig.MODEL_PATHS, "1710_hg19");
     }
 
     @Test
     public void makeHg38Database() throws Exception {
         URL genomeUrl = new URL("http://hgdownload.soe.ucsc.edu/goldenPath/hg38/bigZips/hg38.chromFa.tar.gz");
+        URL assemblyUrl = new URL("https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/405/GCF_000001405.39_GRCh38.p13/GCF_000001405.39_GRCh38.p13_assembly_report.txt");
         URL phylopUrl = new URL("http://hgdownload.soe.ucsc.edu/goldenPath/hg38/phyloP100way/hg38.phyloP100way.bw");
-        SquirlsDataBuilder.buildDatabase(BUILD_DIR, genomeUrl, phylopUrl, HG38_JANNOVAR_DB_DIR, SPLICING_IC_MATRIX_PATH,
+        SquirlsDataBuilder.buildDatabase(BUILD_DIR, genomeUrl, assemblyUrl, phylopUrl, HG38_JANNOVAR_DB_DIR, SPLICING_IC_MATRIX_PATH,
                 HEXAMER_TSV_PATH, SEPTAMER_TSV_PATH, TestDataSourceConfig.MODEL_PATHS, "1710_hg38");
     }
 }

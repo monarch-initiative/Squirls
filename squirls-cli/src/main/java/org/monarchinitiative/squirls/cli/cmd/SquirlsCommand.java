@@ -82,8 +82,8 @@ import org.monarchinitiative.squirls.cli.visualization.selector.SimpleVisualizat
 import org.monarchinitiative.squirls.cli.visualization.selector.VisualizationContextSelector;
 import org.monarchinitiative.squirls.cli.writers.ResultWriterFactory;
 import org.monarchinitiative.squirls.core.Prediction;
-import org.monarchinitiative.squirls.core.data.SplicingTranscriptSource;
-import org.monarchinitiative.squirls.core.data.ic.SplicingPwmData;
+import org.monarchinitiative.squirls.core.SquirlsDataService;
+import org.monarchinitiative.squirls.core.reference.SplicingPwmData;
 import org.monarchinitiative.vmvt.core.VmvtGenerator;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.builder.SpringApplicationBuilder;
@@ -91,7 +91,6 @@ import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import picocli.CommandLine;
-import xyz.ielis.hyperutil.reference.fasta.GenomeSequenceAccessor;
 
 import java.nio.file.Path;
 import java.util.Map;
@@ -132,9 +131,8 @@ public abstract class SquirlsCommand implements Callable<Integer> {
     public SplicingVariantGraphicsGenerator splicingVariantGraphicsGenerator(VmvtGenerator vmvtGenerator,
                                                                              SplicingPwmData splicingPwmData,
                                                                              VisualizationContextSelector visualizationContextSelector,
-                                                                             GenomeSequenceAccessor genomeSequenceAccessor,
-                                                                             SplicingTranscriptSource splicingTranscriptSource) {
-        return new PanelGraphicsGenerator(vmvtGenerator, splicingPwmData, visualizationContextSelector, genomeSequenceAccessor, splicingTranscriptSource);
+                                                                             SquirlsDataService squirlsDataService) {
+        return new PanelGraphicsGenerator(vmvtGenerator, splicingPwmData, visualizationContextSelector, squirlsDataService);
     }
 
     @Bean

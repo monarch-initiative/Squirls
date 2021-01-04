@@ -80,15 +80,15 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
-public class SquirlsFeaturesDefault implements SquirlsFeatures {
+class SquirlsFeaturesDefault implements SquirlsFeatures {
 
-    private final Map<String, Object> features;
+    private final Map<String, Double> features;
 
-    private SquirlsFeaturesDefault(Map<String, Object> features) {
+    private SquirlsFeaturesDefault(Map<String, Double> features) {
         this.features = features;
     }
 
-    public static SquirlsFeaturesDefault of(Map<String, Object> features) {
+    static SquirlsFeaturesDefault of(Map<String, Double> features) {
         return new SquirlsFeaturesDefault(Map.copyOf(features));
     }
 
@@ -98,8 +98,8 @@ public class SquirlsFeaturesDefault implements SquirlsFeatures {
     }
 
     @Override
-    public <T> T getFeature(String featureName, Class<T> clz) {
-        return clz.cast(features.get(featureName));
+    public double getFeature(String featureName) {
+        return features.get(featureName);
     }
 
     @Override

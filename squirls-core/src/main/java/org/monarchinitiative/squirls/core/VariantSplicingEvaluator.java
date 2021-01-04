@@ -77,35 +77,36 @@
 package org.monarchinitiative.squirls.core;
 
 import org.apiguardian.api.API;
+import org.monarchinitiative.squirls.core.classifier.SquirlsClassifier;
+import org.monarchinitiative.squirls.core.scoring.SplicingAnnotator;
+import org.monarchinitiative.variant.api.Variant;
 
 import java.util.Set;
 
 @API(status = API.Status.STABLE, since = "1.0.0")
 public interface VariantSplicingEvaluator {
 
+    static VariantSplicingEvaluator of(SquirlsDataService squirlsDataService,
+                                       SplicingAnnotator annotator,
+                                       SquirlsClassifier classifier) {
+        return VariantSplicingEvaluatorDefault.of(squirlsDataService, annotator, classifier);
+    }
+
     /**
      * Calculate splicing scores for given variant with respect to given transcript IDs (<code>txIds</code>).
      * The variant is evaluated with respect to all overlapping transcripts, if <code>txIds</code> is empty.
      *
-     * @param contig string with name of the chromosome
-     * @param pos    1-based (included) variant position on FWD strand
-     * @param ref    reference allele, e.g. `C`, `CCT`
-     * @param alt    alternate allele, e.g. `T`, `AA`
-     * @param txIds  set of transcript accession IDs with respect to which the variant should be evaluated
+     * @param txIds set of transcript accession IDs with respect to which the variant should be evaluated
      * @return splicing prediction data
      */
-    SquirlsResult evaluate(String contig, int pos, String ref, String alt, Set<String> txIds);
+    SquirlsResult evaluate(Variant variant, Set<String> txIds);
 
     /**
      * Calculate splicing scores for given variant with respect to all transcripts the variant overlaps with.
      *
-     * @param contig string with name of the chromosome
-     * @param pos    1-based (included) variant position on FWD strand
-     * @param ref    reference allele, e.g. `C`, `CCT`
-     * @param alt    alternate allele, e.g. `T`, `AA`
      * @return map with splicing pathogenicity data mapped to transcript accession id
      */
-    default SquirlsResult evaluate(String contig, int pos, String ref, String alt) {
-        return evaluate(contig, pos, ref, alt, Set.of());
+    default SquirlsResult evaluate(Variant variant) {
+        return evaluate(variant, Set.of());
     }
 }

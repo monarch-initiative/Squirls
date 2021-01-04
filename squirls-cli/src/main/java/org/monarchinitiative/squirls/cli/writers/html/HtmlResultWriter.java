@@ -83,6 +83,7 @@ import org.monarchinitiative.squirls.cli.visualization.SplicingVariantGraphicsGe
 import org.monarchinitiative.squirls.cli.visualization.VisualizableVariantAllele;
 import org.monarchinitiative.squirls.cli.writers.*;
 import org.monarchinitiative.squirls.core.SquirlsResult;
+import org.monarchinitiative.variant.api.Variant;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 import org.thymeleaf.templatemode.TemplateMode;
@@ -124,7 +125,7 @@ public class HtmlResultWriter implements ResultWriter {
     }
 
     private static VisualizableVariantAllele toVisualizableAllele(WritableSplicingAllele writableSplicingAllele) {
-        return new SimpleVisualizableAllele(writableSplicingAllele.variantAnnotations(), writableSplicingAllele.squirlsResult());
+        return new SimpleVisualizableAllele(writableSplicingAllele.variant(), writableSplicingAllele.variantAnnotations(), writableSplicingAllele.squirlsResult());
     }
 
     private static String getRepresentation(WritableSplicingAllele writableSplicingAllele) {
@@ -179,9 +180,12 @@ public class HtmlResultWriter implements ResultWriter {
 
         private final SquirlsResult squirlsResult;
 
-        private SimpleVisualizableAllele(VariantAnnotations annotations, SquirlsResult squirlsResult) {
+        private final Variant variant;
+
+        private SimpleVisualizableAllele(Variant variant, VariantAnnotations annotations, SquirlsResult squirlsResult) {
             this.annotations = annotations;
             this.squirlsResult = squirlsResult;
+            this.variant = variant;
         }
 
         @Override
@@ -195,17 +199,21 @@ public class HtmlResultWriter implements ResultWriter {
         }
 
         @Override
+        public Variant variant() {
+            return variant;
+        }
+
+        @Override
         public boolean equals(Object o) {
             if (this == o) return true;
             if (o == null || getClass() != o.getClass()) return false;
             SimpleVisualizableAllele that = (SimpleVisualizableAllele) o;
-            return Objects.equals(annotations, that.annotations) &&
-                    Objects.equals(squirlsResult, that.squirlsResult);
+            return Objects.equals(annotations, that.annotations) && Objects.equals(squirlsResult, that.squirlsResult) && Objects.equals(variant, that.variant);
         }
 
         @Override
         public int hashCode() {
-            return Objects.hash(annotations, squirlsResult);
+            return Objects.hash(annotations, squirlsResult, variant);
         }
 
         @Override
@@ -213,6 +221,7 @@ public class HtmlResultWriter implements ResultWriter {
             return "SimpleVisualizableAllele{" +
                     "annotations=" + annotations +
                     ", squirlsResult=" + squirlsResult +
+                    ", variant=" + variant +
                     '}';
         }
     }

@@ -78,6 +78,7 @@ package org.monarchinitiative.squirls.core;
 
 import org.apiguardian.api.API;
 
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.Optional;
 import java.util.Set;
@@ -89,6 +90,10 @@ import java.util.stream.Stream;
  */
 @API(status = API.Status.STABLE, since = "1.0.0")
 public interface SquirlsResult {
+
+    static SquirlsResult of(Collection<SquirlsTxResult> results) {
+        return SquirlsResultDefault.of(results);
+    }
 
     /**
      * @return an empty result

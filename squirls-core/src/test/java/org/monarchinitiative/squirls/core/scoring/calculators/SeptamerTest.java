@@ -76,13 +76,12 @@
 
 package org.monarchinitiative.squirls.core.scoring.calculators;
 
-import de.charite.compbio.jannovar.reference.GenomePosition;
-import de.charite.compbio.jannovar.reference.GenomeVariant;
-import de.charite.compbio.jannovar.reference.Strand;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.monarchinitiative.variant.api.Variant;
+import org.monarchinitiative.variant.api.impl.SequenceVariant;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
@@ -92,7 +91,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.closeTo;
 
-class SeptamerTest extends CalculatorTestBase {
+public class SeptamerTest extends CalculatorTestBase {
 
     @Qualifier("septamerMap")
     @Autowired
@@ -108,23 +107,28 @@ class SeptamerTest extends CalculatorTestBase {
     }
 
     @Test
-    void score() {
-        GenomeVariant variant = new GenomeVariant(new GenomePosition(rd, Strand.FWD, 1, 1201), "t", "g");
-        final double score = calculator.score(variant, st, sequenceInterval);
-        assertThat(score, is(closeTo(-.317399, EPSILON)));
+    public void score() {
+        Variant variant = SequenceVariant.zeroBased(contig, 1201, "t", "g");
+        assertThat(calculator.score(variant, tx, sequenceInterval), is(closeTo(-.317399, EPSILON)));
     }
 
     @ParameterizedTest
-    @CsvSource({"AAAAAAA,-0.016", "TTTTTTG,-0.4587", "TTTCACC,0.1455"})
-    void scoreSeptamers(String seq, double expected) {
+    @CsvSource({
+            "AAAAAAA, -0.016",
+            "TTTTTTG, -0.4587",
+            "TTTCACC, 0.1455"})
+    public void scoreSeptamers(String seq, double expected) {
         double s = calculator.scoreSequence(seq);
         assertThat(s, is(closeTo(expected, EPSILON)));
     }
 
 
     @ParameterizedTest
-    @CsvSource({"CCCCACCTCTTCT,0.2302", "GTTAGGGATGGGA,-1.3347", "TCAGAAGGGCAGA,0.0175"})
-    void scoreSequence(String seq, double expected) {
+    @CsvSource({
+            "CCCCACCTCTTCT,  0.2302",
+            "GTTAGGGATGGGA, -1.3347",
+            "TCAGAAGGGCAGA,  0.0175"})
+    public void scoreSequence(String seq, double expected) {
         double s = calculator.scoreSequence(seq);
         assertThat(s, is(closeTo(expected, EPSILON)));
     }
@@ -134,7 +138,7 @@ class SeptamerTest extends CalculatorTestBase {
      * Both upper and lower cases work for nucleotide notation.
      */
     @Test
-    void upperAndLowerCasesWork() {
+    public void upperAndLowerCasesWork() {
         double s = calculator.scoreSequence("AAAaaaA");
         assertThat(s, is(closeTo(-0.016, EPSILON)));
     }
@@ -144,14 +148,14 @@ class SeptamerTest extends CalculatorTestBase {
      * Minimal length of a sequence to be scored is 7bp.
      */
     @Test
-    void scoreShorterSequence() {
+    public void scoreShorterSequence() {
         double s = calculator.scoreSequence("AAAAAA");
         assertThat(s, is(Double.NaN));
     }
 
 
     @Test
-    void invalidNucleotideCharacterLeadsToNan() {
+    public void invalidNucleotideCharacterLeadsToNan() {
         double s = calculator.scoreSequence("ACGTACGTAAC#TTA");
         assertThat(s, is(Double.NaN));
     }

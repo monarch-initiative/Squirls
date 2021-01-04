@@ -76,10 +76,10 @@
 
 package org.monarchinitiative.squirls.core;
 
-import de.charite.compbio.jannovar.reference.GenomeVariant;
 import org.monarchinitiative.squirls.core.classifier.SquirlsFeatures;
-import org.monarchinitiative.squirls.core.model.SplicingTranscript;
-import xyz.ielis.hyperutil.reference.fasta.SequenceInterval;
+import org.monarchinitiative.squirls.core.reference.StrandedSequence;
+import org.monarchinitiative.squirls.core.reference.TranscriptModel;
+import org.monarchinitiative.variant.api.Variant;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -88,29 +88,29 @@ import java.util.Set;
 
 public class SimpleAnnotatableSquirlsFeatures implements SquirlsFeatures, VariantOnTranscript {
 
-    private final GenomeVariant variant;
-    private final SplicingTranscript transcript;
-    private final SequenceInterval sequence;
-    private final Map<String, Object> features = new HashMap<>();
+    private final Variant variant;
+    private final TranscriptModel transcript;
+    private final StrandedSequence sequence;
+    private final Map<String, Double> features = new HashMap<>();
 
-    public SimpleAnnotatableSquirlsFeatures(GenomeVariant variant, SplicingTranscript transcript, SequenceInterval sequence) {
+    public SimpleAnnotatableSquirlsFeatures(Variant variant, TranscriptModel transcript, StrandedSequence sequence) {
         this.variant = variant;
         this.transcript = transcript;
         this.sequence = sequence;
     }
 
     @Override
-    public GenomeVariant getVariant() {
+    public Variant variant() {
         return variant;
     }
 
     @Override
-    public SplicingTranscript getTranscript() {
+    public TranscriptModel transcript() {
         return transcript;
     }
 
     @Override
-    public SequenceInterval getSequence() {
+    public StrandedSequence sequence() {
         return sequence;
     }
 
@@ -120,8 +120,8 @@ public class SimpleAnnotatableSquirlsFeatures implements SquirlsFeatures, Varian
     }
 
     @Override
-    public <T> T getFeature(String featureName, Class<T> clz) {
-        return clz.cast(features.get(featureName));
+    public double getFeature(String featureName) {
+        return features.get(featureName);
     }
 
     @Override

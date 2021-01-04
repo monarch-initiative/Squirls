@@ -76,19 +76,13 @@
 
 package org.monarchinitiative.squirls.cli.data;
 
-import de.charite.compbio.jannovar.annotation.VariantAnnotator;
-import de.charite.compbio.jannovar.annotation.builders.AnnotationBuilderOptions;
-import de.charite.compbio.jannovar.data.JannovarData;
-import de.charite.compbio.jannovar.data.ReferenceDictionary;
-import de.charite.compbio.jannovar.reference.HG19RefDictBuilder;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.monarchinitiative.squirls.cli.TestDataSourceConfig;
-import org.monarchinitiative.squirls.core.VariantOnTranscript;
 import org.monarchinitiative.squirls.core.classifier.SquirlsFeatures;
-import org.monarchinitiative.squirls.core.data.ic.SplicingPwmData;
+import org.monarchinitiative.squirls.core.reference.SplicingPwmData;
 import org.monarchinitiative.squirls.core.scoring.AGEZSplicingAnnotator;
 import org.monarchinitiative.squirls.core.scoring.SplicingAnnotator;
 import org.monarchinitiative.squirls.core.scoring.calculators.conservation.BigWigAccessor;
@@ -102,15 +96,14 @@ import java.util.Map;
 /**
  * These tests are used to generate splicing annotator values for items in {@link VariantsForTesting}.
  */
-@Disabled // these tests only work on the developer's machine
 @SpringBootTest(classes = TestDataSourceConfig.class)
+@Disabled("these tests are not used routinely") // Moreover, the tests only work on the developer's machine
 public class GenerateSplicingAnnotatorValues {
 
     //    private static final Path PHYLOP = Path.of("/Users/danisd/data/threes/hg19.100way.phyloP100way.bw");
 //    private static final Path PHYLOP = Path.of("/home/ielis/dub/bigwig/hg19.100way.phyloP100way.bw");
     private static final Path PHYLOP = Path.of("hg19.100way.phyloP100way.bw");
 
-    private static final ReferenceDictionary RD = HG19RefDictBuilder.build();
     /*
     -------------------------------------------------------
      */
@@ -131,11 +124,9 @@ public class GenerateSplicingAnnotatorValues {
     public Map<String, Double> hexamerMap;
 
     @Autowired
-    public JannovarData jannovarData;
+    public VariantsForTesting variantsForTesting;
 
-    private VariantAnnotator variantAnnotator;
-
-    private SplicingAnnotator<VariantOnTranscript, SquirlsFeatures> annotator;
+    private SplicingAnnotator annotator;
 
     @BeforeAll
     public static void beforeAll() throws Exception {
@@ -150,41 +141,40 @@ public class GenerateSplicingAnnotatorValues {
 
     @BeforeEach
     public void setUp() {
-        variantAnnotator = new VariantAnnotator(jannovarData.getRefDict(), jannovarData.getChromosomes(), new AnnotationBuilderOptions());
         annotator = new AGEZSplicingAnnotator(splicingPwmData, hexamerMap, septamerMap, ACCESSOR);
     }
 
     @Test
     public void BRCA2DonorExon15plus2QUID() throws Exception {
-        TestVariant allele = VariantsForTesting.BRCA2DonorExon15plus2QUID(RD, variantAnnotator);
+        TestVariant allele = variantsForTesting.BRCA2DonorExon15plus2QUID();
 
         printFeatureMap(annotator.annotate(allele));
     }
 
     @Test
     public void ALPLDonorExon7Minus2() throws Exception {
-        TestVariant allele = VariantsForTesting.ALPLDonorExon7Minus2(RD, variantAnnotator);
+        TestVariant allele = variantsForTesting.ALPLDonorExon7Minus2();
 
         printFeatureMap(annotator.annotate(allele));
     }
 
     @Test
     public void HBBcodingExon1UpstreamCrypticInCanonical() throws Exception {
-        TestVariant allele = VariantsForTesting.HBBcodingExon1UpstreamCrypticInCanonical(RD, variantAnnotator);
+        TestVariant allele = variantsForTesting.HBBcodingExon1UpstreamCrypticInCanonical();
 
         printFeatureMap(annotator.annotate(allele));
     }
 
     @Test
     public void HBBcodingExon1UpstreamCryptic() throws Exception {
-        TestVariant allele = VariantsForTesting.HBBcodingExon1UpstreamCryptic(RD, variantAnnotator);
+        TestVariant allele = variantsForTesting.HBBcodingExon1UpstreamCryptic();
 
         printFeatureMap(annotator.annotate(allele));
     }
 
     @Test
     public void VWFAcceptorExon26minus2QUID() throws Exception {
-        TestVariant allele = VariantsForTesting.VWFAcceptorExon26minus2QUID(RD, variantAnnotator);
+        TestVariant allele = variantsForTesting.VWFAcceptorExon26minus2QUID();
 
         printFeatureMap(annotator.annotate(allele));
     }
@@ -192,7 +182,7 @@ public class GenerateSplicingAnnotatorValues {
 
     @Test
     public void TSC2AcceptorExon11Minus3() throws Exception {
-        TestVariant allele = VariantsForTesting.TSC2AcceptorExon11Minus3(RD, variantAnnotator);
+        TestVariant allele = variantsForTesting.TSC2AcceptorExon11Minus3();
 
         printFeatureMap(annotator.annotate(allele));
     }
@@ -200,14 +190,14 @@ public class GenerateSplicingAnnotatorValues {
 
     @Test
     public void COL4A5AcceptorExon11Minus8() throws Exception {
-        TestVariant allele = VariantsForTesting.COL4A5AcceptorExon11Minus8(RD, variantAnnotator);
+        TestVariant allele = variantsForTesting.COL4A5AcceptorExon11Minus8();
 
         printFeatureMap(annotator.annotate(allele));
     }
 
     @Test
     public void RYR1codingExon102crypticAcceptor() throws Exception {
-        TestVariant allele = VariantsForTesting.RYR1codingExon102crypticAcceptor(RD, variantAnnotator);
+        TestVariant allele = variantsForTesting.RYR1codingExon102crypticAcceptor();
 
         printFeatureMap(annotator.annotate(allele));
     }
@@ -215,7 +205,7 @@ public class GenerateSplicingAnnotatorValues {
 
     @Test
     public void NF1codingExon9coding_SRE() throws Exception {
-        TestVariant allele = VariantsForTesting.NF1codingExon9coding_SRE(RD, variantAnnotator);
+        TestVariant allele = variantsForTesting.NF1codingExon9coding_SRE();
 
         printFeatureMap(annotator.annotate(allele));
     }

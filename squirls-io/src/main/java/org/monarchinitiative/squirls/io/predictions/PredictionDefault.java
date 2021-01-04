@@ -83,6 +83,7 @@ import java.util.Collection;
 import java.util.Objects;
 import java.util.Set;
 
+// TODO - move to core as a default implementation
 public class PredictionDefault implements Prediction {
 
     /**

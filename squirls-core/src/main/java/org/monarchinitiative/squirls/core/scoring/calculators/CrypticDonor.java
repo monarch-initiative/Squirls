@@ -76,17 +76,17 @@
 
 package org.monarchinitiative.squirls.core.scoring.calculators;
 
-import de.charite.compbio.jannovar.reference.GenomeInterval;
-import de.charite.compbio.jannovar.reference.GenomePosition;
-import de.charite.compbio.jannovar.reference.GenomeVariant;
-import org.monarchinitiative.squirls.core.Utils;
+import org.monarchinitiative.squirls.core.reference.AlleleGenerator;
 import org.monarchinitiative.squirls.core.reference.SplicingLocationData;
-import org.monarchinitiative.squirls.core.reference.allele.AlleleGenerator;
-import org.monarchinitiative.squirls.core.reference.transcript.SplicingTranscriptLocator;
+import org.monarchinitiative.squirls.core.reference.StrandedSequence;
+import org.monarchinitiative.squirls.core.reference.TranscriptModelLocator;
+import org.monarchinitiative.squirls.core.scoring.Utils;
 import org.monarchinitiative.squirls.core.scoring.calculators.ic.SplicingInformationContentCalculator;
+import org.monarchinitiative.variant.api.GenomicPosition;
+import org.monarchinitiative.variant.api.GenomicRegion;
+import org.monarchinitiative.variant.api.Variant;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import xyz.ielis.hyperutil.reference.fasta.SequenceInterval;
 
 public class CrypticDonor extends BaseFeatureCalculator {
 
@@ -99,41 +99,42 @@ public class CrypticDonor extends BaseFeatureCalculator {
 
     public CrypticDonor(SplicingInformationContentCalculator calculator,
                         AlleleGenerator generator,
-                        SplicingTranscriptLocator locator) {
+                        TranscriptModelLocator locator) {
         super(calculator, generator, locator);
         this.padding = calculator.getSplicingParameters().getDonorLength() - 1;
     }
 
     @Override
-    protected double score(GenomeVariant variant, SplicingLocationData locationData, SequenceInterval sequence) {
+    protected double score(Variant variant, SplicingLocationData locationData, StrandedSequence sequence) {
         return locationData.getDonorBoundary()
                 .map(anchor -> score(variant, anchor, sequence))
                 .orElse(0.);
     }
 
 
-    private double score(GenomeVariant variant, GenomePosition anchor, SequenceInterval sequence) {
-        final GenomeInterval donorInterval = generator.makeDonorInterval(anchor);
-        final GenomeInterval variantInterval = variant.getGenomeInterval();
+    private double score(Variant variant, GenomicPosition anchor, StrandedSequence sequence) {
+        GenomicRegion donorInterval = generator.makeDonorInterval(anchor);
 
         // prepare wt donor snippet
         final String donorSnippet;
-        if (variantInterval.overlapsWith(donorInterval)) {
+        if (variant.overlapsWith(donorInterval)) {
             donorSnippet = generator.getDonorSiteWithAltAllele(anchor, variant, sequence);
         } else {
             donorSnippet = generator.getDonorSiteSnippet(anchor, sequence);
         }
         if (donorSnippet == null) {
-            LOGGER.debug("Unable to create donor snippet at `{}` for variant `{}` using sequence `{}`",
-                    anchor, variant, sequence.getInterval());
+            if (LOGGER.isWarnEnabled())
+                LOGGER.warn("Unable to create donor snippet at `{}` for variant `{}` using sequence `{}`",
+                        anchor, variant, sequence);
             return Double.NaN;
         }
 
         // prepare snippet for sliding window with alt allele
-        final String donorNeighborSnippet = generator.getDonorNeighborSnippet(variantInterval, sequence, variant.getAlt());
+        final String donorNeighborSnippet = generator.getDonorNeighborSnippet(variant, sequence, variant.alt());
         if (donorNeighborSnippet == null) {
-            LOGGER.debug("Unable to create sliding window snippet +- {}bp for variant `{}` using sequence `{}`",
-                    padding, variant, sequence.getInterval());
+            if (LOGGER.isWarnEnabled())
+                LOGGER.warn("Unable to create sliding window snippet +- {}bp for variant `{}` using sequence `{}`",
+                        padding, variant, sequence);
             return Double.NaN;
         }
 

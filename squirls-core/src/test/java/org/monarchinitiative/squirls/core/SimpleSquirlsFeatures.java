@@ -85,9 +85,9 @@ import java.util.Set;
 
 public class SimpleSquirlsFeatures implements SquirlsFeatures {
 
-    protected final Map<String, Object> featureMap;
+    protected final Map<String, Double> featureMap;
 
-    public SimpleSquirlsFeatures(Map<String, Object> featureMap) {
+    public SimpleSquirlsFeatures(Map<String, Double> featureMap) {
         this.featureMap = new HashMap<>(featureMap);
     }
 
@@ -97,8 +97,8 @@ public class SimpleSquirlsFeatures implements SquirlsFeatures {
     }
 
     @Override
-    public <T> T getFeature(String featureName, Class<T> clz) {
-        return clz.cast(featureMap.get(featureName));
+    public double getFeature(String featureName) {
+        return featureMap.get(featureName);
     }
 
     @Override

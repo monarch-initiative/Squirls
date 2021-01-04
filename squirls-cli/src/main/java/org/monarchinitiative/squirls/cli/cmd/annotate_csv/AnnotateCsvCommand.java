@@ -82,10 +82,11 @@ import org.apache.commons.csv.CSVPrinter;
 import org.apache.commons.csv.CSVRecord;
 import org.monarchinitiative.squirls.cli.Main;
 import org.monarchinitiative.squirls.cli.cmd.SquirlsCommand;
-import org.monarchinitiative.squirls.core.Prediction;
-import org.monarchinitiative.squirls.core.SquirlsResult;
-import org.monarchinitiative.squirls.core.SquirlsTxResult;
-import org.monarchinitiative.squirls.core.VariantSplicingEvaluator;
+import org.monarchinitiative.squirls.core.*;
+import org.monarchinitiative.variant.api.Contig;
+import org.monarchinitiative.variant.api.GenomicAssembly;
+import org.monarchinitiative.variant.api.Variant;
+import org.monarchinitiative.variant.api.impl.SequenceVariant;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ConfigurableApplicationContext;
@@ -97,6 +98,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @CommandLine.Command(name = "annotate-csv",
@@ -125,14 +127,16 @@ public class AnnotateCsvCommand extends SquirlsCommand {
 
     @Override
     public Integer call() {
-        try (final ConfigurableApplicationContext context = getContext()) {
+        try (ConfigurableApplicationContext context = getContext()) {
             LOGGER.info("Reading variants from `{}`", inputPath);
             LOGGER.info("Writing annotated variants to `{}`", outputPath);
 
             VariantSplicingEvaluator evaluator = context.getBean(VariantSplicingEvaluator.class);
-
+            SquirlsDataService dataService = context.getBean(SquirlsDataService.class);
+            GenomicAssembly assembly = dataService.genomicAssembly();
+            Set<String> contigNames = dataService.knownContigNames();
             // make header
-            final List<String> header = new ArrayList<>();
+            List<String> header = new ArrayList<>();
             header.addAll(EXPECTED_HEADER);
             header.addAll(List.of("PATHOGENIC", "MAX_SCORE", "SCORES"));
 
@@ -150,19 +154,26 @@ public class AnnotateCsvCommand extends SquirlsCommand {
 
                 // iterate through rows of the tabular file
                 for (CSVRecord record : parser) {
-                    final String chrom = record.get("CHROM");
-                    final int pos;
-                    final String ref = record.get("REF");
-                    final String alt = record.get("ALT");
+                    String chrom = record.get("CHROM");
+                    if (!contigNames.contains(chrom)) {
+                        LOGGER.warn("Unknown contig `{}` observed on line #{}: `{}`", chrom, record.getRecordNumber(), record);
+                        continue;
+                    }
+
+                    int pos;
+                    String ref = record.get("REF");
+                    String alt = record.get("ALT");
 
                     try {
                         pos = Integer.parseInt(record.get("POS"));
                     } catch (NumberFormatException e) {
-                        LOGGER.warn("Invalid pos `{}` in record #{}", record.get("POS"), record.getRecordNumber());
+                        LOGGER.warn("Invalid pos `{}` observed on line #{}: `{}`", record.get("POS"), record.getRecordNumber(), record);
                         continue;
                     }
 
-                    SquirlsResult squirlsResult = evaluator.evaluate(chrom, pos, ref, alt);
+                    Contig contig = assembly.contigByName(chrom);
+                    Variant variant = SequenceVariant.oneBased(contig, pos, ref, alt);
+                    SquirlsResult squirlsResult = evaluator.evaluate(variant);
 
                     // figure out max pathogenicity and whether the variant is a splice variant
                     boolean isSpliceVariant = false;

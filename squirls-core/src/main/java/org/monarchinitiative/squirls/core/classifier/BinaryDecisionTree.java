@@ -156,10 +156,10 @@ public class BinaryDecisionTree<T extends SquirlsFeatures> extends AbstractBinar
      * @return nested integer array
      */
     private static int[][] toNestedIntArray(List<List<Integer>> values) {
-        final int[][] array = new int[values.size()][];
+        int[][] array = new int[values.size()][];
         for (int i = 0; i < values.size(); i++) {
-            final List<Integer> innerList = values.get(i);
-            final int[] inner = new int[innerList.size()];
+            List<Integer> innerList = values.get(i);
+            int[] inner = new int[innerList.size()];
             for (int j = 0; j < innerList.size(); j++) {
                 inner[j] = innerList.get(j);
             }
@@ -252,15 +252,15 @@ public class BinaryDecisionTree<T extends SquirlsFeatures> extends AbstractBinar
              * - test feature value and select idx of left/right node
              * - recurse down
              */
-            final int featureIdx = features[nodeIdx];
-            final String featureName = featureIndices.get(featureIdx);
+            int featureIdx = features[nodeIdx];
+            String featureName = featureIndices.get(featureIdx);
 
             /*
              We should not get null pointer here since we check that we have all the features at the level of
              SquirlsClassifier.
              */
-            final double feature = instance.getFeature(featureName, Double.class);
-            final double threshold = thresholds[nodeIdx];
+            double feature = instance.getFeature(featureName);
+            double threshold = thresholds[nodeIdx];
 
             return (feature <= threshold)
                     ? predictProba(instance, childrenLeft[nodeIdx])
@@ -271,7 +271,7 @@ public class BinaryDecisionTree<T extends SquirlsFeatures> extends AbstractBinar
              * We are making a prediction here
              */
             // how many samples of each class do we have in this particular node?
-            final int[] classCounts = this.classCounts[nodeIdx];
+            int[] classCounts = this.classCounts[nodeIdx];
             double sum = 0;
             for (int count : classCounts) {
                 sum += count;

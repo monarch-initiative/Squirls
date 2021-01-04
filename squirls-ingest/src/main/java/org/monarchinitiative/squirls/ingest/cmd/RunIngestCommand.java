@@ -93,7 +93,10 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Component
@@ -155,11 +158,13 @@ public class RunIngestCommand extends IngestCommand {
         // 0 - parse command line
         Path buildDirPath = Paths.get(args.getString("build_dir"));
         if (!buildDirPath.toFile().isDirectory()) {
-            LOGGER.error("Not a directory: {}", buildDirPath);
+            if (LOGGER.isErrorEnabled())
+                LOGGER.error("Not a directory: {}", buildDirPath);
             return;
         }
         if (!buildDirPath.toFile().canWrite()) {
-            LOGGER.error("Directory not writable: {}", buildDirPath);
+            if (LOGGER.isErrorEnabled())
+                LOGGER.error("Directory not writable: {}", buildDirPath);
             return;
         }
 
@@ -171,6 +176,7 @@ public class RunIngestCommand extends IngestCommand {
 
         // 1 - create build folder
         URL genomeUrl = new URL(ingestProperties.getFastaUrl());
+        URL assemblyReportUrl = new URL(ingestProperties.assemblyReportUrl());
         URL phylopUrl = new URL(ingestProperties.getPhylopUrl());
 
         String versionedAssembly = getVersionedAssembly(assembly, version);
@@ -185,7 +191,8 @@ public class RunIngestCommand extends IngestCommand {
                         clfData -> Paths.get(clfData.getClassifierPath())));
 
         // 3 - build database
-        SquirlsDataBuilder.buildDatabase(genomeBuildDir, genomeUrl, phylopUrl,
+        SquirlsDataBuilder.buildDatabase(genomeBuildDir,
+                genomeUrl, assemblyReportUrl, phylopUrl,
                 Path.of(ingestProperties.getJannovarTranscriptDbDir()),
                 Path.of(ingestProperties.getSplicingInformationContentMatrix()),
                 Path.of(ingestProperties.getHexamerTsvPath()),
@@ -193,11 +200,9 @@ public class RunIngestCommand extends IngestCommand {
                 classifiers, versionedAssembly);
 
         // 4 - compress all the files into a single ZIP file
-        File[] resources = genomeBuildDir.toFile().listFiles();
-        if (resources == null) {
-            LOGGER.warn("Resources are null: {}", buildDirPath);
-            return;
-        }
+        List<File> resources = Arrays.stream(Objects.requireNonNull(genomeBuildDir.toFile().listFiles()))
+                .filter(f -> !f.getName().endsWith("trace.db"))
+                .collect(Collectors.toList());
         Path zipPath = buildDirPath.resolve(versionedAssembly + ".zip");
         LOGGER.info("Compressing the resource files into a single ZIP file `{}`", zipPath);
         try (ZipCompressionWrapper wrapper = new ZipCompressionWrapper(zipPath.toFile())) {

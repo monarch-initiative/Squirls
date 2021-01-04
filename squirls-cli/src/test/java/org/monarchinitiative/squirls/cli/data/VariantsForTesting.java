@@ -79,20 +79,24 @@ package org.monarchinitiative.squirls.cli.data;
 import de.charite.compbio.jannovar.annotation.AnnotationException;
 import de.charite.compbio.jannovar.annotation.VariantAnnotations;
 import de.charite.compbio.jannovar.annotation.VariantAnnotator;
-import de.charite.compbio.jannovar.data.ReferenceDictionary;
+import de.charite.compbio.jannovar.annotation.builders.AnnotationBuilderOptions;
+import de.charite.compbio.jannovar.data.JannovarData;
 import de.charite.compbio.jannovar.reference.GenomePosition;
 import de.charite.compbio.jannovar.reference.GenomeVariant;
-import de.charite.compbio.jannovar.reference.PositionType;
 import de.charite.compbio.jannovar.reference.Strand;
 import htsjdk.variant.variantcontext.Allele;
 import htsjdk.variant.variantcontext.VariantContext;
 import htsjdk.variant.variantcontext.VariantContextBuilder;
 import org.monarchinitiative.squirls.core.SquirlsTxResult;
-import org.monarchinitiative.squirls.core.model.SplicingTranscript;
+import org.monarchinitiative.squirls.core.reference.StrandedSequence;
+import org.monarchinitiative.squirls.core.reference.TranscriptModel;
 import org.monarchinitiative.squirls.io.predictions.PartialPredictionDefault;
 import org.monarchinitiative.squirls.io.predictions.PredictionDefault;
+import org.monarchinitiative.variant.api.Contig;
+import org.monarchinitiative.variant.api.GenomicAssembly;
+import org.monarchinitiative.variant.api.Variant;
+import org.monarchinitiative.variant.api.impl.SequenceVariant;
 import org.monarchinitiative.vmvt.core.VmvtGenerator;
-import xyz.ielis.hyperutil.reference.fasta.SequenceInterval;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -101,28 +105,60 @@ public class VariantsForTesting {
 
     public static final double FAKE_THRESHOLD = .45;
 
-    private static final VmvtGenerator GENERATOR = new VmvtGenerator();
+    private final VmvtGenerator generator;
+    private final JannovarData jannovarData;
+    private final VariantAnnotator annotator;
+    private final GenomicAssembly genomicAssembly;
 
-    private VariantsForTesting() {
+    public VariantsForTesting(VmvtGenerator generator, JannovarData jannovarData, GenomicAssembly genomicAssembly) {
+        this.generator = generator;
         // no-op
+        this.jannovarData = jannovarData;
+        this.annotator = new VariantAnnotator(jannovarData.getRefDict(), jannovarData.getChromosomes(), new AnnotationBuilderOptions());
+        this.genomicAssembly = genomicAssembly;
     }
 
-    private static TestVariant makeEvaluation(ReferenceDictionary rd,
-                                              String chrom,
-                                              int pos,
-                                              String variantId,
-                                              String ref,
-                                              String alt,
-                                              VariantAnnotator annotator,
-                                              Set<String> seqIds,
-                                              Collection<SplicingTranscript> transcripts,
-                                              SequenceInterval si,
-                                              double pathogenicity,
-                                              String featurePayload,
-                                              String ruler,
-                                              String primary,
-                                              String secondary,
-                                              String title) throws AnnotationException {
+    /**
+     * Put together the figures into a single titled <code>div</code> element.
+     *
+     * @param title   title for the figures
+     * @param figures SVG strings, <code>null</code>s are ignored
+     * @return string with titled div containing all figures
+     */
+    private static String assembleFigures(String title, String... figures) {
+        StringBuilder graphics = new StringBuilder();
+        // add title
+        graphics.append("<div class=\"graphics-container\">")
+                .append("<div class=\"graphics-title\">").append(title).append("</div>")
+                .append("<div class=\"graphics-content\">");
+        // add figures
+        for (String figure : figures) {
+            if (figure != null) {
+                graphics.append("<div>").append(figure).append("</div>");
+            }
+        }
+
+        // close tags
+        return graphics.append("</div>") // graphics-content
+                .append("</div>") // graphics-container
+                .toString();
+    }
+
+    private TestVariant makeEvaluation(Contig contig,
+                                       String chrom,
+                                       int pos,
+                                       String variantId,
+                                       String ref,
+                                       String alt,
+                                       Set<String> seqIds,
+                                       Collection<TranscriptModel> transcripts,
+                                       StrandedSequence si,
+                                       double pathogenicity,
+                                       String featurePayload,
+                                       String ruler,
+                                       String primary,
+                                       String secondary,
+                                       String title) throws AnnotationException {
         /*
         Assemble data to POJOs
          */
@@ -142,23 +178,19 @@ public class VariantsForTesting {
         Map<String, Double> featureMap = Arrays.stream(featurePayload.split("\n"))
                 .map(line -> line.split("="))
                 .collect(Collectors.toMap(v -> v[0], v -> Double.parseDouble(v[1])));
-        Map<String, Object> featureObjects = Arrays.stream(featurePayload.split("\n"))
-                .map(line -> line.split("="))
-                .collect(Collectors.toMap(v -> v[0], v -> Double.parseDouble(v[1])));
 
-        SplicingTranscript st = transcripts.stream().min(Comparator.comparing(SplicingTranscript::getAccessionId)).orElseThrow();
-        GenomePosition position = new GenomePosition(rd, Strand.FWD, rd.getContigNameToID().get(chrom), pos, PositionType.ONE_BASED);
-        GenomeVariant variant = new GenomeVariant(position, ref, alt);
+        TranscriptModel st = transcripts.stream().min(Comparator.comparing(TranscriptModel::accessionId)).orElseThrow();
+        Variant variant = SequenceVariant.oneBased(contig, pos, ref, alt);
 
         /*
         Prepare test object
          */
-        TestVariant evaluation = new TestVariant(vc, altAlleleOne, variant, st, si, featureObjects);
+        TestVariant evaluation = new TestVariant(vc, altAlleleOne, variant, st, si, featureMap);
 
 
         Set<SquirlsTxResult> txResults = new HashSet<>();
-        for (SplicingTranscript transcript : transcripts) {
-            SquirlsTxResultSimple squirlsTxResult = new SquirlsTxResultSimple(transcript.getAccessionId(),
+        for (TranscriptModel transcript : transcripts) {
+            SquirlsTxResultSimple squirlsTxResult = new SquirlsTxResultSimple(transcript.accessionId(),
                     PredictionDefault.of(PartialPredictionDefault.of("fake", pathogenicity, FAKE_THRESHOLD)),
                     featureMap);
             txResults.add(squirlsTxResult);
@@ -168,7 +200,10 @@ public class VariantsForTesting {
         /*
          * Make Jannovar annotations.
          */
-        VariantAnnotations fullAnnotations = annotator.buildAnnotations(variant);
+        int contigId = jannovarData.getRefDict().getContigNameToID().get(variant.contigName());
+        GenomePosition position = new GenomePosition(jannovarData.getRefDict(), Strand.FWD, contigId, variant.start());
+        GenomeVariant genomeVariant = new GenomeVariant(position, variant.ref(), variant.alt());
+        VariantAnnotations fullAnnotations = annotator.buildAnnotations(genomeVariant);
         VariantAnnotations smallAnnotations = new VariantAnnotations(fullAnnotations.getGenomeVariant(),
                 fullAnnotations.getAnnotations().stream()
                         .filter(ann -> seqIds.contains(ann.getTranscript().getAccession()))
@@ -183,58 +218,31 @@ public class VariantsForTesting {
     }
 
     /**
-     * Put together the figures into a single titled <code>div</code> element.
-     *
-     * @param title   title for the figures
-     * @param figures SVG strings, <code>null</code>s are ignored
-     * @return string with titled div containing all figures
-     */
-    private static String assembleFigures(String title, String... figures) {
-        final StringBuilder graphics = new StringBuilder();
-        // add title
-        graphics.append("<div class=\"graphics-container\">")
-                .append("<div class=\"graphics-title\">").append(title).append("</div>")
-                .append("<div class=\"graphics-content\">");
-        // add figures
-        for (String figure : figures) {
-            if (figure != null) {
-                graphics.append("<div>").append(figure).append("</div>");
-            }
-        }
-
-        // close tags
-        return graphics.append("</div>") // graphics-content
-                .append("</div>") // graphics-container
-                .toString();
-    }
-
-    /**
      * Get data for variant <code>chr13:32930748T>G</code>. The variant is located 2bp downstream from the canonical
      * donor site of the exon 15 of the <em>BRCA2</em> gene and disrupts the site, leading to exon skipping.
      *
-     * @param rd        {@link ReferenceDictionary} to use
-     * @param annotator {@link VariantAnnotator} to use to perform functional annotation with respect to genes & transcripts
      * @return evaluation object with all the data
      * @throws Exception bla
      */
-    public static TestVariant BRCA2DonorExon15plus2QUID(ReferenceDictionary rd, VariantAnnotator annotator) throws Exception {
+    public TestVariant BRCA2DonorExon15plus2QUID() throws Exception {
 
         // *********************************** PARAMETRIZE *************************************************************
 
         /*
         Prepare data
          */
-        final String chrom = "chr13";
-        final int chr = 13;
-        final int pos = 32_930_748;
-        final String variantId = "BRCA2_donor_2bp_downstream_exon15_quid";
-        final String ref = "T", alt = "G";
-        final Set<String> seqIds = Set.of("NM_000059.3");
-        final double pathogenicity = 0.95;
+        String chrom = "13";
+        Contig contig = genomicAssembly.contigByName(chrom);
+        int chr = 13;
+        int pos = 32_930_748;
+        String variantId = "BRCA2_donor_2bp_downstream_exon15_quid";
+        String ref = "T", alt = "G";
+        Set<String> seqIds = Set.of("NM_000059.3");
+        double pathogenicity = 0.95;
 
-        final SequenceInterval si = Sequences.getBrca2Exon15Sequence(rd);
-        final Collection<SplicingTranscript> transcripts = Transcripts.brca2Transcripts(rd);
-        final String featurePayload = "acceptor_offset=184.0\n" +
+        StrandedSequence si = Sequences.getBrca2Exon15Sequence(contig);
+        Collection<TranscriptModel> transcripts = Transcripts.brca2Transcripts(contig);
+        String featurePayload = "acceptor_offset=184.0\n" +
                 "alt_ri_best_window_acceptor=6.24199227902568\n" +
                 "alt_ri_best_window_donor=1.6462531025600458\n" +
                 "canonical_acceptor=0.0\n" +
@@ -257,48 +265,47 @@ public class VariantsForTesting {
                 "yag_at_acceptor_minus_three=0.0";
 
         // generate graphics using Vmvt
-        final String ruler = GENERATOR.getDonorSequenceRuler(
+        String ruler = generator.getDonorSequenceRuler(
                 "CAGg" + "t" + "atgt",
                 "CAGg" + "g" + "atgt");
-        final String primary = GENERATOR.getDonorTrekkerSvg(
+        String primary = generator.getDonorTrekkerSvg(
                 "CAGg" + "t" + "atgt",
                 "CAGg" + "g" + "atgt");
 
-        final String secondary = GENERATOR.getDonorDistributionSvg(
+        String secondary = generator.getDonorDistributionSvg(
                 "CAGg" + "t" + "atgt",
                 "CAGg" + "g" + "atgt");
 
         // *************************************************************************************************************
 
-        return makeEvaluation(rd, chrom, pos, variantId, ref, alt, annotator, seqIds, transcripts, si, pathogenicity, featurePayload, ruler, primary, secondary, "Canonical donor");
+        return makeEvaluation(contig, chrom, pos, variantId, ref, alt, seqIds, transcripts, si, pathogenicity, featurePayload, ruler, primary, secondary, "Canonical donor");
     }
 
     /**
      * Get data for variant <code>chr1:21,894,739A>G</code>. The variant is located at -2 position of the canonical
      * donor site of the exon 7.
      *
-     * @param rd        {@link ReferenceDictionary} to use
-     * @param annotator {@link VariantAnnotator} to use to perform functional annotation with respect to genes & transcripts
      * @return evaluation object with all the data
      * @throws Exception bla
      */
-    public static TestVariant ALPLDonorExon7Minus2(ReferenceDictionary rd, VariantAnnotator annotator) throws Exception {
+    public TestVariant ALPLDonorExon7Minus2() throws Exception {
 
         // *********************************** PARAMETRIZE *************************************************************
 
         /*
         Prepare data
          */
-        final String chrom = "chr1";
-        final int chr = 1;
-        final int pos = 21_894_739;
-        final String variantId = "ALPL_donor_exon7_minus2";
-        final String ref = "A", alt = "G";
-        final Set<String> seqIds = Set.of("NM_000478.4");
-        final double pathogenicity = 0.94;
+        String chrom = "1";
+        Contig contig = genomicAssembly.contigByName(chrom);
+        int chr = 1;
+        int pos = 21_894_739;
+        String variantId = "ALPL_donor_exon7_minus2";
+        String ref = "A", alt = "G";
+        Set<String> seqIds = Set.of("NM_000478.4");
+        double pathogenicity = 0.94;
 
-        final SequenceInterval si = Sequences.getAlplExon7Sequence(rd);
-        final Collection<SplicingTranscript> transcripts = Transcripts.alplTranscripts(rd);
+        StrandedSequence si = Sequences.getAlplExon7Sequence(contig);
+        Collection<TranscriptModel> transcripts = Transcripts.alplTranscripts(contig);
         String featurePayload = "acceptor_offset=143.0\n" +
                 "alt_ri_best_window_acceptor=-3.06184416990555\n" +
                 "alt_ri_best_window_donor=2.4205699538253014\n" +
@@ -322,41 +329,40 @@ public class VariantsForTesting {
                 "yag_at_acceptor_minus_three=0.0";
 
         // generate graphics using Vmvt
-        final String ruler = GENERATOR.getDonorSequenceRuler("AAGgtagcc", "AGGgtagcc");
-        final String primary = GENERATOR.getDonorTrekkerSvg("AAGgtagcc", "AGGgtagcc");
-        final String secondary = GENERATOR.getDonorDistributionSvg("AAGgtagcc", "AGGgtagcc");
+        String ruler = generator.getDonorSequenceRuler("AAGgtagcc", "AGGgtagcc");
+        String primary = generator.getDonorTrekkerSvg("AAGgtagcc", "AGGgtagcc");
+        String secondary = generator.getDonorDistributionSvg("AAGgtagcc", "AGGgtagcc");
 
         // *************************************************************************************************************
 
-        return makeEvaluation(rd, chrom, pos, variantId, ref, alt, annotator, seqIds, transcripts, si, pathogenicity, featurePayload, ruler, primary, secondary, "Canonical donor");
+        return makeEvaluation(contig, chrom, pos, variantId, ref, alt, seqIds, transcripts, si, pathogenicity, featurePayload, ruler, primary, secondary, "Canonical donor");
     }
 
     /**
      * Get data for variant <code>chr11:5,248,162G>A</code>. The variant is located 3bp upstream from the canonical
      * donor site of the exon 1 of the <em>HBB</em> gene and creates a new cryptic donor site.
      *
-     * @param rd        {@link ReferenceDictionary} to use
-     * @param annotator {@link VariantAnnotator} to use to perform functional annotation with respect to genes & transcripts
      * @return evaluation object with all the data
      * @throws Exception bla
      */
-    public static TestVariant HBBcodingExon1UpstreamCrypticInCanonical(ReferenceDictionary rd, VariantAnnotator annotator) throws Exception {
+    public TestVariant HBBcodingExon1UpstreamCrypticInCanonical() throws Exception {
 
         // *********************************** PARAMETRIZE *************************************************************
 
         /*
         Prepare data
          */
-        final String chrom = "chr11";
-        final int chr = 11;
-        final int pos = 5_248_162;
-        final String variantId = "HBB_donor_3bp_upstream_exon1";
-        final String ref = "G", alt = "A";
-        final Set<String> seqIds = Set.of("NM_000518.4");
-        final double pathogenicity = 0.93;
+        String chrom = "11";
+        Contig contig = genomicAssembly.contigByName(chrom);
+        int chr = 11;
+        int pos = 5_248_162;
+        String variantId = "HBB_donor_3bp_upstream_exon1";
+        String ref = "G", alt = "A";
+        Set<String> seqIds = Set.of("NM_000518.4");
+        double pathogenicity = 0.93;
 
-        final SequenceInterval si = Sequences.getHbbExon1Sequence(rd);
-        final Collection<SplicingTranscript> transcripts = Transcripts.hbbTranscripts(rd);
+        StrandedSequence si = Sequences.getHbbExon1Sequence(contig);
+        Collection<TranscriptModel> transcripts = Transcripts.hbbTranscripts(contig);
         String featurePayload = "acceptor_offset=-133.0\n" +
                 "alt_ri_best_window_acceptor=-1.781069482220321\n" +
                 "alt_ri_best_window_donor=6.324680776661294\n" +
@@ -380,47 +386,46 @@ public class VariantsForTesting {
                 "yag_at_acceptor_minus_three=0.0";
 
         // generate graphics using Vmvt
-//        final String ruler = GENERATOR.getDonorSequenceRuler();
-        final String ruler = ""; // TODO - add ruler here?
-        final String primary = GENERATOR.getDonorTrekkerSvg(
+//        String ruler = GENERATOR.getDonorSequenceRuler();
+        String ruler = ""; // TODO - add ruler here?
+        String primary = generator.getDonorTrekkerSvg(
                 "TGGg" + "c" + "aggt",  // ref best window snippet
                 "TGGg" + "t" + "aggt"); // alt best window snippet
 
-        final String secondary = GENERATOR.getDonorCanonicalCryptic(
+        String secondary = generator.getDonorCanonicalCryptic(
                 "T" + "AGgttggt",     // alt canonical site snippet
                 "TGGg" + "t" + "aggt"); // alt best window snippet
 
         // *************************************************************************************************************
 
-        return makeEvaluation(rd, chrom, pos, variantId, ref, alt, annotator, seqIds, transcripts, si, pathogenicity, featurePayload, ruler, primary, secondary, "Cryptic donor");
+        return makeEvaluation(contig, chrom, pos, variantId, ref, alt, seqIds, transcripts, si, pathogenicity, featurePayload, ruler, primary, secondary, "Cryptic donor");
     }
 
     /**
      * Get data for variant <code>chr11:5,248,173C>T</code>. The variant is located 14bp upstream from the canonical
      * donor site of the exon 1 of the <em>HBB</em> gene and creates a new cryptic donor site.
      *
-     * @param rd        {@link ReferenceDictionary} to use
-     * @param annotator {@link VariantAnnotator} to use to perform functional annotation with respect to genes & transcripts
      * @return evaluation object with all the data
      * @throws Exception bla
      */
-    public static TestVariant HBBcodingExon1UpstreamCryptic(ReferenceDictionary rd, VariantAnnotator annotator) throws Exception {
+    public TestVariant HBBcodingExon1UpstreamCryptic() throws Exception {
 
         // *********************************** PARAMETRIZE *************************************************************
 
         /*
         Prepare data
          */
-        final String chrom = "chr11";
-        final int chr = 11;
-        final int pos = 5_248_173;
-        final String variantId = "HBB_donor_14bp_upstream_exon1";
-        final String ref = "C", alt = "T";
-        final Set<String> seqIds = Set.of("NM_000518.4");
-        final double pathogenicity = 0.92;
+        String chrom = "11";
+        Contig contig = genomicAssembly.contigByName(chrom);
+        int chr = 11;
+        int pos = 5_248_173;
+        String variantId = "HBB_donor_14bp_upstream_exon1";
+        String ref = "C", alt = "T";
+        Set<String> seqIds = Set.of("NM_000518.4");
+        double pathogenicity = 0.92;
 
-        final SequenceInterval si = Sequences.getHbbExon1Sequence(rd);
-        final Collection<SplicingTranscript> transcripts = Transcripts.hbbTranscripts(rd);
+        StrandedSequence si = Sequences.getHbbExon1Sequence(contig);
+        Collection<TranscriptModel> transcripts = Transcripts.hbbTranscripts(contig);
         String featurePayload = "acceptor_offset=-144.0\n" +
                 "alt_ri_best_window_acceptor=-1.679406754820472\n" +
                 "alt_ri_best_window_donor=8.331467886352396\n" +
@@ -444,47 +449,46 @@ public class VariantsForTesting {
                 "yag_at_acceptor_minus_three=0.0";
 
         // generate graphics using Vmvt
-//        final String ruler = GENERATOR.getDonorSequenceRuler();
-        final String ruler = ""; // TODO - add ruler here?
-        final String primary = GENERATOR.getDonorTrekkerSvg(
+//        String ruler = GENERATOR.getDonorSequenceRuler();
+        String ruler = ""; // TODO - add ruler here?
+        String primary = generator.getDonorTrekkerSvg(
                 "GTGgt" + "g" + "agg",  // ref best window snippet
                 "GTGgt" + "a" + "agg");  // alt best window snippet
 
-        final String secondary = GENERATOR.getDonorCanonicalCryptic(
+        String secondary = generator.getDonorCanonicalCryptic(
                 "CAGgttggt",  // alt canonical site snippet
                 "GTGgt" + "a" + "agg");  // alt best window snippet
 
         // *************************************************************************************************************
 
-        return makeEvaluation(rd, chrom, pos, variantId, ref, alt, annotator, seqIds, transcripts, si, pathogenicity, featurePayload, ruler, primary, secondary, "Cryptic donor");
+        return makeEvaluation(contig, chrom, pos, variantId, ref, alt, seqIds, transcripts, si, pathogenicity, featurePayload, ruler, primary, secondary, "Cryptic donor");
     }
 
     /**
      * Get data for variant <code>chr12:6132066T>C</code>. The variant is located 2bp upstream from the canonical
      * acceptor site of the exon 26 of the <em>VWF</em> gene and disrupts the site, leading to exon skipping.
      *
-     * @param rd        {@link ReferenceDictionary} to use
-     * @param annotator {@link VariantAnnotator} to use to perform functional annotation with respect to genes & transcripts
      * @return evaluation object with all the data
      * @throws Exception bla
      */
-    public static TestVariant VWFAcceptorExon26minus2QUID(ReferenceDictionary rd, VariantAnnotator annotator) throws Exception {
+    public TestVariant VWFAcceptorExon26minus2QUID() throws Exception {
 
         // *********************************** PARAMETRIZE *************************************************************
 
         /*
         Prepare data
          */
-        final String chrom = "chr12";
-        final int chr = 12;
-        final int pos = 6_132_066;
-        final String variantId = "VWF_acceptor_2bp_upstream_exon26_quid";
-        final String ref = "T", alt = "C";
-        final Set<String> seqIds = Set.of("NM_000552.3");
-        final double pathogenicity = 0.91;
+        String chrom = "12";
+        Contig contig = genomicAssembly.contigByName(chrom);
+        int chr = 12;
+        int pos = 6_132_066;
+        String variantId = "VWF_acceptor_2bp_upstream_exon26_quid";
+        String ref = "T", alt = "C";
+        Set<String> seqIds = Set.of("NM_000552.3");
+        double pathogenicity = 0.91;
 
-        final SequenceInterval si = Sequences.getVwfExon26Sequence(rd);
-        final Collection<SplicingTranscript> transcripts = Transcripts.vwfTranscripts(rd);
+        StrandedSequence si = Sequences.getVwfExon26Sequence(contig);
+        Collection<TranscriptModel> transcripts = Transcripts.vwfTranscripts(contig);
         String featurePayload = "acceptor_offset=-2.0\n" +
                 "alt_ri_best_window_acceptor=3.648124750022908\n" +
                 "alt_ri_best_window_donor=-8.032751156095085\n" +
@@ -508,48 +512,47 @@ public class VariantsForTesting {
                 "yag_at_acceptor_minus_three=0.0";
 
         // generate graphics using Vmvt
-        final String logo = GENERATOR.getAcceptorSequenceRuler(
+        String logo = generator.getAcceptorSequenceRuler(
                 "acagccttgtctcctgtctacac" + "a" + "gCC",
                 "acagccttgtctcctgtctacac" + "g" + "gCC");
-        final String primary = GENERATOR.getAcceptorTrekkerSvg(
+        String primary = generator.getAcceptorTrekkerSvg(
                 "acagccttgtctcctgtctacac" + "a" + "gCC",
                 "acagccttgtctcctgtctacac" + "g" + "gCC");
 
-        final String secondary = GENERATOR.getAcceptorDistributionSvg(
+        String secondary = generator.getAcceptorDistributionSvg(
                 "acagccttgtctcctgtctacac" + "a" + "gCC",
                 "acagccttgtctcctgtctacac" + "g" + "gCC");
 
         // *************************************************************************************************************
 
-        return makeEvaluation(rd, chrom, pos, variantId, ref, alt, annotator, seqIds, transcripts, si, pathogenicity, featurePayload, logo, primary, secondary, "Canonical acceptor");
+        return makeEvaluation(contig, chrom, pos, variantId, ref, alt, seqIds, transcripts, si, pathogenicity, featurePayload, logo, primary, secondary, "Canonical acceptor");
     }
 
     /**
      * Get data for variant <code>chr1:2,110,668C>G</code>. The variant is located at -3 position of the canonical
      * acceptor site of the exon 11 of the <em>TSC2</em> gene.
      *
-     * @param rd        {@link ReferenceDictionary} to use
-     * @param annotator {@link VariantAnnotator} to use to perform functional annotation with respect to genes & transcripts
      * @return evaluation object with all the data
      * @throws Exception bla
      */
-    public static TestVariant TSC2AcceptorExon11Minus3(ReferenceDictionary rd, VariantAnnotator annotator) throws Exception {
+    public TestVariant TSC2AcceptorExon11Minus3() throws Exception {
 
         // *********************************** PARAMETRIZE *************************************************************
 
         /*
         Prepare data
          */
-        final String chrom = "chr16";
-        final int chr = 16;
-        final int pos = 2_110_668;
-        final String variantId = "TSC2_acceptor-3_exon11";
-        final String ref = "C", alt = "G";
-        final Set<String> seqIds = Set.of("NM_000548.3");
-        final double pathogenicity = 0.90;
+        String chrom = "16";
+        Contig contig = genomicAssembly.contigByName(chrom);
+        int chr = 16;
+        int pos = 2_110_668;
+        String variantId = "TSC2_acceptor-3_exon11";
+        String ref = "C", alt = "G";
+        Set<String> seqIds = Set.of("NM_000548.3");
+        double pathogenicity = 0.90;
 
-        final SequenceInterval si = Sequences.getTsc2Exon11Sequence(rd);
-        final Collection<SplicingTranscript> transcripts = Transcripts.tsc2Transcripts(rd);
+        StrandedSequence si = Sequences.getTsc2Exon11Sequence(contig);
+        Collection<TranscriptModel> transcripts = Transcripts.tsc2Transcripts(contig);
         String featurePayload = "acceptor_offset=-3.0\n" +
                 "alt_ri_best_window_acceptor=-2.95580052736842\n" +
                 "alt_ri_best_window_donor=-1.9417000079717732\n" +
@@ -573,13 +576,13 @@ public class VariantsForTesting {
                 "yag_at_acceptor_minus_three=1.0";
 
         // generate graphics using Vmvt
-        final String logo = GENERATOR.getAcceptorSequenceRuler("tgtgctggccgggctcgtgttccagGC", "tgtgctggccgggctcgtgttcgagGC");
-        final String primary = GENERATOR.getAcceptorTrekkerSvg("tgtgctggccgggctcgtgttccagGC", "tgtgctggccgggctcgtgttcgagGC");
-        final String secondary = GENERATOR.getAcceptorDistributionSvg("tgtgctggccgggctcgtgttcCagGC", "tgtgctggccgggctcgtgttcGagGC");
+        String logo = generator.getAcceptorSequenceRuler("tgtgctggccgggctcgtgttccagGC", "tgtgctggccgggctcgtgttcgagGC");
+        String primary = generator.getAcceptorTrekkerSvg("tgtgctggccgggctcgtgttccagGC", "tgtgctggccgggctcgtgttcgagGC");
+        String secondary = generator.getAcceptorDistributionSvg("tgtgctggccgggctcgtgttcCagGC", "tgtgctggccgggctcgtgttcGagGC");
 
         // *************************************************************************************************************
 
-        return makeEvaluation(rd, chrom, pos, variantId, ref, alt, annotator, seqIds, transcripts, si, pathogenicity, featurePayload, logo, primary, secondary, "Cryptic acceptor");
+        return makeEvaluation(contig, chrom, pos, variantId, ref, alt, seqIds, transcripts, si, pathogenicity, featurePayload, logo, primary, secondary, "Cryptic acceptor");
     }
 
 
@@ -587,28 +590,27 @@ public class VariantsForTesting {
      * Get data for variant <code>chrX:107,849,964T>A</code>. The variant is located at -8 position of the canonical
      * acceptor site of the exon 29 of the <em>COL4A5</em> gene.
      *
-     * @param rd        {@link ReferenceDictionary} to use
-     * @param annotator {@link VariantAnnotator} to use to perform functional annotation with respect to genes & transcripts
      * @return evaluation object with all the data
      * @throws Exception bla
      */
-    public static TestVariant COL4A5AcceptorExon11Minus8(ReferenceDictionary rd, VariantAnnotator annotator) throws Exception {
+    public TestVariant COL4A5AcceptorExon11Minus8() throws Exception {
 
         // *********************************** PARAMETRIZE *************************************************************
 
         /*
         Prepare data
          */
-        final String chrom = "chrX";
-        final int chr = 23;
-        final int pos = 107_849_964;
-        final String variantId = "COL4A5_acceptor-8_exon29";
-        final String ref = "T", alt = "A";
-        final Set<String> seqIds = Set.of("NM_000495.4");
-        final double pathogenicity = 0.89;
+        String chrom = "X";
+        Contig contig = genomicAssembly.contigByName(chrom);
+        int chr = 23;
+        int pos = 107_849_964;
+        String variantId = "COL4A5_acceptor-8_exon29";
+        String ref = "T", alt = "A";
+        Set<String> seqIds = Set.of("NM_000495.4");
+        double pathogenicity = 0.89;
 
-        final SequenceInterval si = Sequences.getCol4a5Exon29Sequence(rd);
-        final Collection<SplicingTranscript> transcripts = Transcripts.col4a5Transcripts(rd);
+        StrandedSequence si = Sequences.getCol4a5Exon29Sequence(contig);
+        Collection<TranscriptModel> transcripts = Transcripts.col4a5Transcripts(contig);
 
         String featurePayload = "acceptor_offset=-8.0\n" +
                 "alt_ri_best_window_acceptor=4.2276385348389045\n" +
@@ -633,47 +635,46 @@ public class VariantsForTesting {
                 "yag_at_acceptor_minus_three=0.0";
 
         // generate graphics using Vmvt
-//        final String ruler = GENERATOR.getAcceptorLogoSvg();
-        final String ruler = ""; // TODO - add ruler here?
-        final String primary = GENERATOR.getAcceptorTrekkerSvg(
+//        String ruler = GENERATOR.getAcceptorLogoSvg();
+        String ruler = ""; // TODO - add ruler here?
+        String primary = generator.getAcceptorTrekkerSvg(
                 "tttgttgtgttttgtcatgtgta" + "t" + "gct", // ref best window
                 "tttgttgtgttttgtcatgtgta" + "a" + "gct"); // alt best window
 
-        final String secondary = GENERATOR.getAcceptorCanonicalCryptic(
+        String secondary = generator.getAcceptorCanonicalCryptic(
                 "gtgttttgtcatgtgta" + "t" + "gctcaagGG", // alt canonical site snippet
                 "tttgttgtgttttgtcatgtgta" + "a" + "gct"); // alt best window snippet
 
         // *************************************************************************************************************
 
-        return makeEvaluation(rd, chrom, pos, variantId, ref, alt, annotator, seqIds, transcripts, si, pathogenicity, featurePayload, ruler, primary, secondary, "Cryptic acceptor");
+        return makeEvaluation(contig, chrom, pos, variantId, ref, alt, seqIds, transcripts, si, pathogenicity, featurePayload, ruler, primary, secondary, "Cryptic acceptor");
     }
 
     /**
      * Get data for variant <code>chr19:39,075,603C>G</code>. The variant is located at 21bp downstream from the canonical
      * acceptor site of the exon 102 of the <em>RYR1</em> gene and creates a new cryptic acceptor site.
      *
-     * @param rd        {@link ReferenceDictionary} to use
-     * @param annotator {@link VariantAnnotator} to use to perform functional annotation with respect to genes & transcripts
      * @return evaluation object with all the data
      * @throws Exception bla
      */
-    public static TestVariant RYR1codingExon102crypticAcceptor(ReferenceDictionary rd, VariantAnnotator annotator) throws Exception {
+    public TestVariant RYR1codingExon102crypticAcceptor() throws Exception {
 
         // *********************************** PARAMETRIZE *************************************************************
 
         /*
         Prepare data
          */
-        final String chrom = "chr19";
-        final int chr = 19;
-        final int pos = 39_075_603;
-        final String variantId = "RYR1_coding_21bp_downstream_exon102";
-        final String ref = "C", alt = "G";
-        final Set<String> seqIds = Set.of("NM_000540.2");
-        final double pathogenicity = 0.88;
+        String chrom = "19";
+        Contig contig = genomicAssembly.contigByName(chrom);
+        int chr = 19;
+        int pos = 39_075_603;
+        String variantId = "RYR1_coding_21bp_downstream_exon102";
+        String ref = "C", alt = "G";
+        Set<String> seqIds = Set.of("NM_000540.2");
+        double pathogenicity = 0.88;
 
-        final SequenceInterval si = Sequences.getRyr1Exon102Sequence(rd);
-        final Collection<SplicingTranscript> transcripts = Transcripts.ryr1Transcripts(rd);
+        StrandedSequence si = Sequences.getRyr1Exon102Sequence(contig);
+        Collection<TranscriptModel> transcripts = Transcripts.ryr1Transcripts(contig);
         String featurePayload = "acceptor_offset=21.0\n" +
                 "alt_ri_best_window_acceptor=8.15014683108099\n" +
                 "alt_ri_best_window_donor=7.955283012714299\n" +
@@ -697,20 +698,20 @@ public class VariantsForTesting {
                 "yag_at_acceptor_minus_three=0.0";
 
         // generate graphics using Vmvt
-//        final String ruler = GENERATOR.getAcceptorLogoSvg();
-        final String ruler = "";// TODO - add ruler here?
+//        String ruler = GENERATOR.getAcceptorLogoSvg();
+        String ruler = "";// TODO - add ruler here?
 
-        final String primary = GENERATOR.getAcceptorTrekkerSvg(
+        String primary = generator.getAcceptorTrekkerSvg(
                 "tcagtgttacctgtttcacatgta" + "c" + "GT",  // ref best window
                 "tcagtgttacctgtttcacatgta" + "g" + "GT");  // alt best window
 
-        final String secondary = GENERATOR.getAcceptorCanonicalCryptic(
+        String secondary = generator.getAcceptorCanonicalCryptic(
                 "tgaccagtgtgctcccctccctcagTG",  // alt canonical site snippet
                 "tcagtgttacctgtttcacatgta" + "g" + "GT");  // alt best window snippet
 
         // *************************************************************************************************************
 
-        return makeEvaluation(rd, chrom, pos, variantId, ref, alt, annotator, seqIds, transcripts, si, pathogenicity, featurePayload, ruler, primary, secondary, "Cryptic acceptor");
+        return makeEvaluation(contig, chrom, pos, variantId, ref, alt, seqIds, transcripts, si, pathogenicity, featurePayload, ruler, primary, secondary, "Cryptic acceptor");
     }
 
 
@@ -718,28 +719,27 @@ public class VariantsForTesting {
      * Get data for variant <code>chr17:29527461C>T</code>. The variant is located at 22bp downstream from the canonical
      * acceptor site of the exon 9 of the <em>NF1</em> gene and leads to exon skipping due to SRE.
      *
-     * @param rd        {@link ReferenceDictionary} to use
-     * @param annotator {@link VariantAnnotator} to use to perform functional annotation with respect to genes & transcripts
      * @return evaluation object with all the data
      * @throws Exception bla
      */
-    public static TestVariant NF1codingExon9coding_SRE(ReferenceDictionary rd, VariantAnnotator annotator) throws Exception {
+    public TestVariant NF1codingExon9coding_SRE() throws Exception {
 
         // *********************************** PARAMETRIZE *************************************************************
 
         /*
         Prepare data
          */
-        final String chrom = "chr17";
-        final int chr = 17;
-        final int pos = 29_527_461;
-        final String variantId = "NF1_coding_22bp_downstream_from_acceptor_exon9";
-        final String ref = "C", alt = "T";
-        final Set<String> seqIds = Set.of("NM_000267.3");
-        final double pathogenicity = 0.87;
+        String chrom = "17";
+        Contig contig = genomicAssembly.contigByName(chrom);
+        int chr = 17;
+        int pos = 29_527_461;
+        String variantId = "NF1_coding_22bp_downstream_from_acceptor_exon9";
+        String ref = "C", alt = "T";
+        Set<String> seqIds = Set.of("NM_000267.3");
+        double pathogenicity = 0.87;
 
-        final SequenceInterval si = Sequences.getNf1Exon9Sequence(rd);
-        final Collection<SplicingTranscript> transcripts = Transcripts.nf1Transcripts(rd);
+        StrandedSequence si = Sequences.getNf1Exon9Sequence(contig);
+        Collection<TranscriptModel> transcripts = Transcripts.nf1Transcripts(contig);
         String featurePayload = "acceptor_offset=22.0\n" +
                 "alt_ri_best_window_acceptor=-1.0318475740969986\n" +
                 "alt_ri_best_window_donor=-2.8493547798837007\n" +
@@ -763,28 +763,28 @@ public class VariantsForTesting {
                 "yag_at_acceptor_minus_three=0.0";
 
         // generate graphics using Vmvt
-        final String ruler = "";
-        final int kmerWidth = 450, kmerHeight = 220;
+        String ruler = "";
+        int kmerWidth = 450, kmerHeight = 220;
         // hexamers
-        final String hexamer = GENERATOR.getHexamerSvg(
+        String hexamer = generator.getHexamerSvg(
                 "GTCTA" + "C" + "GAAAA",
                 "GTCTA" + "T" + "GAAAA");
-        final String primary = String.format(
+        String primary = String.format(
                 "<svg width=\"%d\" height=\"%d\" viewBox=\"0 0 900 400\">" +
                         "%s" +
                         "</svg>", kmerWidth, kmerHeight, hexamer);
         // heptamers
-        final String heptamerSvg = GENERATOR.getHeptamerSvg(
+        String heptamerSvg = generator.getHeptamerSvg(
                 "AGTCTA" + "C" + "GAAAAG",
                 "AGTCTA" + "T" + "GAAAAG");
-        final String secondary = String.format(
+        String secondary = String.format(
                 "<svg width=\"%d\" height=\"%d\" viewBox=\"0 0 900 400\">" +
                         "%s" +
                         "</svg>", kmerWidth, kmerHeight, heptamerSvg);
 
         // *************************************************************************************************************
 
-        return makeEvaluation(rd, chrom, pos, variantId, ref, alt, annotator, seqIds, transcripts, si, pathogenicity, featurePayload, ruler, primary, secondary, "Splicing regulatory elements");
+        return makeEvaluation(contig, chrom, pos, variantId, ref, alt, seqIds, transcripts, si, pathogenicity, featurePayload, ruler, primary, secondary, "Splicing regulatory elements");
     }
 
 }
