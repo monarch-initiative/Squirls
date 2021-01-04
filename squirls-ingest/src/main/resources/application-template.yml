@@ -1,6 +1,6 @@
 # Ingest configuration file template
-threes.ingest:
   # path to YML file with definitions of splice sites
+squirls.ingest:
   splicing-information-content-matrix:
   # path to directory with serialized Jannovar cache files with `*.ser` suffix
   jannovar-transcript-db-dir:
@@ -18,6 +18,9 @@ threes.ingest:
   fasta-url:
   #hg19: http://hgdownload.soe.ucsc.edu/goldenPath/hg19/bigZips/chromFa.tar.gz
   #hg38: http://hgdownload.soe.ucsc.edu/goldenPath/hg38/bigZips/hg38.chromFa.tar.gz
+  assembly-report-url:
+  #hg19: https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/405/GCF_000001405.25_GRCh37.p13/GCF_000001405.25_GRCh37.p13_assembly_report.txt
+  #hg38: https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/405/GCF_000001405.39_GRCh38.p13/GCF_000001405.39_GRCh38.p13_assembly_report.txt
   phylop-url:
   #hg19: http://hgdownload.cse.ucsc.edu/goldenpath/hg19/phyloP100way/hg19.100way.phyloP100way.bw
   #hg38: http://hgdownload.soe.ucsc.edu/goldenPath/hg38/phyloP100way/hg38.phyloP100way.bw
