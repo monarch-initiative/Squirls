@@ -88,12 +88,16 @@ import org.monarchinitiative.squirls.core.reference.StrandedSequenceService;
 import org.monarchinitiative.variant.api.Contig;
 import org.monarchinitiative.variant.api.GenomicAssembly;
 import org.monarchinitiative.variant.api.GenomicRegion;
+import org.monarchinitiative.variant.api.SequenceRole;
 import org.monarchinitiative.variant.api.impl.Seq;
 import org.monarchinitiative.variant.api.parsers.GenomicAssemblyParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.nio.file.Path;
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -117,8 +121,24 @@ public class FastaStrandedSequenceService implements StrandedSequenceService, Au
     public FastaStrandedSequenceService(Path assemblyReportPath, Path fastaPath, Path fastaFai, Path fastaDict) throws InvalidFastaFileException {
         this.assembly = GenomicAssemblyParser.parseAssembly(assemblyReportPath);
         this.fasta = new IndexedFastaSequenceFile(fastaPath, new FastaSequenceIndex(fastaFai));
-        this.usesPrefix = figureOutPrefix(buildSequenceDictionary(fastaDict));
-        // TODO - check that contigs in the assembly report and fasta file match
+        SAMSequenceDictionary sequenceDictionary = buildSequenceDictionary(fastaDict);
+        this.usesPrefix = figureOutPrefix(sequenceDictionary);
+        check(assembly, sequenceDictionary);
+    }
+
+    private static void check(GenomicAssembly assembly, SAMSequenceDictionary sequenceDictionary) throws InvalidFastaFileException {
+        Set<String> assemblyContigNames = assembly.contigs().stream()
+                .filter(c -> !c.equals(Contig.unknown()) && c.sequenceRole().equals(SequenceRole.ASSEMBLED_MOLECULE))
+                .map(c -> List.of(c.name(), c.refSeqAccession(), c.genBankAccession(), c.ucscName()))
+                .flatMap(Collection::stream)
+                .collect(Collectors.toSet());
+        Set<String> dictContigNames = sequenceDictionary.getSequences().stream()
+                .map(SAMSequenceRecord::getSequenceName)
+                .filter(name -> !(name.startsWith("chrUn") || name.contains("random") || name.contains("hap")))
+                .collect(Collectors.toSet());
+        if (!assemblyContigNames.containsAll(dictContigNames)) {
+            throw new InvalidFastaFileException("Required contigs are missing in FASTA file");
+        }
     }
 
     private static SAMSequenceDictionary buildSequenceDictionary(Path dictPath) {
