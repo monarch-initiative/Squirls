@@ -158,7 +158,7 @@ public class AnnotateVcfCommand extends SquirlsCommand {
             List<VariantContext> contexts = new ArrayList<>(alts.size());
             for (Allele alt : alts) {
                 contexts.add(new VariantContextBuilder(vc)
-                        .alleles(List.<Allele>of()) // delete alleles
+                        .alleles(List.<Allele>of()) // delete the existing alleles from the builder
                         .alleles(List.of(vc.getReference(), alt))
                         .make());
             }
@@ -268,22 +268,20 @@ public class AnnotateVcfCommand extends SquirlsCommand {
                 LOGGER.error("Unable to deserialize jannovar data at {}: {}", jannovarDataPath, e.getMessage());
                 return 1;
             }
-            VariantAnnotator annotator = new VariantAnnotator(jd.getRefDict(),
-                    jd.getChromosomes(),
-                    new AnnotationBuilderOptions());
+            VariantAnnotator annotator = new VariantAnnotator(jd.getRefDict(), jd.getChromosomes(), new AnnotationBuilderOptions());
 
-            // TODO: 29. 5. 2020 improve behavior & logging
-            //  e.g. report progress in % if variant index and thus count is available
-            AnnotateVcfProgressReporter progressReporter = new AnnotateVcfProgressReporter(5_000);
-            List<WritableSplicingAllele> annotated; // = Collections.synchronizedList(new ArrayList<>());
-            ArrayList<String> sampleNames;
+            int processorsAvailable = Runtime.getRuntime().availableProcessors();
+            if (nThreads > processorsAvailable) {
+                LOGGER.warn("You asked for more threads ({}) than processors ({}) available on the system", nThreads, processorsAvailable);
+            }
 
             // annotate the variants
-            int procsAvail = Runtime.getRuntime().availableProcessors();
-            if (nThreads > procsAvail) {
-                LOGGER.warn("You asked for more threads ({}) than processors ({}) available on the system", nThreads, procsAvail);
-            }
+            // TODO: 29. 5. 2020 improve behavior & logging
+            //  e.g. report progress in % if variant index and thus count is available
+            List<WritableSplicingAllele> annotated;
+            ArrayList<String> sampleNames;
             LOGGER.info("Annotating variants on {} threads", nThreads);
+            AnnotateVcfProgressReporter progressReporter = new AnnotateVcfProgressReporter(5_000);
             try (VCFFileReader reader = new VCFFileReader(inputPath, false);
                  CloseableIterator<VariantContext> variantIterator = reader.iterator()) {
 
@@ -324,15 +322,14 @@ public class AnnotateVcfCommand extends SquirlsCommand {
                             .nReported(nVariantsToReport)
                             .build())
                     .analysisStats(progressReporter.getAnalysisStats())
-                    .variants(annotated)
+                    .addAllVariants(annotated)
                     .build();
 
             ResultWriterFactory resultWriterFactory = context.getBean(ResultWriterFactory.class);
-            OutputSettings settings = new OutputSettings(outputPrefix, nVariantsToReport);
             for (OutputFormat format : outputFormats) {
                 ResultWriter writer = resultWriterFactory.resultWriterForFormat(format);
                 try {
-                    writer.write(results, settings);
+                    writer.write(results, outputPrefix);
                 } catch (IOException e) {
                     LOGGER.warn("Error writing {} results: {}", format, e.getMessage());
                 }

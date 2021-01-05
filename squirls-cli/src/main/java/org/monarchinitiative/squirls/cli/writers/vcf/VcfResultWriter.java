@@ -82,7 +82,10 @@ import htsjdk.variant.variantcontext.writer.Options;
 import htsjdk.variant.variantcontext.writer.VariantContextWriter;
 import htsjdk.variant.variantcontext.writer.VariantContextWriterBuilder;
 import htsjdk.variant.vcf.*;
-import org.monarchinitiative.squirls.cli.writers.*;
+import org.monarchinitiative.squirls.cli.writers.AnalysisResults;
+import org.monarchinitiative.squirls.cli.writers.OutputFormat;
+import org.monarchinitiative.squirls.cli.writers.ResultWriter;
+import org.monarchinitiative.squirls.cli.writers.WritableSplicingAllele;
 import org.monarchinitiative.squirls.core.SquirlsResult;
 
 import java.io.IOException;
@@ -150,11 +153,10 @@ public class VcfResultWriter implements ResultWriter {
     }
 
     @Override
-    public void write(AnalysisResults results, OutputSettings outputSettings) throws IOException {
+    public void write(AnalysisResults results, String prefix) throws IOException {
         Path inputVcfPath = Paths.get(results.getSettingsData().getInputPath());
-        Path outputVcfPath = Paths.get(outputSettings.outputPrefix() + '.' + OutputFormat.VCF.getFileExtension());
-
-        LOGGER.info("Writing VCF output to `{}`", outputVcfPath);
+        Path outputPath = Paths.get(prefix + '.' + OutputFormat.VCF.getFileExtension());
+        LOGGER.info("Writing VCF output to `{}`", outputPath);
 
         VCFHeader header;
         try (VCFFileReader reader = new VCFFileReader(inputVcfPath, false)) {
@@ -162,7 +164,7 @@ public class VcfResultWriter implements ResultWriter {
         }
 
         try (VariantContextWriter writer = new VariantContextWriterBuilder()
-                .setOutputPath(outputVcfPath)
+                .setOutputPath(outputPath)
                 .setReferenceDictionary(header.getSequenceDictionary())
                 .setOutputFileType(VariantContextWriterBuilder.OutputType.VCF)
                 .unsetOption(Options.INDEX_ON_THE_FLY)
