@@ -88,9 +88,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.jdbc.Sql;
 
 import javax.sql.DataSource;
-import java.sql.Connection;
-import java.sql.DatabaseMetaData;
-import java.sql.ResultSet;
 import java.util.List;
 import java.util.Optional;
 
@@ -230,25 +227,4 @@ public class TranscriptModelServiceDbTest {
         assertThat(tx.isPresent(), equalTo(expected));
     }
 
-    @Test
-    @Sql({"assembly_create.sql",
-            "assembly_toy_insert.sql",
-            "transcripts_create_tables.sql",
-            "transcripts_insert.sql"})
-    public void fun() throws Exception {
-        try (Connection connection = dataSource.getConnection()) {
-            DatabaseMetaData meta = connection.getMetaData();
-            try (ResultSet res = meta.getTables(null, "SQUIRLS", null, null)) {
-                while (res.next()) {
-                    System.out.println(
-                            "   " + res.getString("TABLE_CAT")
-                                    + ", " + res.getString("TABLE_SCHEM")
-                                    + ", " + res.getString("TABLE_NAME")
-                                    + ", " + res.getString("TABLE_TYPE")
-                                    + ", " + res.getString("REMARKS"));
-                }
-                // TODO - finish
-            }
-        }
-    }
 }
