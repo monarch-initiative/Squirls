@@ -74,25 +74,89 @@
  * Daniel Danis, Peter N Robinson, 2020
  */
 
-package org.monarchinitiative.squirls.cli.writers;
+package org.monarchinitiative.squirls.cli.writers.tabular;
+
+import de.charite.compbio.jannovar.annotation.Annotation;
+import htsjdk.variant.variantcontext.VariantContext;
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVPrinter;
+import org.monarchinitiative.squirls.cli.writers.AnalysisResults;
+import org.monarchinitiative.squirls.cli.writers.ResultWriter;
+import org.monarchinitiative.squirls.cli.writers.WritableSplicingAllele;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 /**
- * Squirls reports annotated variants in these formats.
+ * Writer for storing <em>n</em> most pathogenic variants in a tabular format
  */
-public enum OutputFormat {
+public class TabularResultWriter implements ResultWriter {
 
-    HTML("html"),
-    VCF("vcf"),
-    CSV("csv"),
-    TSV("tsv");
+    private static final List<String> HEADER = List.of("chrom", "pos", "ref", "alt",
+            "gene_symbol", "tx_accession", "pathogenic", "squirls_score");
 
     private final String fileExtension;
 
-    OutputFormat(String fileExtension) {
+    private final char columnSeparator;
+
+    public TabularResultWriter(String fileExtension, char columnSeparator) {
         this.fileExtension = fileExtension;
+        this.columnSeparator = columnSeparator;
     }
 
-    public String getFileExtension() {
-        return fileExtension;
+    private static Consumer<WritableSplicingAllele> writeAlleleInto(CSVPrinter printer) {
+        return allele -> {
+            VariantContext vc = allele.variantContext();
+            if (vc.getAlternateAlleles().size() != 1) {
+                LOGGER.warn("Unable to write allele with >1 alt alleles: `{}`", vc);
+                return;
+            }
+
+            // we write the following fields
+            // "chrom", "pos", "ref", "alt", "gene_symbol", "tx_accession", "pathogenic", "squirls_score"
+            String contig = vc.getContig();
+            int pos = vc.getStart();
+            String ref = vc.getReference().getDisplayString();
+            String alt = vc.getAlternateAllele(0).getDisplayString();
+
+            Map<String, String> accessionToGene = allele.variantAnnotations().getAnnotations().stream()
+                    .collect(Collectors.toMap(ann -> ann.getTranscript().getAccession(), Annotation::getGeneSymbol));
+
+            allele.squirlsResult().results()
+                    .forEachOrdered(result -> {
+                        String txAccession = result.accessionId();
+                        String geneSymbol = accessionToGene.getOrDefault(txAccession, "N/A");
+                        boolean isPathogenic = result.prediction().isPositive();
+                        double squirlsScore = result.prediction().getMaxPathogenicity();
+                        try {
+                            printer.printRecord(contig, pos, ref, alt, geneSymbol, txAccession, isPathogenic, squirlsScore);
+                        } catch (IOException e) {
+                            LOGGER.warn("Error writing variant {}: {}", vc, e.getMessage());
+                        }
+                    });
+        };
+    }
+
+    @Override
+    public void write(AnalysisResults results, String prefix) throws IOException {
+        Path outputPath = Paths.get(prefix + '.' + fileExtension);
+        LOGGER.info("Writing VCF output to `{}`", outputPath);
+
+        try (CSVPrinter printer = CSVFormat.newFormat(columnSeparator)
+                .withRecordSeparator('\n')
+                .withHeader(HEADER.toArray(String[]::new))
+                .print(Files.newBufferedWriter(outputPath))) {
+            results.getVariants().stream()
+                    .sorted(Comparator.comparing(WritableSplicingAllele::maxSquirlsScore).reversed())
+                    .limit(results.getSettingsData().getNReported())
+                    .forEachOrdered(writeAlleleInto(printer));
+        }
     }
 }

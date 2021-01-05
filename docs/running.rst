@@ -34,34 +34,51 @@ examples below.
 ``annotate-vcf`` - Annotate variants in a VCF file
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The aim of this command is to annotate variants in a VCF file. The results are then stored in *HTML* and/or
-*VCF* format.
+The aim of this command is to annotate variants in a VCF file. The results are then stored in one or more output formats.
 
 To annotate variants in the `example.vcf`_ file (a file with 6 variants stored in Squirls repository), run ::
 
   $ java -jar squirls-cli.jar annotate-vcf -c squirls_config.yml -d hg19_refseq.ser example.vcf output
 
-Squirls uses `Jannovar`_ library to perform functional annotation for the variant, hence it must be provided with
-path to Jannovar transcript database (``-d`` option). See :ref:`download-jannovar-ref` for download instructions.
+Squirls uses `Jannovar`_ library to perform functional variant annotation under the hood, so you must provide path
+to Jannovar transcript database with the ``-d`` option. As a convenience, the databases for *UCSC*, *ENSEMBL*,
+and *RefSeq* transcripts are prepared for download. See :ref:`download-jannovar-ref` for the instructions.
 
 After the annotation, the results are stored at ``output.html``.
 
+
+Command options
+###############
+
+The ``annotate-vcf`` command offers the following options:
+
+* ``-c, --config`` - path to Squirls configuration file
+* ``-d, --jannovar-data`` - path to Jannovar transcript database to use for functional annotation
+* ``-f, --output-format`` - comma separated list of output format descriptors (see below). Use ``html,vcf,csv,tsv`` to store results
+  in all output formats. Default: ``html``
+* ``-n, --n-variants-to-report`` - number of most pathogenic variants to include in *HTML* report. Default: ``100``
+* ``-t, --n-threads`` - number of threads to use for variant processing. Default: ``4``
+
+The input VCF and output prefix are provided as positional parameters.
+
+
 Output formats
 ##############
-The ``annotate-vcf`` command writes results in 2 formats: *HTML* and *VCF*. Use the ``-f`` option to select the output format.
+The ``annotate-vcf`` command writes results in 4 output formats: *HTML*, *VCF*, *CSV*, and *TSV*. Use the ``-f`` option
+to select one or more of the desired output formats (e.g. ``-d html,vcf``).
 
 HTML output format
 ~~~~~~~~~~~~~~~~~~
 Without specifying the ``-f`` option, a *HTML* report containing the 100 most deleterious variants is produced.
 The number of the reported variants is adjusted by the ``-n`` option.
 
-See the :ref:`rstinterpretation` section for getting help with interpretation of the report.
+See the :ref:`rstinterpretation` section for getting more help.
 
 
 VCF output format
 ~~~~~~~~~~~~~~~~~
-When using the ``-f vcf`` option, a VCF file with all input variants is created. The annotation process adds a novel
-*FILTER* and *INFO* field to each variant that overlaps with at least single transcript region:
+When including ``vcf`` into the ``-f`` option, a VCF file with all input variants is created. The annotation process
+adds a novel *FILTER* and *INFO* field to each variant that overlaps with at least single transcript region:
 
 * ``SQUIRLS`` - a *FILTER* flag indicating that the variant is considered to have a deleterious effect on >=1 overlapping transcript
 * ``SQUIRLS_SCORE`` - an *INFO* string containing SQUIRLS scores for each variant-transcript combination. For a hypothetical variant
@@ -73,19 +90,23 @@ When using the ``-f vcf`` option, a VCF file with all input variants is created.
 Multiallelic variants are broken down into separate records and processed individually. Predictions with respect to
 the overlapping transcripts are separated by a pipe (``|``) symbol.
 
-Command options
-###############
+The ``-n`` option has no effect for the *VCF* output format.
 
-The ``annotate-vcf`` command allows to specify these options:
+CSV/TSV output format
+~~~~~~~~~~~~~~~~~~~~~
+To write *n* most deleterious variants into a *CSV* (or *TSV*) file, use ``csv`` (``tsv``) in the ``-f`` option.
 
-* ``-c, --config`` - path to Squirls configuration file
-* ``-d, --jannovar-data`` - path to Jannovar transcript database to use for functional annotation
-* ``-f, --output-format`` - comma separated list of output format descriptors. Use ``html,vcf`` to create both *VCF*
-  and *HTML* report. Default: ``html``
-* ``-n, --n-variants-to-report`` - number of most pathogenic variants to include in *HTML* report. Default: ``100``
-* ``-t, --n-threads`` - number of threads to use for variant processing. Default: ``4``
+In result, the tabular files with the following columns are created:
 
-The input VCF and output prefix are provided as positional parameters.
+.. table:: Tabular output
+
+  ====== =========== ===== ===== ============= ============== ============ ================
+  chrom   pos	       ref   alt   gene_symbol   tx_accession   pathogenic   squirls_score
+  ====== =========== ===== ===== ============= ============== ============ ================
+  chr3    165504107   A     C     *BCHE*        NM_000055.2    true         0.99997203304
+  ...     ...         ...   ...   ...           ...            ...          ...
+  ====== =========== ===== ===== ============= ============== ============ ================
+
 
 ``annotate-pos`` - Annotate variant positions
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

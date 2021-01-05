@@ -81,7 +81,10 @@ import htsjdk.variant.variantcontext.Allele;
 import htsjdk.variant.variantcontext.VariantContext;
 import org.monarchinitiative.squirls.cli.visualization.SplicingVariantGraphicsGenerator;
 import org.monarchinitiative.squirls.cli.visualization.VisualizableVariantAllele;
-import org.monarchinitiative.squirls.cli.writers.*;
+import org.monarchinitiative.squirls.cli.writers.AnalysisResults;
+import org.monarchinitiative.squirls.cli.writers.OutputFormat;
+import org.monarchinitiative.squirls.cli.writers.ResultWriter;
+import org.monarchinitiative.squirls.cli.writers.WritableSplicingAllele;
 import org.monarchinitiative.squirls.core.SquirlsResult;
 import org.monarchinitiative.variant.api.Variant;
 import org.thymeleaf.TemplateEngine;
@@ -139,15 +142,15 @@ public class HtmlResultWriter implements ResultWriter {
     }
 
     @Override
-    public void write(AnalysisResults results, OutputSettings outputSettings) throws IOException {
-        Path outputPath = Paths.get(outputSettings.outputPrefix() + '.' + OutputFormat.HTML.getFileExtension());
+    public void write(AnalysisResults results, String prefix) throws IOException {
+        Path outputPath = Paths.get(prefix + '.' + OutputFormat.HTML.getFileExtension());
         LOGGER.info("Writing HTML output to `{}`", outputPath);
 
         // sort results by max squirls pathogenicity and select at most n variants
         List<? extends WritableSplicingAllele> allelesToReport = results.getVariants().stream()
                 .filter(variant -> !Double.isNaN(variant.maxSquirlsScore()))
                 .sorted(Comparator.comparing(WritableSplicingAllele::maxSquirlsScore).reversed())
-                .limit(outputSettings.nVariantsToReport())
+                .limit(results.getSettingsData().getNReported())
                 .collect(Collectors.toList());
 
         List<PresentableVariant> variants = new ArrayList<>();

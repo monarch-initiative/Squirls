@@ -76,10 +76,7 @@
 
 package org.monarchinitiative.squirls.cli.writers;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * Container for analysis results, as presented by the `templates/results.html` template.
@@ -146,7 +143,7 @@ public class AnalysisResults {
 
     public static final class Builder {
         private final List<String> sampleNames = new ArrayList<>();
-        private Collection<? extends WritableSplicingAllele> variants;
+        private final List<WritableSplicingAllele> variants = new ArrayList<>();
         private AnalysisStats analysisStats;
         private SettingsData settingsData;
 
@@ -158,9 +155,13 @@ public class AnalysisResults {
             return this;
         }
 
-        public Builder variants(Collection<? extends WritableSplicingAllele> variantData) {
-            this.variants = variantData;
+        public Builder addAllVariants(Collection<? extends WritableSplicingAllele> variants) {
+            this.variants.addAll(variants);
             return this;
+        }
+
+        public Builder addAllVariants(WritableSplicingAllele... variants) {
+            return addAllVariants(Arrays.asList(variants));
         }
 
         public Builder settingsData(SettingsData settingsData) {

@@ -84,7 +84,7 @@ public class SettingsData {
     private final String inputPath;
 
     /**
-     * N variants to be included in HTML report.
+     * N variants to be included in a report.
      */
     private final int nReported;
 
@@ -113,8 +113,6 @@ public class SettingsData {
         return inputPath;
     }
 
-
-    @Deprecated
     public int getNReported() {
         return nReported;
     }
@@ -128,9 +126,9 @@ public class SettingsData {
     }
 
     public static final class Builder {
-        private String inputPath;
+        private String inputPath = "";
         private int nReported;
-        private String transcriptDb;
+        private String transcriptDb = "";
 
         private Builder() {
         }

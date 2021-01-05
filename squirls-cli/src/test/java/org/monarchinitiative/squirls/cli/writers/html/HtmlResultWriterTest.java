@@ -80,13 +80,15 @@ import de.charite.compbio.jannovar.annotation.VariantAnnotator;
 import de.charite.compbio.jannovar.annotation.builders.AnnotationBuilderOptions;
 import de.charite.compbio.jannovar.data.JannovarData;
 import de.charite.compbio.jannovar.data.ReferenceDictionary;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.monarchinitiative.squirls.cli.TestDataSourceConfig;
 import org.monarchinitiative.squirls.cli.data.VariantsForTesting;
 import org.monarchinitiative.squirls.cli.visualization.SplicingVariantGraphicsGenerator;
-import org.monarchinitiative.squirls.cli.writers.*;
+import org.monarchinitiative.squirls.cli.writers.AnalysisResults;
+import org.monarchinitiative.squirls.cli.writers.AnalysisStats;
+import org.monarchinitiative.squirls.cli.writers.SettingsData;
+import org.monarchinitiative.squirls.cli.writers.WritableSplicingAllele;
 import org.monarchinitiative.squirls.core.reference.SplicingPwmData;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -101,8 +103,6 @@ import java.util.Set;
 public class HtmlResultWriterTest {
 
     private static final Path OUTPATH = Paths.get("target/Sample192");
-
-    private static OutputSettings OUTPUT_SETTINGS;
 
     @Autowired
     public SplicingPwmData splicingPwmData;
@@ -119,11 +119,6 @@ public class HtmlResultWriterTest {
     private Set<WritableSplicingAllele> variantData;
 
     private HtmlResultWriter resultWriter;
-
-    @BeforeAll
-    public static void beforeAll() {
-        OUTPUT_SETTINGS = new OutputSettings(OUTPATH.toString(), 100);
-    }
 
     @BeforeEach
     public void setUp() throws Exception {
@@ -160,9 +155,10 @@ public class HtmlResultWriterTest {
                 .settingsData(SettingsData.builder()
                         .inputPath("path/to/Sample_192.vcf")
                         .transcriptDb("refseq")
+                        .nReported(100)
                         .build())
-                .variants(variantData)
+                .addAllVariants(variantData)
                 .build();
-        resultWriter.write(results, OUTPUT_SETTINGS);
+        resultWriter.write(results, OUTPATH.toString());
     }
 }
