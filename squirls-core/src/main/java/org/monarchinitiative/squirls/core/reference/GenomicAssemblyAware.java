@@ -76,6 +76,7 @@
 
 package org.monarchinitiative.squirls.core.reference;
 
+import org.monarchinitiative.variant.api.Contig;
 import org.monarchinitiative.variant.api.GenomicAssembly;
 
 import java.util.Collection;
@@ -88,6 +89,7 @@ public interface GenomicAssemblyAware {
 
     default Set<String> knownContigNames() {
         return genomicAssembly().contigs().stream()
+                .filter(Contig::isKnownContig)
                 .map(ctg -> Set.of(ctg.name(), ctg.refSeqAccession(), ctg.genBankAccession(), ctg.ucscName()))
                 .flatMap(Collection::stream)
                 .collect(Collectors.toUnmodifiableSet());

@@ -92,7 +92,10 @@ import org.monarchinitiative.squirls.ingest.transcripts.TranscriptsIngestRunner;
 import org.monarchinitiative.squirls.io.SplicingPositionalWeightMatrixParser;
 import org.monarchinitiative.squirls.io.SquirlsClassifierVersion;
 import org.monarchinitiative.squirls.io.SquirlsResourceException;
-import org.monarchinitiative.squirls.io.db.*;
+import org.monarchinitiative.squirls.io.db.DbClassifierDataManager;
+import org.monarchinitiative.squirls.io.db.DbKMerDao;
+import org.monarchinitiative.squirls.io.db.PwmIngestDao;
+import org.monarchinitiative.squirls.io.db.TranscriptModelServiceDb;
 import org.monarchinitiative.squirls.io.sequence.FastaStrandedSequenceService;
 import org.monarchinitiative.variant.api.GenomicAssembly;
 import org.slf4j.Logger;
@@ -179,18 +182,12 @@ public class SquirlsDataBuilder {
     /**
      * Store the transcripts in the database.
      */
-    static void ingestTranscripts(DataSource dataSource, Collection<TranscriptModel> transcripts) throws SquirlsResourceException {
-        TranscriptModelServiceDb transcriptIngestDao = new TranscriptModelServiceDb(dataSource);
+    static void ingestTranscripts(DataSource dataSource,
+                                  GenomicAssembly genomicAssembly,
+                                  Collection<TranscriptModel> transcripts) throws SquirlsResourceException {
+        TranscriptModelServiceDb transcriptIngestDao = new TranscriptModelServiceDb(dataSource, genomicAssembly);
         TranscriptsIngestRunner transcriptsIngestRunner = new TranscriptsIngestRunner(transcriptIngestDao, transcripts);
         transcriptsIngestRunner.run();
-    }
-
-    /**
-     * Store the genomic assembly in the database.
-     */
-    static int ingestGenomicAssembly(DataSource dataSource, GenomicAssembly genomicAssembly) {
-        GenomicAssemblyIngestDao ingestDao = new GenomicAssemblyIngestDao(dataSource);
-        return ingestDao.saveGenomicAssembly(genomicAssembly);
     }
 
     /**
@@ -330,12 +327,10 @@ public class SquirlsDataBuilder {
         // 3f - store reference dictionary and transcripts
         try (FastaStrandedSequenceService accessor = new FastaStrandedSequenceService(genomeAssemblyReportPath,
                 genomeFastaPath, genomeFastaFaiPath, genomeFastaDictPath)) {
-            if (LOGGER.isInfoEnabled()) LOGGER.info("Inserting the assembly {}", accessor.genomicAssembly().name());
-            int updated = ingestGenomicAssembly(dataSource, accessor.genomicAssembly());
-            if (LOGGER.isInfoEnabled()) LOGGER.info("Updated {} rows", updated);
+            GenomicAssembly genomicAssembly = accessor.genomicAssembly();
 
             if (LOGGER.isInfoEnabled()) LOGGER.info("Inserting transcripts");
-            ingestTranscripts(dataSource, manager.getAllTranscriptModels(accessor.genomicAssembly()));
+            ingestTranscripts(dataSource, genomicAssembly, manager.getAllTranscriptModels(genomicAssembly));
         } catch (Exception e) {
             throw new SquirlsException(e);
         }

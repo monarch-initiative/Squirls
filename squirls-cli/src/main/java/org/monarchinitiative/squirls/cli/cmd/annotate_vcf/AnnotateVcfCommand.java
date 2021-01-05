@@ -182,7 +182,7 @@ public class AnnotateVcfCommand extends SquirlsCommand {
     private static Function<VariantContext, Collection<WritableSplicingAllele>> annotateVariant(VariantSplicingEvaluator evaluator,
                                                                                                 ReferenceDictionary rd,
                                                                                                 VariantAnnotator annotator,
-                                                                                                GenomicAssembly assembly) {
+                                                                                                Map<String, Contig> contigMap) {
         return vc -> {
             List<WritableSplicingAllele> evaluations = new ArrayList<>(vc.getAlternateAlleles().size());
             for (Allele allele : vc.getAlternateAlleles()) {
@@ -207,7 +207,7 @@ public class AnnotateVcfCommand extends SquirlsCommand {
                 // Squirls scores
                 Variant variant;
                 SquirlsResult squirlsResult;
-                Contig contig = assembly.contigByName(contigName);
+                Contig contig = contigMap.getOrDefault(contigName, Contig.unknown());
                 if (contig.equals(Contig.unknown()) || variantAnnotations.getHighestImpactEffect().isOffTranscript()) {
                     // don't bother with annotating an off-exome variant
                     variant = null;
@@ -255,6 +255,18 @@ public class AnnotateVcfCommand extends SquirlsCommand {
         return formats;
     }
 
+    private static Map<String, Contig> prepareContigMap(GenomicAssembly assembly) {
+        Map<String, Contig> builder = new HashMap<>();
+        for (Contig contig : assembly.contigs()) {
+            if (contig.isUnknownContig()) continue;
+            builder.put(contig.name(), contig);
+            builder.put(contig.genBankAccession(), contig);
+            builder.put(contig.refSeqAccession(), contig);
+            builder.put(contig.ucscName(), contig);
+        }
+        return Map.copyOf(builder);
+    }
+
     @Override
     public Integer call() {
         try (ConfigurableApplicationContext context = getContext()) {
@@ -262,7 +274,7 @@ public class AnnotateVcfCommand extends SquirlsCommand {
             Collection<OutputFormat> outputFormats = parseOutputFormats(this.outputFormats);
             VariantSplicingEvaluator evaluator = context.getBean(VariantSplicingEvaluator.class);
             SquirlsDataService dataService = context.getBean(SquirlsDataService.class);
-            GenomicAssembly assembly = dataService.genomicAssembly();
+            Map<String, Contig> contigMap = prepareContigMap(dataService.genomicAssembly());
 
             if (nThreads < 1) {
                 LOGGER.error("Thread number must be positive: {}", nThreads);
@@ -310,7 +322,7 @@ public class AnnotateVcfCommand extends SquirlsCommand {
                             .flatMap(Collection::stream)
                             .peek(progressReporter::logAllele)
 
-                            .map(annotateVariant(evaluator, jd.getRefDict(), annotator, assembly))
+                            .map(annotateVariant(evaluator, jd.getRefDict(), annotator, contigMap))
                             .flatMap(Collection::stream)
                             .peek(wa -> {
                                 if (!wa.squirlsResult().isEmpty()) {

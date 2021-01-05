@@ -76,37 +76,6 @@
 
 create schema if not exists SQUIRLS;
 
--- ------------------------------------------------- genomic assembly ---------------------------------------------
-DROP TABLE IF EXISTS SQUIRLS.GENOMIC_ASSEMBLY;
-CREATE TABLE SQUIRLS.GENOMIC_ASSEMBLY
-(
-    ID                INT          NOT NULL AUTO_INCREMENT,
-    NAME              VARCHAR(50)  NOT NULL, -- GRCh38.p12
-    ORGANISM_NAME     VARCHAR(200) NOT NULL, -- Homo sapiens (human)
-    TAXON_ID          VARCHAR(50)  NOT NULL, -- 9606
-    SUBMITTER         VARCHAR(500) NOT NULL, -- Genome Reference Consortium
-    DATE              VARCHAR(50)  NOT NULL, -- 2019-02-28
-    GENBANK_ACCESSION VARCHAR(50)  NOT NULL, -- GCA_000001405.28
-    REFSEQ_ACCESSION  VARCHAR(50)  NOT NULL  -- GCF_000001405.39
-);
-CREATE INDEX GENOMIC_ASSEMBLY_ID ON SQUIRLS.GENOMIC_ASSEMBLY (ID);
-
-DROP TABLE IF EXISTS SQUIRLS.CONTIGS;
-CREATE TABLE SQUIRLS.CONTIGS
-(
-    ASSEMBLY_ID       INT          NOT NULL, -- foreign key to `GENOMIC_ASSEMBLY` table
-    CONTIG_ID         INT          NOT NULL, -- 1, 2, ..., (unique id of the contig within the assembly)
-    NAME              VARCHAR(50)  NOT NULL, -- '1'
-    SEQUENCE_ROLE     VARCHAR(100) NOT NULL, -- e.g. ASSEMBLED_MOLECULE
-    LENGTH            INT          NOT NULL, -- number of bases of the contig
-    GENBANK_ACCESSION VARCHAR(50)  NOT NULL, -- CM000663.2
-    REFSEQ_ACCESSION  VARCHAR(50)  NOT NULL, -- NC_000001.11
-    UCSC_NAME         VARCHAR(50)  NOT NULL  -- 'chr1'
-);
-
-CREATE INDEX CONTIG_ASSEMBLY_ID_CONTIG_ID ON SQUIRLS.CONTIGS (ASSEMBLY_ID, CONTIG_ID);
-
-
 -- ------------------------------------------------- classifier ---------------------------------------------------
 drop table if exists SQUIRLS.CLASSIFIER;
 create table SQUIRLS.CLASSIFIER

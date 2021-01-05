@@ -79,10 +79,10 @@ package org.monarchinitiative.squirls.ingest;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.monarchinitiative.squirls.core.reference.GenomicAssemblySquirls;
 import org.monarchinitiative.squirls.core.reference.TranscriptModel;
 import org.monarchinitiative.squirls.ingest.data.GenomeAssemblyDownloaderTest;
 import org.monarchinitiative.variant.api.*;
+import org.monarchinitiative.variant.api.impl.DefaultGenomicAssembly;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.jdbc.Sql;
@@ -113,14 +113,20 @@ public class SquirlsDataBuilderTest {
 
     private static final URL FASTA_URL = GenomeAssemblyDownloaderTest.class.getResource("shortHg19ChromFa.tar.gz");
     private static final URL ASSEMBLY_REPORT_URL = SquirlsDataBuilderTest.class.getResource("GCF_000001405.25_GRCh37.p13_assembly_report.txt");
+
+    private static final List<Contig> CONTIGS = List.of(
+            Contig.unknown(),
+            Contig.of(2, "2", SequenceRole.ASSEMBLED_MOLECULE, 100_000, "", "", "chr2"),
+            Contig.of(3, "3", SequenceRole.ASSEMBLED_MOLECULE, 200_000, "", "", "chr3"));
+
+    private static final GenomicAssembly GENOMIC_ASSEMBLY = DefaultGenomicAssembly.builder().contigs(CONTIGS).build();
+
     @Autowired
     public DataSource dataSource;
     private Path buildDir;
 
     private static List<TranscriptModel> makeTranscripts() {
-        Contig chr2 = Contig.of(2, "2", SequenceRole.ASSEMBLED_MOLECULE, 100_000, "", "", "chr2");
-//        Contig chr3 = Contig.of(3, "3", SequenceRole.ASSEMBLED_MOLECULE, 200_000, "", "", "chr3");
-
+        Contig chr2 = CONTIGS.get(1);
         TranscriptModel tx = TranscriptModel.coding(chr2, Strand.POSITIVE, CoordinateSystem.ZERO_BASED, 10_000, 20_000, 11_000, 19_000,
                 "adam", "ADAM",
                 List.of(GenomicRegion.zeroBased(chr2, 10_000, 12_000),
@@ -128,12 +134,6 @@ public class SquirlsDataBuilderTest {
                         GenomicRegion.zeroBased(chr2, 18_000, 20_000)));
 
         return List.of(tx);
-    }
-
-    private static GenomicAssembly makeGenomicAssembly() {
-        List<Contig> contigs = List.of(Contig.of(2, "2", SequenceRole.ASSEMBLED_MOLECULE, 100_000, "", "", "chr2"),
-                Contig.of(3, "3", SequenceRole.ASSEMBLED_MOLECULE, 200_000, "", "", "chr3"));
-        return new GenomicAssemblySquirls("", "", "", "", "", "", "", contigs);
     }
 
     @BeforeEach
@@ -162,15 +162,13 @@ public class SquirlsDataBuilderTest {
     }
 
     @Test
-    @Sql(scripts = {
-            "create_schema.sql",
-            "assembly_fake_insert.sql"})
+    @Sql("create_schema.sql")
     public void ingestTranscripts() throws Exception {
         // arrange - nothing to be done
         List<TranscriptModel> transcriptModels = makeTranscripts();
 
         // act
-        SquirlsDataBuilder.ingestTranscripts(dataSource, transcriptModels);
+        SquirlsDataBuilder.ingestTranscripts(dataSource, GENOMIC_ASSEMBLY, transcriptModels);
 
         // assert
         String tmSql = "select CONTIG, BEGIN, END, BEGIN_ON_POS, END_ON_POS, STRAND, TX_ACCESSION " +

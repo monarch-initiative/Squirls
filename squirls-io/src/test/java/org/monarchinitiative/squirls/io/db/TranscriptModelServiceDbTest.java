@@ -83,6 +83,7 @@ import org.junit.jupiter.params.provider.CsvSource;
 import org.monarchinitiative.squirls.core.reference.TranscriptModel;
 import org.monarchinitiative.squirls.io.TestDataSourceConfig;
 import org.monarchinitiative.variant.api.*;
+import org.monarchinitiative.variant.api.impl.DefaultGenomicAssembly;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.jdbc.Sql;
@@ -97,8 +98,11 @@ import static org.hamcrest.Matchers.*;
 @SpringBootTest(classes = TestDataSourceConfig.class)
 public class TranscriptModelServiceDbTest {
 
-    private static final Contig one = Contig.of(1, "1", SequenceRole.ASSEMBLED_MOLECULE, 10_000, "", "", "chr1");
-    private static final Contig two = Contig.of(2, "2", SequenceRole.ASSEMBLED_MOLECULE, 20_000, "", "", "chr2");
+    private static final Contig one = Contig.of(1, "1", SequenceRole.ASSEMBLED_MOLECULE, 10_000, "CM000663.1", "NC_000001.10", "chr1");
+    private static final Contig two = Contig.of(2, "2", SequenceRole.ASSEMBLED_MOLECULE, 20_000, "CM000664.1", "NC_000002.11", "chr2");
+    private static final GenomicAssembly genomicAssembly = DefaultGenomicAssembly.builder().name("Chewie").organismName("Wookie")
+            .taxId("9999").submitter("Han Solo").date("2231-01-05").genBankAccession("GBW1").refSeqAccession("RSW1")
+            .contigs(List.of(Contig.unknown(), one, two)).build();
 
     @Autowired
     public DataSource dataSource;
@@ -107,15 +111,13 @@ public class TranscriptModelServiceDbTest {
 
     @BeforeEach
     public void setUp() throws Exception {
-        instance = new TranscriptModelServiceDb(dataSource);
+        instance = new TranscriptModelServiceDb(dataSource, genomicAssembly);
     }
 
     @Test
-    @Sql({"assembly_create.sql",
-            "assembly_insert.sql",
-            "transcripts_create_tables.sql"})
+    @Sql("transcripts_create_tables.sql")
     public void insertCodingTranscript() {
-        TranscriptModel coding = TranscriptModelDefault.builder()
+        TranscriptModel coding = TranscriptModelBuilder.builder()
                 .contig(one).strand(Strand.POSITIVE).start(100).end(900)
                 .cdsStart(200).cdsEnd(800)
                 .accessionId("NM_000001.2")
@@ -129,11 +131,9 @@ public class TranscriptModelServiceDbTest {
     }
 
     @Test
-    @Sql({"assembly_create.sql",
-            "assembly_insert.sql",
-            "transcripts_create_tables.sql"})
+    @Sql("transcripts_create_tables.sql")
     public void insertNoncodingTranscript() {
-        TranscriptModel noncoding = TranscriptModelDefault.builder()
+        TranscriptModel noncoding = TranscriptModelBuilder.builder()
                 .contig(one).strand(Strand.POSITIVE).start(100).end(900)
                 .cdsStart(-1).cdsEnd(-1)
                 .accessionId("NM_000001.2")
@@ -149,10 +149,7 @@ public class TranscriptModelServiceDbTest {
     }
 
     @Test
-    @Sql({"assembly_create.sql",
-            "assembly_insert.sql",
-            "transcripts_create_tables.sql",
-            "transcripts_insert.sql"})
+    @Sql({"transcripts_create_tables.sql", "transcripts_insert.sql"})
     public void getTranscriptAccessionIds() {
         List<String> accessionIds = instance.getTranscriptAccessionIds();
 
@@ -161,10 +158,7 @@ public class TranscriptModelServiceDbTest {
     }
 
     @Test
-    @Sql({"assembly_create.sql",
-            "assembly_toy_insert.sql",
-            "transcripts_create_tables.sql",
-            "transcripts_insert.sql"})
+    @Sql({"transcripts_create_tables.sql", "transcripts_insert.sql"})
     public void fetchTranscripts() {
         GenomicRegion query = GenomicRegion.zeroBased(one, 100, 900);
         List<TranscriptModel> models = instance.getOverlapping(query);
@@ -188,10 +182,7 @@ public class TranscriptModelServiceDbTest {
     }
 
     @Test
-    @Sql({"assembly_create.sql",
-            "assembly_toy_insert.sql",
-            "transcripts_create_tables.sql",
-            "transcripts_insert.sql"})
+    @Sql({"transcripts_create_tables.sql", "transcripts_insert.sql"})
     public void fetchNonCodingTranscript() {
         GenomicRegion query = GenomicRegion.zeroBased(two, 1300, 1500);
         List<TranscriptModel> models = instance.getOverlapping(query);
@@ -218,10 +209,7 @@ public class TranscriptModelServiceDbTest {
             "NM_000001.1,   true",
             "NM_000002.1,   true",
             "NM_000002.2,   false"})
-    @Sql({"assembly_create.sql",
-            "assembly_toy_insert.sql",
-            "transcripts_create_tables.sql",
-            "transcripts_insert.sql"})
+    @Sql({"transcripts_create_tables.sql", "transcripts_insert.sql"})
     public void fetchTranscriptByAccession(String accession, boolean expected) {
         Optional<TranscriptModel> tx = instance.getByAccession(accession);
         assertThat(tx.isPresent(), equalTo(expected));

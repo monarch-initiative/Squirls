@@ -82,6 +82,7 @@ import org.monarchinitiative.squirls.core.VariantSplicingEvaluator;
 import org.monarchinitiative.squirls.core.reference.StrandedSequenceService;
 import org.monarchinitiative.squirls.core.reference.TranscriptModelService;
 import org.monarchinitiative.squirls.core.scoring.SplicingAnnotator;
+import org.monarchinitiative.variant.api.GenomicAssembly;
 import org.springframework.beans.factory.BeanCreationException;
 
 import java.nio.file.Path;
@@ -123,6 +124,10 @@ class SquirlsAutoConfigurationTest extends AbstractAutoConfigurationTest {
          * High-level beans
          */
         assertThat(context.getBean("splicingAnnotator").getClass(), typeCompatibleWith(SplicingAnnotator.class));
+
+        GenomicAssembly genomicAssembly = context.getBean("genomicAssembly", GenomicAssembly.class);
+        assertThat(genomicAssembly, is(notNullValue()));
+        assertThat(genomicAssembly.name(), equalTo("GRCh37.p13"));
 
         StrandedSequenceService strandedSequenceService = context.getBean("strandedSequenceService", StrandedSequenceService.class);
         assertThat(strandedSequenceService, is(notNullValue()));

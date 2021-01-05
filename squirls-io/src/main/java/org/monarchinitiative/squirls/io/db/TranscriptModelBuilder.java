@@ -71,74 +71,111 @@
  *
  * version:6-8-18
  *
- * Daniel Danis, Peter N Robinson, 2020
+ * Daniel Danis, Peter N Robinson, 2021
  */
 
 package org.monarchinitiative.squirls.io.db;
 
+import org.monarchinitiative.squirls.core.reference.TranscriptModel;
 import org.monarchinitiative.variant.api.Contig;
-import org.monarchinitiative.variant.api.GenomicAssembly;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.monarchinitiative.variant.api.CoordinateSystem;
+import org.monarchinitiative.variant.api.GenomicRegion;
+import org.monarchinitiative.variant.api.Strand;
 
-import javax.sql.DataSource;
-import java.sql.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
-public class GenomicAssemblyIngestDao {
+class TranscriptModelBuilder {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(GenomicAssemblyIngestDao.class);
+    // all transcripts are stored in the database using 0-based system
+    private static final CoordinateSystem COORDINATE_SYSTEM = CoordinateSystem.ZERO_BASED;
 
-    private final DataSource dataSource;
+    private final Map<Integer, GenomicRegion> exons = new HashMap<>();
+    private Contig contig;
+    private Strand strand;
+    private int start;
+    private int end;
+    private int cdsStart;
+    private int cdsEnd;
+    private String accessionId = null;
+    private String hgvsSymbol = null;
 
-    public GenomicAssemblyIngestDao(DataSource dataSource) {
-        this.dataSource = dataSource;
+    private TranscriptModelBuilder() {
     }
 
-
-    public synchronized int saveGenomicAssembly(GenomicAssembly assembly) {
-        int updated = 0;
-        String insertAssemblySql = "insert into SQUIRLS.GENOMIC_ASSEMBLY(NAME, ORGANISM_NAME, TAXON_ID, SUBMITTER, DATE, GENBANK_ACCESSION, REFSEQ_ACCESSION) VALUES ( ?, ?, ?, ?, ?, ?, ?)";
-        String insertContigSql = "insert into SQUIRLS.CONTIGS(ASSEMBLY_ID, CONTIG_ID, NAME, SEQUENCE_ROLE, LENGTH, GENBANK_ACCESSION, REFSEQ_ACCESSION, UCSC_NAME) VALUES ( ?, ?, ?, ?, ?, ?, ?, ?)";
-        try (Connection connection = dataSource.getConnection()) {
-            connection.setAutoCommit(false);
-            try (PreparedStatement assemblySt = connection.prepareStatement(insertAssemblySql, Statement.RETURN_GENERATED_KEYS);
-                 PreparedStatement contigPs = connection.prepareStatement(insertContigSql)) {
-                // assembly
-                assemblySt.setString(1, assembly.name());
-                assemblySt.setString(2, assembly.organismName());
-                assemblySt.setString(3, assembly.taxId());
-                assemblySt.setString(4, assembly.submitter());
-                assemblySt.setString(5, assembly.date());
-                assemblySt.setString(6, assembly.genBankAccession());
-                assemblySt.setString(7, assembly.refSeqAccession());
-                updated += assemblySt.executeUpdate();
-                int assemblyId;
-                try (ResultSet rs = assemblySt.getGeneratedKeys()) {
-                    assemblyId = (rs.last()) ? rs.getInt(1) : 0;
-                }
-
-                // contigs
-                for (Contig contig : assembly.contigs()) {
-                    contigPs.setInt(1, assemblyId);
-                    contigPs.setInt(2, contig.id());
-                    contigPs.setString(3, contig.name());
-                    contigPs.setString(4, contig.sequenceRole().name());
-                    contigPs.setInt(5, contig.length());
-                    contigPs.setString(6, contig.genBankAccession());
-                    contigPs.setString(7, assembly.refSeqAccession());
-                    contigPs.setString(8, contig.ucscName());
-                    updated += contigPs.executeUpdate();
-                }
-
-                connection.commit();
-            } catch (SQLException e) {
-                LOGGER.warn("Error occurred during update, rolling back: {}", e.getMessage());
-                connection.rollback();
-            }
-            connection.setAutoCommit(true);
-        } catch (SQLException e) {
-            LOGGER.warn("Error occurred: {}", e.getMessage());
-        }
-        return updated;
+    static TranscriptModelBuilder builder() {
+        return new TranscriptModelBuilder();
     }
+
+    TranscriptModelBuilder contig(Contig contig) {
+        this.contig = contig;
+        return this;
+    }
+
+    TranscriptModelBuilder strand(Strand strand) {
+        this.strand = strand;
+        return this;
+    }
+
+    TranscriptModelBuilder start(int start) {
+        this.start = start;
+        return this;
+    }
+
+    TranscriptModelBuilder end(int end) {
+        this.end = end;
+        return this;
+    }
+
+    TranscriptModelBuilder accessionId(String accessionId) {
+        if (this.accessionId == null) this.accessionId = accessionId;
+        return this;
+    }
+
+    TranscriptModelBuilder hgvsSymbol(String hgvsSymbol) {
+        if (this.hgvsSymbol == null) this.hgvsSymbol = hgvsSymbol;
+        return this;
+    }
+
+    TranscriptModelBuilder setExon(int n, int start, int end) {
+        exons.put(n, GenomicRegion.zeroBased(contig, start, end));
+        return this;
+    }
+
+    TranscriptModelBuilder cdsStart(int cdsStart) {
+        this.cdsStart = cdsStart;
+        return this;
+    }
+
+    TranscriptModelBuilder cdsEnd(int cdsEnd) {
+        this.cdsEnd = cdsEnd;
+        return this;
+    }
+
+    TranscriptModel build() {
+        boolean isCoding = cdsStart >= 0 && cdsEnd >= 0;
+
+        List<GenomicRegion> sorted = exons.keySet().stream().sorted().map(exons::get).collect(Collectors.toUnmodifiableList());
+
+        return (isCoding)
+                ? TranscriptModel.coding(contig, strand, COORDINATE_SYSTEM, start, end, cdsStart, cdsEnd, accessionId, hgvsSymbol, sorted)
+                : TranscriptModel.noncoding(contig, strand, COORDINATE_SYSTEM, start, end, accessionId, hgvsSymbol, sorted);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        TranscriptModelBuilder builder = (TranscriptModelBuilder) o;
+        return start == builder.start && end == builder.end && cdsStart == builder.cdsStart && cdsEnd == builder.cdsEnd && Objects.equals(contig, builder.contig) && strand == builder.strand && Objects.equals(accessionId, builder.accessionId) && Objects.equals(hgvsSymbol, builder.hgvsSymbol) && Objects.equals(exons, builder.exons);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(contig, strand, start, end, cdsStart, cdsEnd, accessionId, hgvsSymbol, exons);
+    }
+
 }

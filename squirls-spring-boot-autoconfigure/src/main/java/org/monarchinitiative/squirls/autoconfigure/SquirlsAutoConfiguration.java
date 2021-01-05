@@ -102,6 +102,7 @@ import org.monarchinitiative.squirls.io.db.DbSplicingPositionalWeightMatrixParse
 import org.monarchinitiative.squirls.io.db.TranscriptModelServiceDb;
 import org.monarchinitiative.squirls.io.sequence.FastaStrandedSequenceService;
 import org.monarchinitiative.squirls.io.sequence.InvalidFastaFileException;
+import org.monarchinitiative.variant.api.GenomicAssembly;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -194,8 +195,21 @@ public class SquirlsAutoConfiguration {
 
 
     @Bean
-    public TranscriptModelService transcriptModelService(DataSource squirlsDatasource) throws SquirlsResourceException {
-        return new TranscriptModelServiceDb(squirlsDatasource);
+    public StrandedSequenceService strandedSequenceService(SquirlsDataResolver squirlsDataResolver) throws InvalidFastaFileException {
+        return new FastaStrandedSequenceService(squirlsDataResolver.genomeAssemblyReportPath(),
+                squirlsDataResolver.genomeFastaPath(),
+                squirlsDataResolver.genomeFastaFaiPath(),
+                squirlsDataResolver.genomeFastaDictPath());
+    }
+
+    @Bean
+    public GenomicAssembly genomicAssembly(StrandedSequenceService strandedSequenceService) {
+        return strandedSequenceService.genomicAssembly();
+    }
+
+    @Bean
+    public TranscriptModelService transcriptModelService(DataSource squirlsDatasource, GenomicAssembly genomicAssembly) throws SquirlsResourceException {
+        return new TranscriptModelServiceDb(squirlsDatasource, genomicAssembly);
     }
 
     @Bean
@@ -264,14 +278,6 @@ public class SquirlsAutoConfiguration {
     @Bean
     public DbKMerDao dbKMerDao(@Qualifier("squirlsDatasource") DataSource squirlsDatasource) {
         return new DbKMerDao(squirlsDatasource);
-    }
-
-    @Bean
-    public StrandedSequenceService strandedSequenceService(SquirlsDataResolver squirlsDataResolver) throws InvalidFastaFileException {
-        return new FastaStrandedSequenceService(squirlsDataResolver.genomeAssemblyReportPath(),
-                squirlsDataResolver.genomeFastaPath(),
-                squirlsDataResolver.genomeFastaFaiPath(),
-                squirlsDataResolver.genomeFastaDictPath());
     }
 
     @Bean

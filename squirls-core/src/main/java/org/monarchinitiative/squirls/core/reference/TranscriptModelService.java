@@ -82,7 +82,7 @@ import org.monarchinitiative.variant.api.GenomicRegion;
 import java.util.List;
 import java.util.Optional;
 
-public interface TranscriptModelService extends GenomicAssemblyAware {
+public interface TranscriptModelService {
 
     List<String> getTranscriptAccessionIds();
 

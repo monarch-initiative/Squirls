@@ -80,6 +80,7 @@ import org.monarchinitiative.squirls.core.reference.TranscriptModel;
 import org.monarchinitiative.squirls.core.reference.TranscriptModelService;
 import org.monarchinitiative.squirls.io.SquirlsResourceException;
 import org.monarchinitiative.variant.api.Contig;
+import org.monarchinitiative.variant.api.GenomicAssembly;
 import org.monarchinitiative.variant.api.GenomicRegion;
 import org.monarchinitiative.variant.api.Strand;
 import org.slf4j.Logger;
@@ -90,30 +91,40 @@ import java.sql.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class TranscriptModelServiceDb extends BaseDbService implements TranscriptModelService {
+public class TranscriptModelServiceDb implements TranscriptModelService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(TranscriptModelServiceDb.class);
 
-    private static final Set<String> requiredTables = Set.of("TRANSCRIPTS", "EXONS", "GENOMIC_ASSEMBLY", "CONTIGS");
+    private static final Set<String> requiredTables = Set.of("TRANSCRIPTS", "EXONS");
+
+    private final DataSource dataSource;
+
+    private final GenomicAssembly genomicAssembly;
 
     private final Map<String, Integer> contigIdMap;
 
-    public TranscriptModelServiceDb(DataSource dataSource) throws SquirlsResourceException {
-        super(dataSource);
+    private final int unknownContigId;
+
+    public TranscriptModelServiceDb(DataSource dataSource, GenomicAssembly genomicAssembly) throws SquirlsResourceException {
+        this.dataSource = dataSource;
+        this.genomicAssembly = genomicAssembly;
+        sanityCheck(dataSource);
         contigIdMap = new HashMap<>();
         for (Contig contig : genomicAssembly.contigs()) {
+            if (contig.isUnknownContig()) continue;
+
             contigIdMap.put(contig.name(), contig.id());
             contigIdMap.put(contig.genBankAccession(), contig.id());
             contigIdMap.put(contig.refSeqAccession(), contig.id());
             contigIdMap.put(contig.ucscName(), contig.id());
         }
+        this.unknownContigId = Contig.unknown().id();
     }
 
     /**
      * This class requires the database to contain the tables <code>TRANSCRIPTS</code> and <code>SQUIRLS</code>
      */
-    @Override
-    protected void sanityCheck(DataSource dataSource) throws SquirlsResourceException {
+    private static void sanityCheck(DataSource dataSource) throws SquirlsResourceException {
         Set<String> tableNames = new HashSet<>();
         try (Connection connection = dataSource.getConnection()) {
             DatabaseMetaData meta = connection.getMetaData();
@@ -145,9 +156,9 @@ public class TranscriptModelServiceDb extends BaseDbService implements Transcrip
             connection.setAutoCommit(false);
             try (PreparedStatement txPs = connection.prepareStatement(txSql, Statement.RETURN_GENERATED_KEYS);
                  PreparedStatement exonPs = connection.prepareStatement(exonSql)) {
-                // insert transcript data
 
-                txPs.setInt(1, contigIdMap.getOrDefault(region.contigName(), 0));
+                // insert transcript data
+                txPs.setInt(1, contigIdMap.getOrDefault(region.contigName(), unknownContigId));
                 txPs.setInt(2, region.start());
                 txPs.setInt(3, region.end());
                 txPs.setInt(4, onPositive.start());
@@ -219,7 +230,8 @@ public class TranscriptModelServiceDb extends BaseDbService implements Transcrip
         try (Connection connection = dataSource.getConnection();
              PreparedStatement statement = connection.prepareStatement(sql)) {
 
-            statement.setInt(1, contigIdMap.getOrDefault(region.contigName(), 0));
+            int contigId = contigIdMap.getOrDefault(region.contigName(), unknownContigId);
+            statement.setInt(1, contigId);
             statement.setInt(2, region.start());
             statement.setInt(3, region.end());
 
@@ -266,13 +278,14 @@ public class TranscriptModelServiceDb extends BaseDbService implements Transcrip
     }
 
     private List<TranscriptModel> processTranscripts(ResultSet rs) throws SQLException {
-        Map<Integer, TranscriptModelDefault.Builder> txMap = new HashMap<>();
+        Map<Integer, TranscriptModelBuilder> txMap = new HashMap<>();
         while (rs.next()) {
             int txId = rs.getInt(1);
-            txMap.putIfAbsent(txId, TranscriptModelDefault.builder());
+            txMap.putIfAbsent(txId, TranscriptModelBuilder.builder());
 
-            TranscriptModelDefault.Builder builder = txMap.get(txId);
-            builder.contig(genomicAssembly.contigById(rs.getInt("CONTIG")));
+            TranscriptModelBuilder builder = txMap.get(txId);
+            int contig = rs.getInt("CONTIG");
+            builder.contig(genomicAssembly.contigById(contig));
             builder.strand(rs.getBoolean("STRAND") ? Strand.POSITIVE : Strand.NEGATIVE);
             builder.start(rs.getInt("BEGIN"));
             builder.end(rs.getInt("END"));
@@ -286,7 +299,7 @@ public class TranscriptModelServiceDb extends BaseDbService implements Transcrip
         }
 
         return txMap.values().stream()
-                .map(TranscriptModelDefault.Builder::build)
+                .map(TranscriptModelBuilder::build)
                 .collect(Collectors.toList());
     }
 
