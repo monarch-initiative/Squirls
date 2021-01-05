@@ -15,9 +15,10 @@
         <dependency>
             <groupId>org.monarchinitiative.variant</groupId>
             <artifactId>variant-api</artifactId>
-            <version>1.0-SNAPSHOT</version>
+            <version>${variant.api.version}</version>
         </dependency>
 
+        <!-- TODO remove, replace by our implementation of DoubleMatrix -->
         <dependency>
             <groupId>org.jblas</groupId>
             <artifactId>jblas</artifactId>
