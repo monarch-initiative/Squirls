@@ -20,12 +20,12 @@ squirls:
   # Exomiser-like data version (1902 in examples above)
   data-version:
 
-  # Variant with longer REF allele will not be evaluated
-  #max-variant-length: 100
 
   #classifier:
-  # Which classifier to use
-  #version: v0.4.4
+  #  Which classifier to use
+  #  version: v0.4.6
+  #  Variant with longer REF allele will not be evaluated
+  #  max-variant-length: 100
   #annotator:
   # Which splicing annotator to use
   #  version: agez

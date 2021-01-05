@@ -181,7 +181,7 @@ public class SquirlsProperties {
     public static class AnnotatorProperties {
 
         /**
-         * Which {@link SplicingAnnotator} to use (`dense` by default).
+         * Which {@link SplicingAnnotator} to use (`agez` by default).
          */
         private String version = "agez";
 
