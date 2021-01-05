@@ -174,8 +174,8 @@ class TranscriptModelDefault extends BaseGenomicRegion<TranscriptModelDefault> i
         if (strand() == other) {
             return this;
         } else {
-            Position start = startPosition().invert(contig(), coordinateSystem());
-            Position end = endPosition().invert(contig(), coordinateSystem());
+            Position start = endPosition().invert(contig(), coordinateSystem());
+            Position end = startPosition().invert(contig(), coordinateSystem());
 
             GenomicRegion cdsRegionWithStrand = isCoding ? cdsRegion.withStrand(other) : null;
 
@@ -185,7 +185,7 @@ class TranscriptModelDefault extends BaseGenomicRegion<TranscriptModelDefault> i
                 exonsWithStrand.add(exon.withStrand(other));
             }
 
-            return new TranscriptModelDefault(contig(), other, coordinateSystem(), end, start, // inverted order!
+            return new TranscriptModelDefault(contig(), other, coordinateSystem(), start, end,
                     accessionId, hgvsSymbol, isCoding, cdsRegionWithStrand, exonsWithStrand);
         }
     }

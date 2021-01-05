@@ -122,9 +122,9 @@ public class TranscriptModelServiceDbTest {
                 .cdsStart(200).cdsEnd(800)
                 .accessionId("NM_000001.2")
                 .hgvsSymbol("GENE")
-                .setExon(0, 100, 300)
-                .setExon(1, 400, 600)
-                .setExon(2, 700, 900)
+                .setExon(0, Strand.POSITIVE, 100, 300)
+                .setExon(1, Strand.POSITIVE, 400, 600)
+                .setExon(2, Strand.POSITIVE, 700, 900)
                 .build();
         int updated = instance.insertTranscript(coding);
         assertThat(updated, equalTo(4));
@@ -138,9 +138,9 @@ public class TranscriptModelServiceDbTest {
                 .cdsStart(-1).cdsEnd(-1)
                 .accessionId("NM_000001.2")
                 .hgvsSymbol("GENE")
-                .setExon(0, 100, 300)
-                .setExon(1, 400, 600)
-                .setExon(2, 700, 900)
+                .setExon(0, Strand.POSITIVE, 100, 300)
+                .setExon(1, Strand.POSITIVE, 400, 600)
+                .setExon(2, Strand.POSITIVE, 700, 900)
                 .build();
         int updated = instance.insertTranscript(noncoding);
         assertThat(updated, equalTo(4));

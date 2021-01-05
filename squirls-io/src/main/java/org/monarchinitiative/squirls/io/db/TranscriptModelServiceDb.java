@@ -236,7 +236,7 @@ public class TranscriptModelServiceDb implements TranscriptModelService {
             statement.setInt(3, region.end());
 
             try (ResultSet rs = statement.executeQuery()) {
-                return processTranscripts(rs);
+                return processTranscriptResultSet(rs);
             }
         } catch (SQLException e) {
             LOGGER.warn("Error occurred: {}", e.getMessage());
@@ -259,7 +259,7 @@ public class TranscriptModelServiceDb implements TranscriptModelService {
 
             List<TranscriptModel> models;
             try (ResultSet rs = statement.executeQuery()) {
-                models = processTranscripts(rs);
+                models = processTranscriptResultSet(rs);
                 if (models.size() == 1) {
                     return Optional.of(models.get(0));
                 } else {
@@ -277,7 +277,7 @@ public class TranscriptModelServiceDb implements TranscriptModelService {
         }
     }
 
-    private List<TranscriptModel> processTranscripts(ResultSet rs) throws SQLException {
+    private List<TranscriptModel> processTranscriptResultSet(ResultSet rs) throws SQLException {
         Map<Integer, TranscriptModelBuilder> txMap = new HashMap<>();
         while (rs.next()) {
             int txId = rs.getInt(1);
@@ -285,8 +285,10 @@ public class TranscriptModelServiceDb implements TranscriptModelService {
 
             TranscriptModelBuilder builder = txMap.get(txId);
             int contig = rs.getInt("CONTIG");
+            Strand strand = rs.getBoolean("STRAND") ? Strand.POSITIVE : Strand.NEGATIVE;
+
             builder.contig(genomicAssembly.contigById(contig));
-            builder.strand(rs.getBoolean("STRAND") ? Strand.POSITIVE : Strand.NEGATIVE);
+            builder.strand(strand);
             builder.start(rs.getInt("BEGIN"));
             builder.end(rs.getInt("END"));
             builder.accessionId(rs.getString("TX_ACCESSION"));
@@ -295,7 +297,7 @@ public class TranscriptModelServiceDb implements TranscriptModelService {
             builder.cdsStart(rs.wasNull() ? -1 : start);
             int end = rs.getInt("cds_end");
             builder.cdsEnd(rs.wasNull() ? -1 : end);
-            builder.setExon(rs.getInt("EXON_NUMBER"), rs.getInt("exon_begin"), rs.getInt("exon_end"));
+            builder.setExon(rs.getInt("EXON_NUMBER"), strand, rs.getInt("exon_begin"), rs.getInt("exon_end"));
         }
 
         return txMap.values().stream()

@@ -77,10 +77,7 @@
 package org.monarchinitiative.squirls.io.db;
 
 import org.monarchinitiative.squirls.core.reference.TranscriptModel;
-import org.monarchinitiative.variant.api.Contig;
-import org.monarchinitiative.variant.api.CoordinateSystem;
-import org.monarchinitiative.variant.api.GenomicRegion;
-import org.monarchinitiative.variant.api.Strand;
+import org.monarchinitiative.variant.api.*;
 
 import java.util.HashMap;
 import java.util.List;
@@ -140,8 +137,8 @@ class TranscriptModelBuilder {
         return this;
     }
 
-    TranscriptModelBuilder setExon(int n, int start, int end) {
-        exons.put(n, GenomicRegion.zeroBased(contig, start, end));
+    TranscriptModelBuilder setExon(int n, Strand strand, int start, int end) {
+        exons.put(n, GenomicRegion.zeroBased(contig, strand, Position.of(start), Position.of(end)));
         return this;
     }
 
