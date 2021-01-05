@@ -98,8 +98,8 @@ import static org.hamcrest.Matchers.*;
 @SpringBootTest(classes = TestDataSourceConfig.class)
 public class TranscriptModelServiceDbTest {
 
-    private static final Contig one = Contig.of(1, "1", SequenceRole.ASSEMBLED_MOLECULE, 10_000, "CM000663.1", "NC_000001.10", "chr1");
-    private static final Contig two = Contig.of(2, "2", SequenceRole.ASSEMBLED_MOLECULE, 20_000, "CM000664.1", "NC_000002.11", "chr2");
+    private static final Contig one = Contig.of(1, "1", SequenceRole.ASSEMBLED_MOLECULE, "1", AssignedMoleculeType.CHROMOSOME, 10_000, "CM000663.1", "NC_000001.10", "chr1");
+    private static final Contig two = Contig.of(2, "2", SequenceRole.ASSEMBLED_MOLECULE, "2", AssignedMoleculeType.CHROMOSOME, 20_000, "CM000664.1", "NC_000002.11", "chr2");
     private static final GenomicAssembly genomicAssembly = DefaultGenomicAssembly.builder().name("Chewie").organismName("Wookie")
             .taxId("9999").submitter("Han Solo").date("2231-01-05").genBankAccession("GBW1").refSeqAccession("RSW1")
             .contigs(List.of(Contig.unknown(), one, two)).build();

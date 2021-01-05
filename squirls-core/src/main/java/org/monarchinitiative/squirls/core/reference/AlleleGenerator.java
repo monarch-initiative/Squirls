@@ -164,6 +164,11 @@ public class AlleleGenerator {
         return splicingParameters.makeAcceptorRegion(anchor);
     }
 
+    private static GenomicRegion makeGenomicRegion(GenomicPosition pos, int length) {
+        GenomicPosition end = GenomicPosition.zeroBased(pos.contig(), pos.strand(), pos.position().shift(length));
+        return GenomicRegion.of(pos, end);
+    }
+
     /**
      * Create nucleotide snippet for splice donor site with presence of ALT allele.
      *
@@ -224,7 +229,7 @@ public class AlleleGenerator {
             } else {
                 // simple scenario when we just add bases between donor beginning and variant beginning
                 int length = donor.startGenomicPosition().distanceTo(variant.startGenomicPosition());
-                GenomicRegion interval = GenomicRegion.of(donor.startGenomicPosition(), length);
+                GenomicRegion interval = makeGenomicRegion(donor.startGenomicPosition(), length);
 
                 String seq = sequenceInterval.subsequence(interval);
 
@@ -243,7 +248,7 @@ public class AlleleGenerator {
                 return result.substring(0, splicingParameters.getDonorLength());
             }
 
-            GenomicRegion interval = GenomicRegion.of(variant.endGenomicPosition(), max);
+            GenomicRegion interval = makeGenomicRegion(variant.endGenomicPosition(), max);
 
             String seq = sequenceInterval.subsequence(interval);
             if (seq == null) {
@@ -304,7 +309,7 @@ public class AlleleGenerator {
 
             int missing = idx - result.length();
             if (missing > 0) {
-                GenomicRegion interval = GenomicRegion.of(region.endGenomicPosition(), missing);
+                GenomicRegion interval = makeGenomicRegion(region.endGenomicPosition(), missing);
                 String seq = sequence.subsequence(interval);
                 if (seq == null) {
                     if (LOGGER.isInfoEnabled())
@@ -317,7 +322,7 @@ public class AlleleGenerator {
         } else {
             int length = region.endGenomicPosition().distanceTo(acceptor.endGenomicPosition());
             if (length > 0) {
-                GenomicRegion interval = GenomicRegion.of(region.endGenomicPosition(), length);
+                GenomicRegion interval = makeGenomicRegion(region.endGenomicPosition(), length);
                 String seq = sequence.subsequence(interval);
                 if (seq == null) {
                     if (LOGGER.isInfoEnabled())

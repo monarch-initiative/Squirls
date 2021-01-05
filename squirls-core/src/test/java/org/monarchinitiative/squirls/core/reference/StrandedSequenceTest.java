@@ -86,7 +86,7 @@ import static org.hamcrest.Matchers.equalTo;
 
 public class StrandedSequenceTest {
 
-    private static final Contig CONTIG = Contig.of(1, "1", SequenceRole.ASSEMBLED_MOLECULE, 500, "", "", "");
+    private static final Contig CONTIG = Contig.of(1, "1", SequenceRole.ASSEMBLED_MOLECULE, "1", AssignedMoleculeType.CHROMOSOME, 500, "", "", "");
 
     @Test
     public void properties() {

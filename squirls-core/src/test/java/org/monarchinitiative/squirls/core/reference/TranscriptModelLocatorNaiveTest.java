@@ -94,7 +94,7 @@ import static org.hamcrest.Matchers.is;
 @SpringBootTest(classes = {TestDataSourceConfig.class})
 public class TranscriptModelLocatorNaiveTest {
 
-    private static final Contig contig = Contig.of(1, "1", SequenceRole.ASSEMBLED_MOLECULE, 10_000, "", "", "");
+    private static final Contig contig = Contig.of(1, "1", SequenceRole.ASSEMBLED_MOLECULE, "1", AssignedMoleculeType.CHROMOSOME, 10_000, "", "", "");
 
     private TranscriptModelLocatorNaive locator;
 
@@ -123,7 +123,7 @@ public class TranscriptModelLocatorNaiveTest {
 
     @Test
     public void onDifferentContig() {
-        Contig contig = Contig.of(33, "12", SequenceRole.ASSEMBLED_MOLECULE, 1000, "", "", "");
+        Contig contig = Contig.of(33, "12", SequenceRole.ASSEMBLED_MOLECULE, "12", AssignedMoleculeType.CHROMOSOME, 1000, "", "", "");
         GenomicRegion variant = GenomicRegion.zeroBased(contig, Strand.POSITIVE, Position.of(999), Position.of(1000));
 
         SplicingLocationData data = locator.locate(variant, fwdTranscript);

@@ -84,6 +84,7 @@ import org.monarchinitiative.squirls.core.reference.SplicingPwmData;
 import org.monarchinitiative.squirls.core.reference.StrandedSequence;
 import org.monarchinitiative.squirls.core.reference.TranscriptModel;
 import org.monarchinitiative.squirls.core.scoring.calculators.conservation.BigWigAccessor;
+import org.monarchinitiative.variant.api.AssignedMoleculeType;
 import org.monarchinitiative.variant.api.Contig;
 import org.monarchinitiative.variant.api.SequenceRole;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -95,7 +96,7 @@ import java.util.Map;
 @SpringBootTest(classes = TestDataSourceConfig.class)
 public abstract class BaseSplicingAnnotatorTest {
 
-    protected static final Contig contig = Contig.of(1, "1", SequenceRole.ASSEMBLED_MOLECULE, 10_000, "", "", "");
+    protected static final Contig contig = Contig.of(1, "1", SequenceRole.ASSEMBLED_MOLECULE, "1", AssignedMoleculeType.CHROMOSOME, 10_000, "", "", "");
 
     protected static final double EPSILON = 5E-4;
 

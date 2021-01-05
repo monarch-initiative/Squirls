@@ -97,7 +97,7 @@ public class SplicingParametersTest {
 
     @Test
     public void makeDonorRegion() {
-        Contig contig = Contig.of(1, "1", SequenceRole.ASSEMBLED_MOLECULE, 100, "", "", "");
+        Contig contig = Contig.of(1, "1", SequenceRole.ASSEMBLED_MOLECULE, "1", AssignedMoleculeType.CHROMOSOME, 100, "", "", "");
         GenomicPosition anchor = GenomicPosition.zeroBased(contig, Strand.POSITIVE, Position.of(10));
 
         GenomicRegion donor = parameters.makeDonorRegion(anchor);
@@ -110,7 +110,7 @@ public class SplicingParametersTest {
 
     @Test
     public void makeAcceptorRegion() {
-        Contig contig = Contig.of(1, "1", SequenceRole.ASSEMBLED_MOLECULE, 100, "", "", "");
+        Contig contig = Contig.of(1, "1", SequenceRole.ASSEMBLED_MOLECULE, "1", AssignedMoleculeType.CHROMOSOME, 100, "", "", "");
         GenomicPosition anchor = GenomicPosition.zeroBased(contig, Strand.POSITIVE, Position.of(10));
 
         GenomicRegion donor = parameters.makeAcceptorRegion(anchor);
