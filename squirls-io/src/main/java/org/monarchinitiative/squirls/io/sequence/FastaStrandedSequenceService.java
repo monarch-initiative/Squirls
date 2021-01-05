@@ -134,7 +134,7 @@ public class FastaStrandedSequenceService implements StrandedSequenceService, Au
                 .collect(Collectors.toSet());
         Set<String> dictContigNames = sequenceDictionary.getSequences().stream()
                 .map(SAMSequenceRecord::getSequenceName)
-                .filter(name -> !(name.startsWith("chrUn") || name.contains("random") || name.contains("hap")))
+                .filter(name -> !(name.startsWith("chrUn") || name.contains("random") || name.contains("hap") || name.endsWith("alt")))
                 .collect(Collectors.toSet());
         if (!assemblyContigNames.containsAll(dictContigNames)) {
             throw new InvalidFastaFileException("Required contigs are missing in FASTA file");
