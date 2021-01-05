@@ -271,7 +271,7 @@ public class AlleleGenerator {
      * @return nucleotide snippet for splice acceptor site or <code>null</code> if wrong input is provided
      */
     public String getAcceptorSiteWithAltAllele(GenomicPosition anchor, Variant variant, StrandedSequence sequence) {
-        String result; // this method creates the result String in 3' --> 5' direction
+        String result = ""; // this method creates the result String in 3' --> 5' direction
 
         if (anchor.contigId() != variant.contigId() || anchor.contigId() != sequence.contigId()) {
             // sanity check
@@ -316,15 +316,17 @@ public class AlleleGenerator {
             }
         } else {
             int length = region.endGenomicPosition().distanceTo(acceptor.endGenomicPosition());
-            GenomicRegion interval = GenomicRegion.of(region.endGenomicPosition(), length);
-            String seq = sequence.subsequence(interval);
-            if (seq == null) {
-                if (LOGGER.isInfoEnabled())
-                    LOGGER.info("Not enough of fasta sequence provided for variant `{}` - sequence: `{}`, required: `{}`",
-                            variant, sequence, interval);
-                return null;
+            if (length > 0) {
+                GenomicRegion interval = GenomicRegion.of(region.endGenomicPosition(), length);
+                String seq = sequence.subsequence(interval);
+                if (seq == null) {
+                    if (LOGGER.isInfoEnabled())
+                        LOGGER.info("Not enough of fasta sequence provided for variant `{}` - sequence: `{}`, required: `{}`",
+                                variant, sequence, interval);
+                    return null;
+                }
+                result = alt + seq;
             }
-            result = alt + seq;
         }
 
         // add nothing if the sequence is already longer than the SPLICE_ACCEPTOR_SITE_LENGTH
