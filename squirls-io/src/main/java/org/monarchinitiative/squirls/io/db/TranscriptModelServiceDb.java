@@ -94,6 +94,8 @@ public class TranscriptModelServiceDb extends BaseDbService implements Transcrip
 
     private static final Logger LOGGER = LoggerFactory.getLogger(TranscriptModelServiceDb.class);
 
+    private static final Set<String> requiredTables = Set.of("TRANSCRIPTS", "EXONS", "GENOMIC_ASSEMBLY", "CONTIGS");
+
     private final Map<String, Integer> contigIdMap;
 
     public TranscriptModelServiceDb(DataSource dataSource) throws SquirlsResourceException {
@@ -107,18 +109,23 @@ public class TranscriptModelServiceDb extends BaseDbService implements Transcrip
         }
     }
 
+    /**
+     * This class requires the database to contain the tables <code>TRANSCRIPTS</code> and <code>SQUIRLS</code>
+     */
     @Override
     protected void sanityCheck(DataSource dataSource) throws SquirlsResourceException {
+        Set<String> tableNames = new HashSet<>();
         try (Connection connection = dataSource.getConnection()) {
             DatabaseMetaData meta = connection.getMetaData();
-            try (ResultSet rs = meta.getTables(null, "SQUIRLS", "TRANSCRIPTS", new String[]{"TABLE"})) {
-                while (rs.next()) {
-                    // TODO - finish
-                    System.err.println(rs.getString("TABLE_NAME"));
-                }
+            try (ResultSet rs = meta.getTables(null, "SQUIRLS", null, new String[]{"TABLE"})) {
+                while (rs.next())
+                    tableNames.add(rs.getString("TABLE_NAME"));
             }
         } catch (SQLException e) {
             throw new SquirlsResourceException(e);
+        }
+        if (!tableNames.containsAll(requiredTables)) {
+            throw new SquirlsResourceException("Missing at least one of the required tables `" + requiredTables + '`');
         }
     }
 
@@ -217,7 +224,7 @@ public class TranscriptModelServiceDb extends BaseDbService implements Transcrip
             statement.setInt(3, region.end());
 
             try (ResultSet rs = statement.executeQuery()) {
-                return processResultSet(rs);
+                return processTranscripts(rs);
             }
         } catch (SQLException e) {
             LOGGER.warn("Error occurred: {}", e.getMessage());
@@ -240,7 +247,7 @@ public class TranscriptModelServiceDb extends BaseDbService implements Transcrip
 
             List<TranscriptModel> models;
             try (ResultSet rs = statement.executeQuery()) {
-                models = processResultSet(rs);
+                models = processTranscripts(rs);
                 if (models.size() == 1) {
                     return Optional.of(models.get(0));
                 } else {
@@ -258,7 +265,7 @@ public class TranscriptModelServiceDb extends BaseDbService implements Transcrip
         }
     }
 
-    private List<TranscriptModel> processResultSet(ResultSet rs) throws SQLException {
+    private List<TranscriptModel> processTranscripts(ResultSet rs) throws SQLException {
         Map<Integer, TranscriptModelDefault.Builder> txMap = new HashMap<>();
         while (rs.next()) {
             int txId = rs.getInt(1);
