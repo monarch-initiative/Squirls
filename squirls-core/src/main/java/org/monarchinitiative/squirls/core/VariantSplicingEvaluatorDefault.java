@@ -83,7 +83,6 @@ import org.monarchinitiative.squirls.core.reference.TranscriptModel;
 import org.monarchinitiative.squirls.core.scoring.SplicingAnnotator;
 import org.monarchinitiative.variant.api.GenomicPosition;
 import org.monarchinitiative.variant.api.GenomicRegion;
-import org.monarchinitiative.variant.api.Strand;
 import org.monarchinitiative.variant.api.Variant;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -139,6 +138,7 @@ class VariantSplicingEvaluatorDefault implements VariantSplicingEvaluator {
          0 - perform some sanity checks at the beginning.
          */
         if (!squirlsDataService.knownContigNames().contains(variant.contigName())) {
+            // TODO - check if the contig accession matches
             // unknown contig, nothing to be done here
             if (LOGGER.isWarnEnabled())
                 LOGGER.warn("Unknown contig for variant {}:{}{}>{}", variant.contigName(), variant.start(), variant.ref(), variant.alt());
@@ -161,7 +161,7 @@ class VariantSplicingEvaluatorDefault implements VariantSplicingEvaluator {
          */
         GenomicPosition bp = null, ep = null;
         for (TranscriptModel tx : txMap.values()) {
-            GenomicRegion txIntervalFwd = tx.withStrand(Strand.POSITIVE);
+            GenomicRegion txIntervalFwd = tx.toPositiveStrand();
             if (bp == null || bp.isDownstreamOf(txIntervalFwd.startGenomicPosition())) {
                 bp = txIntervalFwd.startGenomicPosition();
             }

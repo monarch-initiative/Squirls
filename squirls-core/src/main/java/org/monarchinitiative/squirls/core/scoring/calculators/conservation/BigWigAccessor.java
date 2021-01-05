@@ -140,14 +140,10 @@ public class BigWigAccessor implements AutoCloseable {
      * @return list of values for the interval
      */
     public List<Float> getScores(GenomicRegion region) {
-        // the scores are stored for regions on FWD strand
-        GenomicRegion interval = region.toPositiveStrand().toZeroBased();
+        // the scores are stored for regions on POSITIVE strand
+        GenomicRegion interval = region.toZeroBased().toPositiveStrand();
 
-        String contig = interval.contigName();
-        contig = (contig.startsWith("chr")) ? contig : "chr" + contig;
-        int begin = interval.start(), end = interval.end();
-
-        return getScores(contig, begin, end);
+        return getScores(interval.contig().ucscName(), interval.start(), interval.end());
     }
 
     /**
