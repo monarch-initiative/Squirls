@@ -4,6 +4,7 @@ squirls:
   # If the directory has the following structure:
   # path/to/a_folder:
   #  |- 1902_hg19:
+  #  |   |- 1902_hg19.assembly_report.txt
   #  |   |- 1902_hg19.fa
   #  |   |- 1902_hg19.fa.dict
   #  |   |- 1902_hg19.fa.fai
