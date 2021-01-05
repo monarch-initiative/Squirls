@@ -15,8 +15,13 @@
     <dependencies>
         <dependency>
             <groupId>org.monarchinitiative.squirls</groupId>
-            <artifactId>squirls-core</artifactId>
+            <artifactId>squirls-io</artifactId>
             <version>${project.parent.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>de.charite.compbio</groupId>
+            <artifactId>jannovar-core</artifactId>
+            <version>${jannovar.version}</version>
         </dependency>
 
         <dependency>

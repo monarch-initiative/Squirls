@@ -76,7 +76,7 @@
 
 package org.monarchinitiative.squirls.core.classifier;
 
-import org.monarchinitiative.squirls.core.SimpleClassifiable;
+import org.monarchinitiative.squirls.core.SimpleSquirlsFeatures;
 
 import java.util.Map;
 
@@ -92,16 +92,16 @@ public class TestBasedOnIrisInstances {
 //     the fifth instance of the iris dataset, class 0 (setosa)
 //    protected final FeatureData setosaFive = makeIrisFeature(5., 3.6, 1.4, .2);
     // the fifty-first instance of the iris dataset, class 1 (versicolor)
-    protected final Classifiable versicolorOne = makeIrisFeature(7., 3.2, 4.7, 1.4);
+    protected final SquirlsFeatures versicolorOne = makeIrisFeature(7., 3.2, 4.7, 1.4);
     // the fifty-fifth instance of the iris dataset, class 1 (versicolor)
-    protected final Classifiable versicolorFive = makeIrisFeature(6.5, 2.8, 4.6, 1.5);
+    protected final SquirlsFeatures versicolorFive = makeIrisFeature(6.5, 2.8, 4.6, 1.5);
     // the 101st instance of the iris dataset, class 2 (virginica)
-    protected final Classifiable virginicaOne = makeIrisFeature(6.3, 3.3, 6., 2.5);
+    protected final SquirlsFeatures virginicaOne = makeIrisFeature(6.3, 3.3, 6., 2.5);
     // the 105th instance of the iris dataset, class 2 (virginica)
-    protected final Classifiable virginicaFive = makeIrisFeature(6.5, 3., 5.8, 2.2);
+    protected final SquirlsFeatures virginicaFive = makeIrisFeature(6.5, 3., 5.8, 2.2);
 
-    private static Classifiable makeIrisFeature(double sepalLength, double sepalWidth, double petalLength, double petalWidth) {
-        return new SimpleClassifiable(Map.of(
+    private static SquirlsFeatures makeIrisFeature(double sepalLength, double sepalWidth, double petalLength, double petalWidth) {
+        return new SimpleSquirlsFeatures(Map.of(
                 "sepal_length", sepalLength,
                 "sepal_width", sepalWidth,
                 "petal_length", petalLength,

@@ -77,8 +77,8 @@
 package org.monarchinitiative.squirls.core.scoring.calculators.ic;
 
 import org.jblas.DoubleMatrix;
-import org.monarchinitiative.squirls.core.data.ic.SplicingPwmData;
-import org.monarchinitiative.squirls.core.model.SplicingParameters;
+import org.monarchinitiative.squirls.core.reference.SplicingParameters;
+import org.monarchinitiative.squirls.core.reference.SplicingPwmData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

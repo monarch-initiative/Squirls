@@ -76,28 +76,28 @@
 
 package org.monarchinitiative.squirls.core.scoring.calculators;
 
-import de.charite.compbio.jannovar.reference.GenomeInterval;
-import de.charite.compbio.jannovar.reference.GenomePosition;
-import de.charite.compbio.jannovar.reference.GenomeVariant;
-import org.monarchinitiative.squirls.core.model.SplicingTranscript;
 import org.monarchinitiative.squirls.core.reference.SplicingLocationData;
-import org.monarchinitiative.squirls.core.reference.transcript.SplicingTranscriptLocator;
+import org.monarchinitiative.squirls.core.reference.TranscriptModel;
+import org.monarchinitiative.squirls.core.reference.TranscriptModelLocator;
+import org.monarchinitiative.variant.api.GenomicPosition;
+import org.monarchinitiative.variant.api.GenomicRegion;
+import org.monarchinitiative.variant.api.Variant;
 
 abstract class BaseAgezCalculator implements FeatureCalculator {
 
 
-    protected final SplicingTranscriptLocator locator;
+    protected final TranscriptModelLocator locator;
     protected final int agezBegin;
     protected final int agezEnd;
 
-    BaseAgezCalculator(SplicingTranscriptLocator locator, int agezBegin, int agezEnd) {
+    BaseAgezCalculator(TranscriptModelLocator locator, int agezBegin, int agezEnd) {
         this.locator = locator;
         this.agezBegin = agezBegin;
         this.agezEnd = agezEnd;
     }
 
-    boolean overlapsWithAgezRegion(GenomeVariant variant, SplicingTranscript transcript) {
-        final SplicingLocationData locationData = locator.locate(variant, transcript);
+    boolean overlapsWithAgezRegion(Variant variant, TranscriptModel transcript) {
+        SplicingLocationData locationData = locator.locate(variant, transcript);
 
         if (locationData.getAcceptorBoundary().isEmpty()) {
             // no acceptor boundary, the variant is located within the coding region or canonical donor region
@@ -105,9 +105,9 @@ abstract class BaseAgezCalculator implements FeatureCalculator {
             return false;
         }
 
-        final GenomePosition acceptorBoundary = locationData.getAcceptorBoundary().get();
-        final GenomeInterval agezInterval = new GenomeInterval(acceptorBoundary.shifted(agezBegin), -(agezBegin - agezEnd));
+        GenomicPosition acceptorBoundary = locationData.getAcceptorBoundary().get();
+        GenomicRegion agezInterval = acceptorBoundary.toRegion(agezBegin, agezEnd);
 
-        return variant.getGenomeInterval().overlapsWith(agezInterval);
+        return variant.overlapsWith(agezInterval);
     }
 }

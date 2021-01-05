@@ -96,14 +96,12 @@ public class ProgressReporter {
     }
 
     protected final Instant begin;
+    protected final AtomicInteger alleleCount = new AtomicInteger(0);
     /**
      * We report each n-th instance
      */
     private final int tick;
-
     private final AtomicReference<Instant> localBegin;
-
-    protected final AtomicInteger alleleCount = new AtomicInteger(0);
 
     public ProgressReporter(int tick) {
         this.tick = tick;

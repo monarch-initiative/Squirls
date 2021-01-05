@@ -76,10 +76,6 @@
 
 package org.monarchinitiative.squirls.cli.writers.tabular;
 
-import de.charite.compbio.jannovar.annotation.VariantAnnotator;
-import de.charite.compbio.jannovar.annotation.builders.AnnotationBuilderOptions;
-import de.charite.compbio.jannovar.data.JannovarData;
-import de.charite.compbio.jannovar.data.ReferenceDictionary;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -89,7 +85,6 @@ import org.monarchinitiative.squirls.cli.writers.AnalysisResults;
 import org.monarchinitiative.squirls.cli.writers.AnalysisStats;
 import org.monarchinitiative.squirls.cli.writers.SettingsData;
 import org.monarchinitiative.squirls.cli.writers.WritableSplicingAllele;
-import org.monarchinitiative.squirls.core.data.ic.SplicingPwmData;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
@@ -107,20 +102,15 @@ import static org.hamcrest.Matchers.*;
 public class TabularResultWriterTest {
 
     private static final Path OUTPUT = Path.of("target/test-classes/tabular_output").toAbsolutePath();
-    @Autowired
-    public SplicingPwmData splicingPwmData;
-    @Autowired
-    public JannovarData jannovarData;
-    private TabularResultWriter writer;
-    private ReferenceDictionary rd;
 
-    private VariantAnnotator annotator;
+    @Autowired
+    public VariantsForTesting variantsForTesting;
+
+    private TabularResultWriter writer;
 
     @BeforeEach
     public void setUp() {
         writer = new TabularResultWriter("tsv", '\t');
-        rd = jannovarData.getRefDict();
-        annotator = new VariantAnnotator(jannovarData.getRefDict(), jannovarData.getChromosomes(), new AnnotationBuilderOptions());
     }
 
     @AfterEach
@@ -136,10 +126,10 @@ public class TabularResultWriterTest {
     public void write() throws Exception {
         int nVariantsToReport = 2;
         List<? extends WritableSplicingAllele> variants = List.of(
-                VariantsForTesting.BRCA2DonorExon15plus2QUID(rd, annotator),
-                VariantsForTesting.ALPLDonorExon7Minus2(rd, annotator),
-                VariantsForTesting.VWFAcceptorExon26minus2QUID(rd, annotator),
-                VariantsForTesting.TSC2AcceptorExon11Minus3(rd, annotator));
+                variantsForTesting.BRCA2DonorExon15plus2QUID(),
+                variantsForTesting.ALPLDonorExon7Minus2(),
+                variantsForTesting.VWFAcceptorExon26minus2QUID(),
+                variantsForTesting.TSC2AcceptorExon11Minus3());
         AnalysisResults results = AnalysisResults.builder()
                 .addAllVariants(variants)
                 .analysisStats(new AnalysisStats(10, 8, 7))
@@ -161,7 +151,7 @@ public class TabularResultWriterTest {
 
         assertThat(lines, hasSize(nVariantsToReport + 1)); // + header line
         assertThat(lines, hasItem("chrom\tpos\tref\talt\tgene_symbol\ttx_accession\tpathogenic\tsquirls_score"));
-        assertThat(lines, hasItem("chr13\t32930748\tT\tG\tBRCA2\tNM_000059.3\ttrue\t0.95"));
-        assertThat(lines, hasItem("chr1\t21894739\tA\tG\tALPL\tNM_000478.4\ttrue\t0.94"));
+        assertThat(lines, hasItem("13\t32930748\tT\tG\tBRCA2\tNM_000059.3\ttrue\t0.95"));
+        assertThat(lines, hasItem("1\t21894739\tA\tG\tALPL\tNM_000478.4\ttrue\t0.94"));
     }
 }

@@ -1,0 +1,25 @@
+# Sample file with definitions of splice donor and acceptor site positional weight matrices (PWM)
+# '---' separates individual PWMs
+# 2 required attributes are: [name, matrix]
+# 	- name
+#	- matrix - each line corresponds to position in evaluated sequence
+#		- columns represent position weights for nucleotides in this order: A,C,G,U
+# the matrix content will be loaded into DoubleMatrix by PositionalWeightMatrixParser
+#
+########################################################################
+#
+# The content of this PWM was calculated using InformationContent software by alignment of splice sites of all exons
+# present in Jannovar RefSeq cache v0.21.
+#
+# The numbers represent frequencies of nucleotides at particular position
+# of splice site.
+name: SPLICE_DONOR_SITE
+matrix:
+  #         EXON        |         INTRON
+  #   -3                  +1 (G) +2 (U)                +5      +6
+  - [ 0.332, 0.638, 0.097, 0.002, 0.001, 0.597, 0.683, 0.091, 0.179 ] # A
+  - [ 0.359, 0.107, 0.028, 0.001, 0.012, 0.031, 0.079, 0.060, 0.152 ] # C
+  - [ 0.186, 0.117, 0.806, 0.996, 0.001, 0.339, 0.122, 0.771, 0.191 ] # G
+#- [0.123, 0.139, 0.069, 0.001, 0.986, 0.032, 0.116, 0.079, 0.478] # T
+exon: 3
+intron: 5

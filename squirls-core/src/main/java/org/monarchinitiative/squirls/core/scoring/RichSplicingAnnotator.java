@@ -76,10 +76,11 @@
 
 package org.monarchinitiative.squirls.core.scoring;
 
-import org.monarchinitiative.squirls.core.data.ic.SplicingPwmData;
-import org.monarchinitiative.squirls.core.reference.allele.AlleleGenerator;
-import org.monarchinitiative.squirls.core.reference.transcript.SplicingTranscriptLocator;
-import org.monarchinitiative.squirls.core.reference.transcript.SplicingTranscriptLocatorNaive;
+import org.monarchinitiative.squirls.core.VariantOnTranscript;
+import org.monarchinitiative.squirls.core.reference.AlleleGenerator;
+import org.monarchinitiative.squirls.core.reference.SplicingPwmData;
+import org.monarchinitiative.squirls.core.reference.TranscriptModelLocator;
+import org.monarchinitiative.squirls.core.reference.TranscriptModelLocatorNaive;
 import org.monarchinitiative.squirls.core.scoring.calculators.*;
 import org.monarchinitiative.squirls.core.scoring.calculators.conservation.BigWigAccessor;
 import org.monarchinitiative.squirls.core.scoring.calculators.ic.SplicingInformationContentCalculator;
@@ -90,7 +91,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
- * This annotator calculates the following splicing features for each {@link Annotatable}:
+ * This annotator calculates the following splicing features for each {@link VariantOnTranscript}:
  * <ul>
  *     <li><code>canonical_donor</code></li>
  *     <li><code>cryptic_donor</code></li>
@@ -111,7 +112,6 @@ import java.util.stream.Stream;
  *     <li><code>exon_length</code></li>
  *     <li><code>intron_length</code></li>
  * </ul>
- * The {@link de.charite.compbio.jannovar.reference.GenomePosition}s of the closest donor and acceptor sites.
  * <p>
  * Note that the features are computed only if the transcript has at least a single intron.
  */
@@ -121,19 +121,17 @@ public class RichSplicingAnnotator extends AbstractSplicingAnnotator {
                                  Map<String, Double> hexamerMap,
                                  Map<String, Double> septamerMap,
                                  BigWigAccessor bigWigAccessor) {
-        super(new SplicingTranscriptLocatorNaive(splicingPwmData.getParameters()),
-                Stream.of(
-                        // rich
-                        makeCalculatorMap(splicingPwmData).entrySet(),
-                        // dense
-                        DenseSplicingAnnotator.makeDenseCalculatorMap(splicingPwmData, hexamerMap, septamerMap, bigWigAccessor).entrySet())
-                        .flatMap(Collection::stream)
-                        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)));
+        super(Stream.of(// rich
+                makeCalculatorMap(splicingPwmData).entrySet(),
+                // dense
+                DenseSplicingAnnotator.makeDenseCalculatorMap(splicingPwmData, hexamerMap, septamerMap, bigWigAccessor).entrySet())
+                .flatMap(Collection::stream)
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)));
     }
 
     static Map<String, FeatureCalculator> makeCalculatorMap(SplicingPwmData splicingPwmData) {
 
-        SplicingTranscriptLocator locator = new SplicingTranscriptLocatorNaive(splicingPwmData.getParameters());
+        TranscriptModelLocator locator = new TranscriptModelLocatorNaive(splicingPwmData.getParameters());
         SplicingInformationContentCalculator calculator = new SplicingInformationContentCalculator(splicingPwmData);
         AlleleGenerator generator = new AlleleGenerator(splicingPwmData.getParameters());
 

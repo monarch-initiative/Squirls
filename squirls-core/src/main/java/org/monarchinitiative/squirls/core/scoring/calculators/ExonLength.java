@@ -76,11 +76,11 @@
 
 package org.monarchinitiative.squirls.core.scoring.calculators;
 
-import de.charite.compbio.jannovar.reference.GenomeVariant;
-import org.monarchinitiative.squirls.core.model.SplicingTranscript;
 import org.monarchinitiative.squirls.core.reference.SplicingLocationData;
-import org.monarchinitiative.squirls.core.reference.transcript.SplicingTranscriptLocator;
-import xyz.ielis.hyperutil.reference.fasta.SequenceInterval;
+import org.monarchinitiative.squirls.core.reference.StrandedSequence;
+import org.monarchinitiative.squirls.core.reference.TranscriptModel;
+import org.monarchinitiative.squirls.core.reference.TranscriptModelLocator;
+import org.monarchinitiative.variant.api.Variant;
 
 /**
  * Calculate length of the exon the variant is located in. The length is calculated only for variants with
@@ -92,21 +92,21 @@ import xyz.ielis.hyperutil.reference.fasta.SequenceInterval;
  */
 public class ExonLength implements FeatureCalculator {
 
-    private final SplicingTranscriptLocator locator;
+    private final TranscriptModelLocator locator;
 
-    public ExonLength(SplicingTranscriptLocator locator) {
+    public ExonLength(TranscriptModelLocator locator) {
         this.locator = locator;
     }
 
     @Override
-    public double score(GenomeVariant variant, SplicingTranscript transcript, SequenceInterval sequence) {
+    public double score(Variant variant, TranscriptModel transcript, StrandedSequence sequence) {
         final SplicingLocationData locationData = locator.locate(variant, transcript);
         final SplicingLocationData.SplicingPosition position = locationData.getPosition();
         switch (position) {
             case DONOR:
             case ACCEPTOR:
             case EXON:
-                return transcript.getExons().get(locationData.getExonIdx()).getInterval().length();
+                return transcript.exons().get(locationData.getExonIdx()).length();
             case OUTSIDE:
             case INTRON:
             default:

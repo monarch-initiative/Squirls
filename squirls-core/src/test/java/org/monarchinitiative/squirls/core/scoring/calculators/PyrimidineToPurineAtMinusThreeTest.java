@@ -76,12 +76,11 @@
 
 package org.monarchinitiative.squirls.core.scoring.calculators;
 
-import de.charite.compbio.jannovar.reference.GenomePosition;
-import de.charite.compbio.jannovar.reference.GenomeVariant;
-import de.charite.compbio.jannovar.reference.Strand;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.monarchinitiative.variant.api.Variant;
+import org.monarchinitiative.variant.api.impl.SequenceVariant;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -112,10 +111,8 @@ public class PyrimidineToPurineAtMinusThreeTest extends CalculatorTestBase {
             "1402,G,T,0.", // not located within the acceptor site
     })
     public void score(int pos, String ref, String alt, double expected) {
-        final GenomeVariant variant = new GenomeVariant(new GenomePosition(rd, Strand.FWD, 1, pos), ref, alt);
-        final double actual = calculator.score(variant, st, sequenceInterval);
-
-        assertThat(actual, is(closeTo(expected, EPSILON)));
+        Variant variant = SequenceVariant.zeroBased(contig, pos, ref, alt);
+        assertThat(calculator.score(variant, tx, sequenceInterval), is(closeTo(expected, EPSILON)));
     }
 
 }

@@ -76,8 +76,6 @@
 
 package org.monarchinitiative.squirls.core.classifier;
 
-import org.monarchinitiative.squirls.core.classifier.tree.BinaryDecisionTree;
-
 import java.util.List;
 import java.util.Map;
 
@@ -107,7 +105,7 @@ public class TestTreeInstances {
      *
      * @return tree
      */
-    public static BinaryDecisionTree<Classifiable> getTreeOne() {
+    public static BinaryDecisionTree<SquirlsFeatures> getTreeOne() {
         // dtc = DecisionTreeClassifier(random_state=50, max_depth=3).fit(Xbin, ybin)
         return BinaryDecisionTree.builder()
                 .name("tree_0")
@@ -151,7 +149,7 @@ public class TestTreeInstances {
      *
      * @return tree <code>one</code>
      */
-    public static BinaryDecisionTree<Classifiable> getRandomForestTreeOne() {
+    public static BinaryDecisionTree<SquirlsFeatures> getRandomForestTreeOne() {
         return BinaryDecisionTree.builder()
                 .name("rf_tree_0")
                 .putAllFeatureIndices(IRIS_FEATURE_IDXs)
@@ -188,7 +186,7 @@ public class TestTreeInstances {
      *
      * @return tree <code>two</code>
      */
-    public static BinaryDecisionTree<Classifiable> getRandomForestTreeTwo() {
+    public static BinaryDecisionTree<SquirlsFeatures> getRandomForestTreeTwo() {
         return BinaryDecisionTree.builder()
                 .name("rf_tree_1")
                 .putAllFeatureIndices(IRIS_FEATURE_IDXs)

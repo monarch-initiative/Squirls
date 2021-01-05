@@ -85,7 +85,7 @@ import java.nio.file.Paths;
 
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class SquirlsDataResolverTest {
@@ -100,7 +100,8 @@ class SquirlsDataResolverTest {
 
     @Test
     void getFastaStuff() {
-        final Path versionedAssemblyDataDirPath = TEST_DATA.resolve("1710_hg19");
+        Path versionedAssemblyDataDirPath = TEST_DATA.resolve("1710_hg19");
+        assertThat(resolver.genomeAssemblyReportPath(), is(versionedAssemblyDataDirPath.resolve("1710_hg19.assembly_report.txt")));
         assertThat(resolver.genomeFastaPath(), is(versionedAssemblyDataDirPath.resolve("1710_hg19.fa")));
         assertThat(resolver.genomeFastaFaiPath(), is(versionedAssemblyDataDirPath.resolve("1710_hg19.fa.fai")));
         assertThat(resolver.genomeFastaDictPath(), is(versionedAssemblyDataDirPath.resolve("1710_hg19.fa.dict")));
@@ -118,7 +119,8 @@ class SquirlsDataResolverTest {
 
     @Test
     public void throwsAnExceptionWhenResourceIsMissing() {
-        final MissingSquirlsResourceException thrown = assertThrows(MissingSquirlsResourceException.class, () -> new SquirlsDataResolver(Paths.get("src/test/resources"), "1710", "hg19"));
-        assertThat(thrown.getMessage(), containsString("The file `1710_hg19.fa` is missing in SQUIRLS directory"));
+        MissingSquirlsResourceException thrown = assertThrows(MissingSquirlsResourceException.class,
+                () -> new SquirlsDataResolver(Paths.get("src/test/resources"), "1710", "hg19"));
+        assertThat(thrown.getMessage(), containsString("The file `1710_hg19.assembly_report.txt` is missing in SQUIRLS directory"));
     }
 }

@@ -76,15 +76,10 @@
 
 package org.monarchinitiative.squirls.core.classifier;
 
-import java.util.Set;
+import org.monarchinitiative.squirls.core.Prediction;
 
 public interface SquirlsClassifier {
 
-    /**
-     * @return set with expected feature names
-     */
-    Set<String> usedFeatureNames();
-
-    <T extends Classifiable> T predict(T data);
+    Prediction predict(SquirlsFeatures feature);
 
 }

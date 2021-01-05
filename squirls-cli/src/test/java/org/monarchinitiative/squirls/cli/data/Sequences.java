@@ -76,11 +76,9 @@
 
 package org.monarchinitiative.squirls.cli.data;
 
-import de.charite.compbio.jannovar.data.ReferenceDictionary;
-import de.charite.compbio.jannovar.reference.GenomeInterval;
-import de.charite.compbio.jannovar.reference.PositionType;
-import de.charite.compbio.jannovar.reference.Strand;
-import xyz.ielis.hyperutil.reference.fasta.SequenceInterval;
+import org.monarchinitiative.squirls.core.reference.StrandedSequence;
+import org.monarchinitiative.variant.api.Contig;
+import org.monarchinitiative.variant.api.GenomicRegion;
 
 class Sequences {
 
@@ -218,120 +216,99 @@ class Sequences {
      * Get sequence corresponding to region `>chr9:136,224,501-136,224,800` (1-based coordinates) on hg19. This is the
      * region containing exon 3 of SURF2 gene.
      *
-     * @param rd {@link ReferenceDictionary} to use
      * @return the sequence interval
      */
-    static SequenceInterval getSurf2Exon3Sequence(ReferenceDictionary rd) {
-        return SequenceInterval.of(
-                new GenomeInterval(rd, Strand.FWD,
-                        rd.getContigNameToID().get("chr9"), 136_224_501, 136_224_800, PositionType.ONE_BASED),
-                SURF2_EXON3);
+    static StrandedSequence getSurf2Exon3Sequence(Contig contig) {
+        return StrandedSequence.of(
+                GenomicRegion.oneBased(contig, 136_224_501, 136_224_80), SURF2_EXON3);
     }
 
     /**
      * Get sequence corresponding to region `>chr1:21,894,401-21,895,000` (1-based coordinates) on hg19. The interval contains
      * exon 7 of <em>ALPL</em>.
      *
-     * @param rd {@link ReferenceDictionary} to use
      * @return the sequence interval
      */
-    static SequenceInterval getAlplExon7Sequence(ReferenceDictionary rd) {
-        return SequenceInterval.of(new GenomeInterval(rd, Strand.FWD,
-                        rd.getContigNameToID().get("chr1"), 21894401, 21895000, PositionType.ONE_BASED),
-                ALPL_EXON7);
+    static StrandedSequence getAlplExon7Sequence(Contig contig) {
+        return StrandedSequence.of(
+                GenomicRegion.oneBased(contig, 21894401, 21895000), ALPL_EXON7);
     }
 
     /**
      * A real sequence from interval `>chr16:2110401-2111000` (1-based coordinates) on hg19. The interval contains
      * exon 11 of <em>TSC2</em>.
      *
-     * @param rd {@link ReferenceDictionary} to use
      * @return the sequence interval
      */
-    static SequenceInterval getTsc2Exon11Sequence(ReferenceDictionary rd) {
-        return SequenceInterval.of(new GenomeInterval(rd, Strand.FWD,
-                        rd.getContigNameToID().get("chr16"), 2_110_401, 2_111_000, PositionType.ONE_BASED),
-                TSC2_EXON11);
+    static StrandedSequence getTsc2Exon11Sequence(Contig contig) {
+        return StrandedSequence.of(
+                GenomicRegion.oneBased(contig, 2_110_401, 2_111_000), TSC2_EXON11);
     }
 
     /**
      * A real sequence from interval `>chrX:107849601-107850400` (1-based coordinates) on hg19. The interval contains
      * exon 29 of <em>COL4A5</em>.
      *
-     * @param rd {@link ReferenceDictionary} to use
      * @return the sequence interval
      */
-    static SequenceInterval getCol4a5Exon29Sequence(ReferenceDictionary rd) {
-        return SequenceInterval.of(new GenomeInterval(rd, Strand.FWD,
-                        rd.getContigNameToID().get("chrX"), 107_849_601, 107_850_400, PositionType.ONE_BASED),
-                COL4A5_EXON29);
+    static StrandedSequence getCol4a5Exon29Sequence(Contig contig) {
+        return StrandedSequence.of(
+                GenomicRegion.oneBased(contig, 107_849_601, 107_850_400), COL4A5_EXON29);
     }
 
     /**
      * A real sequence from interval `>chr19:39075401-39075900` (1-based coordinates) on hg19. The interval contains
      * exon 102 of <em>RYR1</em>.
      *
-     * @param rd {@link ReferenceDictionary} to use
      * @return the sequence interval
      */
-    static SequenceInterval getRyr1Exon102Sequence(ReferenceDictionary rd) {
-        return SequenceInterval.of(new GenomeInterval(rd, Strand.FWD,
-                        rd.getContigNameToID().get("chr19"), 39_075_401, 39_075_900, PositionType.ONE_BASED),
-                RYR1_EXON102);
+    static StrandedSequence getRyr1Exon102Sequence(Contig contig) {
+        return StrandedSequence.of(
+                GenomicRegion.oneBased(contig, 39_075_401, 39_075_900), RYR1_EXON102);
     }
 
     /**
      * A real sequence from interval `>chr11:5248001-5248400` (1-based coordinates) on hg19. The interval contains
      * exon 1 of <em>HBB</em>.
      *
-     * @param rd {@link ReferenceDictionary} to use
      * @return the sequence interval
      */
-    static SequenceInterval getHbbExon1Sequence(ReferenceDictionary rd) {
-        return SequenceInterval.of(new GenomeInterval(rd, Strand.FWD,
-                        rd.getContigNameToID().get("chr11"), 5_248_001, 5_248_400, PositionType.ONE_BASED),
-                HBB_EXON1);
+    static StrandedSequence getHbbExon1Sequence(Contig contig) {
+        return StrandedSequence.of(
+                GenomicRegion.oneBased(contig, 5_248_001, 5_248_400), HBB_EXON1);
     }
 
     /**
      * A real sequence from interval `>chr13:32930401-32930900` (1-based coordinates) on hg19. The interval contains
      * exon 15 of <em>BRCA2</em>.
      *
-     * @param rd {@link ReferenceDictionary} to use
      * @return the sequence interval
      */
-    static SequenceInterval getBrca2Exon15Sequence(ReferenceDictionary rd) {
-        return SequenceInterval.of(
-                new GenomeInterval(rd, Strand.FWD,
-                        rd.getContigNameToID().get("chr13"), 32_930_401, 32_930_900, PositionType.ONE_BASED),
-                BRCA2_EXON15);
+    static StrandedSequence getBrca2Exon15Sequence(Contig contig) {
+        return StrandedSequence.of(
+                GenomicRegion.oneBased(contig, 32_930_401, 32_930_900), BRCA2_EXON15);
     }
 
     /**
      * A real sequence from interval `>chr12:6131801-6132200` (1-based coordinates) on hg19. The interval contains
      * exon 26 of <em>VWF</em>.
      *
-     * @param rd {@link ReferenceDictionary} to use
      * @return the sequence interval
      */
-    static SequenceInterval getVwfExon26Sequence(ReferenceDictionary rd) {
-        return SequenceInterval.of(new GenomeInterval(rd, Strand.FWD,
-                        rd.getContigNameToID().get("chr12"), 6131801, 6132200, PositionType.ONE_BASED),
-                VWF_EXON26);
+    static StrandedSequence getVwfExon26Sequence(Contig contig) {
+        return StrandedSequence.of(
+                GenomicRegion.oneBased(contig, 6131801, 6132200), VWF_EXON26);
     }
 
     /**
      * A real sequence from interval `>chr17:29527201-29527800` (1-based coordinates) on hg19. The interval contains
      * exon 9 of <em>NF1</em>.
      *
-     * @param rd {@link ReferenceDictionary} to use
      * @return the sequence interval
      */
-    static SequenceInterval getNf1Exon9Sequence(ReferenceDictionary rd) {
-        return SequenceInterval.of(
-                new GenomeInterval(rd, Strand.FWD,
-                        rd.getContigNameToID().get("chr17"), 29527201, 29527800, PositionType.ONE_BASED),
-                NF1_EXON9);
+    static StrandedSequence getNf1Exon9Sequence(Contig contig) {
+        return StrandedSequence.of(
+                GenomicRegion.oneBased(contig, 29_527_201, 29_527_800), NF1_EXON9);
     }
 
 }

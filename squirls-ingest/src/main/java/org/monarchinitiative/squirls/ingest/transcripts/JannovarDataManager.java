@@ -79,17 +79,22 @@ package org.monarchinitiative.squirls.ingest.transcripts;
 import de.charite.compbio.jannovar.data.JannovarData;
 import de.charite.compbio.jannovar.data.JannovarDataSerializer;
 import de.charite.compbio.jannovar.data.SerializationException;
-import de.charite.compbio.jannovar.reference.TranscriptModel;
+import de.charite.compbio.jannovar.reference.GenomeInterval;
+import org.monarchinitiative.squirls.core.reference.TranscriptModel;
+import org.monarchinitiative.variant.api.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.nio.file.Path;
+import java.text.NumberFormat;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class JannovarDataManager {
+
+    private static final NumberFormat NF = NumberFormat.getInstance();
 
     private static final Logger LOGGER = LoggerFactory.getLogger(JannovarDataManager.class);
 
@@ -146,10 +151,68 @@ public class JannovarDataManager {
         };
     }
 
-    public Collection<TranscriptModel> getAllTranscriptModels() {
-        return jannovarDataSet.stream()
+    /**
+     * This function remaps Jannovar's transcript model into Squirls' model.
+     */
+    private static Function<de.charite.compbio.jannovar.reference.TranscriptModel, Optional<TranscriptModel>> toTranscript(GenomicAssembly assembly) {
+        return tx -> {
+            GenomeInterval txRegion = tx.getTXRegion();
+            GenomeInterval cds = tx.getCDSRegion();
+            String contigName = txRegion.getRefDict().getContigIDToName().getOrDefault(tx.getChr(), "");
+            Contig contig = assembly.contigByName(contigName);
+            String accession = tx.getAccession();
+            try {
+                if (contig.equals(Contig.unknown())) {
+                    if (LOGGER.isWarnEnabled())
+                        LOGGER.warn("Unknown contig {} for transcript {}", contigName, accession);
+                    return Optional.empty();
+                }
+                Strand strand = tx.getStrand().isForward() ? Strand.POSITIVE : Strand.NEGATIVE;
+                CoordinateSystem coordinateSystem = CoordinateSystem.ZERO_BASED; // always in Jannovar
+
+
+                org.monarchinitiative.squirls.core.reference.TranscriptModel sqtx;
+                if (tx.isCoding()) {
+                    sqtx = org.monarchinitiative.squirls.core.reference.TranscriptModel.coding(
+                            contig, strand, coordinateSystem, txRegion.getBeginPos(), txRegion.getEndPos(),
+                            cds.getBeginPos(), cds.getEndPos(),
+                            accession, tx.getGeneSymbol(), remapExons(tx.getExonRegions(), contig, strand));
+                } else {
+                    sqtx = org.monarchinitiative.squirls.core.reference.TranscriptModel.noncoding(
+                            contig, strand, coordinateSystem, txRegion.getBeginPos(), txRegion.getEndPos(),
+                            accession, tx.getGeneSymbol(), remapExons(tx.getExonRegions(), contig, strand));
+                }
+
+                return Optional.of(sqtx);
+            } catch (Exception e) {
+                LOGGER.warn("Error remapping transcript {} at `{}:{}-{}({}-{})`: {}", accession,
+                        tx.getChr(), NF.format(txRegion.getBeginPos()), NF.format(txRegion.getEndPos()),
+                        NF.format(cds.getBeginPos()), NF.format(cds.getEndPos()), e.getMessage());
+                return Optional.empty();
+            }
+        };
+    }
+
+    private static List<GenomicRegion> remapExons(List<GenomeInterval> exons, Contig contig, Strand strand) {
+        List<GenomicRegion> remapped = new ArrayList<>(exons.size());
+
+        for (GenomeInterval exon : exons) {
+            remapped.add(GenomicRegion.zeroBased(contig, strand, Position.of(exon.getBeginPos()), Position.of(exon.getEndPos())));
+        }
+
+        return remapped;
+    }
+
+    /**
+     * Remap all transcripts present in the jannovar databases into Squirls' domain, using provided assembly.
+     */
+    public Collection<TranscriptModel> getAllTranscriptModels(GenomicAssembly assembly) {
+        return jannovarDataSet.parallelStream()
                 .map(jd -> jd.getTmByAccession().values())
                 .flatMap(Collection::stream)
+                .map(toTranscript(assembly))
+                .filter(Optional::isPresent)
+                .map(Optional::get)
                 .collect(Collectors.toSet());
     }
 }

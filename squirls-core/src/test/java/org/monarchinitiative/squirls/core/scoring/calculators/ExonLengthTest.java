@@ -76,17 +76,17 @@
 
 package org.monarchinitiative.squirls.core.scoring.calculators;
 
-import de.charite.compbio.jannovar.reference.GenomePosition;
-import de.charite.compbio.jannovar.reference.GenomeVariant;
-import de.charite.compbio.jannovar.reference.Strand;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.monarchinitiative.variant.api.Variant;
+import org.monarchinitiative.variant.api.impl.SequenceVariant;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.closeTo;
 
-class ExonLengthTest extends CalculatorTestBase {
+public class ExonLengthTest extends CalculatorTestBase {
 
     private ExonLength scorer;
 
@@ -96,19 +96,13 @@ class ExonLengthTest extends CalculatorTestBase {
         scorer = new ExonLength(locator);
     }
 
-    @Test
-    void scoreDonorVariant() {
-        GenomeVariant variant = new GenomeVariant(new GenomePosition(rd, Strand.FWD, 1, 1201), "t", "g");
-
-        final double score = scorer.score(variant, st, sequenceInterval);
-        assertThat(score, is(closeTo(200., EPSILON)));
-    }
-
-    @Test
-    void scoreIntronicVariant() {
-        GenomeVariant variant = new GenomeVariant(new GenomePosition(rd, Strand.FWD, 1, 1207), "a", "g");
-
-        final double score = scorer.score(variant, st, sequenceInterval);
-        assertThat(score, is(closeTo(-1., EPSILON)));
+    @ParameterizedTest
+    @CsvSource({
+            "1201, t, g,     200.",
+            "1207, a, g,     -1.",
+    })
+    public void score(int pos, String ref, String alt, double expected) {
+        Variant variant = SequenceVariant.zeroBased(contig, pos, ref, alt);
+        assertThat(scorer.score(variant, tx, sequenceInterval), is(closeTo(expected, EPSILON)));
     }
 }

@@ -83,14 +83,15 @@ import org.junit.jupiter.api.Test;
 import javax.sql.DataSource;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 
 /**
  * The purpose of this class is to create an empty database which can be used with IDE to provide SQL autocompletion
  * and other hints.
  * <p>
- * The database is built at the top level
+ * The database is built at the top level of the repo.
  */
-@Disabled // run this manually
+@Disabled("Test suite designed to be run manually in order to create an empty database which can be used with an IDE to provide SQL autocompletion etc.")
 public class MakeAnEmptyDatabase {
 
     /**
@@ -105,8 +106,9 @@ public class MakeAnEmptyDatabase {
 
     @Test
     public void makeDatabase() throws Exception {
-        final Path databasePath = appHomeDir.resolve("1710_splicing_empty");
-        final Path filePath = appHomeDir.resolve("1710_splicing_empty.mv.db");
+        Path databasePath = appHomeDir.resolve("1710_splicing_empty");
+        Path filePath = appHomeDir.resolve("1710_splicing_empty.mv.db");
+        Path assemblyReportPath = Paths.get("src/test/resources/org/monarchinitiative/squirls/ingest/GCF_000001405.25_GRCh37.p13_assembly_report.txt");
 
         if (filePath.toFile().isFile()) {
             System.err.printf("Removing already existing database file at `%s`%n", filePath);
@@ -114,8 +116,8 @@ public class MakeAnEmptyDatabase {
         }
 
         System.err.printf("Making an empty database at `%s`%n", databasePath);
-        final DataSource dataSource = SquirlsDataBuilder.makeDataSource(databasePath);
+        DataSource dataSource = SquirlsDataBuilder.makeDataSource(databasePath);
         int migrations = SquirlsDataBuilder.applyMigrations(dataSource);
-        System.err.printf("Applied %d migrations", migrations);
+        System.err.printf("Applied %d migrations%n", migrations);
     }
 }

@@ -79,19 +79,17 @@ package org.monarchinitiative.squirls.cli.cmd.annotate_pos;
 
 import org.monarchinitiative.squirls.cli.Main;
 import org.monarchinitiative.squirls.cli.cmd.SquirlsCommand;
-import org.monarchinitiative.squirls.core.Prediction;
-import org.monarchinitiative.squirls.core.SquirlsResult;
-import org.monarchinitiative.squirls.core.SquirlsTxResult;
-import org.monarchinitiative.squirls.core.VariantSplicingEvaluator;
+import org.monarchinitiative.squirls.core.*;
+import org.monarchinitiative.variant.api.Contig;
+import org.monarchinitiative.variant.api.GenomicAssembly;
+import org.monarchinitiative.variant.api.Variant;
+import org.monarchinitiative.variant.api.impl.DefaultVariant;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ConfigurableApplicationContext;
 import picocli.CommandLine;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static picocli.CommandLine.Parameters;
@@ -116,20 +114,32 @@ public class AnnotatePosCommand extends SquirlsCommand {
 
     @Override
     public Integer call() throws Exception {
-        try (final ConfigurableApplicationContext context = getContext()) {
+        try (ConfigurableApplicationContext context = getContext()) {
             LOGGER.info("Changes: {}", rawChanges);
-            final VariantSplicingEvaluator splicingEvaluator = context.getBean(VariantSplicingEvaluator.class);
+            SquirlsDataService squirlsDataService = context.getBean(SquirlsDataService.class);
+            Set<String> knownContigs = squirlsDataService.knownContigNames();
+            GenomicAssembly assembly = squirlsDataService.genomicAssembly();
+            VariantSplicingEvaluator splicingEvaluator = context.getBean(VariantSplicingEvaluator.class);
 
             // parse changes (input)
-            final List<VariantChange> changes = rawChanges.stream()
+            List<VariantChange> changes = rawChanges.stream()
                     .map(VariantChange::fromString)
                     .filter(Optional::isPresent)
                     .map(Optional::get)
                     .collect(Collectors.toUnmodifiableList());
 
+
             System.out.println();
             for (VariantChange change : changes) {
-                SquirlsResult squirlsResult = splicingEvaluator.evaluate(change.getContig(), change.getPos(), change.getRef(), change.getAlt());
+                if (!knownContigs.contains(change.getContig())) {
+                    if (LOGGER.isWarnEnabled())
+                        LOGGER.warn("Unknown contig {} in `{}`", change.getContig(), change.getVariantChange());
+                    continue;
+                }
+
+                Contig contig = assembly.contigByName(change.getContig());
+                Variant variant = DefaultVariant.oneBased(contig, change.getPos(), change.getRef(), change.getAlt());
+                SquirlsResult squirlsResult = splicingEvaluator.evaluate(variant);
                 List<String> columns = new ArrayList<>();
 
                 // variant

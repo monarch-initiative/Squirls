@@ -76,35 +76,46 @@
 
 package org.monarchinitiative.squirls.core.scoring.calculators;
 
-import de.charite.compbio.jannovar.reference.GenomeInterval;
-import de.charite.compbio.jannovar.reference.GenomePosition;
+import org.monarchinitiative.variant.api.GenomicPosition;
+import org.monarchinitiative.variant.api.GenomicRegion;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 abstract class BaseDistanceCalculator implements FeatureCalculator {
 
-    protected static int getDiff(GenomeInterval variantInterval,
-                                 GenomePosition closestSite) {
-        final int diff = closestSite.differenceTo(variantInterval);
-        if (diff > 0) {
+    private static final Logger LOGGER = LoggerFactory.getLogger(BaseDistanceCalculator.class);
+
+    protected static int getDiff(GenomicRegion variant, GenomicPosition closestSite) {
+        variant = variant.toZeroBased();
+        int diff = closestSite.distanceTo(variant);
+        if (diff < 0) {
             // variant is upstream from the border position
-            return -diff;
-        } else if (diff < 0) {
+            return diff - 1;
+        } else if (diff > 0) {
             // variant is downstream from the border position
-            return -diff + 1;
+            return diff + 1;
         } else {
             /*
             Due to representation of exon|Intron / intron|Exon boundary as a GenomePosition that represents position of
             the capital E/I character above, we need to distinguish when variant interval denotes
               - a deletion of the boundary, or
-              - SNP at +1 position.
+              - SNP at +-1 position.
 
             The code below handles these situations.
             */
-            if (variantInterval.contains(closestSite) && variantInterval.length() > 1) {
+            if (variant.contains(closestSite) && variant.length() > 1) {
                 // deletion of the boundary
                 return 0;
-            } else {
+            } else if (variant.start() == closestSite.pos()) {
                 // SNP at +1 position
                 return 1;
+            } else if (variant.end() == closestSite.pos()) {
+                // SNP at -1 position
+                return -1;
+            } else {
+                if (LOGGER.isWarnEnabled())
+                    LOGGER.warn("Inconsistency of position for variant {}:{}-{} and closest site at {}", variant.contigName(), variant.start(), variant.end(), closestSite.pos());
+                return 0;
             }
         }
     }

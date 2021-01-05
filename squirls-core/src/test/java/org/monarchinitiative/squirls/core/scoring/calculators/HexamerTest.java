@@ -76,12 +76,14 @@
 
 package org.monarchinitiative.squirls.core.scoring.calculators;
 
-import de.charite.compbio.jannovar.reference.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.monarchinitiative.squirls.core.reference.StrandedSequence;
+import org.monarchinitiative.variant.api.GenomicRegion;
+import org.monarchinitiative.variant.api.Variant;
+import org.monarchinitiative.variant.api.impl.SequenceVariant;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import xyz.ielis.hyperutil.reference.fasta.SequenceInterval;
 
 import java.util.Map;
 
@@ -89,7 +91,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.closeTo;
 
-class HexamerTest extends CalculatorTestBase {
+public class HexamerTest extends CalculatorTestBase {
 
 
     @Autowired
@@ -105,10 +107,9 @@ class HexamerTest extends CalculatorTestBase {
     }
 
     @Test
-    void score() {
-        GenomeVariant variant = new GenomeVariant(new GenomePosition(rd, Strand.FWD, 1, 1201), "t", "g");
-        final double score = calculator.score(variant, st, sequenceInterval);
-        assertThat(score, is(closeTo(-.837930, EPSILON)));
+    public void score() {
+        Variant variant = SequenceVariant.zeroBased(contig, 1201, "t", "g");
+        assertThat(calculator.score(variant, tx, sequenceInterval), is(closeTo(-.837930, EPSILON)));
     }
 
     /**
@@ -117,9 +118,9 @@ class HexamerTest extends CalculatorTestBase {
      * Elements</i>
      */
     @Test
-    void realVariant() {
-        final SequenceInterval si = SequenceInterval.of(
-                new GenomeInterval(rd, Strand.FWD, 1, 0, 125),
+    public void realVariant() {
+        StrandedSequence si = StrandedSequence.of(
+                GenomicRegion.zeroBased(contig, 0, 125),
                 "cccagGGT" +
                         "C" + // c.520C>T
                         "GTCAGACACCAAAACATATTTCTGAAAGTCTAGGAGCTGAGGTGGATCCTGATATGTCTT" +
@@ -128,18 +129,15 @@ class HexamerTest extends CalculatorTestBase {
                         "C" + // c.617C>G
                         "TACTGTGCTCATAGgtaat");
         // representing the c.520C>T variant from Figure 3
-        final GenomeVariant first = new GenomeVariant(new GenomePosition(rd, Strand.FWD, 1, 9, PositionType.ONE_BASED), "C", "T");
-        double score = calculator.score(first, st, si);
-        assertThat(score, is(closeTo(-2.811, EPSILON)));
+        Variant first = SequenceVariant.oneBased(contig, 9, "C", "T");
+        assertThat(calculator.score(first, tx, si), is(closeTo(-2.811, EPSILON)));
 
         // representing the c.581G>A variant from Figure 3
-        final GenomeVariant second = new GenomeVariant(new GenomePosition(rd, Strand.FWD, 1, 70, PositionType.ONE_BASED), "G", "A");
-        score = calculator.score(second, st, si);
-        assertThat(score, is(closeTo(-3.006, EPSILON)));
+        Variant second = SequenceVariant.oneBased(contig, 70, "G", "A");
+        assertThat(calculator.score(second, tx, si), is(closeTo(-3.006, EPSILON)));
 
         // representing the c.617C>G variant from Figure 3
-        final GenomeVariant third = new GenomeVariant(new GenomePosition(rd, Strand.FWD, 1, 106, PositionType.ONE_BASED), "C", "G");
-        score = calculator.score(third, st, si);
-        assertThat(score, is(closeTo(-1.115, EPSILON)));
+        Variant third = SequenceVariant.oneBased(contig, 106, "C", "G");
+        assertThat(calculator.score(third, tx, si), is(closeTo(-1.115, EPSILON)));
     }
 }

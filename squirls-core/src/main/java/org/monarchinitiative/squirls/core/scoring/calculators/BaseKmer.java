@@ -77,14 +77,13 @@
 package org.monarchinitiative.squirls.core.scoring.calculators;
 
 
-import de.charite.compbio.jannovar.reference.GenomeInterval;
-import de.charite.compbio.jannovar.reference.GenomeVariant;
-import org.monarchinitiative.squirls.core.Utils;
-import org.monarchinitiative.squirls.core.model.SplicingTranscript;
-import org.monarchinitiative.squirls.core.reference.allele.AlleleGenerator;
+import org.monarchinitiative.squirls.core.reference.AlleleGenerator;
+import org.monarchinitiative.squirls.core.reference.StrandedSequence;
+import org.monarchinitiative.squirls.core.reference.TranscriptModel;
+import org.monarchinitiative.squirls.core.scoring.Utils;
+import org.monarchinitiative.variant.api.Variant;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import xyz.ielis.hyperutil.reference.fasta.SequenceInterval;
 
 import java.util.Map;
 
@@ -115,13 +114,12 @@ public abstract class BaseKmer implements FeatureCalculator {
     protected abstract int getPadding();
 
     @Override
-    public double score(GenomeVariant variant, SplicingTranscript transcript, SequenceInterval sequence) {
-        final GenomeInterval variantInterval = variant.getGenomeInterval();
-
-        final String paddedRefAllele = AlleleGenerator.getPaddedAllele(variantInterval, sequence, variant.getRef(), getPadding());
-        final String paddedAltAllele = AlleleGenerator.getPaddedAllele(variantInterval, sequence, variant.getAlt(), getPadding());
+    public double score(Variant variant, TranscriptModel transcript, StrandedSequence sequence) {
+        final String paddedRefAllele = AlleleGenerator.getPaddedAllele(variant, sequence, variant.ref(), getPadding());
+        final String paddedAltAllele = AlleleGenerator.getPaddedAllele(variant, sequence, variant.alt(), getPadding());
         if (paddedRefAllele == null || paddedAltAllele == null) {
-            LOGGER.debug("Unable to create neighborhood snippet for variant `{}` using sequence `{}`", variant, sequence.getInterval());
+            if (LOGGER.isWarnEnabled())
+                LOGGER.warn("Unable to create neighborhood snippet for variant `{}` using sequence `{}`", variant, sequence);
             return Double.NaN;
         }
 

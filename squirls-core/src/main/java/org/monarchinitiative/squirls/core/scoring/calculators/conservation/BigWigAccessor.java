@@ -76,12 +76,11 @@
 
 package org.monarchinitiative.squirls.core.scoring.calculators.conservation;
 
-import de.charite.compbio.jannovar.reference.GenomeInterval;
-import de.charite.compbio.jannovar.reference.Strand;
 import org.monarchinitiative.squirls.core.scoring.calculators.conservation.bbfile.BBFileHeader;
 import org.monarchinitiative.squirls.core.scoring.calculators.conservation.bbfile.BBFileReader;
 import org.monarchinitiative.squirls.core.scoring.calculators.conservation.bbfile.BigWigIterator;
 import org.monarchinitiative.squirls.core.scoring.calculators.conservation.bbfile.WigItem;
+import org.monarchinitiative.variant.api.GenomicRegion;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -135,24 +134,20 @@ public class BigWigAccessor implements AutoCloseable {
     }
 
     /**
-     * Get list of feature values for given {@link GenomeInterval} object.
+     * Get list of feature values for given {@link GenomicRegion} object.
      *
-     * @param genomeInterval {@link GenomeInterval} object to extract values from.
+     * @param region {@link GenomicRegion} object to extract values from.
      * @return list of values for the interval
      */
-    public List<Float> getScores(GenomeInterval genomeInterval) {
-        // the scores are stored for regions on FWD strand
-        final GenomeInterval interval = genomeInterval.withStrand(Strand.FWD);
+    public List<Float> getScores(GenomicRegion region) {
+        // the scores are stored for regions on POSITIVE strand
+        GenomicRegion interval = region.toZeroBased().toPositiveStrand();
 
-        String contig = interval.getRefDict().getContigIDToName().get(interval.getChr());
-        contig = (contig.startsWith("chr")) ? contig : "chr" + contig;
-        int begin = interval.getBeginPos(), end = interval.getEndPos();
-
-        return getScores(contig, begin, end);
+        return getScores(interval.contig().ucscName(), interval.start(), interval.end());
     }
 
     /**
-     * Get list of feature values for given {@link GenomeInterval} object.
+     * Get list of feature values for given {@link GenomicRegion} object.
      *
      * @param chrom chromosome name, e.g. `chrX`
      * @param begin 0-based (excluded) begin coordinate on FWD strand
@@ -184,8 +179,8 @@ public class BigWigAccessor implements AutoCloseable {
     }
 
     /**
-     * Get iterator over given genomeInterval. Iterator contains {@link WigItem} container objects and there is no
-     * guarantee, that there exist an object for every position in genomeInterval.
+     * Get iterator over given GenomicRegion. Iterator contains {@link WigItem} container objects and there is no
+     * guarantee, that there exist an object for every position in GenomicRegion.
      *
      * @param chrom chromosome string
      * @param start 0-based (excluded)

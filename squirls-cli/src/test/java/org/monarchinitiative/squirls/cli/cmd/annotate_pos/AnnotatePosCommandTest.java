@@ -84,8 +84,9 @@ import org.monarchinitiative.squirls.cli.TestDataSourceConfig;
 import org.monarchinitiative.squirls.core.VariantSplicingEvaluator;
 import org.springframework.boot.test.context.SpringBootTest;
 
+// TODO - fix
 @SpringBootTest(classes = TestDataSourceConfig.class)
-@Disabled // TODO - fix
+@Disabled
 class AnnotatePosCommandTest {
 
     @Mock

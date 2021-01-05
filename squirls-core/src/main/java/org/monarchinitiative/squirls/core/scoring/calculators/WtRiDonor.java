@@ -76,15 +76,15 @@
 
 package org.monarchinitiative.squirls.core.scoring.calculators;
 
-import de.charite.compbio.jannovar.reference.GenomePosition;
-import de.charite.compbio.jannovar.reference.GenomeVariant;
+import org.monarchinitiative.squirls.core.reference.AlleleGenerator;
 import org.monarchinitiative.squirls.core.reference.SplicingLocationData;
-import org.monarchinitiative.squirls.core.reference.allele.AlleleGenerator;
-import org.monarchinitiative.squirls.core.reference.transcript.SplicingTranscriptLocator;
+import org.monarchinitiative.squirls.core.reference.StrandedSequence;
+import org.monarchinitiative.squirls.core.reference.TranscriptModelLocator;
 import org.monarchinitiative.squirls.core.scoring.calculators.ic.SplicingInformationContentCalculator;
+import org.monarchinitiative.variant.api.GenomicPosition;
+import org.monarchinitiative.variant.api.Variant;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import xyz.ielis.hyperutil.reference.fasta.SequenceInterval;
 
 /**
  * This class calculates <code>wt_ri_donor</code> feature - individual information of the <em>wt/ref</em> allele of the
@@ -96,23 +96,24 @@ public class WtRiDonor extends BaseFeatureCalculator {
 
     public WtRiDonor(SplicingInformationContentCalculator calculator,
                      AlleleGenerator generator,
-                     SplicingTranscriptLocator locator) {
+                     TranscriptModelLocator locator) {
         super(calculator, generator, locator);
     }
 
     @Override
-    protected double score(GenomeVariant variant, SplicingLocationData locationData, SequenceInterval sequence) {
+    protected double score(Variant variant, SplicingLocationData locationData, StrandedSequence sequence) {
         return locationData.getDonorBoundary()
                 .map(anchor -> score(variant, anchor, sequence))
                 .orElse(0.);
     }
 
 
-    private double score(GenomeVariant variant, GenomePosition anchor, SequenceInterval sequence) {
+    private double score(Variant variant, GenomicPosition anchor, StrandedSequence sequence) {
         final String donorSiteSnippet = generator.getDonorSiteSnippet(anchor, sequence);
 
         if (donorSiteSnippet == null) {
-            LOGGER.debug("Unable to create wt/alt snippets for variant `{}` using sequence `{}`", variant, sequence.getInterval());
+            if (LOGGER.isWarnEnabled())
+                LOGGER.warn("Unable to create wt/alt snippets for variant `{}` using sequence `{}`", variant, sequence);
             return Double.NaN;
         }
 

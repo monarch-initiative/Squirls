@@ -76,17 +76,16 @@
 
 package org.monarchinitiative.squirls.core.scoring.calculators;
 
-import de.charite.compbio.jannovar.reference.GenomePosition;
-import de.charite.compbio.jannovar.reference.GenomeVariant;
-import de.charite.compbio.jannovar.reference.Strand;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.monarchinitiative.variant.api.Variant;
+import org.monarchinitiative.variant.api.impl.SequenceVariant;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.closeTo;
 
-class CanonicalDonorTest extends CalculatorTestBase {
+public class CanonicalDonorTest extends CalculatorTestBase {
 
     private CanonicalDonor scorer;
 
@@ -98,42 +97,32 @@ class CanonicalDonorTest extends CalculatorTestBase {
     }
 
     @Test
-    void snpInDonor() {
-        GenomeVariant variant = new GenomeVariant(new GenomePosition(rd, Strand.FWD, 1, 1200), "g", "a");
-
-        final double score = scorer.score(variant, st, sequenceInterval);
-        assertThat(score, is(closeTo(8.9600, EPSILON)));
+    public void snpInDonor() {
+        Variant variant = SequenceVariant.zeroBased(contig, 1200, "g", "a");
+        assertThat(scorer.score(variant, tx, sequenceInterval), is(closeTo(8.9600, EPSILON)));
     }
 
     @Test
-    void deletionInDonor() {
-        GenomeVariant variant = new GenomeVariant(new GenomePosition(rd, Strand.FWD, 1, 1199), "Ggt", "G");
-
-        final double score = scorer.score(variant, st, sequenceInterval);
-        assertThat(score, is(closeTo(15.6686, EPSILON)));
+    public void deletionInDonor() {
+        Variant variant = SequenceVariant.zeroBased(contig, 1199, "Ggt", "G");
+        assertThat(scorer.score(variant, tx, sequenceInterval), is(closeTo(15.6686, EPSILON)));
     }
 
     @Test
-    void insertionInDonor() {
-        GenomeVariant variant = new GenomeVariant(new GenomePosition(rd, Strand.FWD, 1, 1200), "gt", "gtgt");
-
-        final double score = scorer.score(variant, st, sequenceInterval);
-        assertThat(score, is(closeTo(-0.6725, EPSILON)));
+    public void insertionInDonor() {
+        Variant variant = SequenceVariant.zeroBased(contig, 1200, "gt", "gtgt");
+        assertThat(scorer.score(variant, tx, sequenceInterval), is(closeTo(-0.6725, EPSILON)));
     }
 
     @Test
-    void snpJustUpstreamFromDonor() {
-        GenomeVariant variant = new GenomeVariant(new GenomePosition(rd, Strand.FWD, 1, 1196), "G", "A");
-
-        final double score = scorer.score(variant, st, sequenceInterval);
-        assertThat(score, is(closeTo(0.0000, EPSILON)));
+    public void snpJustUpstreamFromDonor() {
+        Variant variant = SequenceVariant.zeroBased(contig, 1196, "G", "A");
+        assertThat(scorer.score(variant, tx, sequenceInterval), is(closeTo(0.0000, EPSILON)));
     }
 
     @Test
-    void snpJustDownstreamFromDonor() {
-        GenomeVariant variant = new GenomeVariant(new GenomePosition(rd, Strand.FWD, 1, 1206), "a", "c");
-
-        final double score = scorer.score(variant, st, sequenceInterval);
-        assertThat(score, is(closeTo(0.0000, EPSILON)));
+    public void snpJustDownstreamFromDonor() {
+        Variant variant = SequenceVariant.zeroBased(contig, 1206, "a", "c");
+        assertThat(scorer.score(variant, tx, sequenceInterval), is(closeTo(0.0000, EPSILON)));
     }
 }

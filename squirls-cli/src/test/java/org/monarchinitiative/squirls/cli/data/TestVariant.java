@@ -77,15 +77,15 @@
 package org.monarchinitiative.squirls.cli.data;
 
 import de.charite.compbio.jannovar.annotation.VariantAnnotations;
-import de.charite.compbio.jannovar.reference.GenomeVariant;
 import htsjdk.variant.variantcontext.Allele;
 import htsjdk.variant.variantcontext.VariantContext;
 import org.monarchinitiative.squirls.cli.writers.WritableSplicingAllele;
-import org.monarchinitiative.squirls.core.SplicingPredictionData;
 import org.monarchinitiative.squirls.core.SquirlsResult;
-import org.monarchinitiative.squirls.core.model.SplicingTranscript;
-import org.monarchinitiative.squirls.core.scoring.Annotatable;
-import xyz.ielis.hyperutil.reference.fasta.SequenceInterval;
+import org.monarchinitiative.squirls.core.VariantOnTranscript;
+import org.monarchinitiative.squirls.core.classifier.SquirlsFeatures;
+import org.monarchinitiative.squirls.core.reference.StrandedSequence;
+import org.monarchinitiative.squirls.core.reference.TranscriptModel;
+import org.monarchinitiative.variant.api.Variant;
 
 import java.util.Map;
 import java.util.Objects;
@@ -101,9 +101,9 @@ import java.util.Set;
  * {@link VariantAnnotations} object.
  * <p>
  * The second dictionary comes from SQUIRLS database and is used by all objects present within
- * {@link SplicingPredictionData}.
+ * {@link VariantOnTranscript}.
  */
-class TestVariant implements WritableSplicingAllele, Annotatable {
+class TestVariant implements WritableSplicingAllele, SquirlsFeatures, VariantOnTranscript {
 
     /**
      * The base variant context that is being analyzed.
@@ -115,13 +115,13 @@ class TestVariant implements WritableSplicingAllele, Annotatable {
      */
     private final Allele altAllele;
 
-    private final GenomeVariant variant;
+    private final Variant variant;
 
-    private final SplicingTranscript tx;
+    private final TranscriptModel tx;
 
-    private final SequenceInterval si;
+    private final StrandedSequence si;
 
-    private final Map<String, Object> features;
+    private final Map<String, Double> features;
     /**
      * Results of the splicing analysis.
      */
@@ -135,7 +135,7 @@ class TestVariant implements WritableSplicingAllele, Annotatable {
      */
     private String graphics;
 
-    TestVariant(VariantContext base, Allele altAllele, GenomeVariant variant, SplicingTranscript tx, SequenceInterval si, Map<String, Object> features) {
+    TestVariant(VariantContext base, Allele altAllele, Variant variant, TranscriptModel tx, StrandedSequence si, Map<String, Double> features) {
         this.base = base;
         this.altAllele = altAllele;
         this.variant = variant;
@@ -181,6 +181,31 @@ class TestVariant implements WritableSplicingAllele, Annotatable {
     }
 
     @Override
+    public Variant variant() {
+        return variant;
+    }
+
+    @Override
+    public TranscriptModel transcript() {
+        return tx;
+    }
+
+    @Override
+    public StrandedSequence sequence() {
+        return si;
+    }
+
+    @Override
+    public Set<String> getFeatureNames() {
+        return features.keySet();
+    }
+
+    @Override
+    public double getFeature(String featureName) {
+        return features.get(featureName);
+    }
+
+    @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
@@ -204,35 +229,5 @@ class TestVariant implements WritableSplicingAllele, Annotatable {
                 ", squirlsResult=" + squirlsResult +
                 ", annotations=" + annotations +
                 '}';
-    }
-
-    @Override
-    public GenomeVariant getVariant() {
-        return variant;
-    }
-
-    @Override
-    public SplicingTranscript getTranscript() {
-        return tx;
-    }
-
-    @Override
-    public SequenceInterval getSequence() {
-        return si;
-    }
-
-    @Override
-    public Set<String> getFeatureNames() {
-        return features.keySet();
-    }
-
-    @Override
-    public <T> T getFeature(String featureName, Class<T> clz) {
-        return clz.cast(features.get(featureName));
-    }
-
-    @Override
-    public void putFeature(String name, Object value) {
-        features.put(name, value);
     }
 }
