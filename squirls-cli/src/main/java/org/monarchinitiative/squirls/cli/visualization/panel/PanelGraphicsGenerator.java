@@ -186,6 +186,10 @@ public class PanelGraphicsGenerator extends AbstractGraphicsGenerator {
         } catch (MissingFeatureException e) {
             LOGGER.warn("Cannot generate graphics for {}. {}", allele.genomeVariant(), e.getMessage());
             return EMPTY_SVG_IMAGE;
+        } catch (Exception e) {
+            // TODO - resolve
+            LOGGER.warn("Cannot generate graphics for {}. {}", allele.genomeVariant(), e.getMessage());
+            return EMPTY_SVG_IMAGE;
         }
 
         // 1 - prepare context for the template
