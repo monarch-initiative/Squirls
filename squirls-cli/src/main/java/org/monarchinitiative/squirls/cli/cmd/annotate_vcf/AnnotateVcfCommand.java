@@ -100,7 +100,7 @@ import org.monarchinitiative.squirls.core.VariantSplicingEvaluator;
 import org.monarchinitiative.variant.api.Contig;
 import org.monarchinitiative.variant.api.GenomicAssembly;
 import org.monarchinitiative.variant.api.Variant;
-import org.monarchinitiative.variant.api.impl.SequenceVariant;
+import org.monarchinitiative.variant.api.impl.DefaultVariant;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ConfigurableApplicationContext;
@@ -213,7 +213,7 @@ public class AnnotateVcfCommand extends SquirlsCommand {
                     variant = null;
                     squirlsResult = SquirlsResult.empty();
                 } else {
-                    variant = SequenceVariant.oneBased(contig, vc.getID(), vc.getStart(), vc.getReference().getDisplayString(), allele.getDisplayString());
+                    variant = DefaultVariant.oneBased(contig, vc.getID(), vc.getStart(), vc.getReference().getDisplayString(), allele.getDisplayString());
                     Set<String> txAccessions = variantAnnotations.getAnnotations().stream()
                             .map(Annotation::getTranscript)
                             .map(TranscriptModel::getAccession)

@@ -86,7 +86,7 @@ import org.monarchinitiative.squirls.core.*;
 import org.monarchinitiative.variant.api.Contig;
 import org.monarchinitiative.variant.api.GenomicAssembly;
 import org.monarchinitiative.variant.api.Variant;
-import org.monarchinitiative.variant.api.impl.SequenceVariant;
+import org.monarchinitiative.variant.api.impl.DefaultVariant;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ConfigurableApplicationContext;
@@ -172,7 +172,7 @@ public class AnnotateCsvCommand extends SquirlsCommand {
                     }
 
                     Contig contig = assembly.contigByName(chrom);
-                    Variant variant = SequenceVariant.oneBased(contig, pos, ref, alt);
+                    Variant variant = DefaultVariant.oneBased(contig, pos, ref, alt);
                     SquirlsResult squirlsResult = evaluator.evaluate(variant);
 
                     // figure out max pathogenicity and whether the variant is a splice variant

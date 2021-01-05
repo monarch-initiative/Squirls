@@ -83,7 +83,7 @@ import org.monarchinitiative.squirls.core.*;
 import org.monarchinitiative.variant.api.Contig;
 import org.monarchinitiative.variant.api.GenomicAssembly;
 import org.monarchinitiative.variant.api.Variant;
-import org.monarchinitiative.variant.api.impl.SequenceVariant;
+import org.monarchinitiative.variant.api.impl.DefaultVariant;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ConfigurableApplicationContext;
@@ -138,7 +138,7 @@ public class AnnotatePosCommand extends SquirlsCommand {
                 }
 
                 Contig contig = assembly.contigByName(change.getContig());
-                Variant variant = SequenceVariant.oneBased(contig, change.getPos(), change.getRef(), change.getAlt());
+                Variant variant = DefaultVariant.oneBased(contig, change.getPos(), change.getRef(), change.getAlt());
                 SquirlsResult squirlsResult = splicingEvaluator.evaluate(variant);
                 List<String> columns = new ArrayList<>();
 
