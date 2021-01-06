@@ -71,69 +71,82 @@
  *
  * version:6-8-18
  *
- * Daniel Danis, Peter N Robinson, 2020
+ * Daniel Danis, Peter N Robinson, 2021
  */
 
-package org.monarchinitiative.squirls.ingest.parse;
+package org.monarchinitiative.squirls.core.reference;
 
-import org.jblas.DoubleMatrix;
+import org.junit.jupiter.api.Test;
 
-import java.util.List;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.*;
 
-class Utils {
+public class DoubleMatrixTest {
 
-    private Utils() {
-        // private no-op
+    private static final double TOLERANCE = 1E-15;
+
+    @Test
+    public void properties() {
+        DoubleMatrix matrix = new DoubleMatrix(new double[][]{{1., 2., 3.}, {4., 5., 6.}});
+        assertThat(matrix.rows, equalTo(2));
+        assertThat(matrix.columns, equalTo(3));
+        assertThat(matrix.length, equalTo(6));
     }
 
-    /**
-     * Map {@link InputStreamBasedPositionalWeightMatrixParser.PositionWeightMatrix} to {@link DoubleMatrix} and perform sanity checks:
-     * <ul>
-     * <li>entries for all 4 nucleotides must be present</li>
-     * <li>entries for all nucleotides must have the same size</li>
-     * <li>probabilities/frequencies at each position must sum up to 1</li>
-     * </ul>
-     *
-     * @param vals    This list should contain another four lists. Each inner list represents one of the nucleotides
-     *                A, C, G, T in this order
-     * @param epsilon Tolerance when checking that probabilities sum up to 1
-     * @return {@link DoubleMatrix} with data from <code>io</code>
-     */
-    static DoubleMatrix mapToDoubleMatrix(List<List<Double>> vals, double epsilon) {
-
-        if (vals == null)
-            throw new IllegalArgumentException("Unable to create matrix with 0 rows");
-
-        if (vals.size() != 4)
-            throw new IllegalArgumentException("Matrix does not have 4 rows for 4 nucleotides");
-
-        // all four lists must have the same size
-        int size = vals.get(0).size();
-        if (vals.stream().anyMatch(inner -> inner.size() != size))
-            throw new IllegalArgumentException("Rows of the matrix do not have the same size");
-
-        // probabilities at each position of donor and acceptor matrices sum up to 1 and issue a warning when
-        // the difference is larger than allowed in the EPSILON} parameter
-        for (int pos_idx = 0; pos_idx < size; pos_idx++) {
-            double sum = 0;
-            for (int nt_idx = 0; nt_idx < 4; nt_idx++) {
-                sum += vals.get(nt_idx).get(pos_idx);
-            }
-            if (Math.abs(sum - 1D) > epsilon)
-                throw new IllegalArgumentException(String.format("Probabilities do not sum up to 1 at column %d", pos_idx));
-        }
-
-        // checks are done
-        DoubleMatrix dm = new DoubleMatrix(vals.size(), vals.get(0).size());
-        for (int rowIdx = 0; rowIdx < vals.size(); rowIdx++) {
-            List<Double> row = vals.get(rowIdx);
-            for (int colIdx = 0; colIdx < row.size(); colIdx++) {
-                dm.put(rowIdx, colIdx, row.get(colIdx));
-            }
-        }
-        return dm;
-
+    @Test
+    public void equalityTest() {
+        DoubleMatrix a = new DoubleMatrix(new double[][]{{1., 2., 3.}, {4., 5., 6.}});
+        DoubleMatrix b = new DoubleMatrix(new double[][]{{1., 2., 3.}, {4., 5., 6.}});
+        assertThat(a, equalTo(b));
+        assertThat(a, not(equalTo(new DoubleMatrix())));
     }
 
+    @Test
+    public void putGet() {
+        double a = 1.0123456789123456;
+        double b = 91.1000000000000000;
+        DoubleMatrix matrix = new DoubleMatrix(2, 3)
+                .put(0, 2, a)
+                .put(1, 1, b);
 
+        assertThat(matrix.get(0, 2), closeTo(a, TOLERANCE));
+        assertThat(matrix.get(1, 1), closeTo(b, TOLERANCE));
+    }
+
+    @Test
+    public void sum() {
+        DoubleMatrix matrix = new DoubleMatrix(2, 3)
+                .put(0, 2, 1.01234567891234)
+                .put(1, 1, 91.100000000000000);
+        assertThat(matrix.sum(), is(closeTo(92.11234567891233, TOLERANCE)));
+    }
+
+    @Test
+    public void mul() {
+        DoubleMatrix a = new DoubleMatrix(2, 3)
+                .put(0, 2, 1.01234567891234)
+                .put(1, 1, 91.100000000000000);
+        DoubleMatrix b = new DoubleMatrix(2, 3)
+                .put(0, 2, 2.)
+                .put(1, 1, 1.);
+
+        DoubleMatrix c = new DoubleMatrix(2, 3)
+                .put(0, 2, 2*1.01234567891234)
+                .put(1, 1, 91.100000000000000);
+        assertThat(a.mul(b), equalTo(c));
+    }
+
+    @Test
+    public void getRow() {
+        DoubleMatrix matrix = new DoubleMatrix(new double[][]{{1., 2., 3.}, {4., 5., 6.}});
+        assertThat(matrix.getRow(0), equalTo(new double[]{1., 2., 3.}));
+        assertThat(matrix.getRow(1), equalTo(new double[]{4., 5., 6.}));
+    }
+
+    @Test
+    public void getColumn() {
+        DoubleMatrix matrix = new DoubleMatrix(new double[][]{{1., 2., 3.}, {4., 5., 6.}});
+        assertThat(matrix.getColumn(0), equalTo(new double[]{1., 4.}));
+        assertThat(matrix.getColumn(1), equalTo(new double[]{2., 5.}));
+    }
 }

@@ -76,8 +76,8 @@
 
 package org.monarchinitiative.squirls.io.db;
 
-import org.jblas.DoubleMatrix;
 import org.junit.jupiter.api.Test;
+import org.monarchinitiative.squirls.core.reference.DoubleMatrix;
 import org.monarchinitiative.squirls.core.reference.SplicingParameters;
 import org.monarchinitiative.squirls.core.reference.SplicingPwmData;
 import org.monarchinitiative.squirls.io.TestDataSourceConfig;

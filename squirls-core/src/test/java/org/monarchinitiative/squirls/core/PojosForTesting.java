@@ -76,7 +76,7 @@
 
 package org.monarchinitiative.squirls.core;
 
-import org.jblas.DoubleMatrix;
+import org.monarchinitiative.squirls.core.reference.DoubleMatrix;
 import org.monarchinitiative.squirls.core.reference.SplicingParameters;
 import org.monarchinitiative.squirls.core.reference.StrandedSequence;
 import org.monarchinitiative.squirls.core.reference.TranscriptModel;

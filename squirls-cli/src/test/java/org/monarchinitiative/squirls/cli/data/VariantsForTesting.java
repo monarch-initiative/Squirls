@@ -95,7 +95,7 @@ import org.monarchinitiative.squirls.core.reference.TranscriptModel;
 import org.monarchinitiative.variant.api.Contig;
 import org.monarchinitiative.variant.api.GenomicAssembly;
 import org.monarchinitiative.variant.api.Variant;
-import org.monarchinitiative.variant.api.impl.SequenceVariant;
+import org.monarchinitiative.variant.api.impl.DefaultVariant;
 import org.monarchinitiative.vmvt.core.VmvtGenerator;
 
 import java.util.*;
@@ -180,7 +180,7 @@ public class VariantsForTesting {
                 .collect(Collectors.toMap(v -> v[0], v -> Double.parseDouble(v[1])));
 
         TranscriptModel st = transcripts.stream().min(Comparator.comparing(TranscriptModel::accessionId)).orElseThrow();
-        Variant variant = SequenceVariant.oneBased(contig, pos, ref, alt);
+        Variant variant = DefaultVariant.oneBased(contig, pos, ref, alt);
 
         /*
         Prepare test object

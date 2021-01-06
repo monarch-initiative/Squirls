@@ -76,7 +76,7 @@
 
 package org.monarchinitiative.squirls.io.db;
 
-import org.jblas.DoubleMatrix;
+import org.monarchinitiative.squirls.core.reference.DoubleMatrix;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -121,11 +121,10 @@ public class PwmIngestDao {
                 // store PWM data
                 dataStatement.setString(1, name);
                 for (int rowIdx = 0; rowIdx < matrix.rows; rowIdx++) { // outer list, corresponds to 4 rows (4 nucleotides)
-                    DoubleMatrix row = matrix.getRow(rowIdx);
-                    for (int colIdx = 0; colIdx < row.length; colIdx++) { // inner list, corresponds to n positions of PWM
+                    for (int colIdx = 0; colIdx < matrix.columns; colIdx++) { // inner list, corresponds to n positions of PWM
                         dataStatement.setInt(2, rowIdx);
                         dataStatement.setInt(3, colIdx);
-                        dataStatement.setDouble(4, row.get(colIdx));
+                        dataStatement.setDouble(4, matrix.get(rowIdx, colIdx));
                         nRows += dataStatement.executeUpdate();
                     }
                 }
