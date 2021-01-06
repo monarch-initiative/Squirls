@@ -180,7 +180,7 @@ public class PanelGraphicsGenerator extends AbstractGraphicsGenerator {
                     graphics = makeCrypticAcceptorContextGraphics(variant, transcript, aOpt.orElse(null));
                     break;
                 default:
-                    LOGGER.warn("Unable to generate graphics for context {}", visualizationContext.getTitle());
+                    LOGGER.warn("Unable to generate graphics for {} context", visualizationContext.getTitle());
                     return EMPTY_SVG_IMAGE;
             }
         } catch (MissingFeatureException e) {
