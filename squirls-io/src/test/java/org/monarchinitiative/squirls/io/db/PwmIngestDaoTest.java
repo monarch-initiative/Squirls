@@ -76,9 +76,9 @@
 
 package org.monarchinitiative.squirls.io.db;
 
-import org.jblas.DoubleMatrix;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.monarchinitiative.squirls.core.reference.DoubleMatrix;
 import org.monarchinitiative.squirls.io.TestDataSourceConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;

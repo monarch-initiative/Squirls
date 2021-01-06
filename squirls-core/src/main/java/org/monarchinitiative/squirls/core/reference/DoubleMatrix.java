@@ -71,92 +71,151 @@
  *
  * version:6-8-18
  *
- * Daniel Danis, Peter N Robinson, 2020
+ * Daniel Danis, Peter N Robinson, 2021
  */
 
 package org.monarchinitiative.squirls.core.reference;
 
+import java.util.Arrays;
 import java.util.Objects;
 
 /**
- * POJO for holding:
- * <ul>
- *     <li>{@link DoubleMatrix} for <em>donor</em> site</li>
- *     <li>{@link DoubleMatrix} for <em>acceptor</em> site, and</li>
- *     <li>{@link SplicingParameters} with data regarding both splice donor and acceptor sites</li>
- * </ul>
+ * An implementation of double matrix simplified from JBlas.
  */
-public class SplicingPwmData {
+public class DoubleMatrix {
 
-    private final DoubleMatrix donor;
+    public final int columns, rows, length;
 
-    private final DoubleMatrix acceptor;
+    private final double[] data;
 
-    private final SplicingParameters parameters;
+    public DoubleMatrix() {
+        this(0, 0);
+    }
 
-    private SplicingPwmData(Builder builder) {
-        // first check for nulls
-        donor = Objects.requireNonNull(builder.donor);
-        acceptor = Objects.requireNonNull(builder.acceptor);
-        parameters = Objects.requireNonNull(builder.parameters);
+    public DoubleMatrix(double[][] values) {
+        this(values.length, (values.length == 0) ? 0 : values[0].length);
 
-        // then perform more specific checks
-        if (donor.columns != parameters.getDonorLength()) {
-            throw new IllegalArgumentException(
-                    String.format("Length of donor in matrix (%d) and parameters (%d) do not match",
-                            donor.columns, parameters.getDonorLength()));
-        }
-        if (acceptor.columns != parameters.getAcceptorLength()) {
-            throw new IllegalArgumentException(
-                    String.format("Length of acceptor in matrix (%d) and parameters (%d) do not match",
-                            acceptor.columns, parameters.getAcceptorLength()));
+
+        for (int rowIdx = 0; rowIdx < values.length; rowIdx++) {
+            System.arraycopy(values[rowIdx], 0, data, rowIdx * columns, columns);
         }
     }
 
-    public static Builder builder() {
-        return new Builder();
+    public DoubleMatrix(int rows, int columns) {
+        this.rows = rows;
+        this.columns = columns;
+        this.length = rows * columns;
+        this.data = new double[length];
     }
 
-    public DoubleMatrix getDonor() {
-        return donor;
+    public DoubleMatrix put(int rowIndex, int columnIndex, double value) {
+        data[index(rowIndex, columnIndex)] = value;
+        return this;
     }
 
-    public DoubleMatrix getAcceptor() {
-        return acceptor;
+    private void put(int i, double value) {
+        data[i] = value;
     }
 
-    public SplicingParameters getParameters() {
-        return parameters;
+    public double get(int rowIndex, int columnIndex) {
+        return data[index(rowIndex, columnIndex)];
     }
 
-    public static final class Builder {
+    private double get(int i) {
+        return data[i];
+    }
 
-        private DoubleMatrix donor;
+    public double[] getRow(int rowIndex) {
+        double[] row = new double[columns];
+        for (int i = 0; i < columns; i++) row[i] = data[index(rowIndex, i)];
+        return row;
+    }
 
-        private DoubleMatrix acceptor;
+    public double[] getColumn(int columnIndex) {
+        double[] column = new double[rows];
+        for (int i = 0; i < rows; i++) {
+//            column[i] = data[i * columns + columnIndex];
+            int idx = index(i, columnIndex);
+            column[i] = data[idx];
+        }
+        return column;
+    }
 
-        private SplicingParameters parameters;
+    private int index(int rowIndex, int columnIndex) {
+        return rowIndex * columns + columnIndex;
+    }
 
-        private Builder() {
+    public double sum() {
+        double sum = 0.;
+        for (double value : data) {
+            sum += value;
+        }
+        return sum;
+    }
+
+    private boolean isScalar() {
+        return length == 1;
+    }
+
+    private double scalar() {
+        return get(0, 0);
+    }
+
+    public DoubleMatrix mul(DoubleMatrix matrix) {
+        return muli(matrix, new DoubleMatrix(rows, columns));
+    }
+
+    /* Elementwise multiplication (in-place) */
+    private DoubleMatrix muli(DoubleMatrix other, DoubleMatrix result) {
+        if (other.isScalar()) {
+            return muli(other.scalar(), result);
+        }
+        if (isScalar()) {
+            return other.muli(scalar(), result);
         }
 
-        public Builder setDonor(DoubleMatrix donor) {
-            this.donor = donor;
-            return this;
+        if (length != other.length) {
+            throw new IllegalArgumentException("Matrices must have same length (is: " + length + " and " + other.length + ")");
+        }
+        if (length != result.length) {
+            throw new IllegalArgumentException("Matrices must have same length (is: " + length + " and " + result.length + ")");
         }
 
-        public Builder setAcceptor(DoubleMatrix acceptor) {
-            this.acceptor = acceptor;
-            return this;
+        for (int i = 0; i < length; i++) {
+            result.put(i, get(i) * other.get(i));
         }
+        return result;
+    }
 
-        public Builder setParameters(SplicingParameters parameters) {
-            this.parameters = parameters;
-            return this;
+    private DoubleMatrix muli(double v, DoubleMatrix result) {
+        for (int i = 0; i < length; i++) {
+            result.put(i, get(i) * v);
         }
+        return result;
+    }
 
-        public SplicingPwmData build() {
-            return new SplicingPwmData(this);
-        }
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        DoubleMatrix matrix = (DoubleMatrix) o;
+        return columns == matrix.columns && rows == matrix.rows && Arrays.equals(data, matrix.data);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = Objects.hash(columns, rows);
+        result = 31 * result + Arrays.hashCode(data);
+        return result;
+    }
+
+    @Override
+    public String toString() {
+        return "DoubleMatrix{" +
+                "columns=" + columns +
+                ", rows=" + rows +
+                ", length=" + length +
+                ", data=" + Arrays.toString(data) +
+                '}';
     }
 }

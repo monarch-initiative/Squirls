@@ -18,13 +18,6 @@
             <version>${variant.api.version}</version>
         </dependency>
 
-        <!-- TODO remove, replace by our implementation of DoubleMatrix -->
-        <dependency>
-            <groupId>org.jblas</groupId>
-            <artifactId>jblas</artifactId>
-            <version>1.2.3</version>
-        </dependency>
-
         <dependency>
             <groupId>org.apiguardian</groupId>
             <artifactId>apiguardian-api</artifactId>

@@ -76,11 +76,11 @@
 
 package org.monarchinitiative.squirls.core.scoring.calculators.ic;
 
-import org.jblas.DoubleMatrix;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.monarchinitiative.squirls.core.PojosForTesting;
+import org.monarchinitiative.squirls.core.reference.DoubleMatrix;
 import org.monarchinitiative.squirls.core.reference.SplicingParameters;
 
 import static org.hamcrest.MatcherAssert.assertThat;

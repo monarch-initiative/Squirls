@@ -76,7 +76,7 @@
 
 package org.monarchinitiative.squirls.ingest.parse;
 
-import org.jblas.DoubleMatrix;
+import org.monarchinitiative.squirls.core.reference.DoubleMatrix;
 import org.monarchinitiative.squirls.core.reference.SplicingParameters;
 import org.monarchinitiative.squirls.core.reference.SplicingPwmData;
 import org.monarchinitiative.squirls.io.SplicingPositionalWeightMatrixParser;
@@ -105,11 +105,6 @@ public class InputStreamBasedPositionalWeightMatrixParser implements SplicingPos
 
     private static final String ACCEPTOR_M_NAME = "SPLICE_ACCEPTOR_SITE";
 
-    /**
-     * Tolerance when checking that probabilities sum up to 1.
-     */
-    private static final double EPSILON = 0.004;
-
     private final DoubleMatrix donorMatrix;
 
     private final DoubleMatrix acceptorMatrix;
@@ -125,8 +120,8 @@ public class InputStreamBasedPositionalWeightMatrixParser implements SplicingPos
      */
     public InputStreamBasedPositionalWeightMatrixParser(InputStream is) {
         Map<String, PositionWeightMatrix> matrixMap = parseAll(is);
-        this.donorMatrix = Utils.mapToDoubleMatrix(matrixMap.get(DONOR_M_NAME).getMatrix(), EPSILON);
-        this.acceptorMatrix = Utils.mapToDoubleMatrix(matrixMap.get(ACCEPTOR_M_NAME).getMatrix(), EPSILON);
+        this.donorMatrix = SplicingPositionalWeightMatrixParser.mapToDoubleMatrix(matrixMap.get(DONOR_M_NAME).getMatrix(), EPSILON);
+        this.acceptorMatrix = SplicingPositionalWeightMatrixParser.mapToDoubleMatrix(matrixMap.get(ACCEPTOR_M_NAME).getMatrix(), EPSILON);
         this.splicingParameters = SplicingParameters.of(
                 matrixMap.get(DONOR_M_NAME).getExon(), matrixMap.get(DONOR_M_NAME).getIntron(),
                 matrixMap.get(ACCEPTOR_M_NAME).getExon(), matrixMap.get(ACCEPTOR_M_NAME).getIntron());

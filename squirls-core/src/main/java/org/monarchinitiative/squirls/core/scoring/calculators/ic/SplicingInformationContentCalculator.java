@@ -76,7 +76,7 @@
 
 package org.monarchinitiative.squirls.core.scoring.calculators.ic;
 
-import org.jblas.DoubleMatrix;
+import org.monarchinitiative.squirls.core.reference.DoubleMatrix;
 import org.monarchinitiative.squirls.core.reference.SplicingParameters;
 import org.monarchinitiative.squirls.core.reference.SplicingPwmData;
 import org.slf4j.Logger;
@@ -138,10 +138,9 @@ public class SplicingInformationContentCalculator {
     private static DoubleMatrix createICMatrix(DoubleMatrix freqMatrix) {
         DoubleMatrix icm = new DoubleMatrix(freqMatrix.rows, freqMatrix.columns);
 
-        for (int i = 0; i < freqMatrix.rows; i++) { // iterate through positions/rows of io
-            DoubleMatrix row = freqMatrix.getRow(i);
-            for (int j = 0; j < row.columns; j++) { // iterate through nucleotides at position
-                icm.put(i, j, calculateIC(row.get(j)));
+        for (int rowIdx = 0; rowIdx < freqMatrix.rows; rowIdx++) { // iterate through positions/rows of io
+            for (int colIdx = 0; colIdx < freqMatrix.columns; colIdx++) { // iterate through nucleotides at position
+                icm.put(rowIdx, colIdx, calculateIC(freqMatrix.get(rowIdx, colIdx)));
             }
         }
         return icm;
