@@ -2,7 +2,8 @@
     <div class="row">
         <div class="col-md-12">
             <!-- THE TRANSCRIPT TABLE -->
-            <h5 class="effects-title">Variant effects on overlapping transcripts</h5>
+            The variant overlaps with <span th:remove="tag" th:text="${#lists.size(variantAnnotations)}">1</span>
+            <span th:remove="tag" th:text="${#lists.size(variantAnnotations) > 1} ? 'transcripts' : 'transcript'">transcript</span>:
             <div class="transcript-list">
                 <table class="table table-striped">
                     <thead>
