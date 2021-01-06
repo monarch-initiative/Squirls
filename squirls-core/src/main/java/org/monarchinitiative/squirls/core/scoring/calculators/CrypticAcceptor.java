@@ -123,8 +123,8 @@ public class CrypticAcceptor extends BaseFeatureCalculator {
             acceptorSnippet = generator.getAcceptorSiteSnippet(anchor, sequence);
         }
         if (acceptorSnippet == null) {
-            if (LOGGER.isWarnEnabled())
-                LOGGER.warn("Unable to create acceptor snippet at `{}` for variant `{}` using sequence `{}`",
+            if (LOGGER.isDebugEnabled())
+                LOGGER.debug("Unable to create acceptor snippet at `{}` for variant `{}` using sequence `{}`",
                         anchor, variant, sequence);
             return Double.NaN;
         }

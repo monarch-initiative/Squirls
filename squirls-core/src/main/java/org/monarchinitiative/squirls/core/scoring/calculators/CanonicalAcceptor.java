@@ -118,8 +118,8 @@ public class CanonicalAcceptor extends BaseFeatureCalculator {
         final String acceptorSiteWithAltAllele = generator.getAcceptorSiteWithAltAllele(anchor, variant, sequence);
 
         if (acceptorSiteSnippet == null || acceptorSiteWithAltAllele == null) {
-            if (LOGGER.isWarnEnabled())
-                LOGGER.warn("Unable to create wt/alt snippets for variant `{}` using interval `{}`", variant, sequence);
+            if (LOGGER.isDebugEnabled())
+                LOGGER.debug("Unable to create wt/alt snippets for variant `{}` using interval `{}`", variant, sequence);
             return Double.NaN;
         }
 

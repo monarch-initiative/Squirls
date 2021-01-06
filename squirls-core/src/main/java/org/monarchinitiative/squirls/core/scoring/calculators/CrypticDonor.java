@@ -123,8 +123,8 @@ public class CrypticDonor extends BaseFeatureCalculator {
             donorSnippet = generator.getDonorSiteSnippet(anchor, sequence);
         }
         if (donorSnippet == null) {
-            if (LOGGER.isWarnEnabled())
-                LOGGER.warn("Unable to create donor snippet at `{}` for variant `{}` using sequence `{}`",
+            if (LOGGER.isDebugEnabled())
+                LOGGER.debug("Unable to create donor snippet at `{}` for variant `{}` using sequence `{}`",
                         anchor, variant, sequence);
             return Double.NaN;
         }

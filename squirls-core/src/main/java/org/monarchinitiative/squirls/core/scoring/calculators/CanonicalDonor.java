@@ -117,8 +117,8 @@ public class CanonicalDonor extends BaseFeatureCalculator {
         final String donorSiteWithAltAllele = generator.getDonorSiteWithAltAllele(anchor, variant, sequence);
 
         if (donorSiteSnippet == null || donorSiteWithAltAllele == null) {
-            if (LOGGER.isWarnEnabled())
-                LOGGER.warn("Unable to create wt/alt snippets for variant `{}` using interval `{}`", variant, sequence);
+            if (LOGGER.isDebugEnabled())
+                LOGGER.debug("Unable to create wt/alt snippets for variant `{}` using interval `{}`", variant, sequence);
             return Double.NaN;
         }
 
