@@ -79,6 +79,7 @@ package org.monarchinitiative.squirls.ingest.parse;
 import org.monarchinitiative.squirls.core.reference.DoubleMatrix;
 import org.monarchinitiative.squirls.core.reference.SplicingParameters;
 import org.monarchinitiative.squirls.core.reference.SplicingPwmData;
+import org.monarchinitiative.squirls.io.CorruptedPwmException;
 import org.monarchinitiative.squirls.io.SplicingPositionalWeightMatrixParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -118,7 +119,7 @@ public class InputStreamBasedPositionalWeightMatrixParser implements SplicingPos
      * @param is {@link InputStream} with PWM definitions in Yaml format as described in {@link PositionWeightMatrix} class
      *           description
      */
-    public InputStreamBasedPositionalWeightMatrixParser(InputStream is) {
+    public InputStreamBasedPositionalWeightMatrixParser(InputStream is) throws CorruptedPwmException {
         Map<String, PositionWeightMatrix> matrixMap = parseAll(is);
         this.donorMatrix = SplicingPositionalWeightMatrixParser.mapToDoubleMatrix(matrixMap.get(DONOR_M_NAME).getMatrix(), EPSILON);
         this.acceptorMatrix = SplicingPositionalWeightMatrixParser.mapToDoubleMatrix(matrixMap.get(ACCEPTOR_M_NAME).getMatrix(), EPSILON);

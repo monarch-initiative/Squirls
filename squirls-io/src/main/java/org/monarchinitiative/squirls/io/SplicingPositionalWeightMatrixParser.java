@@ -103,20 +103,20 @@ public interface SplicingPositionalWeightMatrixParser {
      * @param epsilon Tolerance when checking that probabilities sum up to 1
      * @return {@link DoubleMatrix} with data from <code>io</code>
      */
-    static DoubleMatrix mapToDoubleMatrix(List<List<Double>> vals, double epsilon) {
+    static DoubleMatrix mapToDoubleMatrix(List<List<Double>> vals, double epsilon) throws CorruptedPwmException {
         if (vals == null)
-            throw new IllegalArgumentException("Unable to create matrix with 0 rows");
+            throw new CorruptedPwmException("Unable to create matrix with 0 rows");
 
         int rows = vals.size();
 
         if (rows != 4)
-            throw new IllegalArgumentException("Matrix does not have 4 rows for 4 nucleotides");
+            throw new CorruptedPwmException("Matrix does not have 4 rows for 4 nucleotides");
 
         int columns = vals.get(0).size();
 
         // all four lists must have the same number of elements (columns)
         if (vals.stream().anyMatch(inner -> inner.size() != columns))
-            throw new IllegalArgumentException("Rows of the matrix do not have the same size");
+            throw new CorruptedPwmException("Rows of the matrix do not have the same size");
 
         // probabilities at each position of donor and acceptor matrices sum up to 1 and issue a warning when
         // the difference is larger than allowed in the EPSILON} parameter
@@ -126,7 +126,7 @@ public interface SplicingPositionalWeightMatrixParser {
                 sum += vals.get(nt_idx).get(col);
             }
             if (Math.abs(sum - 1D) > epsilon)
-                throw new IllegalArgumentException(String.format("Probabilities do not sum up to 1 at column %d", col));
+                throw new CorruptedPwmException(String.format("Probabilities do not sum up to 1 at column %d", col));
         }
 
         // checks are done

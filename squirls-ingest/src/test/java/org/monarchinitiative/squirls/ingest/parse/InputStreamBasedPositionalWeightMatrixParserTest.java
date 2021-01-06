@@ -79,12 +79,13 @@ package org.monarchinitiative.squirls.ingest.parse;
 import org.junit.jupiter.api.Test;
 import org.monarchinitiative.squirls.core.reference.SplicingPwmData;
 import org.monarchinitiative.squirls.ingest.PojosForTesting;
+import org.monarchinitiative.squirls.io.CorruptedPwmException;
 import org.monarchinitiative.squirls.io.SplicingPositionalWeightMatrixParser;
 
 import java.io.InputStream;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class InputStreamBasedPositionalWeightMatrixParserTest {
@@ -108,33 +109,40 @@ public class InputStreamBasedPositionalWeightMatrixParserTest {
 
     @Test
     public void parseMatrixInYamlWithNoRows() throws Exception {
+        CorruptedPwmException e;
         try (InputStream is = InputStreamBasedPositionalWeightMatrixParserTest.class.getResourceAsStream("spliceSitesNoRows.yaml")) {
-            assertThrows(IllegalArgumentException.class, () -> new InputStreamBasedPositionalWeightMatrixParser(is));
+            e = assertThrows(CorruptedPwmException.class, () -> new InputStreamBasedPositionalWeightMatrixParser(is));
         }
+        assertThat(e.getMessage(), equalTo("Unable to create matrix with 0 rows"));
     }
 
 
     @Test
     public void parseMatrixInYamlWithInvalidRowCount() throws Exception {
+        CorruptedPwmException e;
         try (InputStream is = InputStreamBasedPositionalWeightMatrixParserTest.class.getResourceAsStream("spliceSitesBadRowCount.yaml")) {
-            assertThrows(IllegalArgumentException.class, () -> new InputStreamBasedPositionalWeightMatrixParser(is));
-
+            e = assertThrows(CorruptedPwmException.class, () -> new InputStreamBasedPositionalWeightMatrixParser(is));
         }
+        assertThat(e.getMessage(), equalTo("Matrix does not have 4 rows for 4 nucleotides"));
     }
 
 
     @Test
     public void parseMatrixWhereColumnDoesNotSumToOne() throws Exception {
+        CorruptedPwmException e;
         try (InputStream is = InputStreamBasedPositionalWeightMatrixParserTest.class.getResourceAsStream("spliceSitesDoesNotSumTo1.yaml")) {
-            assertThrows(IllegalArgumentException.class, () -> new InputStreamBasedPositionalWeightMatrixParser(is));
+            e= assertThrows(CorruptedPwmException.class, () -> new InputStreamBasedPositionalWeightMatrixParser(is));
         }
+        assertThat(e.getMessage(), containsString("Probabilities do not sum up to 1 at column 1"));
     }
 
 
     @Test
     public void parseMatrixWhereRowsHaveDifferentSize() throws Exception {
+        CorruptedPwmException e;
         try (InputStream is = InputStreamBasedPositionalWeightMatrixParserTest.class.getResourceAsStream("spliceSitesRowsWithDifferentSize.yaml")) {
-            assertThrows(IllegalArgumentException.class, () -> new InputStreamBasedPositionalWeightMatrixParser(is));
+            e = assertThrows(CorruptedPwmException.class, () -> new InputStreamBasedPositionalWeightMatrixParser(is));
         }
+        assertThat(e.getMessage(), containsString("Rows of the matrix do not have the same size"));
     }
 }

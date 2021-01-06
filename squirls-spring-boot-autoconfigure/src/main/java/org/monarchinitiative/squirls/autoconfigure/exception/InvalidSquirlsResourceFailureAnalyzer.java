@@ -84,8 +84,8 @@ public class InvalidSquirlsResourceFailureAnalyzer extends AbstractFailureAnalyz
     @Override
     protected FailureAnalysis analyze(Throwable rootFailure, InvalidSquirlsResourceException cause) {
         return new FailureAnalysis(String.format("Squirls could not be auto-configured properly: '%s'", cause.getMessage()),
-                "This is probably caused by corrupted resources and there is nothing you can do about it. " +
-                        "Please contact the developers to get help.",
-                cause);
+                "This is likely caused by corrupted resources and there is nothing you can do about it. " +
+                        "Please submit an issue to our tracker at " +
+                        "`https://github.com/TheJacksonLaboratory/Squirls/issues` to get help.", cause);
     }
 }
