@@ -90,6 +90,25 @@
             padding-top: .5rem;
             font-style: italic;
         }
+
+        .column {
+            float: left;
+            width: 50%;
+            padding: 10px;
+            min-height: 100px;
+        }
+
+        .row {
+            display: flex; /* equal height of the children */
+        }
+
+        /* Clear floats after the columns */
+        .row:after {
+            content: "";
+            display: table;
+            clear: both;
+        }
+
     </style>
 </head>
 <body>
@@ -105,60 +124,60 @@
         <li><a data-toggle="tab" href="#about" role="tab"><b>About</b></a></li>
     </ul>
 
-    <!--    INPUTS    -->
-    <div id="inputs">
-        <h3>Analysis input</h3>
-        <div>
-            <b>Analyzed variants</b>
-            <p>
-                We analyzed VCF file with variants located at
-            </p>
-            <p><em><span th:remove="tag" th:text="${settings.getInputPath()}">/path/to/file.vcf</span></em></p>
+    <div class="contents">
+        <div class="row">
+            <div class="column" id="inputs">
+                <!--    INPUTS    -->
+                <h3>Analysis input</h3>
+                <b>Analyzed variants</b>
+                <p>
+                    We analyzed VCF file with variants located at
+                </p>
+                <p><em><span th:remove="tag" th:text="${settings.getInputPath()}">/path/to/file.vcf</span></em></p>
 
-            <b>Transcript database</b>
-            <p>
-                We use <a href="https://github.com/charite/jannovar/">Jannovar</a> library to perform functional annotation of variants
-                <em>wrt.</em> genes and transcripts. The transcript definitions were read from the database file located at
-            </p>
-            <p><em><span th:text="${settings.getTranscriptDb()}">/path/to/jannovar.ser</span></em></p>
+                <b>Transcript database</b>
+                <p>
+                    We use <a href="https://github.com/charite/jannovar/">Jannovar</a> library to perform functional annotation of variants
+                    <em>wrt.</em> genes and transcripts. The transcript definitions were read from the database file located at
+                </p>
+                <p><em><span th:text="${settings.getTranscriptDb()}">/path/to/jannovar.ser</span></em></p>
 
-            <b>Number of reported variants</b>
-            <p>
-                After the analysis, the variants are sorted by predicted pathogenicity and the variant with the highest predicted
-                pathogenicity is placed on the top of the list.
-                This report presents the top <b><span th:text="${settings.getNReported()}">100</span></b> most pathogenic variants.
-            </p>
-        </div>
-    </div>
+                <b>Number of reported variants</b>
+                <p>
+                    After the analysis, the variants are sorted by predicted pathogenicity and the variant with the highest predicted
+                    pathogenicity is placed on the top of the list.
+                    This report presents the top <b><span th:text="${settings.getNReported()}">100</span></b> most pathogenic variants.
+                </p>
+            </div>
+            <div class="column" id="statistics">
+                <!--    STATISTICS      -->
+                <h3>Statistics</h3>
 
-    <!--    STATISTICS      -->
-    <div id="statistics">
-        <h3>Statistics</h3>
-        <div>
-            <table class="table table-striped">
-                <tr>
-                    <td>number of variants in the VCF file</td>
-                    <td th:text="${stats.allVariants()}">100</td>
-                </tr>
-                <tr>
-                    <td>number of <em>ALT</em> alleles in the VCF file</td>
-                    <td th:text="${stats.alleleCount()}">120</td>
-                </tr>
-                <tr>
-                    <td>number of <em>ALT</em> alleles annotated by Squirls</td>
-                    <td th:text="${stats.annotatedAlleleCount()}">110</td>
-                </tr>
-                <tr>
-                    <td>number of reported variants</td>
-                    <td th:text="${variants.size()}">100</td>
-                </tr>
-            </table>
+                <table class="table table-striped">
+                    <tr>
+                        <td>number of variants in the VCF file</td>
+                        <td th:text="${stats.allVariants()}">100</td>
+                    </tr>
+                    <tr>
+                        <td>number of distinct <em>ALT</em> alleles in the VCF file</td>
+                        <td th:text="${stats.alleleCount()}">120</td>
+                    </tr>
+                    <tr>
+                        <td>number of <em>ALT</em> alleles annotated by Squirls</td>
+                        <td th:text="${stats.annotatedAlleleCount()}">110</td>
+                    </tr>
+                    <tr>
+                        <td>number of reported variants</td>
+                        <td th:text="${variants.size()}">100</td>
+                    </tr>
+                </table>
+            </div>
         </div>
     </div>
 
     <!--    PRIORITISED VARIANTS     -->
     <div id="prioritisation">
-            <h3>Prioritised Variants</h3>
+        <h3>Prioritised Variants</h3>
         <div class="panel panel-info" th:each="variant, variant_is: ${variants}">
             <div class="panel-heading">
                 <div class="panel-title row">
