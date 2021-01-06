@@ -109,13 +109,13 @@ public class TranscriptsIngestRunner implements Runnable {
         Map<String, List<TranscriptModel>> txByChromosome = transcripts.stream()
                 .collect(Collectors.groupingBy(TranscriptModel::contigName));
         for (String chrom : txByChromosome.keySet()) {
-            LOGGER.info("Processing chromosome `{}`", chrom);
+            if (LOGGER.isInfoEnabled()) LOGGER.info("Processing chromosome `{}`", chrom);
             inserted += txByChromosome.get(chrom).parallelStream()
                     .peek(progress.logTotal("Processed {} transcripts"))
                     .map(dao::insertTranscript)
                     .reduce(Integer::sum)
                     .orElse(0);
         }
-        LOGGER.info("Inserted {} transcripts", inserted);
+        LOGGER.info("Transcript ingest updated {} rows", inserted);
     }
 }
