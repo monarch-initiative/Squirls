@@ -23,6 +23,7 @@
         <java.version>11</java.version>
 
         <variant.api.version>1.0-SNAPSHOT</variant.api.version> <!-- TODO - update -->
+        <vmvt.version>0.9.3-SNAPSHOT</vmvt.version> <!-- TODO - update -->
         <htsjdk.version>2.23.0</htsjdk.version>
         <jannovar.version>0.35</jannovar.version>
         <argparse.version>0.8.1</argparse.version>

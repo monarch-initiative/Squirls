@@ -392,9 +392,10 @@ public class VariantsForTesting {
                 "TGGg" + "c" + "aggt",  // ref best window snippet
                 "TGGg" + "t" + "aggt"); // alt best window snippet
 
-        String secondary = generator.getDonorCanonicalCryptic(
-                "T" + "AGgttggt",     // alt canonical site snippet
-                "TGGg" + "t" + "aggt"); // alt best window snippet
+//        String secondary = generator.getDonorCanonicalCryptic(
+//                "T" + "AGgttggt",     // alt canonical site snippet
+//                "TGGg" + "t" + "aggt"); // alt best window snippet
+        String secondary = "";
 
         // *************************************************************************************************************
 
@@ -455,9 +456,10 @@ public class VariantsForTesting {
                 "GTGgt" + "g" + "agg",  // ref best window snippet
                 "GTGgt" + "a" + "agg");  // alt best window snippet
 
-        String secondary = generator.getDonorCanonicalCryptic(
-                "CAGgttggt",  // alt canonical site snippet
-                "GTGgt" + "a" + "agg");  // alt best window snippet
+//        String secondary = generator.getDonorCanonicalCryptic(
+//                "CAGgttggt",  // alt canonical site snippet
+//                "GTGgt" + "a" + "agg");  // alt best window snippet
+        String secondary = "";
 
         // *************************************************************************************************************
 
@@ -641,9 +643,10 @@ public class VariantsForTesting {
                 "tttgttgtgttttgtcatgtgta" + "t" + "gct", // ref best window
                 "tttgttgtgttttgtcatgtgta" + "a" + "gct"); // alt best window
 
-        String secondary = generator.getAcceptorCanonicalCryptic(
-                "gtgttttgtcatgtgta" + "t" + "gctcaagGG", // alt canonical site snippet
-                "tttgttgtgttttgtcatgtgta" + "a" + "gct"); // alt best window snippet
+//        String secondary = generator.getAcceptorCanonicalCryptic(
+//                "gtgttttgtcatgtgta" + "t" + "gctcaagGG", // alt canonical site snippet
+//                "tttgttgtgttttgtcatgtgta" + "a" + "gct"); // alt best window snippet
+        String secondary = "";
 
         // *************************************************************************************************************
 
@@ -705,9 +708,10 @@ public class VariantsForTesting {
                 "tcagtgttacctgtttcacatgta" + "c" + "GT",  // ref best window
                 "tcagtgttacctgtttcacatgta" + "g" + "GT");  // alt best window
 
-        String secondary = generator.getAcceptorCanonicalCryptic(
-                "tgaccagtgtgctcccctccctcagTG",  // alt canonical site snippet
-                "tcagtgttacctgtttcacatgta" + "g" + "GT");  // alt best window snippet
+//        String secondary = generator.getAcceptorCanonicalCryptic(
+//                "tgaccagtgtgctcccctccctcagTG",  // alt canonical site snippet
+//                "tcagtgttacctgtttcacatgta" + "g" + "GT");  // alt best window snippet
+        String secondary = "";
 
         // *************************************************************************************************************
 

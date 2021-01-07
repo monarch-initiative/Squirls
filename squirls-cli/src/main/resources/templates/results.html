@@ -2,20 +2,73 @@
 <html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>SQUIRLS - Super-Quick Information Content and Random Forest Learning for Splice Variants</title>
+    <title>Squirls - Super-Quick Information Content and Random Forest Learning for Splice Variants</title>
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
     <!-- TODO - Add the CSS into the template -->
     <!-- Latest compiled and minified CSS -->
     <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        .panel > .panel-heading {
-            /*background-color: #00fa3c;*/
+        body {
+            background-color: #eee;
         }
 
-        .panel > .panel-info {
-            border-color: transparent;
-            border-width: 0;
-            margin: 5px 0 0 0;
+        h1 {
+            font-size: 24px;
+        }
+
+        h2 {
+            font-size: 20px;
+        }
+
+        h3 {
+            font-size: 16px;
+            font-style: italic;
+        }
+
+        footer div {
+            text-align: center;
+            padding: 1em;
+        }
+
+        .content {
+            background-color: white;
+            filter: drop-shadow(5px 5px 5px #aaa);
+            padding: 40px
+        }
+
+        .underlined {
+            border-bottom: thin solid #bce8f1;
+        }
+
+        .overlined {
+            border-top: thin solid #bce8f1;
+        }
+
+        .input-resource {
+            font-style: italic;
+            background-color: #f9f9f9;
+            border-top: solid thin #efefef;
+            border-bottom: solid thin #efefef;
+            padding: .5em;
+        }
+
+        .row {
+            display: flex;
+            padding: 0 1em 0 1em;
+        }
+
+        .column {
+            float: left;
+            width: 50%;
+            padding: 10px;
+            min-height: 100px;
+        }
+
+        /* Clear floats after the columns */
+        .row:after {
+            content: "";
+            display: table;
+            clear: both;
         }
 
         .graphics-container {
@@ -86,98 +139,89 @@
             border: solid .5px #ddd;
         }
 
-        h4 {
-            padding-top: .5rem;
-            font-style: italic;
-        }
-
-        .column {
-            float: left;
-            width: 50%;
-            padding: 10px;
-            min-height: 100px;
-        }
-
-        .row {
-            display: flex; /* equal height of the children */
-        }
-
-        /* Clear floats after the columns */
-        .row:after {
-            content: "";
-            display: table;
-            clear: both;
-        }
-
     </style>
 </head>
 <body>
-<div class="container" id="content">
-    <!--    TITLE -->
-    <h2><em>SQUIRLS</em> analysis results for <em th:text="${sampleName}">Sample ID</em></h2>
+  <div class="container content">
+      <header class="underlined">
+          <h1><em>Squirls</em> analysis results for <em th:text="${sampleName}">Sample ID</em></h1>
+          <!--    INTRO -->
+          <p>
+              <em>Squirls</em> is a desktop Java application that performs prediction
+              of deleteriousness of genomic variants with respect to mRNA splicing.
+              Variants are prioritized based on interpretable splicing features using
+              a machine learning algorithm. The functional annotation code is performed
+              using the <a href="https://github.com/charite/jannovar">Jannovar</a>
+              library.
+          </p>
+          <p>
+              See <a href="https://squirls.readthedocs.io/en/latest/">the comprehensive
+              documentation</a> learn how to setup and run <em>Squirls</em>, and how
+              to interpret the results.
+          </p>
+      </header>
 
-    <!--    NAV   -->
-    <ul class="nav nav-pills" id="tabs">
-        <li><a data-toggle="tab" href="#inputs" role="tab"><b>Analysis input</b></a></li>
-        <li><a data-toggle="tab" href="#statistics" role="tab"><b>Statistics</b></a></li>
-        <li><a data-toggle="tab" href="#prioritisation" role="tab"><b>Prioritised Variants</b></a></li>
-        <li><a data-toggle="tab" href="#about" role="tab"><b>About</b></a></li>
-    </ul>
+      <section>
+          <div class="row">
+              <div class="column" id="inputs">
+                  <!--    INPUTS    -->
+                  <h2>Analysis input</h2>
+                  <h3>Analyzed variants</h3>
+                  <p>
+                      We analyzed VCF file with variants located at:
+                  </p>
+                  <p><div class="input-resource" th:text="${settings.getInputPath()}">/path/to/file.vcf</div></p>
 
-    <div class="contents">
-        <div class="row">
-            <div class="column" id="inputs">
-                <!--    INPUTS    -->
-                <h3>Analysis input</h3>
-                <b>Analyzed variants</b>
-                <p>
-                    We analyzed VCF file with variants located at
-                </p>
-                <p><em><span th:remove="tag" th:text="${settings.getInputPath()}">/path/to/file.vcf</span></em></p>
+                  <h3>Transcript database</h3>
+                  <p>
+                      We use
+                      <a href="https://github.com/charite/jannovar/">Jannovar</a>
+                      library to perform functional annotation of variants
+                      <em>wrt.</em> genes and transcripts.
+                      For this analysis, the transcript definitions were read
+                      from the database file located at:
+                  </p>
+                  <p><div class="input-resource" th:text="${settings.getTranscriptDb()}">/path/to/jannovar.ser</div></p>
 
-                <b>Transcript database</b>
-                <p>
-                    We use <a href="https://github.com/charite/jannovar/">Jannovar</a> library to perform functional annotation of variants
-                    <em>wrt.</em> genes and transcripts. The transcript definitions were read from the database file located at
-                </p>
-                <p><em><span th:text="${settings.getTranscriptDb()}">/path/to/jannovar.ser</span></em></p>
+                  <h3>Number of reported variants</h3>
+                  <p>
+                      After the analysis, the variants are sorted by predicted
+                      pathogenicity and the variant with the highest predicted
+                      pathogenicity is placed on the top of the list.
+                      This report presents the top
+                      <b><span th:text="${settings.getNReported()}">100</span></b>
+                      most pathogenic variants.
+                  </p>
+              </div>
+              <div class="column" id="statistics">
+                  <!--    STATISTICS      -->
+                  <h2>Statistics</h2>
 
-                <b>Number of reported variants</b>
-                <p>
-                    After the analysis, the variants are sorted by predicted pathogenicity and the variant with the highest predicted
-                    pathogenicity is placed on the top of the list.
-                    This report presents the top <b><span th:text="${settings.getNReported()}">100</span></b> most pathogenic variants.
-                </p>
-            </div>
-            <div class="column" id="statistics">
-                <!--    STATISTICS      -->
-                <h3>Statistics</h3>
+                  <table class="table table-striped">
+                      <tr>
+                          <td>number of variants in the VCF file</td>
+                          <td th:text="${stats.allVariants()}">100</td>
+                      </tr>
+                      <tr>
+                          <td>number of distinct <em>ALT</em> alleles in the VCF file</td>
+                          <td th:text="${stats.alleleCount()}">120</td>
+                      </tr>
+                      <tr>
+                          <td>number of <em>ALT</em> alleles annotated by Squirls</td>
+                          <td th:text="${stats.annotatedAlleleCount()}">110</td>
+                      </tr>
+                      <tr>
+                          <td>number of reported variants</td>
+                          <td th:text="${variants.size()}">100</td>
+                      </tr>
+                  </table>
+              </div>
+          </div>
+      </section>
 
-                <table class="table table-striped">
-                    <tr>
-                        <td>number of variants in the VCF file</td>
-                        <td th:text="${stats.allVariants()}">100</td>
-                    </tr>
-                    <tr>
-                        <td>number of distinct <em>ALT</em> alleles in the VCF file</td>
-                        <td th:text="${stats.alleleCount()}">120</td>
-                    </tr>
-                    <tr>
-                        <td>number of <em>ALT</em> alleles annotated by Squirls</td>
-                        <td th:text="${stats.annotatedAlleleCount()}">110</td>
-                    </tr>
-                    <tr>
-                        <td>number of reported variants</td>
-                        <td th:text="${variants.size()}">100</td>
-                    </tr>
-                </table>
-            </div>
-        </div>
-    </div>
-
-    <!--    PRIORITISED VARIANTS     -->
-    <div id="prioritisation">
-        <h3>Prioritised Variants</h3>
+      <section class="overlined underlined" id="prioritisation">
+        <!--    PRIORITISED VARIANTS     -->
+        <h2>Prioritised Variants</h2>
         <div class="panel panel-info" th:each="variant, variant_is: ${variants}">
             <div class="panel-heading">
                 <div class="panel-title row">
@@ -199,24 +243,15 @@
                 </div>
             </div>
         </div>
-    </div>
+      </section>
 
-    <!--    FOOTER    -->
-    <div id="about">
-        <h3>About</h3>
-        <div>
-            <p>
-                <em>SQUIRLS</em> is a desktop Java application that performs prediction of deleteriousness of genomic variants with respect to mRNA splicing.
-                Variants are prioritized based on interpretable splicing features using a machine learning algorithm.
-                The functional annotation code is based on <a href="https://github.com/charite/jannovar/">Jannovar</a>.
-            </p>
-            <p>See <a href="http://squirls.rtfd.io">the comprehensive documentation</a> for instructions regarding how to perform setup, run and interpret the results.</p>
-            <p>Developed by <em>Daniel Danis</em> and <em>Peter N Robinson</em> at <a href="https://www.jax.org">The Jackson Laboratory for Genomic Medicine</a>.</p>
-            <p>Problems, suggestions, or comments? Feel free to submit an issue to our <a href="https://github.com/TheJacksonLaboratory/Squirls/issues">GitHub tracker</a>.</p>
-
-            <div style="text-align: center;">&#169; 2020 Daniel Danis, Peter N Robinson</div>
-        </div>
-    </div>
-</div>
+      <footer>
+          <div>
+              <p>Developed by <em>Daniel Danis</em> and <em>Peter N Robinson</em> at <a href="https://www.jax.org">The Jackson Laboratory for Genomic Medicine</a>.</p>
+              <p>Problems, suggestions, or comments? Feel free to submit an issue to our <a href="https://github.com/TheJacksonLaboratory/Squirls/issues">GitHub tracker</a>.</p>
+              <p>&#169; 2021 Daniel Danis, Peter N Robinson</p>
+          </div>
+      </footer>
+  </div>
 </body>
 </html>

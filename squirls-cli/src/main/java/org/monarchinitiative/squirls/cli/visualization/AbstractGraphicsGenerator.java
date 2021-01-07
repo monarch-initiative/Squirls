@@ -220,9 +220,7 @@ public abstract class AbstractGraphicsGenerator implements SplicingVariantGraphi
 
                     // primary - add ruler and trekker
                     graphics.append("<div class=\"graphics-subcontent\">")
-                            .append(vmvtGenerator.getDonorSequenceRuler(refAllele, altAllele))
-                            .append(vmvtGenerator.getDonorTrekkerSvg(refAllele, altAllele))
-//                            .append(vmvtGenerator.getDonorWithRi(refAllele, altAllele))
+                            .append(vmvtGenerator.getDonorIcBarsWithRi(refAllele, altAllele))
                             .append("</div>");
 
                     // secondary - add distribution
@@ -291,9 +289,7 @@ public abstract class AbstractGraphicsGenerator implements SplicingVariantGraphi
 
                     // primary - add ruler and trekker
                     graphics.append("<div class=\"graphics-subcontent\">")
-                            .append(vmvtGenerator.getAcceptorSequenceRuler(refAllele, altAllele))
-                            .append(vmvtGenerator.getAcceptorTrekkerSvg(refAllele, altAllele))
-//                            .append(vmvtGenerator.getAcceptorWithRi(refAllele, altAllele))
+                            .append(vmvtGenerator.getAcceptorIcBarsWithRi(refAllele, altAllele))
                             .append("</div>");
 
                     // secondary - add distribution
@@ -365,14 +361,15 @@ public abstract class AbstractGraphicsGenerator implements SplicingVariantGraphi
         // primary - trekker comparing the best ALT window with the corresponding REF window
         String altBestWindow = altSnippet.substring(altMaxIdx, altMaxIdx + splicingParameters.getDonorLength());
         String refCorrespondingWindow = refSnippet.substring(altMaxIdx, altMaxIdx + splicingParameters.getDonorLength());
-        String trekker = vmvtGenerator.getDonorTrekkerSvg(refCorrespondingWindow, altBestWindow);
+        String trekker = vmvtGenerator.getDonorIcBarsWithRi(refCorrespondingWindow, altBestWindow);
 
         // secondary - sequence walkers comparing the best ALT window with the canonical donor snippet
-        String walkers;
+        // TODO - update with the other IC bars
+        String walkers = "";
         if (donorAnchor != null) {
             // we have the anchor, thus let's make the graphics
             String canonicalDonorSnippet = alleleGenerator.getDonorSiteWithAltAllele(donorAnchor, variant, sequence);
-            walkers = vmvtGenerator.getDonorCanonicalCryptic(canonicalDonorSnippet, altBestWindow);
+//            walkers = vmvtGenerator.getDonorCanonicalCryptic(canonicalDonorSnippet, altBestWindow);
         } else {
             // there is no anchor, this happens in single-exon transcripts
             if (!transcript.introns().isEmpty()) {
@@ -435,14 +432,15 @@ public abstract class AbstractGraphicsGenerator implements SplicingVariantGraphi
         // primary - trekker comparing the best ALT window with the corresponding REF window
         String altBestWindow = altSnippet.substring(altMaxIdx, altMaxIdx + splicingParameters.getAcceptorLength());
         String refCorrespondingWindow = refSnippet.substring(altMaxIdx, altMaxIdx + splicingParameters.getAcceptorLength());
-        String trekker = vmvtGenerator.getAcceptorTrekkerSvg(refCorrespondingWindow, altBestWindow);
+        String trekker = vmvtGenerator.getAcceptorIcBarsWithRi(refCorrespondingWindow, altBestWindow);
 
         // secondary - sequence walkers comparing the best ALT window with the canonical acceptor snippet
-        String walkers;
+        // TODO - update with the other IC bars
+        String walkers = "";
         if (acceptorAnchor != null) {
             // we have the anchor, thus let's make the graphics
             String canonicalAcceptorSnippet = alleleGenerator.getAcceptorSiteWithAltAllele(acceptorAnchor, variant, sequence);
-            walkers = vmvtGenerator.getAcceptorCanonicalCryptic(canonicalAcceptorSnippet, altBestWindow);
+//            walkers = vmvtGenerator.getAcceptorCanonicalCryptic(canonicalAcceptorSnippet, altBestWindow);
         } else {
             // there is no anchor, this happens in single-exon transcripts
             if (!transcript.introns().isEmpty()) {
