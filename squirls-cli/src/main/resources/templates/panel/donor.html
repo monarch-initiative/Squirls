@@ -89,6 +89,13 @@
         <div class="row">
             <div class="graphics-container">
                 <div class='graphics-title' th:text="${context}">Cryptic donor</div>
+                <div class="interpretation" th:if="${basesChanged}" th:with="sequenceAdded=${basesChanged > 0}">
+                    Using cryptic donor site at <em th:text="${crypticCoordinate}">chr1:123,456,789</em>
+                    would lead to <span th:remove="tag" th:text="${sequenceAdded}? 'addition' : 'removal'">addition</span>
+                    of <span th:remove="tag" th:text="${sequenceAdded ? basesChanged: -basesChanged}">4</span>
+                    <span th:remove="tag" th:text="${basesChanged == 1 or basesChanged == -1 ? 'base' : 'base'}">bases</span>
+                    <span th:remove="tag" th:text="${sequenceAdded} ? 'to' : 'from'">to</span> the coding sequence.
+                </div>
                 <div class="graphics-content">
                     <div class="graphics-subcontent" th:utext="${primary}">
                         <svg height="200" style="border: solid black;" width="300" xmlns="http://www.w3.org/2000/svg"/>

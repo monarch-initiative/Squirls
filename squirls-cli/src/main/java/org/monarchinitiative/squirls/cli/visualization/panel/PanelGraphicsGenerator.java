@@ -96,6 +96,7 @@ import org.thymeleaf.context.Context;
 import org.thymeleaf.templatemode.TemplateMode;
 import org.thymeleaf.templateresolver.ClassLoaderTemplateResolver;
 
+import java.text.NumberFormat;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -108,6 +109,8 @@ import static org.monarchinitiative.squirls.core.Utils.*;
 public class PanelGraphicsGenerator implements SplicingVariantGraphicsGenerator {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PanelGraphicsGenerator.class);
+
+    private static final NumberFormat NF = NumberFormat.getInstance();
 
     private static final AnnotationComparator TX_COMPARATOR = new AnnotationComparator();
 
@@ -180,6 +183,9 @@ public class PanelGraphicsGenerator implements SplicingVariantGraphicsGenerator 
         Optional<GenomicPosition> aOpt = locationData.getAcceptorBoundary();
 
         String primary = EMPTY_SVG_IMAGE, secondary = EMPTY_SVG_IMAGE;
+        String crypticCoordinate = "";
+        int basesChanged = 0;
+        context.setVariable("basesChanged", basesChanged);
 
         String templateName;
         VisualizationContext visualizationContext = contextSelector.selectContext(highestPrediction.features());
@@ -210,7 +216,6 @@ public class PanelGraphicsGenerator implements SplicingVariantGraphicsGenerator 
             String refAllele, altAllele, refSnippet, altSnippet, altBestWindow, refCorrespondingWindow;
             GenomicPosition donorAnchor, acceptorAnchor;
             switch (visualizationContext) {
-
                 case CANONICAL_DONOR:
                     // cannot draw anything without knowing the donor border
                     if (dOpt.isEmpty()) break;
@@ -230,6 +235,7 @@ public class PanelGraphicsGenerator implements SplicingVariantGraphicsGenerator 
                     primary = vmvtGenerator.getDonorSequenceLogoRulerAndBarChart(refAllele, altAllele);
                     secondary = vmvtGenerator.getDonorDistributionSvg(refAllele, altAllele);
                     break;
+
                 case CANONICAL_ACCEPTOR:
                     // cannot draw anything without knowing the acceptor border
                     if (aOpt.isEmpty()) break;
@@ -249,6 +255,7 @@ public class PanelGraphicsGenerator implements SplicingVariantGraphicsGenerator 
                     primary = vmvtGenerator.getAcceptorSequenceLogoRulerAndBarChart(refAllele, altAllele);
                     secondary = vmvtGenerator.getAcceptorDistributionSvg(refAllele, altAllele);
                     break;
+
                 case CRYPTIC_DONOR:
                     refSnippet = alleleGenerator.getDonorNeighborSnippet(variant, sequence, variant.ref());
                     altSnippet = alleleGenerator.getDonorNeighborSnippet(variant, sequence, variant.alt());
@@ -270,9 +277,18 @@ public class PanelGraphicsGenerator implements SplicingVariantGraphicsGenerator 
                     altBestWindow = altSnippet.substring(altMaxIdx, altMaxIdx + splicingParameters.getDonorLength());
                     refCorrespondingWindow = refSnippet.substring(altMaxIdx, altMaxIdx + splicingParameters.getDonorLength());
 
-                    int donorDiff = getDiff(variant, donorAnchor) - altMaxIdx;
+                    // which position of the cryptic site the variant is located at? (-1 to transform to 0-based)
+                    int variantCrypticDonorSiteIdx = splicingParameters.getDonorLength() - altMaxIdx - 1; //
+                    int donorDiff = getDiff(variant, donorAnchor) - variantCrypticDonorSiteIdx;
+                    basesChanged = donorDiff + splicingParameters.getDonorExonic();
                     secondary = vmvtGenerator.getDonorSequenceRulerAndBarChartWithOffset(refCorrespondingWindow, altBestWindow, donorDiff);
+                    GenomicPosition crypticDonorPos = GenomicPosition.zeroBased(variant.contig(), variant.strand(),
+                            variant.startPosition().shift(splicingParameters.getDonorExonic() - variantCrypticDonorSiteIdx))
+                            .toPositiveStrand();
+
+                    crypticCoordinate = String.format("%s:%s", variant.contigName(), NF.format(crypticDonorPos.pos()));
                     break;
+
                 case CRYPTIC_ACCEPTOR:
                     refSnippet = alleleGenerator.getAcceptorNeighborSnippet(variant, sequence, variant.ref());
                     altSnippet = alleleGenerator.getAcceptorNeighborSnippet(variant, sequence, variant.alt());
@@ -294,9 +310,19 @@ public class PanelGraphicsGenerator implements SplicingVariantGraphicsGenerator 
                     altBestWindow = altSnippet.substring(altMaxIdx, altMaxIdx + splicingParameters.getAcceptorLength());
                     refCorrespondingWindow = refSnippet.substring(altMaxIdx, altMaxIdx + splicingParameters.getAcceptorLength());
 
-                    int acceptorDiff = getDiff(variant, acceptorAnchor) - altMaxIdx;
+                    // which position of the cryptic site the variant is located at? (-1 to transform to 0-based)
+                    int variantCrypticAcceptorSiteIdx = splicingParameters.getAcceptorLength() - altMaxIdx - 1;
+                    int acceptorDiff = getDiff(variant, acceptorAnchor) - variantCrypticAcceptorSiteIdx;
+                    basesChanged = acceptorDiff + splicingParameters.getAcceptorIntronic();
                     secondary = vmvtGenerator.getAcceptorSequenceRulerAndBarChartWithOffset(refCorrespondingWindow, altBestWindow, acceptorDiff);
+
+                    GenomicPosition crypticAcceptorPos = GenomicPosition.zeroBased(variant.contig(), variant.strand(),
+                            variant.startPosition().shift(splicingParameters.getAcceptorIntronic() - variantCrypticAcceptorSiteIdx - 1))
+                            .toPositiveStrand();
+
+                    crypticCoordinate = String.format("%s:%s", variant.contigName(), NF.format(crypticAcceptorPos.pos()));
                     break;
+
                 case UNKNOWN:
                 default:
                     LOGGER.warn("Unable to generate graphics for {} context", visualizationContext.getTitle());
@@ -307,6 +333,8 @@ public class PanelGraphicsGenerator implements SplicingVariantGraphicsGenerator 
             return templateEngine.process(templateName, context);
         }
 
+        context.setVariable("crypticCoordinate", crypticCoordinate);
+        context.setVariable("basesChanged", basesChanged);
         context.setVariable("primary", primary);
         context.setVariable("secondary", secondary);
 
@@ -314,6 +342,6 @@ public class PanelGraphicsGenerator implements SplicingVariantGraphicsGenerator 
     }
 
     private StrandedSequence fetchSequenceForTranscript(TranscriptModel transcript) {
-        return squirlsDataService.sequenceForRegion(transcript.withPadding(100, 100));
+        return squirlsDataService.sequenceForRegion(transcript.withPadding(250, 250));
     }
 }

@@ -66,10 +66,6 @@
                     <td th:text="${#numbers.formatInteger(highest_prediction.featureValue('creates_ag_in_agez').orElse(0.), 1) == 1 ? 'Yes': 'No'}">Yes</td>
                 </tr>
                 <tr>
-                    <td>Creates YAG in <i>AGEZ</i></td>
-                    <td th:text="${#numbers.formatInteger(highest_prediction.featureValue('creates_yag_in_agez').orElse(0.), 1) == 1 ? 'Yes': 'No'}">Yes</td>
-                </tr>
-                <tr>
                     <td>ESRSeq</td>
                     <td th:text="${feature.isPresent()} ? ${#numbers.formatDecimal(feature.getAsDouble(), 1, 2)} : missing"
                         th:with="feature=${highest_prediction.featureValue('hexamer')}">3.12
@@ -93,6 +89,21 @@
         <div class="row">
             <div class="graphics-container">
                 <div class='graphics-title' th:text="${context}">Cryptic acceptor</div>
+                <div class="interpretation" th:if="${basesChanged or agez}"
+                     th:with="agez=${#numbers.formatInteger(highest_prediction.featureValue('creates_ag_in_agez').orElse(0.), 1) == 1}">
+                    <div th:if="${basesChanged}" th:with="sequenceAdded=${basesChanged < 0}">
+                        Using cryptic acceptor site at <em th:text="${crypticCoordinate}">chr1:123,456,789</em>
+                        would lead to <span th:remove="tag" th:text="${sequenceAdded}? 'addition' : 'removal'">addition</span>
+                        of <span th:remove="tag" th:text="${sequenceAdded ? -basesChanged: basesChanged}">4</span>
+                        <span th:remove="tag" th:text="${basesChanged == 1 or basesChanged == -1 ? 'base' : 'base'}">bases</span>
+                        <span th:remove="tag" th:text="${sequenceAdded} ? 'to' : 'from'">to</span> the coding sequence.
+                    </div>
+                    <div th:if="${agez}">
+                        Variant creates <em>AG</em> dinucleotide in the
+                        <a href="https://squirls.rtfd.io//en/latest/model.html#term-AGEZ">AG exclusion zone</a>
+                        of the canonical acceptor site.
+                    </div>
+                </div>
                 <div class="graphics-content">
                     <div class="graphics-subcontent" th:utext="${primary}">
                         <svg height="200" style="border: solid black;" width="300" xmlns="http://www.w3.org/2000/svg"/>
