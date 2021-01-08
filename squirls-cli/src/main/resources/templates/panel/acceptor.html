@@ -96,7 +96,7 @@
                         Using cryptic acceptor site at <em th:text="${crypticCoordinate}">chr1:123,456,789</em>
                         would lead to <span th:remove="tag" th:text="${sequenceAdded}? 'addition' : 'removal'">addition</span>
                         of <span th:remove="tag" th:text="${sequenceAdded ? -basesChanged: basesChanged}">4</span>
-                        <span th:remove="tag" th:text="${basesChanged == 1 or basesChanged == -1 ? 'base' : 'base'}">bases</span>
+                        <span th:remove="tag" th:text="${basesChanged > 1 or basesChanged < -1 ? 'bases' : 'base'}">bases</span>
                         <span th:remove="tag" th:text="${sequenceAdded} ? 'to' : 'from'">to</span> the coding sequence.
                     </div>
                     <div th:if="${agez}">

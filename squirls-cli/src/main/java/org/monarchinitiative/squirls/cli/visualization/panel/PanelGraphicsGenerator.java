@@ -281,7 +281,8 @@ public class PanelGraphicsGenerator implements SplicingVariantGraphicsGenerator 
                     int variantCrypticDonorSiteIdx = splicingParameters.getDonorLength() - altMaxIdx - 1; //
                     int donorDiff = getDiff(variant, donorAnchor) - variantCrypticDonorSiteIdx;
                     basesChanged = donorDiff + splicingParameters.getDonorExonic();
-                    secondary = vmvtGenerator.getDonorSequenceRulerAndBarChartWithOffset(refCorrespondingWindow, altBestWindow, donorDiff);
+
+                    secondary = vmvtGenerator.getDonorSequenceRulerAndBarChartWithOffset(refCorrespondingWindow, altBestWindow, basesChanged);
                     GenomicPosition crypticDonorPos = GenomicPosition.zeroBased(variant.contig(), variant.strand(),
                             variant.startPosition().shift(splicingParameters.getDonorExonic() - variantCrypticDonorSiteIdx))
                             .toPositiveStrand();
@@ -314,7 +315,8 @@ public class PanelGraphicsGenerator implements SplicingVariantGraphicsGenerator 
                     int variantCrypticAcceptorSiteIdx = splicingParameters.getAcceptorLength() - altMaxIdx - 1;
                     int acceptorDiff = getDiff(variant, acceptorAnchor) - variantCrypticAcceptorSiteIdx;
                     basesChanged = acceptorDiff + splicingParameters.getAcceptorIntronic();
-                    secondary = vmvtGenerator.getAcceptorSequenceRulerAndBarChartWithOffset(refCorrespondingWindow, altBestWindow, acceptorDiff);
+
+                    secondary = vmvtGenerator.getAcceptorSequenceRulerAndBarChartWithOffset(refCorrespondingWindow, altBestWindow, basesChanged);
 
                     GenomicPosition crypticAcceptorPos = GenomicPosition.zeroBased(variant.contig(), variant.strand(),
                             variant.startPosition().shift(splicingParameters.getAcceptorIntronic() - variantCrypticAcceptorSiteIdx - 1))
