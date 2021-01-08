@@ -15,10 +15,11 @@
                             <th>Squirls Score</th>
                         </tr>
                         </thead>
-                        <tbody th:with="maxScore=${squirls_results.maxPathogenicity()}">
+                        <tbody th:with="maxScore=${squirls_results.maxPathogenicity()},maxScoreRounded=${#numbers.formatDecimal(maxScore, 1, 3)}">
                         <tr th:each="txAnn: ${variantAnnotations}"
-                            th:styleappend="${squirls_results.pathogenicityForTranscript(accession_id).orElse(0.) >= maxScore} ? 'color: #black; background-color: #d8ecf6;'"
-                            th:with="accession_id=${txAnn.getTranscript().getAccession()}">
+                            th:styleappend="${scoreRounded == maxScoreRounded} ? 'color: #black; background-color: #d8ecf6;'"
+                            th:with="accession_id=${txAnn.getTranscript().getAccession()},
+                            scoreRounded=${#numbers.formatDecimal(squirls_results.pathogenicityForTranscript(accession_id).orElse(0.), 1, 3)}">
 
                             <td><em th:text="${accession_id}">NM_0012234.5</em></td>
                         <td><span th:remove="tag" th:text="${txAnn.getCDSNTChangeStr()}">c.123A>G</span></td>
@@ -31,7 +32,7 @@
                 </table>
             </div>
             <!-- SPLICING FEATURES TABLE -->
-            <h5 class="effects-title">Squirls features</h5>
+            <span class="effects-title"><a href="https://squirls.readthedocs.io/en/latest/model.html#splice-features">Squirls features</a></span>
             <table class="table table-striped feature-table" th:with="missing='NaN'">
                 <tr>
                     <th>Feature</th>
@@ -89,7 +90,7 @@
         <div class="row">
             <div class="graphics-container">
                 <div class='graphics-title' th:text="${context}">Cryptic acceptor</div>
-                <div class="interpretation" th:if="${basesChanged or agez}"
+                <div class="interpretation" th:if="${basesChanged || agez}"
                      th:with="agez=${#numbers.formatInteger(highest_prediction.featureValue('creates_ag_in_agez').orElse(0.), 1) == 1}">
                     <div th:if="${basesChanged}" th:with="sequenceAdded=${basesChanged < 0}">
                         Using cryptic acceptor site at <em th:text="${crypticCoordinate}">chr1:123,456,789</em>
