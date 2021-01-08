@@ -116,8 +116,8 @@ public class SquirlsDataBuilderTest {
 
     private static final List<Contig> CONTIGS = List.of(
             Contig.unknown(),
-            Contig.of(2, "2", SequenceRole.ASSEMBLED_MOLECULE, "2", AssignedMoleculeType.CHROMOSOME, 100_000, "", "", "chr2"),
-            Contig.of(3, "3", SequenceRole.ASSEMBLED_MOLECULE, "3", AssignedMoleculeType.CHROMOSOME, 200_000, "", "", "chr3"));
+            Contig.of(1, "2", SequenceRole.ASSEMBLED_MOLECULE, "2", AssignedMoleculeType.CHROMOSOME, 100_000, "", "", "chr2"),
+            Contig.of(2, "3", SequenceRole.ASSEMBLED_MOLECULE, "3", AssignedMoleculeType.CHROMOSOME, 200_000, "", "", "chr3"));
 
     private static final GenomicAssembly GENOMIC_ASSEMBLY = DefaultGenomicAssembly.builder().contigs(CONTIGS).build();
 
@@ -190,7 +190,7 @@ public class SquirlsDataBuilderTest {
             }
         }
         assertThat(tms, hasSize(1));
-        assertThat(tms, hasItem(String.join(",", "2", "10000", "20000", "10000", "20000", "TRUE", "adam")));
+        assertThat(tms, hasItem(String.join(",", "1", "10000", "20000", "10000", "20000", "TRUE", "adam")));
 
         String efSql = "select TX_ID, BEGIN, END, EXON_NUMBER from SQUIRLS.EXONS;";
 
