@@ -111,7 +111,7 @@ public class TranscriptModelServiceDb implements TranscriptModelService {
         sanityCheck(dataSource);
         contigIdMap = new HashMap<>();
         for (Contig contig : genomicAssembly.contigs()) {
-            if (contig.isUnknownContig()) continue;
+            if (contig.equals(Contig.unknown())) continue;
 
             contigIdMap.put(contig.name(), contig.id());
             contigIdMap.put(contig.genBankAccession(), contig.id());

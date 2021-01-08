@@ -258,7 +258,7 @@ public class AnnotateVcfCommand extends SquirlsCommand {
     private static Map<String, Contig> prepareContigMap(GenomicAssembly assembly) {
         Map<String, Contig> builder = new HashMap<>();
         for (Contig contig : assembly.contigs()) {
-            if (contig.isUnknownContig()) continue;
+            if (contig.equals(Contig.unknown())) continue;
             builder.put(contig.name(), contig);
             builder.put(contig.genBankAccession(), contig);
             builder.put(contig.refSeqAccession(), contig);
