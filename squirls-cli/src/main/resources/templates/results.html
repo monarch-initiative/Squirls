@@ -56,6 +56,7 @@
 
         .row {
             display: flex;
+            place-content: center;
             padding: 0 1em 0 1em;
         }
 
@@ -81,7 +82,6 @@
 
         .graphics-title {
             text-align: center;
-            text-transform: uppercase;
             font-weight: bold;
         }
 
@@ -118,7 +118,6 @@
         }
 
         .effects-title {
-            text-transform: uppercase;
             font-weight: bold;
             margin: 5px 0 0 0;
         }
@@ -147,7 +146,6 @@
   <div class="container content">
       <header class="underlined">
           <h1><em>Squirls</em> analysis results for <em th:text="${sampleName}">Sample ID</em></h1>
-          <!--    INTRO -->
           <p>
               <em>Squirls</em> is a desktop Java application that performs prediction
               of deleteriousness of genomic variants with respect to mRNA splicing.

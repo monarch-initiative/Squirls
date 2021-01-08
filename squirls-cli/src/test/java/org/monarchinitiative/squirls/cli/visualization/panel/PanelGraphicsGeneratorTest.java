@@ -81,7 +81,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
-import org.monarchinitiative.squirls.cli.data.TestVariant;
 import org.monarchinitiative.squirls.cli.visualization.GraphicsGeneratorTestBase;
 import org.monarchinitiative.squirls.cli.visualization.VisualizableVariantAllele;
 import org.monarchinitiative.squirls.cli.visualization.selector.VisualizationContext;
@@ -92,7 +91,6 @@ import org.monarchinitiative.squirls.core.VariantOnTranscript;
 import org.monarchinitiative.squirls.core.reference.StrandedSequence;
 import org.monarchinitiative.variant.api.GenomicAssembly;
 import org.monarchinitiative.variant.api.GenomicRegion;
-import org.monarchinitiative.variant.api.Strand;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.BufferedWriter;
@@ -123,7 +121,7 @@ public class PanelGraphicsGeneratorTest extends GraphicsGeneratorTestBase {
     @BeforeEach
     public void setUp() {
         super.setUp();
-        generator = new PanelGraphicsGenerator(vmvtGenerator, splicingPwmData, selector, squirlsDataService);
+        generator = new PanelGraphicsGenerator(vmvtGenerator, selector, squirlsDataService, splicingPwmData);
         when(squirlsDataService.genomicAssembly()).thenReturn(null);
     }
 

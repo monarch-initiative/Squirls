@@ -77,15 +77,16 @@
 package org.monarchinitiative.squirls.cli.visualization.panel;
 
 import de.charite.compbio.jannovar.annotation.Annotation;
-import org.monarchinitiative.squirls.cli.visualization.AbstractGraphicsGenerator;
-import org.monarchinitiative.squirls.cli.visualization.MissingFeatureException;
+import org.monarchinitiative.squirls.cli.visualization.SplicingVariantGraphicsGenerator;
 import org.monarchinitiative.squirls.cli.visualization.VisualizableVariantAllele;
 import org.monarchinitiative.squirls.cli.visualization.selector.VisualizationContext;
 import org.monarchinitiative.squirls.cli.visualization.selector.VisualizationContextSelector;
 import org.monarchinitiative.squirls.core.SquirlsDataService;
 import org.monarchinitiative.squirls.core.SquirlsTxResult;
 import org.monarchinitiative.squirls.core.reference.*;
+import org.monarchinitiative.squirls.core.scoring.calculators.ic.SplicingInformationContentCalculator;
 import org.monarchinitiative.variant.api.GenomicPosition;
+import org.monarchinitiative.variant.api.GenomicRegion;
 import org.monarchinitiative.variant.api.Variant;
 import org.monarchinitiative.vmvt.core.VmvtGenerator;
 import org.slf4j.Logger;
@@ -99,25 +100,40 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static org.monarchinitiative.squirls.core.Utils.*;
+
 /**
- * This graphics generator makes graphics for the splice variant. The graphics generation is delegated to the
- * appropriate method of {@link AbstractGraphicsGenerator}.
+ * This graphics generator makes graphics for the splice variant.
  */
-public class PanelGraphicsGenerator extends AbstractGraphicsGenerator {
+public class PanelGraphicsGenerator implements SplicingVariantGraphicsGenerator {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PanelGraphicsGenerator.class);
 
     private static final AnnotationComparator TX_COMPARATOR = new AnnotationComparator();
+
+    private final VmvtGenerator vmvtGenerator;
+
+    private final VisualizationContextSelector contextSelector;
+    private final SquirlsDataService squirlsDataService;
+    private final AlleleGenerator alleleGenerator;
+    private final SplicingParameters splicingParameters;
+    private final SplicingInformationContentCalculator icCalculator;
 
     private final TemplateEngine templateEngine;
 
     private final TranscriptModelLocator locator;
 
     public PanelGraphicsGenerator(VmvtGenerator vmvtGenerator,
-                                  SplicingPwmData splicingPwmData,
                                   VisualizationContextSelector contextSelector,
-                                  SquirlsDataService squirlsDataService) {
-        super(vmvtGenerator, splicingPwmData, contextSelector, squirlsDataService);
+                                  SquirlsDataService squirlsDataService,
+                                  SplicingPwmData splicingPwmData) {
+        this.vmvtGenerator = vmvtGenerator;
+        this.contextSelector = contextSelector;
+        this.squirlsDataService = squirlsDataService;
+
+        this.splicingParameters = splicingPwmData.getParameters();
+        this.alleleGenerator = new AlleleGenerator(splicingParameters);
+        this.icCalculator = new SplicingInformationContentCalculator(splicingPwmData);
         this.locator = new TranscriptModelLocatorNaive(splicingPwmData.getParameters());
 
         ClassLoaderTemplateResolver templateResolver = new ClassLoaderTemplateResolver();
@@ -130,84 +146,174 @@ public class PanelGraphicsGenerator extends AbstractGraphicsGenerator {
         templateEngine.setTemplateResolver(templateResolver);
     }
 
-    @Override
     public String generateGraphics(VisualizableVariantAllele allele) {
+        Context context = new Context();
+        context.setVariable("squirls_results", allele.squirlsResults());
+
+        List<Annotation> annotations = allele.variantAnnotations().getAnnotations().stream()
+                .sorted(TX_COMPARATOR)
+                .collect(Collectors.toList());
+
+        context.setVariable("variantAnnotations", annotations); // for tx table
+
         Optional<SquirlsTxResult> mspOpt = allele.squirlsResults().maxPathogenicityResult();
         if (mspOpt.isEmpty()) {
             return EMPTY_SVG_IMAGE;
         }
 
         SquirlsTxResult highestPrediction = mspOpt.get();
+        context.setVariable("highest_prediction", highestPrediction); // for features table
+
         Optional<TranscriptModel> stOpt = squirlsDataService.getByAccession(highestPrediction.accessionId());
         if (stOpt.isEmpty()) {
-            LOGGER.warn("Could not find transcript {} for variant {}", highestPrediction.accessionId(), allele.genomeVariant());
+            if (LOGGER.isWarnEnabled())
+                LOGGER.warn("Could not find transcript {} for variant {}", highestPrediction.accessionId(), allele.genomeVariant());
             return EMPTY_SVG_IMAGE;
         }
         TranscriptModel transcript = stOpt.get();
 
-        Variant variant = allele.variant();
+
+        Variant variant = allele.variant().withStrand(transcript.strand());
 
         SplicingLocationData locationData = locator.locate(variant, transcript);
         Optional<GenomicPosition> dOpt = locationData.getDonorBoundary();
         Optional<GenomicPosition> aOpt = locationData.getAcceptorBoundary();
 
-        /*
-        To generate graphics, we first determine graphics type (visualization context).
-        Then, we select the relevant parts of the splicing data.
-        Finally, we process the data using appropriate template and return HTML
-         */
-        // 0 - select what visualization context and template name
+        String primary = EMPTY_SVG_IMAGE, secondary = EMPTY_SVG_IMAGE;
+
         String templateName;
-        String graphics;
-        VisualizationContext visualizationContext;
+        VisualizationContext visualizationContext = contextSelector.selectContext(highestPrediction.features());
+        switch (visualizationContext) {
+            case CANONICAL_DONOR:
+            case CRYPTIC_DONOR:
+                templateName = "donor";
+                break;
+            case CANONICAL_ACCEPTOR:
+            case CRYPTIC_ACCEPTOR:
+                templateName = "acceptor";
+                break;
+            case UNKNOWN:
+            default:
+                templateName = "unknown";
+        }
+        context.setVariable("context", visualizationContext.getTitle());
+
         StrandedSequence sequence = fetchSequenceForTranscript(transcript);
         if (sequence == null) {
-            if (LOGGER.isWarnEnabled()) LOGGER.warn("Unable to fetch enough reference sequence for transcript `{}`", transcript.accessionId());
+            if (LOGGER.isWarnEnabled())
+                LOGGER.warn("Unable to fetch enough reference sequence for transcript `{}`", transcript.accessionId());
+            return templateEngine.process(templateName, context);
         }
+
         try {
-            visualizationContext = contextSelector.selectContext(highestPrediction.features());
+            int altMaxIdx;
+            String refAllele, altAllele, refSnippet, altSnippet, altBestWindow, refCorrespondingWindow;
+            GenomicPosition donorAnchor, acceptorAnchor;
             switch (visualizationContext) {
+
                 case CANONICAL_DONOR:
-                    templateName = "donor";
-                    graphics = makeCanonicalDonorContextGraphics(variant, transcript, sequence, dOpt.orElse(null));
+                    // cannot draw anything without knowing the donor border
+                    if (dOpt.isEmpty()) break;
+
+                    donorAnchor = dOpt.get();
+                    GenomicRegion donorSiteRegion = alleleGenerator.makeDonorInterval(donorAnchor);
+
+                    // cannot draw if variant does not overlap with the site
+                    if (!variant.overlapsWith(donorSiteRegion)) break;
+
+                    refAllele = alleleGenerator.getDonorSiteSnippet(donorAnchor, sequence);
+                    if (refAllele == null) break;
+
+                    // primary - donor logo, ruler, and bar chart
+                    // secondary - donor distribution SVG
+                    altAllele = alleleGenerator.getDonorSiteWithAltAllele(donorAnchor, variant, sequence);
+                    primary = vmvtGenerator.getDonorSequenceLogoRulerAndBarChart(refAllele, altAllele);
+                    secondary = vmvtGenerator.getDonorDistributionSvg(refAllele, altAllele);
                     break;
                 case CANONICAL_ACCEPTOR:
-                    templateName = "acceptor";
-                    graphics = makeCanonicalAcceptorContextGraphics(variant, transcript, sequence, aOpt.orElse(null));
+                    // cannot draw anything without knowing the acceptor border
+                    if (aOpt.isEmpty()) break;
+
+                    acceptorAnchor = aOpt.get();
+                    GenomicRegion acceptorSiteRegion = alleleGenerator.makeAcceptorInterval(acceptorAnchor);
+
+                    // cannot draw if variant does not overlap with the site
+                    if (!variant.overlapsWith(acceptorSiteRegion)) break;
+
+                    refAllele = alleleGenerator.getAcceptorSiteSnippet(acceptorAnchor, sequence);
+                    if (refAllele==null) break;
+
+                    // primary - acceptor logo, ruler, and bar chart
+                    // secondary - acceptor distribution SVG
+                    altAllele = alleleGenerator.getAcceptorSiteWithAltAllele(acceptorAnchor, variant, sequence);
+                    primary = vmvtGenerator.getAcceptorSequenceLogoRulerAndBarChart(refAllele, altAllele);
+                    secondary = vmvtGenerator.getAcceptorDistributionSvg(refAllele, altAllele);
                     break;
                 case CRYPTIC_DONOR:
-                    templateName = "donor";
-                    graphics = makeCrypticDonorContextGraphics(variant, transcript, sequence, dOpt.orElse(null));
+                    refSnippet = alleleGenerator.getDonorNeighborSnippet(variant, sequence, variant.ref());
+                    altSnippet = alleleGenerator.getDonorNeighborSnippet(variant, sequence, variant.alt());
+                    if (refSnippet==null || altSnippet==null) break;
+
+                    List<Double> altDonorScores = slidingWindow(altSnippet, splicingParameters.getDonorLength())
+                            .map(icCalculator::getSpliceDonorScore)
+                            .collect(Collectors.toList());
+
+                    altMaxIdx = argmax(altDonorScores);
+
+                    if (dOpt.isEmpty()) break;
+
+                    donorAnchor = dOpt.get();
+                    refAllele = alleleGenerator.getDonorSiteSnippet(donorAnchor, sequence);
+                    altAllele = alleleGenerator.getDonorSiteWithAltAllele(donorAnchor, variant, sequence);
+                    primary = vmvtGenerator.getDonorSequenceLogoRulerAndBarChart(refAllele, altAllele);
+
+                    altBestWindow = altSnippet.substring(altMaxIdx, altMaxIdx + splicingParameters.getDonorLength());
+                    refCorrespondingWindow = refSnippet.substring(altMaxIdx, altMaxIdx + splicingParameters.getDonorLength());
+
+                    int donorDiff = getDiff(variant, donorAnchor) - altMaxIdx;
+                    secondary = vmvtGenerator.getDonorSequenceRulerAndBarChartWithOffset(refCorrespondingWindow, altBestWindow, donorDiff);
                     break;
                 case CRYPTIC_ACCEPTOR:
-                    templateName = "acceptor";
-                    graphics = makeCrypticAcceptorContextGraphics(variant, transcript, sequence, aOpt.orElse(null));
+                    refSnippet = alleleGenerator.getAcceptorNeighborSnippet(variant, sequence, variant.ref());
+                    altSnippet = alleleGenerator.getAcceptorNeighborSnippet(variant, sequence, variant.alt());
+                    if (refSnippet==null || altSnippet==null) break;
+
+                    List<Double> altAcceptorScores = slidingWindow(altSnippet, splicingParameters.getAcceptorLength())
+                            .map(icCalculator::getSpliceAcceptorScore)
+                            .collect(Collectors.toList());
+
+                    altMaxIdx = argmax(altAcceptorScores);
+
+                    if (aOpt.isEmpty()) break;
+
+                    acceptorAnchor = aOpt.get();
+                    refAllele = alleleGenerator.getAcceptorSiteSnippet(acceptorAnchor, sequence);
+                    altAllele = alleleGenerator.getAcceptorSiteWithAltAllele(acceptorAnchor, variant, sequence);
+                    primary = vmvtGenerator.getAcceptorSequenceLogoRulerAndBarChart(refAllele, altAllele);
+
+                    altBestWindow = altSnippet.substring(altMaxIdx, altMaxIdx + splicingParameters.getAcceptorLength());
+                    refCorrespondingWindow = refSnippet.substring(altMaxIdx, altMaxIdx + splicingParameters.getAcceptorLength());
+
+                    int acceptorDiff = getDiff(variant, acceptorAnchor) - altMaxIdx;
+                    secondary = vmvtGenerator.getAcceptorSequenceRulerAndBarChartWithOffset(refCorrespondingWindow, altBestWindow, acceptorDiff);
                     break;
+                case UNKNOWN:
                 default:
                     LOGGER.warn("Unable to generate graphics for {} context", visualizationContext.getTitle());
-                    return EMPTY_SVG_IMAGE;
+                    return templateEngine.process(templateName, context);
             }
-        } catch (MissingFeatureException e) {
-            LOGGER.warn("Cannot generate graphics for {}. {}", allele.genomeVariant(), e.getMessage());
-            return EMPTY_SVG_IMAGE;
         } catch (Exception e) {
-            // TODO - resolve
             LOGGER.warn("Cannot generate graphics for {}. {}", allele.genomeVariant(), e.getMessage());
-            return EMPTY_SVG_IMAGE;
+            return templateEngine.process(templateName, context);
         }
 
-        // 1 - prepare context for the template
-        Context context = new Context();
-        List<Annotation> annotations = allele.variantAnnotations().getAnnotations().stream()
-                .sorted(TX_COMPARATOR)
-                .collect(Collectors.toList());
-
-        context.setVariable("variantAnnotations", annotations); // for tx table
-        context.setVariable("highest_prediction", highestPrediction); // for features
-        context.setVariable("squirls_results", allele.squirlsResults());
-        context.setVariable("graphics", graphics);
+        context.setVariable("primary", primary);
+        context.setVariable("secondary", secondary);
 
         return templateEngine.process(templateName, context);
     }
 
+    private StrandedSequence fetchSequenceForTranscript(TranscriptModel transcript) {
+        return squirlsDataService.sequenceForRegion(transcript.withPadding(100, 100));
+    }
 }

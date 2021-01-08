@@ -188,7 +188,7 @@ public class TestDataSourceConfig {
                                                                              SplicingPwmData splicingPwmData,
                                                                              VisualizationContextSelector visualizationContextSelector,
                                                                              SquirlsDataService squirlsDataService) {
-        return new PanelGraphicsGenerator(vmvtGenerator, splicingPwmData, visualizationContextSelector, squirlsDataService);
+        return new PanelGraphicsGenerator(vmvtGenerator, visualizationContextSelector, squirlsDataService, splicingPwmData);
     }
 
     @Bean

@@ -1,14 +1,15 @@
-<div th:remove="tag" xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
-    <div class="row">
-        <div class="col-md-12">
-            <!-- THE TRANSCRIPT TABLE -->
-            The variant overlaps with <span th:remove="tag" th:text="${#lists.size(variantAnnotations)}">1</span>
-            <span th:remove="tag" th:text="${#lists.size(variantAnnotations) > 1} ? 'transcripts' : 'transcript'">transcript</span>:
-            <div class="transcript-list">
-                <table class="table table-striped">
-                    <thead>
-                    <tr>
-                        <th>Transcript Accession</th>
+<div th:remove="tag" lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+    <div class="variant-box">
+        <div class="row">
+            <div class="col-md-12">
+                <!-- THE TRANSCRIPT TABLE -->
+                The variant overlaps with <span th:remove="tag" th:text="${#lists.size(variantAnnotations)}">1</span>
+                <span th:remove="tag" th:text="${#lists.size(variantAnnotations) > 1} ? 'transcripts' : 'transcript'">transcript</span>:
+                <div class="transcript-list">
+                    <table class="table table-striped">
+                        <thead>
+                        <tr>
+                            <th>Transcript Accession</th>
                         <th>CDS Change</th>
                         <th>Variant Effect</th>
                         <th>Squirls Score</th>
@@ -16,7 +17,7 @@
                     </thead>
                     <tbody th:with="maxScore=${squirls_results.maxPathogenicity()}">
                     <tr th:each="txAnn: ${variantAnnotations}"
-                        th:styleappend="${squirls_results.pathogenicityForTranscript(accession_id).orElse(0.) >= maxScore} ? 'color: #black; background-color: #d8ecf6;'"
+                        th:styleappend="${squirls_results.pathogenicityForTranscript(accession_id).orElse(0.) >= maxScore} ? 'color: black; background-color: #d8ecf6;'"
                         th:with="accession_id=${txAnn.getTranscript().getAccession()}">
 
                         <td><em th:text="${accession_id}">NM_0012234.5</em></td>
@@ -83,11 +84,20 @@
                     </td>
                 </tr>
             </table>
+            </div>
+        </div>
+        <div class="row">
+            <div class="graphics-container">
+                <div class='graphics-title' th:text="${context}">Cryptic donor</div>
+                <div class="graphics-content">
+                    <div class="graphics-subcontent" th:utext="${primary}">
+                        <svg height="200" style="border: solid black;" width="300" xmlns="http://www.w3.org/2000/svg"/>
+                    </div>
+                    <div class="graphics-subcontent" th:utext="${secondary}">
+                        <svg height="200" style="border: solid black;" width="300" xmlns="http://www.w3.org/2000/svg"/>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-</div>
-<div class="row">
-    <div class="col-md-12">
-        <div class="donor" th:utext="${graphics}"></div>
-    </div>
-</div>
 </div>

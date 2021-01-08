@@ -77,6 +77,8 @@
 package org.monarchinitiative.squirls.cli.visualization.selector;
 
 import org.monarchinitiative.squirls.cli.visualization.MissingFeatureException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Map;
 import java.util.Set;
@@ -84,6 +86,7 @@ import java.util.stream.Collectors;
 
 public class SimpleVisualizationContextSelector implements VisualizationContextSelector {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(SimpleVisualizationContextSelector.class);
 
     /**
      * By default, two double precision numbers must be this close in order to consider them to be equal.
@@ -107,14 +110,16 @@ public class SimpleVisualizationContextSelector implements VisualizationContextS
      * @return {@link VisualizationContext} for the variant
      */
     @Override
-    public VisualizationContext selectContext(Map<String, Double> features) throws MissingFeatureException {
+    public VisualizationContext selectContext(Map<String, Double> features) {
         // check that we have all the necessary features
         if (!features.keySet().containsAll(requiredFeatures)) {
             final String missingFeatures = requiredFeatures.stream()
                     .filter(f -> !features.containsKey(f))
                     .sorted()
                     .collect(Collectors.joining(",", "[", "]"));
-            throw new MissingFeatureException(String.format("Missing features `%s`", missingFeatures));
+            if (LOGGER.isWarnEnabled())
+                LOGGER.warn("Missing features `{}`", missingFeatures);
+            return VisualizationContext.UNKNOWN;
         }
 
         double canonicalDonor = features.get("canonical_donor");
