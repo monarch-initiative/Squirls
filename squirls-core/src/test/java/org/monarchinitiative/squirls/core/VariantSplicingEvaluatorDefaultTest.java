@@ -123,11 +123,11 @@ public class VariantSplicingEvaluatorDefaultTest {
 
     @BeforeAll
     public static void beforeAll() {
-        Contig chr9 = Contig.of(9, "9", SequenceRole.ASSEMBLED_MOLECULE, "9", AssignedMoleculeType.CHROMOSOME, 141_213_431,
+        Contig chr9 = Contig.of(1, "9", SequenceRole.ASSEMBLED_MOLECULE, "9", AssignedMoleculeType.CHROMOSOME, 141_213_431,
                 "CM000671.1", "NC_000009.11", "chr9");
         assembly = DefaultGenomicAssembly.builder().name("GRCh37.custom").organismName("Homo sapiens (human)")
                 .taxId("9606").submitter("Me").date("2020-01-04").genBankAccession("GB1").refSeqAccession("RS1")
-                .contigs(List.of(Contig.unknown(), chr9)).build();
+                .contigs(List.of(chr9)).build();
         char[] chars = new char[136_230_000 - 136_210_000 + 1];
         Arrays.fill(chars, 'A'); // the sequence does not really matter since we use mocks
         sequence = StrandedSequence.of(chr9, Strand.POSITIVE, CoordinateSystem.ONE_BASED,
