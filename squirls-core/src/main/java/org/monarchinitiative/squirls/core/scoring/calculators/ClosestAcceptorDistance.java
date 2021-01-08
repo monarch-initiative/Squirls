@@ -76,6 +76,7 @@
 
 package org.monarchinitiative.squirls.core.scoring.calculators;
 
+import org.monarchinitiative.squirls.core.Utils;
 import org.monarchinitiative.squirls.core.reference.StrandedSequence;
 import org.monarchinitiative.squirls.core.reference.TranscriptModel;
 import org.monarchinitiative.variant.api.GenomicPosition;
@@ -87,7 +88,7 @@ import org.slf4j.LoggerFactory;
 import java.util.Comparator;
 import java.util.Optional;
 
-public class ClosestAcceptorDistance extends BaseDistanceCalculator {
+public class ClosestAcceptorDistance implements FeatureCalculator {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ClosestAcceptorDistance.class);
 
@@ -106,6 +107,6 @@ public class ClosestAcceptorDistance extends BaseDistanceCalculator {
             return Double.NaN;
         }
 
-        return getDiff(variant, closestPosition.get());
+        return Utils.getDiff(variant, closestPosition.get());
     }
 }

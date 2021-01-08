@@ -80,7 +80,7 @@ import org.monarchinitiative.squirls.cli.visualization.selector.VisualizationCon
 import org.monarchinitiative.squirls.cli.visualization.selector.VisualizationContextSelector;
 import org.monarchinitiative.squirls.core.SquirlsDataService;
 import org.monarchinitiative.squirls.core.reference.*;
-import org.monarchinitiative.squirls.core.scoring.Utils;
+import org.monarchinitiative.squirls.core.Utils;
 import org.monarchinitiative.squirls.core.scoring.calculators.ic.SplicingInformationContentCalculator;
 import org.monarchinitiative.variant.api.GenomicPosition;
 import org.monarchinitiative.variant.api.GenomicRegion;

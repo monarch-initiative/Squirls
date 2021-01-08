@@ -76,6 +76,7 @@
 
 package org.monarchinitiative.squirls.core.scoring.calculators;
 
+import org.monarchinitiative.squirls.core.Utils;
 import org.monarchinitiative.squirls.core.reference.StrandedSequence;
 import org.monarchinitiative.squirls.core.reference.TranscriptModel;
 import org.monarchinitiative.variant.api.GenomicPosition;
@@ -93,7 +94,7 @@ import java.util.Optional;
  * A runtime exception is thrown if the class is used to calculate distance to donor site with respect to single-exon
  * transcript.
  */
-public class ClosestDonorDistance extends BaseDistanceCalculator {
+public class ClosestDonorDistance implements FeatureCalculator {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ClosestDonorDistance.class);
 
@@ -112,6 +113,6 @@ public class ClosestDonorDistance extends BaseDistanceCalculator {
             return Double.NaN;
         }
 
-        return getDiff(variant, closestPosition.get());
+        return Utils.getDiff(variant, closestPosition.get());
     }
 }
