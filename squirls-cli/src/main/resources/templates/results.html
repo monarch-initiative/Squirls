@@ -13,11 +13,13 @@
         }
 
         h1 {
-            font-size: 24px;
+            font-size: 28px;
+            font-weight: bold;
         }
 
         h2 {
             font-size: 20px;
+            font-weight: bold;
         }
 
         h3 {
@@ -235,6 +237,9 @@
                         Pathogenicity:
                         <b th:text="${#numbers.formatDecimal(variant.getMaxPathogenicity(), 1, 3)}">0.89</b>
                     </div>
+                    <!-- <div class="col-md-4"> -->
+                        <!-- <span th:remove="tag" th:text="${variant_is.index + 1}">1</span> -->
+                    <!-- </div> -->
                 </div>
             </div>
             <div class="panel-body">
