@@ -160,24 +160,28 @@ public class PanelGraphicsGenerator extends AbstractGraphicsGenerator {
         String templateName;
         String graphics;
         VisualizationContext visualizationContext;
+        StrandedSequence sequence = fetchSequenceForTranscript(transcript);
+        if (sequence == null) {
+            if (LOGGER.isWarnEnabled()) LOGGER.warn("Unable to fetch enough reference sequence for transcript `{}`", transcript.accessionId());
+        }
         try {
             visualizationContext = contextSelector.selectContext(highestPrediction.features());
             switch (visualizationContext) {
                 case CANONICAL_DONOR:
                     templateName = "donor";
-                    graphics = makeCanonicalDonorContextGraphics(variant, transcript, dOpt.orElse(null));
-                    break;
-                case CRYPTIC_DONOR:
-                    templateName = "donor";
-                    graphics = makeCrypticDonorContextGraphics(variant, transcript, dOpt.orElse(null));
+                    graphics = makeCanonicalDonorContextGraphics(variant, transcript, sequence, dOpt.orElse(null));
                     break;
                 case CANONICAL_ACCEPTOR:
                     templateName = "acceptor";
-                    graphics = makeCanonicalAcceptorContextGraphics(variant, transcript, aOpt.orElse(null));
+                    graphics = makeCanonicalAcceptorContextGraphics(variant, transcript, sequence, aOpt.orElse(null));
+                    break;
+                case CRYPTIC_DONOR:
+                    templateName = "donor";
+                    graphics = makeCrypticDonorContextGraphics(variant, transcript, sequence, dOpt.orElse(null));
                     break;
                 case CRYPTIC_ACCEPTOR:
                     templateName = "acceptor";
-                    graphics = makeCrypticAcceptorContextGraphics(variant, transcript, aOpt.orElse(null));
+                    graphics = makeCrypticAcceptorContextGraphics(variant, transcript, sequence, aOpt.orElse(null));
                     break;
                 default:
                     LOGGER.warn("Unable to generate graphics for {} context", visualizationContext.getTitle());

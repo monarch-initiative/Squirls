@@ -609,7 +609,7 @@ class Transcripts {
                 5_246_693, 5_248_301, 5_246_693, 5_248_301, "NM_000518.4", "HBB",
                 List.of(GenomicRegion.zeroBased(contig, 5_246_693, 5_246_956),
                         GenomicRegion.zeroBased(contig, 5_247_806, 5_248_029),
-                        GenomicRegion.zeroBased(contig, 5_248_159, 5_248_301)));
+                        GenomicRegion.zeroBased(contig, 5_248_159, 5_248_301))).withStrand(Strand.NEGATIVE);
 //        return SplicingTranscript.builder()
 //                .setAccessionId("NM_000518.4")
 //                .setCoordinates(new GenomeInterval(rd, Strand.FWD, 11, 5_246_694, 5_248_301, PositionType.ONE_BASED).withStrand(Strand.REV))

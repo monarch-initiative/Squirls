@@ -181,8 +181,9 @@ public abstract class AbstractGraphicsGenerator implements SplicingVariantGraphi
      * <ol>
      *     <li>primary graphics:
      *     <ul>
-     *         <li>sequence ruler</li>
-     *         <li>sequence trekker</li>
+     *         <li>donor logo</li>
+     *         <li>ruler</li>
+     *         <li>bar chart</li>
      *     </ul>
      *     </li>
      *     <li>secondary graphics:
@@ -196,14 +197,11 @@ public abstract class AbstractGraphicsGenerator implements SplicingVariantGraphi
      */
     protected String makeCanonicalDonorContextGraphics(Variant variant,
                                                        TranscriptModel transcript,
+                                                       StrandedSequence sequence,
                                                        GenomicPosition donorAnchor) {
         VisualizationContext context = VisualizationContext.CANONICAL_DONOR;
 
-        StrandedSequence sequence = fetchSequenceForTranscript(transcript);
-        if (sequence == null) {
-            return EMPTY_SVG_IMAGE;
-        }
-
+        variant = variant.withStrand(transcript.strand());
         // Overlaps with canonical donor site?
         if (donorAnchor != null) {
             GenomicRegion canonicalDonorInterval = alleleGenerator.makeDonorInterval(donorAnchor);
@@ -212,30 +210,32 @@ public abstract class AbstractGraphicsGenerator implements SplicingVariantGraphi
                 if (refAllele != null) {
                     String altAllele = alleleGenerator.getDonorSiteWithAltAllele(donorAnchor, variant, sequence);
 
-                    StringBuilder graphics = new StringBuilder();
-                    // add title
-                    graphics.append("<div class=\"graphics-container\">")
-                            .append("<div class=\"graphics-title\">").append(context.getTitle()).append("</div>")
-                            .append("<div class=\"graphics-content\">");
+                    // primary - donor logo, ruler, and bar chart
+                    // secondary - donor distribution SVG
+                    String primary = vmvtGenerator.getDonorSequenceLogoRulerAndBarChart(refAllele, altAllele);
+                    String secondary = vmvtGenerator.getDonorDistributionSvg(refAllele, altAllele);
 
-                    // primary - add ruler and trekker
-                    graphics.append("<div class=\"graphics-subcontent\">")
-                            .append(vmvtGenerator.getDonorIcBarsWithRi(refAllele, altAllele))
-                            .append("</div>");
 
-                    // secondary - add distribution
-                    graphics.append("<div class=\"graphics-subcontent\">")
-                            .append(vmvtGenerator.getDonorDistributionSvg(refAllele, altAllele))
-                            .append("</div>");
+                    return new StringBuilder()
+                            .append("<div class=\"graphics-container\">")
+                            .append("<div class=\"graphics-title\">")
 
-                    // close tags
-                    return graphics.append("</div>") // graphics-content
+                            .append(context.getTitle()).append("</div>")
+
+                            .append("<div class=\"graphics-content\">")
+                            .append("<div class=\"graphics-subcontent\">")
+                            .append(primary)
+                            .append("</div>")
+                            .append("<div class=\"graphics-subcontent\">")
+                            .append(secondary)
+                            .append("</div>")
+                            .append("</div>") // graphics-content
                             .append("</div>") // graphics-container
                             .toString();
-
                 } else {
                     // we cannot set the primary graphics here
-                    LOGGER.debug("Unable to get sequence for the canonical donor site `{}` for variant `{}`",
+                    if (LOGGER.isDebugEnabled())
+                        LOGGER.debug("Unable to get sequence for the canonical donor site `{}` for variant `{}`",
                             canonicalDonorInterval, variant);
                 }
             }
@@ -250,8 +250,9 @@ public abstract class AbstractGraphicsGenerator implements SplicingVariantGraphi
      * <ol>
      *     <li>primary graphics:
      *     <ul>
-     *         <li>sequence ruler</li>
-     *         <li>sequence trekker</li>
+     *      <li>donor logo</li>
+     *      <li>ruler</li>
+     *      <li>bar chart</li>
      *     </ul>
      *     </li>
      *     <li>secondary graphics:
@@ -265,14 +266,11 @@ public abstract class AbstractGraphicsGenerator implements SplicingVariantGraphi
      */
     protected String makeCanonicalAcceptorContextGraphics(Variant variant,
                                                           TranscriptModel transcript,
+                                                          StrandedSequence sequence,
                                                           GenomicPosition acceptorAnchor) {
         VisualizationContext context = VisualizationContext.CANONICAL_ACCEPTOR;
 
-        StrandedSequence sequence = fetchSequenceForTranscript(transcript);
-        if (sequence == null) {
-            return EMPTY_SVG_IMAGE;
-        }
-
+        variant = variant.withStrand(transcript.strand());
         // Overlaps with canonical acceptor site?
         if (acceptorAnchor != null) {
             GenomicRegion canonicalAcceptorInterval = alleleGenerator.makeAcceptorInterval(acceptorAnchor);
@@ -281,30 +279,27 @@ public abstract class AbstractGraphicsGenerator implements SplicingVariantGraphi
                 if (refAllele != null) {
                     String altAllele = alleleGenerator.getAcceptorSiteWithAltAllele(acceptorAnchor, variant, sequence);
 
-                    StringBuilder graphics = new StringBuilder();
-                    // add title
-                    graphics.append("<div class=\"graphics-container\">")
-                            .append("<div class=\"graphics-title\">").append(context.getTitle()).append("</div>")
-                            .append("<div class=\"graphics-content\">");
-
-                    // primary - add ruler and trekker
-                    graphics.append("<div class=\"graphics-subcontent\">")
-                            .append(vmvtGenerator.getAcceptorIcBarsWithRi(refAllele, altAllele))
-                            .append("</div>");
-
-                    // secondary - add distribution
-                    graphics.append("<div class=\"graphics-subcontent\">")
-                            .append(vmvtGenerator.getAcceptorDistributionSvg(refAllele, altAllele))
-                            .append("</div>");
-
-                    // close tags
-                    return graphics.append("</div>") // graphics-content
+                    String primary = vmvtGenerator.getAcceptorIcBarsWithRi(refAllele, altAllele);
+                    String secondary = vmvtGenerator.getAcceptorDistributionSvg(refAllele, altAllele);
+                    return new StringBuilder()
+                            .append("<div class=\"graphics-container\">")
+                            .append("<div class=\"graphics-title\">")
+                            .append(context.getTitle()).append("</div>")
+                            .append("<div class=\"graphics-content\">")
+                            .append("<div class=\"graphics-subcontent\">")
+                            .append(primary)
+                            .append("</div>")
+                            .append("<div class=\"graphics-subcontent\">")
+                            .append(secondary)
+                            .append("</div>")
+                            .append("</div>") // graphics-content
                             .append("</div>") // graphics-container
                             .toString();
                 } else {
                     // we cannot set the primary graphics here
-                    LOGGER.debug("Unable to get sequence for the canonical acceptor site `{}` for variant `{}`",
-                            canonicalAcceptorInterval, variant);
+                    if (LOGGER.isDebugEnabled())
+                        LOGGER.debug("Unable to get sequence for the canonical acceptor site `{}` for variant `{}`",
+                                canonicalAcceptorInterval, variant);
                 }
             }
         }
@@ -318,13 +313,15 @@ public abstract class AbstractGraphicsGenerator implements SplicingVariantGraphi
      * <ol>
      *     <li>primary graphics:
      *     <ul>
+     *         <li>sequence logo</li>
      *         <li>sequence ruler</li>
-     *         <li>sequence trekker</li>
+     *         <li>bar chart</li>
      *     </ul>
      *     </li>
-     *     <li>secondary graphics:
+     *     <li>secondary graphics that depicts the cryptic position:
      *     <ul>
-     *         <li>sequence walker of canonical alt sequence vs. sequence walker of cryptic alt sequence</li>
+     *         <li>sequence ruler with offset</li>
+     *         <li>bar char</li>
      *     </ul>
      *     </li>
      * </ol>
@@ -333,20 +330,21 @@ public abstract class AbstractGraphicsGenerator implements SplicingVariantGraphi
      */
     protected String makeCrypticDonorContextGraphics(Variant variant,
                                                      TranscriptModel transcript,
-                                                     GenomicPosition donorAnchor) {
+                                                     StrandedSequence sequence,
+                                                     GenomicPosition anchor) {
+
         VisualizationContext context = VisualizationContext.CRYPTIC_DONOR;
 
-        StrandedSequence sequence = fetchSequenceForTranscript(transcript);
         if (sequence == null) {
             return EMPTY_SVG_IMAGE;
         }
 
-        GenomicRegion variantRegion = variant.withStrand(transcript.strand());
+        variant = variant.withStrand(transcript.strand());
 
         // find index of the position that yields the highest score
         // get the corresponding ref & alt snippets
-        String refSnippet = alleleGenerator.getDonorNeighborSnippet(variantRegion, sequence, variant.ref());
-        String altSnippet = alleleGenerator.getDonorNeighborSnippet(variantRegion, sequence, variant.alt());
+        String refSnippet = alleleGenerator.getDonorNeighborSnippet(variant, sequence, variant.ref());
+        String altSnippet = alleleGenerator.getDonorNeighborSnippet(variant, sequence, variant.alt());
         if (refSnippet == null || altSnippet == null) {
             // nothing more to be done
             return EMPTY_SVG_IMAGE;
@@ -358,28 +356,30 @@ public abstract class AbstractGraphicsGenerator implements SplicingVariantGraphi
 
         int altMaxIdx = Utils.argmax(altDonorScores);
 
-        // primary - trekker comparing the best ALT window with the corresponding REF window
-        String altBestWindow = altSnippet.substring(altMaxIdx, altMaxIdx + splicingParameters.getDonorLength());
-        String refCorrespondingWindow = refSnippet.substring(altMaxIdx, altMaxIdx + splicingParameters.getDonorLength());
-        String trekker = vmvtGenerator.getDonorIcBarsWithRi(refCorrespondingWindow, altBestWindow);
-
-        // secondary - sequence walkers comparing the best ALT window with the canonical donor snippet
-        // TODO - update with the other IC bars
-        String walkers = "";
-        if (donorAnchor != null) {
+        // primary - canonical bars
+        // secondary - crypticBars comparing the best ALT window with the corresponding REF window
+        String primary, secondary;
+        if (anchor != null) {
             // we have the anchor, thus let's make the graphics
-            String canonicalDonorSnippet = alleleGenerator.getDonorSiteWithAltAllele(donorAnchor, variant, sequence);
-//            walkers = vmvtGenerator.getDonorCanonicalCryptic(canonicalDonorSnippet, altBestWindow);
+            String canonicalRefAllele = alleleGenerator.getDonorSiteSnippet(anchor, sequence);
+            String canonicalAltAllele = alleleGenerator.getDonorSiteWithAltAllele(anchor, variant, sequence);
+            primary = vmvtGenerator.getDonorSequenceLogoRulerAndBarChart(canonicalRefAllele, canonicalAltAllele);
+
+            String altBestWindow = altSnippet.substring(altMaxIdx, altMaxIdx + splicingParameters.getDonorLength());
+            String refCorrespondingWindow = refSnippet.substring(altMaxIdx, altMaxIdx + splicingParameters.getDonorLength());
+            int diff = Utils.getDiff(variant, anchor) - 1; // TODO - remove the normalizing constant
+            secondary = vmvtGenerator.getDonorSequenceRulerAndBarChartWithOffset(refCorrespondingWindow, altBestWindow, diff);
         } else {
             // there is no anchor, this happens in single-exon transcripts
             if (!transcript.introns().isEmpty()) {
                 // however, complain if this is not a single-exon transcript!
                 LOGGER.warn("Did not find donor site in metadata while but the transcript has {} intron(s)", transcript.intronCount());
             }
-            walkers = EMPTY_SVG_IMAGE;
+            primary = EMPTY_SVG_IMAGE;
+            secondary = EMPTY_SVG_IMAGE;
         }
 
-        return makeCrypticContextGraphics(context.getTitle(), trekker, walkers);
+        return makeCrypticContextGraphics(context.getTitle(), primary, secondary);
     }
 
     /**
@@ -404,20 +404,20 @@ public abstract class AbstractGraphicsGenerator implements SplicingVariantGraphi
      */
     protected String makeCrypticAcceptorContextGraphics(Variant variant,
                                                         TranscriptModel transcript,
-                                                        GenomicPosition acceptorAnchor) {
+                                                        StrandedSequence sequence,
+                                                        GenomicPosition anchor) {
         VisualizationContext context = VisualizationContext.CRYPTIC_ACCEPTOR;
 
-        StrandedSequence sequence = fetchSequenceForTranscript(transcript);
         if (sequence == null) {
             return EMPTY_SVG_IMAGE;
         }
 
-        GenomicRegion variantRegion = variant.withStrand(transcript.strand());
+        variant = variant.withStrand(transcript.strand());
 
         // find index of the position that yields the highest score
         // get the corresponding ref & alt snippets
-        String refSnippet = alleleGenerator.getAcceptorNeighborSnippet(variantRegion, sequence, variant.ref());
-        String altSnippet = alleleGenerator.getAcceptorNeighborSnippet(variantRegion, sequence, variant.alt());
+        String refSnippet = alleleGenerator.getAcceptorNeighborSnippet(variant, sequence, variant.ref());
+        String altSnippet = alleleGenerator.getAcceptorNeighborSnippet(variant, sequence, variant.alt());
         if (refSnippet == null || altSnippet == null) {
             // nothing more to be done
             return EMPTY_SVG_IMAGE;
@@ -429,29 +429,30 @@ public abstract class AbstractGraphicsGenerator implements SplicingVariantGraphi
 
         int altMaxIdx = Utils.argmax(altAcceptorScores);
 
-        // primary - trekker comparing the best ALT window with the corresponding REF window
-        String altBestWindow = altSnippet.substring(altMaxIdx, altMaxIdx + splicingParameters.getAcceptorLength());
-        String refCorrespondingWindow = refSnippet.substring(altMaxIdx, altMaxIdx + splicingParameters.getAcceptorLength());
-        String trekker = vmvtGenerator.getAcceptorIcBarsWithRi(refCorrespondingWindow, altBestWindow);
-
-        // secondary - sequence walkers comparing the best ALT window with the canonical acceptor snippet
-        // TODO - update with the other IC bars
-        String walkers = "";
-        if (acceptorAnchor != null) {
+        // primary - canonical bars
+        // secondary - crypticBars comparing the best ALT window with the corresponding REF window
+        String primary, secondary;
+        if (anchor != null) {
             // we have the anchor, thus let's make the graphics
-            String canonicalAcceptorSnippet = alleleGenerator.getAcceptorSiteWithAltAllele(acceptorAnchor, variant, sequence);
-//            walkers = vmvtGenerator.getAcceptorCanonicalCryptic(canonicalAcceptorSnippet, altBestWindow);
+            String canonicalRefAllele = alleleGenerator.getAcceptorSiteSnippet(anchor, sequence);
+            String canonicalAltAllele = alleleGenerator.getAcceptorSiteWithAltAllele(anchor, variant, sequence);
+            primary = vmvtGenerator.getAcceptorSequenceLogoRulerAndBarChart(canonicalRefAllele, canonicalAltAllele);
+
+            String altBestWindow = altSnippet.substring(altMaxIdx, altMaxIdx + splicingParameters.getAcceptorLength());
+            String refCorrespondingWindow = refSnippet.substring(altMaxIdx, altMaxIdx + splicingParameters.getAcceptorLength());
+            int diff = Utils.getDiff(variant, anchor) + 2; // TODO - remove the normalizing constant
+            secondary = vmvtGenerator.getAcceptorSequenceRulerAndBarChartWithOffset(refCorrespondingWindow, altBestWindow, diff);
         } else {
             // there is no anchor, this happens in single-exon transcripts
             if (!transcript.introns().isEmpty()) {
-                // however, complain if this is not single-exon transcript!
-                LOGGER.warn("Did not find acceptor site in metadata while but the transcript has {} intron(s)",
-                        transcript.intronCount());
+                // however, complain if this is not a single-exon transcript!
+                LOGGER.warn("Did not find donor site in metadata while but the transcript has {} intron(s)", transcript.intronCount());
             }
-            walkers = null;
+            primary = EMPTY_SVG_IMAGE;
+            secondary = EMPTY_SVG_IMAGE;
         }
 
-        return makeCrypticContextGraphics(context.getTitle(), trekker, walkers);
+        return makeCrypticContextGraphics(context.getTitle(), primary, secondary);
     }
 
     // TODO - resolve
@@ -482,7 +483,7 @@ public abstract class AbstractGraphicsGenerator implements SplicingVariantGraphi
 //        return EMPTY_SVG_IMAGE;
 //    }
 
-    private StrandedSequence fetchSequenceForTranscript(TranscriptModel transcript) {
+    protected StrandedSequence fetchSequenceForTranscript(TranscriptModel transcript) {
         return squirlsDataService.sequenceForRegion(transcript.withPadding(100, 100));
     }
 }
