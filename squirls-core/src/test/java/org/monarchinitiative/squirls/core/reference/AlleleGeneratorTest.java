@@ -80,6 +80,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.monarchinitiative.squirls.core.TestContig;
 import org.monarchinitiative.squirls.core.TestDataSourceConfig;
 import org.monarchinitiative.variant.api.*;
 import org.monarchinitiative.variant.api.impl.DefaultVariant;
@@ -91,7 +92,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
 // TODO - parametrize tests
-@SpringBootTest(classes = {TestDataSourceConfig.class})
+@SpringBootTest(classes = TestDataSourceConfig.class)
 public class AlleleGeneratorTest {
 
     private static final Contig contig = Contig.of(1, "1", SequenceRole.ASSEMBLED_MOLECULE, "1", AssignedMoleculeType.CHROMOSOME, 10_000, "", "", "");
@@ -125,62 +126,26 @@ public class AlleleGeneratorTest {
 
     // --------------------------      DONOR ALLELE     ---------------------------
 
-    @Test
-    public void simpleSnp() {
-        Variant variant = DefaultVariant.zeroBased(contig, 100, "g", "t");
+    @ParameterizedTest
+    @CsvSource({
+            " 96,   G,   C,   ATGgtaggt",
 
-        // reference is CGTGATGgtaggtgaaa
-        String allele = generator.getDonorSiteWithAltAllele(anchor, variant, donorSequence);
-        assertThat(allele, is("ATGttaggt"));
-    }
+            "100,     g,   t,   ATGttaggt",
+            "100,   gta,   g,   ATGgggtga",
+            "100,     g, gcc,   ATGgcctag",
+            "104,     g, gcc,   ATGgtaggc",
+            "104,   gtg,   g,   ATGgtagga",
+            " 94, GTGAT,   G,   CGGgtaggt",
+    })
+    public void getDonorSiteWithAltAllele(int pos, String ref, String alt, String expected) {
+        Contig contig = TestContig.of(1, 200);
+        StrandedSequence sequence = StrandedSequence.of(GenomicRegion.zeroBased(contig, 93, 110),
+                "CGTG" + "ATGgtaggt" + "gaaa");
+        Variant variant = DefaultVariant.zeroBased(contig, pos, ref, alt);
 
+        String allele = generator.getDonorSiteWithAltAllele(anchor, variant, sequence);
 
-    /**
-     * Check that a sequence of the donor site is returned when variant is outside the site
-     */
-    @Test
-    public void variantOutsideOfTheSite() {
-        Variant variant = DefaultVariant.oneBased(contig, 97, "G", "C");
-
-        // reference is CGT G ATGgtaggtgaaa
-        String allele = generator.getDonorSiteWithAltAllele(anchor, variant, donorSequence);
-        assertThat(allele, is("ATGgtaggt"));
-    }
-
-
-    @Test
-    public void shortDeletion() {
-        Variant variant = DefaultVariant.zeroBased(contig, 100, "gta", "g");
-        // reference is CGTGATGgtaggtgaaa
-        String allele = generator.getDonorSiteWithAltAllele(anchor, variant, donorSequence);
-        assertThat(allele, is("ATGgggtga"));
-    }
-
-    @Test
-    public void shortInsertion() {
-        Variant variant = DefaultVariant.zeroBased(contig, 100, "g", "gcc");
-
-        // reference is CGTGATGgtaggtgaaa
-        String allele = generator.getDonorSiteWithAltAllele(anchor, variant, donorSequence);
-        assertThat(allele, is("ATGgcctag"));
-    }
-
-    @Test
-    public void insertionAcross3PrimeBoundary() {
-        Variant variant = DefaultVariant.zeroBased(contig, 104, "g", "gcc");
-
-        // reference is CGTGATGgtaggtgaaa
-        String allele = generator.getDonorSiteWithAltAllele(anchor, variant, donorSequence);
-        assertThat(allele, is("ATGgtaggc"));
-    }
-
-    @Test
-    public void deletionAcross3PrimeBoundary() {
-        Variant variant = DefaultVariant.zeroBased(contig, 104, "gtg", "g");
-
-        // reference is CGTGATGgtaggtgaaa
-        String allele = generator.getDonorSiteWithAltAllele(anchor, variant, donorSequence);
-        assertThat(allele, is("ATGgtagga"));
+        assertThat(allele, equalTo(expected));
     }
 
     @Test
@@ -190,15 +155,6 @@ public class AlleleGeneratorTest {
         // reference is CGTGATGgtaggtgaaa
         String allele = generator.getDonorSiteWithAltAllele(anchor, variant, donorSequence);
         assertThat(allele, is(nullValue()));
-    }
-
-    @Test
-    public void deletionSpanningFirstBasesOfDonor() {
-        Variant variant = DefaultVariant.zeroBased(contig, 94, "GTGAT", "G");
-
-        // reference is CGTGATGgtaggtgaaa
-        String allele = generator.getDonorSiteWithAltAllele(anchor, variant, donorSequence);
-        assertThat(allele, is("CGGgtaggt"));
     }
 
     @Test
@@ -226,112 +182,47 @@ public class AlleleGeneratorTest {
         assertThat(donorSeq, is(nullValue()));
     }
 
-    @Test
-    public void makeDonorInterval() {
-        GenomicRegion donor = generator.makeDonorInterval(anchor);
-
-        assertThat(donor.contig(), equalTo(contig));
-        assertThat(donor.start(), equalTo(97));
-        assertThat(donor.end(), equalTo(106));
-        assertThat(donor.strand(), equalTo(Strand.POSITIVE));
-    }
-
     // --------------------------      ACCEPTOR ALLELE      -----------------------
 
 
-    @Test
-    public void simpleSnpInAcceptor() {
-        Variant variant = DefaultVariant.zeroBased(contig, 100, "G", "C");
+    @ParameterizedTest
+    @CsvSource({
+            "103,    G,   C,     aaacactgttccttctctctttcagGT",
 
-        // reference is atggcaaacactgttccttctctctttcagGTGGCCCTGC
-        String allele = generator.getAcceptorSiteWithAltAllele(anchor, variant, acceptorSequence);
-        assertThat(allele, is("aaacactgttccttctctctttcagCT"));
+            "100,    G,   C,     aaacactgttccttctctctttcagCT",
+            " 97,  cag,   c,     gcaaacactgttccttctctctttcGT",
+            " 97,    c, ctt,     acactgttccttctctctttcttagGT",
+            "100,    G, GCC,     acactgttccttctctctttcagGCCT",
+            "100, GTGG,   G,     aaacactgttccttctctctttcagGC",
+            " 73,  gca,   g,     gaacactgttccttctctctttcagGT",
+    })
+    public void getAcceptorSiteWithAltAllele(int pos, String ref, String alt, String expected) {
+        Variant variant = DefaultVariant.zeroBased(contig, pos, ref, alt);
+        StrandedSequence sequence = StrandedSequence.of(GenomicRegion.zeroBased(contig, 70, 110),
+                "atggc" + "aaacactgttccttctctctttcagGT" + "GGCCCTGC");
+
+        assertThat(generator.getAcceptorSiteWithAltAllele(anchor, variant, sequence), is(expected));
     }
-
-    /**
-     * Check that a sequence of the acceptor site is returned when variant is outside the site.
-     */
-    @Test
-    public void variantOutsideOfTheSiteInAcceptor() {
-        Variant variant = DefaultVariant.oneBased(contig, 103, "G", "C");
-
-        // reference is atggcaaacactgttccttctctctttcagGT G GCCCTGC
-        String allele = generator.getAcceptorSiteWithAltAllele(anchor, variant, acceptorSequence);
-        assertThat(allele, is("aaacactgttccttctctctttcagGT"));
-    }
-
-
-    @Test
-    public void shortDeletionInAcceptor() {
-        Variant variant = DefaultVariant.zeroBased(contig, 97, "cag", "c");
-
-        // reference is atggcaaacactgttccttctctctttcagGTGGCCCTGC
-        String allele = generator.getAcceptorSiteWithAltAllele(anchor, variant, acceptorSequence);
-        assertThat(allele, is("gcaaacactgttccttctctctttcGT"));
-    }
-
-
-    @Test
-    public void shortInsertionInAcceptor() {
-        Variant variant = DefaultVariant.zeroBased(contig, 97, "c", "ctt");
-
-        // reference is atggcaaacactgttccttctctctttcagGTGGCCCTGC
-        String allele = generator.getAcceptorSiteWithAltAllele(anchor, variant, acceptorSequence);
-        assertThat(allele, is("acactgttccttctctctttcttagGT"));
-    }
-
-
-    @Test
-    public void insertionAcross3PrimeBoundaryInAcceptor() {
-        Variant variant = DefaultVariant.zeroBased(contig, 100, "G", "GCC");
-
-        // reference is atggcaaacactgttccttctctctttcagGTGGCCCTGC
-        String allele = generator.getAcceptorSiteWithAltAllele(anchor, variant, acceptorSequence);
-        assertThat(allele, is("acactgttccttctctctttcagGCCT"));
-    }
-
-
-    @Test
-    public void deletionAcross3PrimeBoundaryInAcceptor() {
-        Variant variant = DefaultVariant.zeroBased(contig, 100, "GTGG", "G");
-
-        // reference is atggcaaacactgttccttctctctttcagGTGGCCCTGC
-        String allele = generator.getAcceptorSiteWithAltAllele(anchor, variant, acceptorSequence);
-        assertThat(allele, is("aaacactgttccttctctctttcagGC"));
-    }
-
 
     @Test
     public void deletionOfTheWholeAcceptorSite() {
         Variant variant = DefaultVariant.zeroBased(contig, 73, "gcaaacactgttccttctctctttcagGT", "g");
 
         // reference is atggcaaacactgttccttctctctttcagGTGGCCCTGC
-        String allele = generator.getAcceptorSiteWithAltAllele(anchor, variant, acceptorSequence);
-        assertThat(allele, is(nullValue()));
-    }
-
-
-    @Test
-    public void deletionSpanningFirstBasesOfAcceptor() {
-        Variant variant = DefaultVariant.zeroBased(contig, 73, "gca", "g");
-
-        // reference is atggcaaacactgttccttctctctttcagGTGGCCCTGC
-        String allele = generator.getAcceptorSiteWithAltAllele(anchor, variant, acceptorSequence);
-        assertThat(allele, is("gaacactgttccttctctctttcagGT"));
+        assertThat(generator.getAcceptorSiteWithAltAllele(anchor, variant, acceptorSequence), is(nullValue()));
     }
 
     @Test
     public void mismatchInContigsForAcceptor() {
-        Contig other = Contig.of(22, "22", SequenceRole.ASSEMBLED_MOLECULE, "22", AssignedMoleculeType.CHROMOSOME, 100, "", "", "");
+        Contig other = TestContig.of(22, 100);
         Variant variant = DefaultVariant.zeroBased(other, 100, "G", "C");
 
         // reference is atggcaaacactgttccttctctctttcagGTGGCCCTGC
-        String allele = generator.getAcceptorSiteWithAltAllele(anchor, variant, acceptorSequence);
-        assertThat(allele, is(nullValue()));
+        assertThat(generator.getAcceptorSiteWithAltAllele(anchor, variant, acceptorSequence), is(nullValue()));
     }
 
     @Test
-    public void acceptorRefAllele() {
+    public void getAcceptorSiteSnippet() {
         String acceptorSeq = generator.getAcceptorSiteSnippet(anchor, acceptorSequence);
         // reference is atggcaaacactgttccttctctctttcagGTGGCCCTGC
         assertThat(acceptorSeq, is("aaacactgttccttctctctttcagGT"));
@@ -339,51 +230,95 @@ public class AlleleGeneratorTest {
 
     @Test
     public void acceptorRefAlleleIsNullWhenBadInput() {
-        Contig other = Contig.of(22, "22", SequenceRole.ASSEMBLED_MOLECULE, "22", AssignedMoleculeType.CHROMOSOME, 100, "", "", "");
-        String acceptorSeq = generator.getAcceptorSiteSnippet(GenomicPosition.zeroBased(other, Strand.POSITIVE, Position.of(100)), acceptorSequence);
+        Contig other = TestContig.of(22, 100);
+        GenomicPosition anchor = GenomicPosition.zeroBased(other, Strand.POSITIVE, Position.of(100));
         // reference is atggcaaacactgttccttctctctttcagGTGGCCCTGC
-        assertThat(acceptorSeq, is(nullValue()));
-    }
-
-    @Test
-    public void makeAcceptorInterval() {
-        GenomicRegion acceptor = generator.makeAcceptorInterval(anchor);
-
-        assertThat(acceptor.contig(), equalTo(contig));
-        assertThat(acceptor.start(), equalTo(75));
-        assertThat(acceptor.end(), equalTo(102));
-        assertThat(acceptor.strand(), equalTo(Strand.POSITIVE));
-        assertThat(acceptor.coordinateSystem(), equalTo(CoordinateSystem.ZERO_BASED));
+        assertThat(generator.getAcceptorSiteSnippet(anchor, acceptorSequence), is(nullValue()));
     }
 
     // --------------------------      OTHER METHODS      -----------------------
 
     @ParameterizedTest
     @CsvSource({
-            "10, C, A,       aaaaCCCCAgggggTTT",
-            "10, C, TTT,     aaaaCCCCTTTgggggTTT",
-            "10, Cgg, C,     aaaaCCCCCgggTTTTT",
+            "POSITIVE, 10,   7, 16",
+            "POSITIVE,  9,   6, 15",
+            "NEGATIVE,  5,   2, 11"
     })
-    public void getDonorNeighborSnippet(int pos, String ref, String alt, String expected) {
-        Variant variant = DefaultVariant.oneBased(contig, pos, ref, alt);
+    public void makeDonorInterval(Strand strand, int pos,
+                                  int start, int end) {
+        Contig contig = TestContig.of(1, 20);
+        GenomicPosition anchor = GenomicPosition.zeroBased(contig, strand, Position.of(pos));
+
+        GenomicRegion donor = generator.makeDonorInterval(anchor);
+
+        assertThat(donor.contig(), equalTo(contig));
+        assertThat(donor.start(), equalTo(start));
+        assertThat(donor.end(), equalTo(end));
+        assertThat(donor.strand(), equalTo(strand));
+        assertThat(donor.coordinateSystem(), equalTo(CoordinateSystem.ZERO_BASED)); // always
+    }
+
+
+    @ParameterizedTest
+    @CsvSource({
+            "POSITIVE, 30,   5, 32",
+            "POSITIVE, 31,   6, 33",
+            "NEGATIVE, 40,  15, 42"
+    })
+    public void makeAcceptorInterval(Strand strand, int pos,
+                                     int start, int end) {
+        Contig contig = TestContig.of(1, 50);
+        GenomicPosition anchor = GenomicPosition.zeroBased(contig, strand, Position.of(pos));
+        GenomicRegion acceptor = generator.makeAcceptorInterval(anchor);
+
+        assertThat(acceptor.contig(), equalTo(contig));
+        assertThat(acceptor.start(), equalTo(start));
+        assertThat(acceptor.end(), equalTo(end));
+        assertThat(acceptor.strand(), equalTo(strand));
+        assertThat(acceptor.coordinateSystem(), equalTo(CoordinateSystem.ZERO_BASED));  // always
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+            "10,   C,   A, POSITIVE,     aaaaCCCCAgggggTTT",
+            "10,   C,   A, NEGATIVE,     AAAcccccTGGGGtttt",
+            "10,   C, TTT, POSITIVE,     aaaaCCCCTTTgggggTTT",
+            "10, Cgg,   C, POSITIVE,     aaaaCCCCCgggTTTTT",
+    })
+    public void getDonorNeighborSnippet(int pos, String ref, String alt, Strand strand, String expected) {
+        Variant variant = DefaultVariant.oneBased(contig, pos, ref, alt).withStrand(strand);
         assertThat(generator.getDonorNeighborSnippet(variant, sequence, variant.alt()), equalTo(expected));
     }
 
     @ParameterizedTest
     @CsvSource({
-            "30, C, A,       aaCCCCCgggggTTTTTaaaaaCCCCAgggggTTTTTaaaaaCCCCCgggggT",
-            "30, C, TTT,     aaCCCCCgggggTTTTTaaaaaCCCCTTTgggggTTTTTaaaaaCCCCCgggggT",
-            "30, Cgg, C,     aaCCCCCgggggTTTTTaaaaaCCCCCgggTTTTTaaaaaCCCCCgggggTTT",
+            "30,   C,   A, POSITIVE,      aaCCCCCgggggTTTTTaaaaaCCCCAgggggTTTTTaaaaaCCCCCgggggT",
+            "30,   C,   A, NEGATIVE,      AcccccGGGGGtttttAAAAAcccccTGGGGtttttAAAAAcccccGGGGGtt",
+            "30,   C, TTT, POSITIVE,      aaCCCCCgggggTTTTTaaaaaCCCCTTTgggggTTTTTaaaaaCCCCCgggggT",
+            "30, Cgg,   C, POSITIVE,      aaCCCCCgggggTTTTTaaaaaCCCCCgggTTTTTaaaaaCCCCCgggggTTT",
     })
-    public void getAcceptorNeighborSnippet(int pos, String ref, String alt, String expected) {
-        Variant variant = DefaultVariant.oneBased(contig, pos, ref, alt);
+    public void getAcceptorNeighborSnippet(int pos, String ref, String alt, Strand strand, String expected) {
+        Variant variant = DefaultVariant.oneBased(contig, pos, ref, alt).withStrand(strand);
         assertThat(generator.getAcceptorNeighborSnippet(variant, sequence, variant.alt()), equalTo(expected));
     }
 
-    @Test
-    public void getKmerRefSnippet() {
-        Variant variant = DefaultVariant.oneBased(contig, 10, "C", "A");
-        assertThat(AlleleGenerator.getPaddedAllele(variant, sequence, variant.ref(), 1), is("CCg"));
+    @ParameterizedTest
+    @CsvSource({
+            "2, POSITIVE, C, A, 0,     C,     A",
+            "2, POSITIVE, C, A, 1,    aCg,   aAg",
+            "3, POSITIVE, G, T, 2,    acGtA, acTtA",
+
+            "4, NEGATIVE, C, A, 0,     C,     A",
+            "4, NEGATIVE, C, A, 1,    ACG,   AAG",
+            "5, NEGATIVE, G, A, 2,    ACGTa, ACATa",
+    })
+    public void getKmerRefSnippet(int pos, Strand strand, String ref, String alt, int padding, String refAllele, String altAllele) {
+        Contig contig = TestContig.of(1, 10);
+        StrandedSequence seq = StrandedSequence.of(GenomicRegion.zeroBased(contig, 0, 10), "acgtACGTac");
+        Variant variant = DefaultVariant.of(contig, "id", strand, CoordinateSystem.ONE_BASED, Position.of(pos), ref, alt);
+
+        assertThat(AlleleGenerator.getPaddedAllele(variant, seq, variant.ref(), padding), equalTo(refAllele));
+        assertThat(AlleleGenerator.getPaddedAllele(variant, seq, variant.alt(), padding), equalTo(altAllele));
     }
 
     @Test

@@ -113,6 +113,7 @@ public class AlleleGenerator {
      */
     public static String getPaddedAllele(GenomicRegion interval, StrandedSequence sequence, String allele, int padding) {
         if (padding < 0) return null;
+        if (padding == 0) return allele;
         interval = interval.toZeroBased();
         GenomicRegion upstream = GenomicRegion.zeroBased(interval.contig(), interval.strand(), interval.startPosition().shift(-padding), interval.startPosition());
         GenomicRegion downstream = GenomicRegion.zeroBased(interval.contig(), interval.strand(), interval.endPosition(), interval.endPosition().shift(padding));

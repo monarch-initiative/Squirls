@@ -121,9 +121,11 @@ public class StrandedSequenceTest {
             "NEGATIVE,  ONE_BASED, 400, 400,      T"})
     public void subsequence(Strand strand, CoordinateSystem coordinateSystem, int start, int end,
                             String expected) {
-        StrandedSequence sequence = StrandedSequence.of(CONTIG, Strand.POSITIVE, CoordinateSystem.ZERO_BASED, Position.of(100), Position.of(105), "ACGTA");
+        StrandedSequence zeroSeq = StrandedSequence.of(CONTIG, Strand.POSITIVE, CoordinateSystem.ZERO_BASED, Position.of(100), Position.of(105), "ACGTA");
+        StrandedSequence oneSeq = StrandedSequence.of(CONTIG, Strand.POSITIVE, CoordinateSystem.ONE_BASED, Position.of(101), Position.of(105), "ACGTA");
         GenomicRegion query = GenomicRegion.of(CONTIG, strand, coordinateSystem, Position.of(start), Position.of(end));
 
-        assertThat(sequence.subsequence(query), equalTo(expected));
+        assertThat(zeroSeq.subsequence(query), equalTo(expected));
+        assertThat(oneSeq.subsequence(query), equalTo(expected));
     }
 }

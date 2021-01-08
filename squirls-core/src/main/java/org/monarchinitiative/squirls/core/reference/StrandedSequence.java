@@ -83,10 +83,13 @@ import java.util.Objects;
 
 public class StrandedSequence extends BaseGenomicRegion<StrandedSequence> {
 
+    private final int start;
+
     private final String sequence;
 
     protected StrandedSequence(Contig contig, Strand strand, CoordinateSystem coordinateSystem, Position startPosition, Position endPosition, String sequence) {
         super(contig, strand, coordinateSystem, startPosition, endPosition);
+        this.start = normalisedStartPosition(CoordinateSystem.ZERO_BASED).pos();
         this.sequence = sequence;
         if (length() != sequence.length()) {
             throw new IllegalArgumentException("Sequence length " + sequence.length() + " does not match length of the region " + length());
@@ -110,10 +113,12 @@ public class StrandedSequence extends BaseGenomicRegion<StrandedSequence> {
      * @return string with sequence that corresponds to <code>query</code> region or <code>null</code> if at least one
      * base from the <code>region</code> is not available
      */
-    public String subsequence(GenomicRegion query) {
+    public String subsequence(final GenomicRegion query) {
         if (contains(query)) {
             GenomicRegion queryOnStrand = query.withStrand(strand()).toZeroBased();
-            String seq = sequence.substring(queryOnStrand.start() - start(), queryOnStrand.end() - start());
+            // when slicing a sequence, we always use 0-based coordinates - that's why we pre-calculate `start`
+            // field in the constructor
+            String seq = sequence.substring(queryOnStrand.start() - start, queryOnStrand.end() - start);
             return query.strand() == strand()
                     ? seq
                     : Seq.reverseComplement(seq);
