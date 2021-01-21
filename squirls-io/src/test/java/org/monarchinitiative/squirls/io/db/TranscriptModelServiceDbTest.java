@@ -161,7 +161,7 @@ public class TranscriptModelServiceDbTest {
     @Sql({"transcripts_create_tables.sql", "transcripts_insert.sql"})
     public void fetchTranscripts() {
         GenomicRegion query = GenomicRegion.zeroBased(one, 100, 900);
-        List<TranscriptModel> models = instance.getOverlapping(query);
+        List<TranscriptModel> models = instance.overlappingTranscripts(query);
         assertThat(models, hasSize(2));
 
         TranscriptModel first = models.get(0);
@@ -185,7 +185,7 @@ public class TranscriptModelServiceDbTest {
     @Sql({"transcripts_create_tables.sql", "transcripts_insert.sql"})
     public void fetchNonCodingTranscript() {
         GenomicRegion query = GenomicRegion.zeroBased(two, 1300, 1500);
-        List<TranscriptModel> models = instance.getOverlapping(query);
+        List<TranscriptModel> models = instance.overlappingTranscripts(query);
         assertThat(models, hasSize(1));
 
         TranscriptModel tx = models.get(0);
@@ -211,7 +211,7 @@ public class TranscriptModelServiceDbTest {
             "NM_000002.2,   false"})
     @Sql({"transcripts_create_tables.sql", "transcripts_insert.sql"})
     public void fetchTranscriptByAccession(String accession, boolean expected) {
-        Optional<TranscriptModel> tx = instance.getByAccession(accession);
+        Optional<TranscriptModel> tx = instance.transcriptByAccession(accession);
         assertThat(tx.isPresent(), equalTo(expected));
     }
 

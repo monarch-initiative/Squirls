@@ -217,7 +217,7 @@ public class TranscriptModelServiceDb implements TranscriptModelService {
     }
 
     @Override
-    public List<TranscriptModel> getOverlapping(GenomicRegion query) {
+    public List<TranscriptModel> overlappingTranscripts(GenomicRegion query) {
         GenomicRegion region = query.toPositiveStrand().toZeroBased();
         String sql = "select tx.TX_ID, tx.CONTIG, tx.STRAND, tx.BEGIN, tx.END, " +
                 "  tx.TX_ACCESSION, tx.HGVS_SYMBOL, tx.CDS_START, tx.CDS_END, " +
@@ -245,7 +245,7 @@ public class TranscriptModelServiceDb implements TranscriptModelService {
     }
 
     @Override
-    public Optional<TranscriptModel> getByAccession(String txAccession) {
+    public Optional<TranscriptModel> transcriptByAccession(String txAccession) {
         String sql = "select tx.TX_ID, tx.CONTIG, tx.STRAND, tx.BEGIN, tx.END, " +
                 " tx.TX_ACCESSION, tx.HGVS_SYMBOL, tx.CDS_START, tx.CDS_END, " +
                 " e.EXON_NUMBER, e.BEGIN exon_begin, e.END exon_end " +

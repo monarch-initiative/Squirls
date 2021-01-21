@@ -132,7 +132,7 @@ public class PanelGraphicsGeneratorTest extends GraphicsGeneratorTestBase {
 
         when(selector.selectContext(anyMap())).thenReturn(VisualizationContext.CANONICAL_DONOR);
         when(squirlsDataService.sequenceForRegion(any())).thenReturn(null);
-        when(squirlsDataService.getByAccession(txAccession)).thenReturn(Optional.empty());
+        when(squirlsDataService.transcriptByAccession(txAccession)).thenReturn(Optional.empty());
 
         VisualizableVariantAllele allele = toVisualizableAllele(writableSplicingAllele);
 
@@ -179,7 +179,7 @@ public class PanelGraphicsGeneratorTest extends GraphicsGeneratorTestBase {
                 "GAGTTGGACTTCAAACCCTCAGCCCTCCCTCTAAGATATA";
         when(squirlsDataService.sequenceForRegion(any()))
                 .thenReturn(StrandedSequence.of(GenomicRegion.oneBased(assembly.contigByName("11"), 5_247_501, 5_248_500), seq));
-        when(squirlsDataService.getByAccession(anyString()))
+        when(squirlsDataService.transcriptByAccession(anyString()))
                 .thenReturn(Optional.ofNullable(((VariantOnTranscript) wsa).transcript()));
 
         VisualizableVariantAllele allele = toVisualizableAllele(wsa);

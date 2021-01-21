@@ -223,13 +223,13 @@ class VariantSplicingEvaluatorDefault implements VariantSplicingEvaluator {
 
         if (txIds.isEmpty()) {
             // querying by coordinates
-            return squirlsDataService.getOverlapping(variant).stream()
+            return squirlsDataService.overlappingTranscripts(variant).stream()
                     .filter(st -> !st.introns().isEmpty())
                     .collect(Collectors.toMap(TranscriptModel::accessionId, Function.identity()));
         } else {
             // or query by transcript IDs
             for (String txId : txIds) {
-                Optional<TranscriptModel> sto = squirlsDataService.getByAccession(txId);
+                Optional<TranscriptModel> sto = squirlsDataService.transcriptByAccession(txId);
                 if (sto.isPresent()) {
                     TranscriptModel st = sto.get();
                     // the transcript

@@ -204,7 +204,7 @@ public class PanelGraphicsGenerator implements SplicingVariantGraphicsGenerator 
         SquirlsTxResult highestPrediction = mspOpt.get();
         context.setVariable("highest_prediction", highestPrediction); // for features table
 
-        Optional<TranscriptModel> stOpt = squirlsDataService.getByAccession(highestPrediction.accessionId());
+        Optional<TranscriptModel> stOpt = squirlsDataService.transcriptByAccession(highestPrediction.accessionId());
         if (stOpt.isEmpty()) {
             if (LOGGER.isWarnEnabled())
                 LOGGER.warn("Could not find transcript {} for variant {}", highestPrediction.accessionId(), allele.genomeVariant());

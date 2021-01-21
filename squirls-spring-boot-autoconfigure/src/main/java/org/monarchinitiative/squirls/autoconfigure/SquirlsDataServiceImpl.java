@@ -117,13 +117,13 @@ public class SquirlsDataServiceImpl implements SquirlsDataService {
     }
 
     @Override
-    public List<TranscriptModel> getOverlapping(GenomicRegion query) {
-        return transcriptModelService.getOverlapping(query);
+    public List<TranscriptModel> overlappingTranscripts(GenomicRegion query) {
+        return transcriptModelService.overlappingTranscripts(query);
     }
 
     @Override
-    public Optional<TranscriptModel> getByAccession(String txAccession) {
-        return transcriptModelService.getByAccession(txAccession);
+    public Optional<TranscriptModel> transcriptByAccession(String txAccession) {
+        return transcriptModelService.transcriptByAccession(txAccession);
     }
 
     @Override

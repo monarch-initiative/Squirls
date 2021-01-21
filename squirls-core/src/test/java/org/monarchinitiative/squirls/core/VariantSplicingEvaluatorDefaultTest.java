@@ -147,7 +147,7 @@ public class VariantSplicingEvaluatorDefaultTest {
 
         // 0 - squirls data service
         TranscriptModel stx = PojosForTesting.surf2_NM_017503_5(chr9);
-        when(squirlsDataService.getByAccession("NM_017503.5")).thenReturn(Optional.of(stx));
+        when(squirlsDataService.transcriptByAccession("NM_017503.5")).thenReturn(Optional.of(stx));
         when(squirlsDataService.sequenceForRegion(any(GenomicRegion.class))).thenReturn(sequence);
 
         // 1 - splicing annotator
@@ -181,7 +181,7 @@ public class VariantSplicingEvaluatorDefaultTest {
 
         verify(squirlsDataService).knownContigNames();
         verify(squirlsDataService).sequenceForRegion(GenomicRegion.zeroBased(chr9, 136_223_275, 136_228_184));
-        verify(squirlsDataService).getByAccession("NM_017503.5");
+        verify(squirlsDataService).transcriptByAccession("NM_017503.5");
         verify(annotator).annotate(vot);
         verify(classifier).predict(features);
     }
@@ -197,7 +197,7 @@ public class VariantSplicingEvaluatorDefaultTest {
 
     @Test
     public void evaluateWrtTx_unknownTx() {
-        when(squirlsDataService.getByAccession("BLABLA")).thenReturn(Optional.empty());
+        when(squirlsDataService.transcriptByAccession("BLABLA")).thenReturn(Optional.empty());
         Contig chr9 = assembly.contigByName("9");
 
         Variant variant = Variant.of(chr9, "", Strand.POSITIVE, CoordinateSystem.oneBased(), Position.of(136_223_949), "G", "C");
@@ -213,7 +213,7 @@ public class VariantSplicingEvaluatorDefaultTest {
     public void evaluateWrtTx_notEnoughSequenceAvailable() {
         Contig chr9 = assembly.contigByName("9");
         TranscriptModel stx = PojosForTesting.surf2_NM_017503_5(chr9);
-        when(squirlsDataService.getByAccession("NM_017503.5")).thenReturn(Optional.of(stx));
+        when(squirlsDataService.transcriptByAccession("NM_017503.5")).thenReturn(Optional.of(stx));
         when(squirlsDataService.sequenceForRegion(any(GenomicRegion.class))).thenReturn(null);
 
         Variant variant = Variant.of(chr9, "", Strand.POSITIVE, CoordinateSystem.oneBased(), Position.of(136_223_949), "G", "C");
@@ -237,7 +237,7 @@ public class VariantSplicingEvaluatorDefaultTest {
         TranscriptModel stx = PojosForTesting.surf2_NM_017503_5(chr9);
 
         when(squirlsDataService.sequenceForRegion(any(GenomicRegion.class))).thenReturn(sequence);
-        when(squirlsDataService.getOverlapping(variant.toZeroBased())).thenReturn(List.of(stx));
+        when(squirlsDataService.overlappingTranscripts(variant.toZeroBased())).thenReturn(List.of(stx));
 
         when(squirlsDataService.sequenceForRegion(any(GenomicRegion.class))).thenReturn(sequence);
 
@@ -272,7 +272,7 @@ public class VariantSplicingEvaluatorDefaultTest {
 
         verify(squirlsDataService).knownContigNames();
         verify(squirlsDataService).sequenceForRegion(GenomicRegion.zeroBased(chr9, 136_223_275, 136_228_184));
-        verify(squirlsDataService).getOverlapping(variant.toZeroBased());
+        verify(squirlsDataService).overlappingTranscripts(variant.toZeroBased());
         verify(annotator).annotate(vot);
         verify(classifier).predict(features);
     }
