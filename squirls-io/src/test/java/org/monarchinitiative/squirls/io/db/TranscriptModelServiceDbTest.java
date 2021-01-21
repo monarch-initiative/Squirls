@@ -169,7 +169,7 @@ public class TranscriptModelServiceDbTest {
         assertThat(first.start(), equalTo(100));
         assertThat(first.end(), equalTo(900));
         assertThat(first.strand(), equalTo(Strand.POSITIVE));
-        assertThat(first.coordinateSystem(), equalTo(CoordinateSystem.ZERO_BASED));
+        assertThat(first.coordinateSystem(), equalTo(CoordinateSystem.zeroBased()));
         assertThat(first.isCoding(), equalTo(true));
         assertThat(first.cdsStartPosition().pos(), equalTo(200));
         assertThat(first.cdsEndPosition().pos(), equalTo(800));
@@ -194,7 +194,7 @@ public class TranscriptModelServiceDbTest {
         assertThat(tx.start(), equalTo(1000));
         assertThat(tx.end(), equalTo(2000));
         assertThat(tx.strand(), equalTo(Strand.POSITIVE));
-        assertThat(tx.coordinateSystem(), equalTo(CoordinateSystem.ZERO_BASED));
+        assertThat(tx.coordinateSystem(), equalTo(CoordinateSystem.zeroBased()));
         assertThat(tx.isCoding(), equalTo(false));
         assertThat(tx.cdsStartPosition(), is(nullValue(Position.class)));
         assertThat(tx.cdsEndPosition(), is(nullValue(Position.class)));

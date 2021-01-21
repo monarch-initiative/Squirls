@@ -98,26 +98,26 @@ public class SplicingParametersTest {
     @Test
     public void makeDonorRegion() {
         Contig contig = Contig.of(1, "1", SequenceRole.ASSEMBLED_MOLECULE, "1", AssignedMoleculeType.CHROMOSOME, 100, "", "", "");
-        GenomicPosition anchor = GenomicPosition.zeroBased(contig, Strand.POSITIVE, Position.of(10));
+        GenomicRegion exon = GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(), Position.of(5), Position.of(10));
 
-        GenomicRegion donor = parameters.makeDonorRegion(anchor);
+        GenomicRegion donor = parameters.makeDonorRegion(exon);
         assertThat(donor.contig(), equalTo(contig));
         assertThat(donor.start(), equalTo(7));
         assertThat(donor.end(), equalTo(15));
-        assertThat(donor.coordinateSystem(), equalTo(CoordinateSystem.ZERO_BASED));
-        assertThat(donor.strand(), equalTo(anchor.strand()));
+        assertThat(donor.coordinateSystem(), equalTo(CoordinateSystem.zeroBased()));
+        assertThat(donor.strand(), equalTo(exon.strand()));
     }
 
     @Test
     public void makeAcceptorRegion() {
         Contig contig = Contig.of(1, "1", SequenceRole.ASSEMBLED_MOLECULE, "1", AssignedMoleculeType.CHROMOSOME, 100, "", "", "");
-        GenomicPosition anchor = GenomicPosition.zeroBased(contig, Strand.POSITIVE, Position.of(10));
+        GenomicRegion exon = GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(), Position.of(10), Position.of(20));
 
-        GenomicRegion donor = parameters.makeAcceptorRegion(anchor);
+        GenomicRegion donor = parameters.makeAcceptorRegion(exon);
         assertThat(donor.contig(), equalTo(contig));
         assertThat(donor.start(), equalTo(6));
         assertThat(donor.end(), equalTo(12));
-        assertThat(donor.coordinateSystem(), equalTo(CoordinateSystem.ZERO_BASED));
-        assertThat(donor.strand(), equalTo(anchor.strand()));
+        assertThat(donor.coordinateSystem(), equalTo(CoordinateSystem.zeroBased()));
+        assertThat(donor.strand(), equalTo(exon.strand()));
     }
 }

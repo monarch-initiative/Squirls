@@ -124,16 +124,19 @@ public interface TranscriptModel extends GenomicRegion {
     }
 
     static List<GenomicRegion> computeIntronLocations(List<GenomicRegion> exons) {
+        // TODO - this is very likely only working when using half-open coordinate systems.
+        //  Test thoroughly using all coordinate systems!
         if (exons.size() == 1) { // shortcut
             return List.of();
         }
 
         ArrayList<GenomicRegion> introns = new ArrayList<>(exons.size() - 1);
-        GenomicPosition intronStart = exons.get(0).endGenomicPosition();
-        for (int i = 1; i < exons.size(); i++) {
+        Position intronStart = exons.get(0).endPosition();
+        for (int i = 1; i < exons.size(); i++) { // start from the 2nd exon
             GenomicRegion exon = exons.get(i);
-            introns.add(GenomicRegion.of(intronStart, exon.startGenomicPosition()));
-            intronStart = exon.endGenomicPosition();
+            Position intronEnd = exon.startPosition();
+            introns.add(GenomicRegion.of(exon.contig(), exon.strand(), exon.coordinateSystem(), intronStart, intronEnd));
+            intronStart = exon.endPosition();
         }
         return List.copyOf(introns);
     }
@@ -154,24 +157,10 @@ public interface TranscriptModel extends GenomicRegion {
     }
 
     /**
-     * @return start {@link GenomicPosition} of the coding region or <code>null</code> if the transcript is non-coding
-     */
-    default GenomicPosition cdsStartGenomicPosition() {
-        return isCoding() ? cdsRegion().startGenomicPosition() : null;
-    }
-
-    /**
      * @return end position of the coding region or <code>null</code> if the transcript is non-coding
      */
     default Position cdsEndPosition() {
         return isCoding() ? cdsRegion().endPosition() : null;
-    }
-
-    /**
-     * @return end {@link GenomicPosition} of the coding region or <code>null</code> if the transcript is non-coding
-     */
-    default GenomicPosition cdsEndGenomicPosition() {
-        return isCoding() ? cdsRegion().endGenomicPosition() : null;
     }
 
     @Override

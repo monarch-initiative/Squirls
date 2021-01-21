@@ -82,8 +82,10 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.monarchinitiative.squirls.core.SimpleAnnotatableSquirlsFeatures;
 import org.monarchinitiative.squirls.core.classifier.SquirlsFeatures;
+import org.monarchinitiative.variant.api.CoordinateSystem;
+import org.monarchinitiative.variant.api.Position;
+import org.monarchinitiative.variant.api.Strand;
 import org.monarchinitiative.variant.api.Variant;
-import org.monarchinitiative.variant.api.impl.SequenceVariant;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -110,7 +112,7 @@ public class AGEZSplicingAnnotatorTest extends BaseSplicingAnnotatorTest {
     public void annotate(int pos, String ref, String alt,
                          double createsAgInAgez, double pptIsTruncated,
                          double purineAtMinusThree, double createsYagInAgez) {
-        Variant variant = SequenceVariant.zeroBased(contig, pos, ref, alt);
+        Variant variant = Variant.nonSymbolic(contig, "", Strand.POSITIVE, CoordinateSystem.zeroBased(), Position.of(pos), ref, alt);
         SimpleAnnotatableSquirlsFeatures ann = new SimpleAnnotatableSquirlsFeatures(variant, st, sequence);
         SquirlsFeatures features = annotator.annotate(ann);
 
@@ -122,7 +124,7 @@ public class AGEZSplicingAnnotatorTest extends BaseSplicingAnnotatorTest {
 
     @Test
     public void allFeaturesAreCalculated() {
-        Variant variant = SequenceVariant.zeroBased(contig, 1389, "c", "cag");
+        Variant variant = Variant.nonSymbolic(contig, "", Strand.POSITIVE, CoordinateSystem.zeroBased(), Position.of(1389), "c", "cag");
 
         SimpleAnnotatableSquirlsFeatures ann = new SimpleAnnotatableSquirlsFeatures(variant, st, sequence);
         SquirlsFeatures features = annotator.annotate(ann);

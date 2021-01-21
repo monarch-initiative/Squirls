@@ -77,9 +77,12 @@
 package org.monarchinitiative.squirls.core.scoring.calculators;
 
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.monarchinitiative.variant.api.CoordinateSystem;
+import org.monarchinitiative.variant.api.Position;
+import org.monarchinitiative.variant.api.Strand;
 import org.monarchinitiative.variant.api.Variant;
-import org.monarchinitiative.variant.api.impl.SequenceVariant;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -95,15 +98,14 @@ public class CrypticDonorScorerTest extends CalculatorTestBase {
         scorer = new CrypticDonor(calculator, generator, locator);
     }
 
-    @Test
-    public void snpInDonor() {
-        Variant variant = SequenceVariant.zeroBased(contig, 1201, "t", "g");
-        assertThat(scorer.score(variant, tx, sequenceInterval), is(closeTo(4.6317, EPSILON)));
+    @ParameterizedTest
+    @CsvSource({
+            "1201, t, g, 4.6317",
+            "1196, C, T, 0.3526",
+    })
+    public void score(int pos, String ref, String alt, double expected) {
+        Variant variant = Variant.nonSymbolic(contig,"", Strand.POSITIVE, CoordinateSystem.zeroBased(), Position.of(pos), ref, alt);
+        assertThat(scorer.score(variant, tx, sequence), is(closeTo(expected, EPSILON)));
     }
 
-    @Test
-    public void snpUpstreamFromDonor() {
-        Variant variant = SequenceVariant.zeroBased(contig, 1196, "C", "T");
-        assertThat(scorer.score(variant, tx, sequenceInterval), is(closeTo(0.3526, EPSILON)));
-    }
 }

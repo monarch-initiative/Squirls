@@ -90,42 +90,46 @@ public class StrandedSequenceTest {
 
     @Test
     public void properties() {
-        StrandedSequence sequence = StrandedSequence.of(CONTIG, Strand.POSITIVE, CoordinateSystem.ZERO_BASED, Position.of(100), Position.of(105), "ACGTA");
+        StrandedSequence sequence = StrandedSequence.of(CONTIG, Strand.POSITIVE, CoordinateSystem.zeroBased(), Position.of(100), Position.of(105), "ACGTA");
 
         assertThat(sequence.contigName(), equalTo("1"));
         assertThat(sequence.start(), equalTo(100));
         assertThat(sequence.end(), equalTo(105));
         assertThat(sequence.strand(), equalTo(Strand.POSITIVE));
-        assertThat(sequence.coordinateSystem(), equalTo(CoordinateSystem.ZERO_BASED));
+        assertThat(sequence.coordinateSystem(), equalTo(CoordinateSystem.zeroBased()));
         assertThat(sequence.sequence(), equalTo("ACGTA"));
     }
 
     @ParameterizedTest
     @CsvSource({
-            "POSITIVE, ZERO_BASED, 100, 105,      ACGTA",
-            "POSITIVE,  ONE_BASED, 101, 105,      ACGTA",
+            "POSITIVE,     LEFT_OPEN, 100, 105,      ACGTA",
+            "POSITIVE,  FULLY_CLOSED, 101, 105,      ACGTA",
 
-            "NEGATIVE, ZERO_BASED, 395, 400,      TACGT",
-            "NEGATIVE,  ONE_BASED, 396, 400,      TACGT",
+            "NEGATIVE,     LEFT_OPEN, 395, 400,      TACGT",
+            "NEGATIVE,  FULLY_CLOSED, 396, 400,      TACGT",
 
-            "POSITIVE, ZERO_BASED, 103, 105,      TA",
-            "POSITIVE,  ONE_BASED, 104, 105,      TA",
+            "POSITIVE,     LEFT_OPEN, 103, 105,      TA",
+            "POSITIVE,  FULLY_CLOSED, 104, 105,      TA",
 
-            "POSITIVE, ZERO_BASED, 100, 101,      A",
-            "POSITIVE,  ONE_BASED, 101, 101,      A",
+            "POSITIVE,     LEFT_OPEN, 100, 101,      A",
+            "POSITIVE,  FULLY_CLOSED, 101, 101,      A",
 
-            "POSITIVE, ZERO_BASED, 104, 105,      A",
-            "POSITIVE,  ONE_BASED, 105, 105,      A",
+            "POSITIVE,     LEFT_OPEN, 104, 105,      A",
+            "POSITIVE,  FULLY_CLOSED, 105, 105,      A",
 
-            "NEGATIVE, ZERO_BASED, 399, 400,      T",
-            "NEGATIVE,  ONE_BASED, 400, 400,      T"})
+            "NEGATIVE,     LEFT_OPEN, 399, 400,      T",
+            "NEGATIVE,  FULLY_CLOSED, 400, 400,      T"})
     public void subsequence(Strand strand, CoordinateSystem coordinateSystem, int start, int end,
                             String expected) {
-        StrandedSequence zeroSeq = StrandedSequence.of(CONTIG, Strand.POSITIVE, CoordinateSystem.ZERO_BASED, Position.of(100), Position.of(105), "ACGTA");
-        StrandedSequence oneSeq = StrandedSequence.of(CONTIG, Strand.POSITIVE, CoordinateSystem.ONE_BASED, Position.of(101), Position.of(105), "ACGTA");
+        StrandedSequence zeroSeq = StrandedSequence.of(CONTIG, Strand.POSITIVE, CoordinateSystem.zeroBased(), Position.of(100), Position.of(105), "ACGTA");
+        StrandedSequence oneSeq = StrandedSequence.of(CONTIG, Strand.POSITIVE, CoordinateSystem.oneBased(), Position.of(101), Position.of(105), "ACGTA");
+        StrandedSequence fullyOpenSeq = StrandedSequence.of(CONTIG, Strand.POSITIVE, CoordinateSystem.FULLY_OPEN, Position.of(100), Position.of(106), "ACGTA");
+        StrandedSequence rightOpenSeq = StrandedSequence.of(CONTIG, Strand.POSITIVE, CoordinateSystem.RIGHT_OPEN, Position.of(101), Position.of(106), "ACGTA");
         GenomicRegion query = GenomicRegion.of(CONTIG, strand, coordinateSystem, Position.of(start), Position.of(end));
 
         assertThat(zeroSeq.subsequence(query), equalTo(expected));
         assertThat(oneSeq.subsequence(query), equalTo(expected));
+        assertThat(fullyOpenSeq.subsequence(query), equalTo(expected));
+        assertThat(rightOpenSeq.subsequence(query), equalTo(expected));
     }
 }

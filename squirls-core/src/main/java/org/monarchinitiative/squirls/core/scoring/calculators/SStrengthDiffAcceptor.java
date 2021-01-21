@@ -78,7 +78,7 @@ package org.monarchinitiative.squirls.core.scoring.calculators;
 
 import org.monarchinitiative.squirls.core.reference.*;
 import org.monarchinitiative.squirls.core.scoring.calculators.ic.SplicingInformationContentCalculator;
-import org.monarchinitiative.variant.api.GenomicPosition;
+import org.monarchinitiative.variant.api.GenomicRegion;
 import org.monarchinitiative.variant.api.Variant;
 
 /**
@@ -109,10 +109,13 @@ public class SStrengthDiffAcceptor implements FeatureCalculator {
                 final int exonIdx = locationData.getExonIdx();
                 if (transcript.exons().size() - exonIdx > 1) {
                     // the current exon is NOT the last exon of the transcript
-                    GenomicPosition thisAcceptorAnchor = transcript.exons().get(exonIdx).startGenomicPosition();
-                    String thisAcceptorSiteSnippet = generator.getAcceptorSiteWithAltAllele(thisAcceptorAnchor, variant, sequence);
-                    GenomicPosition nextAcceptorAnchor = transcript.exons().get(exonIdx + 1).startGenomicPosition();
-                    String nextAcceptorSiteSnippet = generator.getAcceptorSiteWithAltAllele(nextAcceptorAnchor, variant, sequence);
+                    GenomicRegion thisExon = transcript.exons().get(exonIdx);
+                    GenomicRegion thisAcceptor = generator.makeAcceptorInterval(thisExon);
+                    String thisAcceptorSiteSnippet = generator.getAcceptorSiteWithAltAllele(thisAcceptor, variant, sequence);
+
+                    GenomicRegion nextExon = transcript.exons().get(exonIdx + 1);
+                    GenomicRegion nextAcceptor = generator.makeAcceptorInterval(nextExon);
+                    String nextAcceptorSiteSnippet = generator.getAcceptorSiteWithAltAllele(nextAcceptor, variant, sequence);
 
                     if (thisAcceptorSiteSnippet != null && nextAcceptorSiteSnippet != null) {
                         return calculator.getSpliceAcceptorScore(thisAcceptorSiteSnippet) - calculator.getSpliceAcceptorScore(nextAcceptorSiteSnippet);

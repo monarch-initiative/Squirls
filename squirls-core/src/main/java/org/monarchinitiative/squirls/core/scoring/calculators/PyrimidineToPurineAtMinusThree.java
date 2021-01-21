@@ -77,7 +77,7 @@
 package org.monarchinitiative.squirls.core.scoring.calculators;
 
 import org.monarchinitiative.squirls.core.reference.*;
-import org.monarchinitiative.variant.api.GenomicPosition;
+import org.monarchinitiative.variant.api.GenomicRegion;
 import org.monarchinitiative.variant.api.Variant;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -115,24 +115,18 @@ public class PyrimidineToPurineAtMinusThree implements FeatureCalculator {
      */
     @Override
     public double score(Variant variant, TranscriptModel transcript, StrandedSequence sequence) {
-        final SplicingLocationData locationData = locator.locate(variant, transcript);
+        SplicingLocationData locationData = locator.locate(variant, transcript);
 
         if (locationData.getPosition() != SplicingLocationData.SplicingPosition.ACCEPTOR) {
             // variant does not affect the acceptor site, therefore does not lead to `..YAG..` -> `..RAG..`
             return 0.;
         }
 
-        if (locationData.getAcceptorBoundary().isEmpty()) {
-            // this should not happen since the position has been set to ACCEPTOR but let's be sure!
-            if (LOGGER.isWarnEnabled())
-                LOGGER.warn("Inconsistency - position set to acceptor but the boundary is absent: {} - {}",
-                        variant, transcript.accessionId());
-            return Double.NaN;
-        }
+        GenomicRegion exon = transcript.exons().get(locationData.getExonIdx());
+        GenomicRegion acceptorInterval = generator.makeAcceptorInterval(exon);
 
-        GenomicPosition acceptorBoundary = locationData.getAcceptorBoundary().get();
-        String refAcceptorSnippet = generator.getAcceptorSiteSnippet(acceptorBoundary, sequence);
-        String altAcceptorSnippet = generator.getAcceptorSiteWithAltAllele(acceptorBoundary, variant, sequence);
+        String refAcceptorSnippet = sequence.subsequence(acceptorInterval);
+        String altAcceptorSnippet = generator.getAcceptorSiteWithAltAllele(acceptorInterval, variant, sequence);
 
         if (refAcceptorSnippet == null || altAcceptorSnippet == null) {
             // unable to create padded alleles due to insufficient sequence. This should not happen since we fetch

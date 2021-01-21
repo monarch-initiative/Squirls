@@ -168,7 +168,7 @@ public class JannovarDataManager {
                     return Optional.empty();
                 }
                 Strand strand = tx.getStrand().isForward() ? Strand.POSITIVE : Strand.NEGATIVE;
-                CoordinateSystem coordinateSystem = CoordinateSystem.ZERO_BASED; // always in Jannovar
+                CoordinateSystem coordinateSystem = CoordinateSystem.zeroBased(); // always in Jannovar
 
 
                 org.monarchinitiative.squirls.core.reference.TranscriptModel sqtx;

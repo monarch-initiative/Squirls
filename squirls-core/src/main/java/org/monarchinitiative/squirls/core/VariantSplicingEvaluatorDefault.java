@@ -81,9 +81,7 @@ import org.monarchinitiative.squirls.core.classifier.SquirlsFeatures;
 import org.monarchinitiative.squirls.core.reference.StrandedSequence;
 import org.monarchinitiative.squirls.core.reference.TranscriptModel;
 import org.monarchinitiative.squirls.core.scoring.SplicingAnnotator;
-import org.monarchinitiative.variant.api.GenomicPosition;
-import org.monarchinitiative.variant.api.GenomicRegion;
-import org.monarchinitiative.variant.api.Variant;
+import org.monarchinitiative.variant.api.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -129,11 +127,19 @@ class VariantSplicingEvaluatorDefault implements VariantSplicingEvaluator {
      */
     @Override
     public SquirlsResult evaluate(Variant variant, Set<String> txIds) {
-        if (variant.isSymbolic()) {
+        if (VariantType.isSymbolic(variant.ref(), variant.alt())) {
             if (LOGGER.isDebugEnabled())
                 LOGGER.debug("Skipping symbolic variant {}:{}-{} {}", variant.contigName(), variant.start(), variant.end(), variant.variantType());
             return SquirlsResult.empty();
+        } else if (VariantType.isMissingUpstreamDeletion(variant.alt())) {
+            // VCF4.2 specs:
+            // The ‘*’ allele is reserved to indicate that the allele is missing due to a upstream deletion.
+            if (LOGGER.isDebugEnabled())
+                LOGGER.debug("Skipping variant where alt allele is missing due to an upstream deletion: {}:{}-{} {}",
+                        variant.contigName(), variant.startPositionWithCoordinateSystem(CoordinateSystem.oneBased()), variant.ref(), variant.alt());
+            return SquirlsResult.empty();
         }
+
         /*
          0 - perform some sanity checks at the beginning.
          */
@@ -157,23 +163,28 @@ class VariantSplicingEvaluatorDefault implements VariantSplicingEvaluator {
         }
 
         /*
-         2 - get enough reference sequence for evaluation with respect to all transcripts
+         2 - get enough reference sequence for evaluation with respect to all transcripts. The sequence is queried
+         on POSITIVE strand using 0-based coordinate system.
          */
-        GenomicPosition bp = null, ep = null;
+        Strand strand = Strand.POSITIVE;
+        CoordinateSystem coordinateSystem = CoordinateSystem.zeroBased();
+        Integer bp = null, ep = null;
         for (TranscriptModel tx : txMap.values()) {
-            GenomicRegion txIntervalFwd = tx.toPositiveStrand();
-            if (bp == null || bp.isDownstreamOf(txIntervalFwd.startGenomicPosition())) {
-                bp = txIntervalFwd.startGenomicPosition();
+            GenomicRegion txIntervalFwd = tx.withStrand(strand).withCoordinateSystem(coordinateSystem);
+            int start = txIntervalFwd.start();
+            if (bp == null || bp > start) {
+                bp = start;
             }
-            if (ep == null || ep.isUpstreamOf(txIntervalFwd.endGenomicPosition())) {
-                ep = txIntervalFwd.endGenomicPosition();
+            int end = txIntervalFwd.end();
+            if (ep == null || ep < end) {
+                ep = end;
             }
         }
 
         // PADDING should provide enough sequence in most cases
-        GenomicPosition toFetchStart = GenomicPosition.zeroBased(bp.contig(), bp.strand(), bp.position().shift(-PADDING));
-        GenomicPosition toFetchEnd = GenomicPosition.zeroBased(ep.contig(), ep.strand(), ep.position().shift(PADDING));
-        GenomicRegion toFetch = GenomicRegion.of(toFetchStart, toFetchEnd);
+        bp -= PADDING;
+        ep += PADDING;
+        GenomicRegion toFetch = GenomicRegion.of(variant.contig(), strand, coordinateSystem, Position.of(bp), Position.of(ep));
         StrandedSequence seq = squirlsDataService.sequenceForRegion(toFetch);
         if (seq == null) {
             if (LOGGER.isDebugEnabled())

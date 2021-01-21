@@ -152,11 +152,6 @@
 
 package org.monarchinitiative.squirls.core;
 
-import org.monarchinitiative.variant.api.GenomicPosition;
-import org.monarchinitiative.variant.api.GenomicRegion;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.IntStream;
@@ -166,8 +161,6 @@ import java.util.stream.Stream;
  *
  */
 public class Utils {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(Utils.class);
 
     /**
      * Create subsequences/windows of size <code>'ws'</code> from nucleotide <code>sequence</code>.
@@ -231,40 +224,5 @@ public class Utils {
             }
         }
         return max;
-    }
-
-    public static int getDiff(GenomicRegion variant, GenomicPosition closestSite) {
-        variant = variant.toZeroBased();
-        int diff = closestSite.distanceTo(variant);
-        if (diff < 0) {
-            // variant is upstream from the border position
-            return diff - 1;
-        } else if (diff > 0) {
-            // variant is downstream from the border position
-            return diff + 1;
-        } else {
-            /*
-            Due to representation of exon|Intron / intron|Exon boundary as a GenomePosition that represents position of
-            the capital E/I character above, we need to distinguish when variant interval denotes
-              - a deletion of the boundary, or
-              - SNP at +-1 position.
-
-            The code below handles these situations.
-            */
-            if (variant.contains(closestSite) && variant.length() > 1) {
-                // deletion of the boundary
-                return 0;
-            } else if (variant.start() == closestSite.pos()) {
-                // SNP at +1 position
-                return 1;
-            } else if (variant.end() == closestSite.pos()) {
-                // SNP at -1 position
-                return -1;
-            } else {
-                if (LOGGER.isWarnEnabled())
-                    LOGGER.warn("Inconsistency of position for variant {}:{}-{} and closest site at {}", variant.contigName(), variant.start(), variant.end(), closestSite.pos());
-                return 0;
-            }
-        }
     }
 }

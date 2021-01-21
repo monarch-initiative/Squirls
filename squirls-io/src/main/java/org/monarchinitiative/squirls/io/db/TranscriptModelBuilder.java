@@ -88,7 +88,7 @@ import java.util.stream.Collectors;
 class TranscriptModelBuilder {
 
     // all transcripts are stored in the database using 0-based system
-    private static final CoordinateSystem COORDINATE_SYSTEM = CoordinateSystem.ZERO_BASED;
+    private static final CoordinateSystem COORDINATE_SYSTEM = CoordinateSystem.zeroBased();
 
     private final Map<Integer, GenomicRegion> exons = new HashMap<>();
     private Contig contig;

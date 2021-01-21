@@ -79,8 +79,10 @@ package org.monarchinitiative.squirls.core.scoring.calculators;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.monarchinitiative.variant.api.CoordinateSystem;
+import org.monarchinitiative.variant.api.Position;
+import org.monarchinitiative.variant.api.Strand;
 import org.monarchinitiative.variant.api.Variant;
-import org.monarchinitiative.variant.api.impl.SequenceVariant;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -106,8 +108,8 @@ public class PptIsTruncatedTest extends CalculatorTestBase {
             "1384,g,a,0.", // non-match, this is a SNV and not a deletion
     })
     public void score(int pos, String ref, String alt, double expected) {
-        Variant variant = SequenceVariant.zeroBased(contig, pos, ref, alt);
-        assertThat(calculator.score(variant, tx, sequenceInterval), is(closeTo(expected, EPSILON)));
+        Variant variant = Variant.nonSymbolic(contig, "", Strand.POSITIVE, CoordinateSystem.zeroBased(), Position.of(pos), ref, alt);
+        assertThat(calculator.score(variant, tx, sequence), is(closeTo(expected, EPSILON)));
     }
 
 }

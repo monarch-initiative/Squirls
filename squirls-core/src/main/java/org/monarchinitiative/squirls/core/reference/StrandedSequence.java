@@ -77,7 +77,7 @@
 package org.monarchinitiative.squirls.core.reference;
 
 import org.monarchinitiative.variant.api.*;
-import org.monarchinitiative.variant.api.impl.Seq;
+import org.monarchinitiative.variant.api.util.Seq;
 
 import java.util.Objects;
 
@@ -89,7 +89,7 @@ public class StrandedSequence extends BaseGenomicRegion<StrandedSequence> {
 
     protected StrandedSequence(Contig contig, Strand strand, CoordinateSystem coordinateSystem, Position startPosition, Position endPosition, String sequence) {
         super(contig, strand, coordinateSystem, startPosition, endPosition);
-        this.start = normalisedStartPosition(CoordinateSystem.ZERO_BASED).pos();
+        this.start = startWithCoordinateSystem(CoordinateSystem.zeroBased());
         this.sequence = sequence;
         if (length() != sequence.length()) {
             throw new IllegalArgumentException("Sequence length " + sequence.length() + " does not match length of the region " + length());

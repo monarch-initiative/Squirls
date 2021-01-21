@@ -80,8 +80,10 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.monarchinitiative.variant.api.CoordinateSystem;
+import org.monarchinitiative.variant.api.Position;
+import org.monarchinitiative.variant.api.Strand;
 import org.monarchinitiative.variant.api.Variant;
-import org.monarchinitiative.variant.api.impl.SequenceVariant;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
@@ -108,8 +110,8 @@ public class SeptamerTest extends CalculatorTestBase {
 
     @Test
     public void score() {
-        Variant variant = SequenceVariant.zeroBased(contig, 1201, "t", "g");
-        assertThat(calculator.score(variant, tx, sequenceInterval), is(closeTo(-.317399, EPSILON)));
+        Variant variant = Variant.nonSymbolic(contig, "", Strand.POSITIVE, CoordinateSystem.zeroBased(), Position.of(1201), "t", "g");
+        assertThat(calculator.score(variant, tx, sequence), is(closeTo(-.317399, EPSILON)));
     }
 
     @ParameterizedTest

@@ -91,73 +91,68 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 
-@SpringBootTest(classes = {TestDataSourceConfig.class})
+@SpringBootTest(classes = TestDataSourceConfig.class)
 public class TranscriptModelLocatorNaiveTest {
 
     private static final Contig contig = Contig.of(1, "1", SequenceRole.ASSEMBLED_MOLECULE, "1", AssignedMoleculeType.CHROMOSOME, 10_000, "", "", "");
 
     private TranscriptModelLocatorNaive locator;
 
-    private TranscriptModel fwdTranscript;
-
-    private TranscriptModel revTranscript;
-
-    private static GenomicRegion makeSnpRegion(int begin) {
-        return makeRegion(begin, begin + 1);
+    private static GenomicRegion makeSnpRegion(int pos) {
+        return makeRegion(pos, pos);
     }
 
     private static GenomicRegion makeRegion(int begin, int end) {
-        return GenomicRegion.zeroBased(contig, Strand.POSITIVE, Position.of(begin), Position.of(end));
+        return GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.oneBased(), Position.of(begin), Position.of(end));
     }
 
     @BeforeEach
     public void setUp() {
-        fwdTranscript = PojosForTesting.getTranscriptWithThreeExons(contig);
-        revTranscript = PojosForTesting.getTranscriptWithThreeExonsOnRevStrand(contig);
         locator = new TranscriptModelLocatorNaive(PojosForTesting.makeSplicingParameters());
-    }
-
-    private GenomicRegion makeInterval(int begin, int end) {
-        return GenomicRegion.zeroBased(contig, Strand.POSITIVE, Position.of(begin), Position.of(end));
     }
 
     @Test
     public void onDifferentContig() {
-        Contig contig = Contig.of(33, "12", SequenceRole.ASSEMBLED_MOLECULE, "12", AssignedMoleculeType.CHROMOSOME, 1000, "", "", "");
+        Contig contig = Contig.of(33, "12", SequenceRole.ASSEMBLED_MOLECULE, "12", AssignedMoleculeType.CHROMOSOME, 10_000, "", "", "");
         GenomicRegion variant = GenomicRegion.zeroBased(contig, Strand.POSITIVE, Position.of(999), Position.of(1000));
+        TranscriptModel txOnPositiveStrand = PojosForTesting.getTranscriptWithThreeExons(contig);
 
-        SplicingLocationData data = locator.locate(variant, fwdTranscript);
+        SplicingLocationData data = locator.locate(variant, txOnPositiveStrand);
         assertThat(data, is(SplicingLocationData.outside()));
     }
 
     @ParameterizedTest
     @CsvSource({
-            " 999,     OUTSIDE,  -1, -1, false,   -1,   -1, false,    -1,   -1",
-            "1000,        EXON,   0, -1,  true, 1197, 1206, false,    -1,   -1",
-            "1196,        EXON,   0, -1,  true, 1197, 1206, false,    -1,   -1",
-            "1197,       DONOR,   0,  0,  true, 1197, 1206, false,    -1,   -1",
-            "1205,       DONOR,   0,  0,  true, 1197, 1206, false,    -1,   -1",
-            "1206,      INTRON,  -1,  0,  true, 1197, 1206,  true,  1375, 1402",
-            "1374,      INTRON,  -1,  0,  true, 1197, 1206,  true,  1375, 1402",
-            "1375,    ACCEPTOR,   1,  0,  true, 1597, 1606,  true,  1375, 1402",
-            "1401,    ACCEPTOR,   1,  0,  true, 1597, 1606,  true,  1375, 1402",
-            "1402,        EXON,   1, -1,  true, 1597, 1606,  true,  1375, 1402",
-            "1596,        EXON,   1, -1,  true, 1597, 1606,  true,  1375, 1402",
-            "1597,       DONOR,   1,  1,  true, 1597, 1606,  true,  1375, 1402",
-            "1605,       DONOR,   1,  1,  true, 1597, 1606,  true,  1375, 1402",
-            "1606,      INTRON,  -1,  1,  true, 1597, 1606,  true,  1775, 1802",
-            "1774,      INTRON,  -1,  1,  true, 1597, 1606,  true,  1775, 1802",
-            "1775,    ACCEPTOR,   2,  1, false,   -1,   -1,  true,  1775, 1802",
-            "1801,    ACCEPTOR,   2,  1, false,   -1,   -1,  true,  1775, 1802",
-            "1802,        EXON,   2, -1, false,   -1,   -1,  true,  1775, 1802",
-            "1999,        EXON,   2, -1, false,   -1,   -1,  true,  1775, 1802",
-            "2000,     OUTSIDE,  -1, -1, false,   -1,   -1,  false,   -1,   -1",
+            //                1000-1200    1400-1600    1800-2000
+            "1000,     OUTSIDE,  -1, -1,     false,   -1,   -1,     false,    -1,   -1",
+            "1001,        EXON,   0, -1,      true, 1197, 1206,     false,    -1,   -1",
+            "1197,        EXON,   0, -1,      true, 1197, 1206,     false,    -1,   -1",
+            "1198,       DONOR,   0,  0,      true, 1197, 1206,     false,    -1,   -1",
+            "1206,       DONOR,   0,  0,      true, 1197, 1206,     false,    -1,   -1",
+            "1207,      INTRON,  -1,  0,      true, 1197, 1206,      true,  1375, 1402",
+            "1375,      INTRON,  -1,  0,      true, 1197, 1206,      true,  1375, 1402",
+            "1376,    ACCEPTOR,   1,  0,      true, 1597, 1606,      true,  1375, 1402",
+            "1402,    ACCEPTOR,   1,  0,      true, 1597, 1606,      true,  1375, 1402",
+            "1403,        EXON,   1, -1,      true, 1597, 1606,      true,  1375, 1402",
+            "1597,        EXON,   1, -1,      true, 1597, 1606,      true,  1375, 1402",
+            "1598,       DONOR,   1,  1,      true, 1597, 1606,      true,  1375, 1402",
+            "1606,       DONOR,   1,  1,      true, 1597, 1606,      true,  1375, 1402",
+            "1607,      INTRON,  -1,  1,      true, 1597, 1606,      true,  1775, 1802",
+            "1775,      INTRON,  -1,  1,      true, 1597, 1606,      true,  1775, 1802",
+            "1776,    ACCEPTOR,   2,  1,     false,   -1,   -1,      true,  1775, 1802",
+            "1802,    ACCEPTOR,   2,  1,     false,   -1,   -1,      true,  1775, 1802",
+            "1803,        EXON,   2, -1,     false,   -1,   -1,      true,  1775, 1802",
+            "2000,        EXON,   2, -1,     false,   -1,   -1,      true,  1775, 1802",
+            "2001,     OUTSIDE,  -1, -1,     false,   -1,   -1,      false,   -1,   -1",
     })
-    public void threeExonTranscript(int pos,
-                                    SplicingLocationData.SplicingPosition position, int exonIdx, int intronIdx,
-                                    boolean donorIsPresent, int donorStart, int donorEnd,
-                                    boolean acceptorIsPresent, int acceptorStart, int acceptorEnd) {
-        SplicingLocationData data = locator.locate(makeSnpRegion(pos), fwdTranscript);
+    public void locate_txOnPositiveStrand(int pos,
+                                          SplicingLocationData.SplicingPosition position, int exonIdx, int intronIdx,
+                                          boolean donorIsPresent, int donorStart, int donorEnd,
+                                          boolean acceptorIsPresent, int acceptorStart, int acceptorEnd) {
+        TranscriptModel txOnPositiveStrand = PojosForTesting.getTranscriptWithThreeExons(contig);
+
+        SplicingLocationData data = locator.locate(makeSnpRegion(pos), txOnPositiveStrand);
+
         assertThat(data.getPosition(), is(position));
         assertThat(data.getExonIdx(), is(exonIdx));
         assertThat(data.getIntronIdx(), is(intronIdx));
@@ -179,13 +174,67 @@ public class TranscriptModelLocatorNaiveTest {
 
     @ParameterizedTest
     @CsvSource({
-            "1000,    EXON, 0, -1, false, false",
-            "1999,    EXON, 0, -1, false, false"})
+            //                1000-1200    1400-1600    1800-2000     (NEGATIVE)
+            "9001,     OUTSIDE,  -1, -1,     false,   -1,   -1,     false,    -1,   -1",
+            "9000,        EXON,   0, -1,      true, 1197, 1206,     false,    -1,   -1",
+            "8804,        EXON,   0, -1,      true, 1197, 1206,     false,    -1,   -1",
+            "8803,       DONOR,   0,  0,      true, 1197, 1206,     false,    -1,   -1",
+            "8795,       DONOR,   0,  0,      true, 1197, 1206,     false,    -1,   -1",
+            "8794,      INTRON,  -1,  0,      true, 1197, 1206,      true,  1375, 1402",
+            "8626,      INTRON,  -1,  0,      true, 1197, 1206,      true,  1375, 1402",
+            "8625,    ACCEPTOR,   1,  0,      true, 1597, 1606,      true,  1375, 1402",
+            "8599,    ACCEPTOR,   1,  0,      true, 1597, 1606,      true,  1375, 1402",
+            "8598,        EXON,   1, -1,      true, 1597, 1606,      true,  1375, 1402",
+            "8404,        EXON,   1, -1,      true, 1597, 1606,      true,  1375, 1402",
+            "8403,       DONOR,   1,  1,      true, 1597, 1606,      true,  1375, 1402",
+            "8395,       DONOR,   1,  1,      true, 1597, 1606,      true,  1375, 1402",
+            "8394,      INTRON,  -1,  1,      true, 1597, 1606,      true,  1775, 1802",
+            "8226,      INTRON,  -1,  1,      true, 1597, 1606,      true,  1775, 1802",
+            "8225,    ACCEPTOR,   2,  1,     false,   -1,   -1,      true,  1775, 1802",
+            "8199,    ACCEPTOR,   2,  1,     false,   -1,   -1,      true,  1775, 1802",
+            "8198,        EXON,   2, -1,     false,   -1,   -1,      true,  1775, 1802",
+            "8001,        EXON,   2, -1,     false,   -1,   -1,      true,  1775, 1802",
+            "8000,     OUTSIDE,  -1, -1,     false,   -1,   -1,      false,   -1,   -1",
+    })
+    public void locate_txOnNegativeStrand(int pos,
+                                          SplicingLocationData.SplicingPosition position, int exonIdx, int intronIdx,
+                                          boolean donorIsPresent, int donorStart, int donorEnd,
+                                          boolean acceptorIsPresent, int acceptorStart, int acceptorEnd) {
+        TranscriptModel txOnNegativeStrand = PojosForTesting.getTranscriptWithThreeExonsOnRevStrand(contig);
+
+        SplicingLocationData data = locator.locate(makeSnpRegion(pos), txOnNegativeStrand);
+
+        assertThat(data.getPosition(), is(position));
+        assertThat(data.getExonIdx(), is(exonIdx));
+        assertThat(data.getIntronIdx(), is(intronIdx));
+
+        Optional<GenomicRegion> dr = data.getDonorRegion();
+        assertThat(dr.isPresent(), equalTo(donorIsPresent));
+        if (donorIsPresent) {
+            assertThat(dr.get().start(), equalTo(donorStart));
+            assertThat(dr.get().end(), equalTo(donorEnd));
+        }
+
+        Optional<GenomicRegion> ar = data.getAcceptorRegion();
+        assertThat(ar.isPresent(), equalTo(acceptorIsPresent));
+        if (acceptorIsPresent) {
+            assertThat(ar.get().start(), equalTo(acceptorStart));
+            assertThat(ar.get().end(), equalTo(acceptorEnd));
+        }
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+            "1000,  OUTSIDE, -1, -1, false, false",
+            "1001,     EXON,  0, -1, false, false",
+            "2000,     EXON,  0, -1, false, false",
+            "2001,  OUTSIDE, -1, -1, false, false"})
     public void firstBaseOfSingleExonTranscript(int pos,
                                                 SplicingLocationData.SplicingPosition position,
                                                 int exonIdx, int intronIdx,
                                                 boolean donorIsPresent, boolean acceptorIsPresent) {
         TranscriptModel se = PojosForTesting.getTranscriptWithSingleExon(contig);
+
         SplicingLocationData data = locator.locate(makeSnpRegion(pos), se);
 
         assertThat(data.getPosition(), equalTo(position));

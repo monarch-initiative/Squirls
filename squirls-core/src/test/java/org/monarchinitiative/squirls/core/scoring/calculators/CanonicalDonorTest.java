@@ -77,9 +77,12 @@
 package org.monarchinitiative.squirls.core.scoring.calculators;
 
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.monarchinitiative.variant.api.CoordinateSystem;
+import org.monarchinitiative.variant.api.Position;
+import org.monarchinitiative.variant.api.Strand;
 import org.monarchinitiative.variant.api.Variant;
-import org.monarchinitiative.variant.api.impl.SequenceVariant;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -96,33 +99,17 @@ public class CanonicalDonorTest extends CalculatorTestBase {
         scorer = new CanonicalDonor(calculator, generator, locator);
     }
 
-    @Test
-    public void snpInDonor() {
-        Variant variant = SequenceVariant.zeroBased(contig, 1200, "g", "a");
-        assertThat(scorer.score(variant, tx, sequenceInterval), is(closeTo(8.9600, EPSILON)));
+    @ParameterizedTest
+    @CsvSource({
+            "1200, g,   a,       8.9600",
+            "1199, Ggt, G,      15.6686",
+            "1200, gt,  gtgt,   -0.6725",
+            "1196, g,   a,       0.0000",
+            "1206, a,   c,       0.0000",
+    })
+    public void score(int pos, String ref, String alt, double expected) {
+        Variant variant = Variant.nonSymbolic(contig, "", Strand.POSITIVE, CoordinateSystem.zeroBased(), Position.of(pos), ref, alt);
+        assertThat(scorer.score(variant, tx, sequence), is(closeTo(expected, EPSILON)));
     }
 
-    @Test
-    public void deletionInDonor() {
-        Variant variant = SequenceVariant.zeroBased(contig, 1199, "Ggt", "G");
-        assertThat(scorer.score(variant, tx, sequenceInterval), is(closeTo(15.6686, EPSILON)));
-    }
-
-    @Test
-    public void insertionInDonor() {
-        Variant variant = SequenceVariant.zeroBased(contig, 1200, "gt", "gtgt");
-        assertThat(scorer.score(variant, tx, sequenceInterval), is(closeTo(-0.6725, EPSILON)));
-    }
-
-    @Test
-    public void snpJustUpstreamFromDonor() {
-        Variant variant = SequenceVariant.zeroBased(contig, 1196, "G", "A");
-        assertThat(scorer.score(variant, tx, sequenceInterval), is(closeTo(0.0000, EPSILON)));
-    }
-
-    @Test
-    public void snpJustDownstreamFromDonor() {
-        Variant variant = SequenceVariant.zeroBased(contig, 1206, "a", "c");
-        assertThat(scorer.score(variant, tx, sequenceInterval), is(closeTo(0.0000, EPSILON)));
-    }
 }

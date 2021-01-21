@@ -71,35 +71,55 @@
  *
  * version:6-8-18
  *
- * Daniel Danis, Peter N Robinson, 2020
+ * Daniel Danis, Peter N Robinson, 2021
  */
 
 package org.monarchinitiative.squirls.core.scoring.calculators;
 
-import org.monarchinitiative.squirls.core.reference.*;
-import org.monarchinitiative.squirls.core.scoring.calculators.ic.SplicingInformationContentCalculator;
-import org.monarchinitiative.variant.api.Variant;
+import org.monarchinitiative.variant.api.GenomicRegion;
+import org.monarchinitiative.variant.api.Position;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-abstract class BaseFeatureCalculator implements FeatureCalculator {
+class DistanceUtils {
 
-    protected final SplicingInformationContentCalculator calculator;
+    private static final Logger LOGGER = LoggerFactory.getLogger(DistanceUtils.class);
 
-    protected final AlleleGenerator generator;
-
-    private final TranscriptModelLocator locator;
-
-    protected BaseFeatureCalculator(SplicingInformationContentCalculator calculator,
-                                    AlleleGenerator generator,
-                                    TranscriptModelLocator locator) {
-        this.calculator = calculator;
-        this.generator = generator;
-        this.locator = locator;
+    private DistanceUtils() {
+        // private no-op
     }
 
-    @Override
-    public double score(Variant variant, TranscriptModel transcript, StrandedSequence sequence) {
-        return score(variant, locator.locate(variant, transcript), transcript, sequence);
+
+    static int getDiff(GenomicRegion variant, Position closestSite) {
+        int diff = closestSite.distanceToRegion(variant);
+        if (diff < 0) {
+            // variant is upstream from the border position
+            return diff - 1;
+        } else if (diff > 0) {
+            // variant is downstream from the border position
+            return diff;
+        } else {
+            /*
+            Due to representation of exon|Intron / intron|Exon boundary as a GenomePosition that represents position of
+            the capital E/I character above, we need to distinguish when variant interval denotes
+              - a deletion of the boundary, or
+              - SNP at +-1 position.
+
+            The code below handles these situations.
+            */
+            variant = variant.toOneBased();
+            if (variant.contains(closestSite) && variant.length() > 1) {
+                // deletion of the boundary
+                return 0;
+            } else if (variant.start() == closestSite.pos()) {
+                // SNP at -1 position
+                return -1;
+            } else {
+                if (LOGGER.isWarnEnabled())
+                    LOGGER.warn("Inconsistency of position for variant {}:{}-{} and closest site at {}", variant.contigName(), variant.start(), variant.end(), closestSite.pos());
+                return 0;
+            }
+        }
     }
 
-    protected abstract double score(Variant variant, SplicingLocationData locationData, TranscriptModel transcript, StrandedSequence sequence);
 }

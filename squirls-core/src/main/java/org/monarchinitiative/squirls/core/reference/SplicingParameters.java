@@ -76,8 +76,8 @@
 
 package org.monarchinitiative.squirls.core.reference;
 
-import org.monarchinitiative.variant.api.GenomicPosition;
 import org.monarchinitiative.variant.api.GenomicRegion;
+import org.monarchinitiative.variant.api.Position;
 
 /**
  * Container for tunable parameters for scoring of splicing variants.
@@ -147,21 +147,21 @@ public class SplicingParameters {
     }
 
     /**
-     * @param anchor {@link GenomicPosition} representing `exon|intron` boundary. If 1-based coordinate, then
-     *               the coordinate representing the position of the first intronic base
+     * @param exon region that represents an exon
      * @return zero-based {@link GenomicRegion} representing splice donor site
      */
-    public GenomicRegion makeDonorRegion(GenomicPosition anchor) {
-        return anchor.toRegion(-donorExonic, donorIntronic);
+    public GenomicRegion makeDonorRegion(GenomicRegion exon) {
+        Position exonEnd = exon.endPosition();
+        return GenomicRegion.of(exon.contig(), exon.strand(), exon.coordinateSystem(), exonEnd.shift(-donorExonic), exonEnd.shift(donorIntronic));
     }
 
     /**
-     * @param anchor {@link GenomicPosition} representing `intron|exon` boundary. If 1-based coordinate, then
-     *               the coordinate representing the position of the first exonic base
+     * @param exon region that represents an exon
      * @return zero-based {@link GenomicRegion} representing splice acceptor site
      */
-    public GenomicRegion makeAcceptorRegion(GenomicPosition anchor) {
-        return anchor.toRegion(-acceptorIntronic, acceptorExonic);
+    public GenomicRegion makeAcceptorRegion(GenomicRegion exon) {
+        Position exonStart = exon.startPosition();
+        return GenomicRegion.of(exon.contig(), exon.strand(), exon.coordinateSystem(), exonStart.shift(-acceptorIntronic), exonStart.shift(acceptorExonic));
     }
 
     @Override

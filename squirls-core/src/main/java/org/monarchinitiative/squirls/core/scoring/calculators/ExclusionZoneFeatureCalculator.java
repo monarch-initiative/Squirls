@@ -94,7 +94,7 @@ import java.util.regex.Pattern;
 public class ExclusionZoneFeatureCalculator extends BaseAgezCalculator {
 
     /**
-     * Default AGEZ begin and end coordinates.
+     * Default AGEZ 0-based begin and end coordinates.
      */
     public static final int AGEZ_BEGIN = -51, AGEZ_END = -3;
 

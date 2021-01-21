@@ -112,7 +112,7 @@ public class SquirlsDataBuilderTest {
     private static final String VERSIONED_ASSEMBLY = VERSION + "_" + ASSEMBLY;
 
     private static final URL FASTA_URL = GenomeAssemblyDownloaderTest.class.getResource("shortHg19ChromFa.tar.gz");
-    private static final URL ASSEMBLY_REPORT_URL = SquirlsDataBuilderTest.class.getResource("GCF_000001405.25_GRCh37.p13_assembly_report.txt");
+    private static final URL ASSEMBLY_REPORT_URL = SquirlsDataBuilderTest.class.getResource("GCF_000001405.25_GRCh37.p13_assembly_report.short.txt");
 
     private static final List<Contig> CONTIGS = List.of(
             Contig.unknown(),
@@ -127,7 +127,7 @@ public class SquirlsDataBuilderTest {
 
     private static List<TranscriptModel> makeTranscripts() {
         Contig chr2 = CONTIGS.get(1);
-        TranscriptModel tx = TranscriptModel.coding(chr2, Strand.POSITIVE, CoordinateSystem.ZERO_BASED, 10_000, 20_000, 11_000, 19_000,
+        TranscriptModel tx = TranscriptModel.coding(chr2, Strand.POSITIVE, CoordinateSystem.zeroBased(), 10_000, 20_000, 11_000, 19_000,
                 "adam", "ADAM",
                 List.of(GenomicRegion.zeroBased(chr2, 10_000, 12_000),
                         GenomicRegion.zeroBased(chr2, 14_000, 16_000),

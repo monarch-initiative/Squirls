@@ -85,8 +85,8 @@ import org.monarchinitiative.squirls.core.SquirlsDataService;
 import org.monarchinitiative.squirls.core.SquirlsTxResult;
 import org.monarchinitiative.squirls.core.reference.*;
 import org.monarchinitiative.squirls.core.scoring.calculators.ic.SplicingInformationContentCalculator;
-import org.monarchinitiative.variant.api.GenomicPosition;
 import org.monarchinitiative.variant.api.GenomicRegion;
+import org.monarchinitiative.variant.api.Position;
 import org.monarchinitiative.variant.api.Variant;
 import org.monarchinitiative.vmvt.core.VmvtGenerator;
 import org.slf4j.Logger;
@@ -101,7 +101,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import static org.monarchinitiative.squirls.core.Utils.*;
+import static org.monarchinitiative.squirls.core.Utils.argmax;
+import static org.monarchinitiative.squirls.core.Utils.slidingWindow;
 
 /**
  * This graphics generator makes graphics for the splice variant.
@@ -149,6 +150,42 @@ public class PanelGraphicsGenerator implements SplicingVariantGraphicsGenerator 
         templateEngine.setTemplateResolver(templateResolver);
     }
 
+    static int getDiff(GenomicRegion variant, Position closestSite) {
+        variant = variant.toOneBased();
+        int diff = closestSite.distanceToRegion(variant);
+        if (diff < 0) {
+            // variant is upstream from the border position
+            return diff - 1;
+        } else if (diff > 0) {
+            // variant is downstream from the border position
+            return diff;
+        } else {
+            /*
+            Due to representation of exon|Intron / intron|Exon boundary as a GenomePosition that represents position of
+            the capital E/I character above, we need to distinguish when variant interval denotes
+              - a deletion of the boundary, or
+              - SNP at +-1 position.
+
+            The code below handles these situations.
+            */
+            if (variant.contains(closestSite) && variant.length() > 1) {
+                // deletion of the boundary
+                return 0;
+            } else if (variant.start() == closestSite.pos()) {
+                // SNP at -1 position
+                return -1;
+            } else {
+                if (LOGGER.isWarnEnabled())
+                    LOGGER.warn("Inconsistency of position for variant {}:{}-{} and closest site at {}", variant.contigName(), variant.start(), variant.end(), closestSite.pos());
+                return 0;
+            }
+        }
+    }
+
+    private StrandedSequence fetchSequenceForTranscript(TranscriptModel transcript) {
+        return squirlsDataService.sequenceForRegion(transcript.withPadding(250, 250));
+    }
+
     public String generateGraphics(VisualizableVariantAllele allele) {
         Context context = new Context();
         context.setVariable("squirls_results", allele.squirlsResults());
@@ -176,11 +213,11 @@ public class PanelGraphicsGenerator implements SplicingVariantGraphicsGenerator 
         TranscriptModel transcript = stOpt.get();
 
 
-        Variant variant = allele.variant().withStrand(transcript.strand());
+        Variant variant = allele.variant().withStrand(transcript.strand()).withCoordinateSystem(transcript.coordinateSystem());
 
         SplicingLocationData locationData = locator.locate(variant, transcript);
-        Optional<GenomicPosition> dOpt = locationData.getDonorBoundary();
-        Optional<GenomicPosition> aOpt = locationData.getAcceptorBoundary();
+        Optional<GenomicRegion> dOpt = locationData.getDonorRegion();
+        Optional<GenomicRegion> aOpt = locationData.getAcceptorRegion();
 
         String primary = EMPTY_SVG_IMAGE, secondary = EMPTY_SVG_IMAGE;
         String crypticCoordinate = "";
@@ -214,24 +251,23 @@ public class PanelGraphicsGenerator implements SplicingVariantGraphicsGenerator 
         try {
             int altMaxIdx;
             String refAllele, altAllele, refSnippet, altSnippet, altBestWindow, refCorrespondingWindow;
-            GenomicPosition donorAnchor, acceptorAnchor;
+            GenomicRegion donorRegion, acceptorRegion;
             switch (visualizationContext) {
                 case CANONICAL_DONOR:
                     // cannot draw anything without knowing the donor border
                     if (dOpt.isEmpty()) break;
 
-                    donorAnchor = dOpt.get();
-                    GenomicRegion donorSiteRegion = alleleGenerator.makeDonorInterval(donorAnchor);
+                    donorRegion = dOpt.get();
 
                     // cannot draw if variant does not overlap with the site
-                    if (!variant.overlapsWith(donorSiteRegion)) break;
+                    if (!variant.overlapsWith(donorRegion)) break;
 
-                    refAllele = alleleGenerator.getDonorSiteSnippet(donorAnchor, sequence);
+                    refAllele = sequence.subsequence(donorRegion);
                     if (refAllele == null) break;
 
                     // primary - donor logo, ruler, and bar chart
                     // secondary - donor distribution SVG
-                    altAllele = alleleGenerator.getDonorSiteWithAltAllele(donorAnchor, variant, sequence);
+                    altAllele = alleleGenerator.getDonorSiteWithAltAllele(donorRegion, variant, sequence);
                     primary = vmvtGenerator.getDonorSequenceLogoRulerAndBarChart(refAllele, altAllele);
                     secondary = vmvtGenerator.getDonorDistributionSvg(refAllele, altAllele);
                     break;
@@ -240,18 +276,17 @@ public class PanelGraphicsGenerator implements SplicingVariantGraphicsGenerator 
                     // cannot draw anything without knowing the acceptor border
                     if (aOpt.isEmpty()) break;
 
-                    acceptorAnchor = aOpt.get();
-                    GenomicRegion acceptorSiteRegion = alleleGenerator.makeAcceptorInterval(acceptorAnchor);
+                    acceptorRegion = aOpt.get();
 
                     // cannot draw if variant does not overlap with the site
-                    if (!variant.overlapsWith(acceptorSiteRegion)) break;
+                    if (!variant.overlapsWith(acceptorRegion)) break;
 
-                    refAllele = alleleGenerator.getAcceptorSiteSnippet(acceptorAnchor, sequence);
-                    if (refAllele==null) break;
+                    refAllele = sequence.subsequence(acceptorRegion);
+                    if (refAllele == null) break;
 
                     // primary - acceptor logo, ruler, and bar chart
                     // secondary - acceptor distribution SVG
-                    altAllele = alleleGenerator.getAcceptorSiteWithAltAllele(acceptorAnchor, variant, sequence);
+                    altAllele = alleleGenerator.getAcceptorSiteWithAltAllele(acceptorRegion, variant, sequence);
                     primary = vmvtGenerator.getAcceptorSequenceLogoRulerAndBarChart(refAllele, altAllele);
                     secondary = vmvtGenerator.getAcceptorDistributionSvg(refAllele, altAllele);
                     break;
@@ -259,7 +294,7 @@ public class PanelGraphicsGenerator implements SplicingVariantGraphicsGenerator 
                 case CRYPTIC_DONOR:
                     refSnippet = alleleGenerator.getDonorNeighborSnippet(variant, sequence, variant.ref());
                     altSnippet = alleleGenerator.getDonorNeighborSnippet(variant, sequence, variant.alt());
-                    if (refSnippet==null || altSnippet==null) break;
+                    if (refSnippet == null || altSnippet == null) break;
 
                     List<Double> altDonorScores = slidingWindow(altSnippet, splicingParameters.getDonorLength())
                             .map(icCalculator::getSpliceDonorScore)
@@ -269,31 +304,30 @@ public class PanelGraphicsGenerator implements SplicingVariantGraphicsGenerator 
 
                     if (dOpt.isEmpty()) break;
 
-                    donorAnchor = dOpt.get();
-                    refAllele = alleleGenerator.getDonorSiteSnippet(donorAnchor, sequence);
-                    altAllele = alleleGenerator.getDonorSiteWithAltAllele(donorAnchor, variant, sequence);
+                    donorRegion = dOpt.get();
+                    refAllele = sequence.subsequence(donorRegion);
+                    altAllele = alleleGenerator.getDonorSiteWithAltAllele(donorRegion, variant, sequence);
                     primary = vmvtGenerator.getDonorSequenceLogoRulerAndBarChart(refAllele, altAllele);
 
                     altBestWindow = altSnippet.substring(altMaxIdx, altMaxIdx + splicingParameters.getDonorLength());
                     refCorrespondingWindow = refSnippet.substring(altMaxIdx, altMaxIdx + splicingParameters.getDonorLength());
 
                     // which position of the cryptic site the variant is located at? (-1 to transform to 0-based)
-                    int variantCrypticDonorSiteIdx = splicingParameters.getDonorLength() - altMaxIdx - 1; //
-                    int donorDiff = getDiff(variant, donorAnchor) - variantCrypticDonorSiteIdx;
+                    int variantCrypticDonorSiteIdx = splicingParameters.getDonorLength() - altMaxIdx - 1;
+                    int donorDiff = getDiff(variant, donorRegion.startPosition().shift(splicingParameters.getDonorExonic())) - variantCrypticDonorSiteIdx;
                     basesChanged = donorDiff + splicingParameters.getDonorExonic();
 
                     secondary = vmvtGenerator.getDonorSequenceRulerAndBarChartWithOffset(refCorrespondingWindow, altBestWindow, basesChanged);
-                    GenomicPosition crypticDonorPos = GenomicPosition.zeroBased(variant.contig(), variant.strand(),
-                            variant.startPosition().shift(splicingParameters.getDonorExonic() - variantCrypticDonorSiteIdx))
-                            .toPositiveStrand();
+                    int crypticDonorDelta = splicingParameters.getDonorExonic() - variantCrypticDonorSiteIdx;
+                    int crypticDonorPos = variant.toPositiveStrand().toOneBased().start() + crypticDonorDelta;
 
-                    crypticCoordinate = String.format("%s:%s", variant.contigName(), NF.format(crypticDonorPos.pos()));
+                    crypticCoordinate = String.format("%s:%s", variant.contigName(), NF.format(crypticDonorPos));
                     break;
 
                 case CRYPTIC_ACCEPTOR:
                     refSnippet = alleleGenerator.getAcceptorNeighborSnippet(variant, sequence, variant.ref());
                     altSnippet = alleleGenerator.getAcceptorNeighborSnippet(variant, sequence, variant.alt());
-                    if (refSnippet==null || altSnippet==null) break;
+                    if (refSnippet == null || altSnippet == null) break;
 
                     List<Double> altAcceptorScores = slidingWindow(altSnippet, splicingParameters.getAcceptorLength())
                             .map(icCalculator::getSpliceAcceptorScore)
@@ -303,9 +337,10 @@ public class PanelGraphicsGenerator implements SplicingVariantGraphicsGenerator 
 
                     if (aOpt.isEmpty()) break;
 
-                    acceptorAnchor = aOpt.get();
-                    refAllele = alleleGenerator.getAcceptorSiteSnippet(acceptorAnchor, sequence);
-                    altAllele = alleleGenerator.getAcceptorSiteWithAltAllele(acceptorAnchor, variant, sequence);
+                    acceptorRegion = aOpt.get();
+                    refAllele = sequence.subsequence(acceptorRegion);
+                    altAllele = alleleGenerator.getAcceptorSiteWithAltAllele(acceptorRegion, variant, sequence);
+
                     primary = vmvtGenerator.getAcceptorSequenceLogoRulerAndBarChart(refAllele, altAllele);
 
                     altBestWindow = altSnippet.substring(altMaxIdx, altMaxIdx + splicingParameters.getAcceptorLength());
@@ -313,16 +348,15 @@ public class PanelGraphicsGenerator implements SplicingVariantGraphicsGenerator 
 
                     // which position of the cryptic site the variant is located at? (-1 to transform to 0-based)
                     int variantCrypticAcceptorSiteIdx = splicingParameters.getAcceptorLength() - altMaxIdx - 1;
-                    int acceptorDiff = getDiff(variant, acceptorAnchor) - variantCrypticAcceptorSiteIdx;
+                    int acceptorDiff = getDiff(variant, acceptorRegion.endPosition().shift(-splicingParameters.getAcceptorExonic())) - variantCrypticAcceptorSiteIdx;
                     basesChanged = acceptorDiff + splicingParameters.getAcceptorIntronic();
 
                     secondary = vmvtGenerator.getAcceptorSequenceRulerAndBarChartWithOffset(refCorrespondingWindow, altBestWindow, basesChanged);
 
-                    GenomicPosition crypticAcceptorPos = GenomicPosition.zeroBased(variant.contig(), variant.strand(),
-                            variant.startPosition().shift(splicingParameters.getAcceptorIntronic() - variantCrypticAcceptorSiteIdx - 1))
-                            .toPositiveStrand();
+                    int crypticAcceptorDelta = splicingParameters.getAcceptorIntronic() - variantCrypticAcceptorSiteIdx;
+                    int crypticAcceptorPos = variant.toPositiveStrand().toOneBased().start() + crypticAcceptorDelta;
 
-                    crypticCoordinate = String.format("%s:%s", variant.contigName(), NF.format(crypticAcceptorPos.pos()));
+                    crypticCoordinate = String.format("%s:%s", variant.contigName(), NF.format(crypticAcceptorPos));
                     break;
 
                 case UNKNOWN:
@@ -341,9 +375,5 @@ public class PanelGraphicsGenerator implements SplicingVariantGraphicsGenerator 
         context.setVariable("secondary", secondary);
 
         return templateEngine.process(templateName, context);
-    }
-
-    private StrandedSequence fetchSequenceForTranscript(TranscriptModel transcript) {
-        return squirlsDataService.sequenceForRegion(transcript.withPadding(250, 250));
     }
 }

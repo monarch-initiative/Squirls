@@ -76,13 +76,9 @@
 
 package org.monarchinitiative.squirls.core.scoring.calculators;
 
-import org.monarchinitiative.squirls.core.reference.AlleleGenerator;
-import org.monarchinitiative.squirls.core.reference.SplicingLocationData;
-import org.monarchinitiative.squirls.core.reference.StrandedSequence;
-import org.monarchinitiative.squirls.core.reference.TranscriptModelLocator;
+import org.monarchinitiative.squirls.core.reference.*;
 import org.monarchinitiative.squirls.core.Utils;
 import org.monarchinitiative.squirls.core.scoring.calculators.ic.SplicingInformationContentCalculator;
-import org.monarchinitiative.variant.api.GenomicPosition;
 import org.monarchinitiative.variant.api.GenomicRegion;
 import org.monarchinitiative.variant.api.Variant;
 import org.slf4j.Logger;
@@ -105,27 +101,36 @@ public class CrypticDonor extends BaseFeatureCalculator {
     }
 
     @Override
-    protected double score(Variant variant, SplicingLocationData locationData, StrandedSequence sequence) {
-        return locationData.getDonorBoundary()
-                .map(anchor -> score(variant, anchor, sequence))
-                .orElse(0.);
+    protected double score(Variant variant, SplicingLocationData locationData, TranscriptModel transcript, StrandedSequence sequence) {
+        switch (locationData.getPosition()) {
+            case EXON:
+            case INTRON:
+            case DONOR:
+            case ACCEPTOR:
+                // we should have an exon
+                return locationData.getDonorRegion()
+                        .map(donor -> score(variant, donor, sequence))
+                        .orElse(0.);
+            case OUTSIDE:
+            default:
+                return 0.;
+        }
     }
 
 
-    private double score(Variant variant, GenomicPosition anchor, StrandedSequence sequence) {
-        GenomicRegion donorInterval = generator.makeDonorInterval(anchor);
+    private double score(Variant variant, GenomicRegion donor, StrandedSequence sequence) {
 
         // prepare wt donor snippet
-        final String donorSnippet;
-        if (variant.overlapsWith(donorInterval)) {
-            donorSnippet = generator.getDonorSiteWithAltAllele(anchor, variant, sequence);
+        String donorSnippet;
+        if (variant.overlapsWith(donor)) {
+            donorSnippet = generator.getDonorSiteWithAltAllele(donor, variant, sequence);
         } else {
-            donorSnippet = generator.getDonorSiteSnippet(anchor, sequence);
+            donorSnippet = sequence.subsequence(donor);
         }
         if (donorSnippet == null) {
             if (LOGGER.isWarnEnabled())
                 LOGGER.warn("Unable to create donor snippet at `{}` for variant `{}` using sequence `{}`",
-                        anchor, variant, sequence);
+                        donor, variant, sequence);
             return Double.NaN;
         }
 

@@ -88,10 +88,7 @@ import org.monarchinitiative.variant.api.SequenceRole;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
-/**
- *
- */
-@SpringBootTest(classes = {TestDataSourceConfig.class})
+@SpringBootTest(classes = TestDataSourceConfig.class)
 public class CalculatorTestBase {
 
     protected static final Contig contig = Contig.of(1, "1", SequenceRole.ASSEMBLED_MOLECULE, "1", AssignedMoleculeType.CHROMOSOME, 10_000, "", "", "");
@@ -112,7 +109,7 @@ public class CalculatorTestBase {
 
     protected TranscriptModel tx;
 
-    protected StrandedSequence sequenceInterval;
+    protected StrandedSequence sequence;
 
     protected StrandedSequence sequenceOnOtherChrom;
 
@@ -120,7 +117,7 @@ public class CalculatorTestBase {
     @BeforeEach
     public void setUp() throws Exception {
         tx = PojosForTesting.getTranscriptWithThreeExons(contig);
-        sequenceInterval = PojosForTesting.getSequenceIntervalForTranscriptWithThreeExons(contig);
+        sequence = PojosForTesting.getSequenceIntervalForTranscriptWithThreeExons(contig);
         Contig other = Contig.of(44, "44", SequenceRole.ASSEMBLED_MOLECULE, "44", AssignedMoleculeType.CHROMOSOME, 100_000, "", "", "");
         sequenceOnOtherChrom = StrandedSequence.of(GenomicRegion.zeroBased(other, 0, 4), "ACGT");
     }

@@ -76,11 +76,9 @@
 
 package org.monarchinitiative.squirls.core.scoring.calculators;
 
-import org.monarchinitiative.squirls.core.Utils;
 import org.monarchinitiative.squirls.core.reference.StrandedSequence;
 import org.monarchinitiative.squirls.core.reference.TranscriptModel;
-import org.monarchinitiative.variant.api.GenomicPosition;
-import org.monarchinitiative.variant.api.GenomicRegion;
+import org.monarchinitiative.variant.api.Position;
 import org.monarchinitiative.variant.api.Variant;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -94,19 +92,19 @@ public class ClosestAcceptorDistance implements FeatureCalculator {
 
     @Override
     public double score(Variant variant, TranscriptModel transcript, StrandedSequence sequence) {
-        // find the closest donor site
-        Optional<GenomicPosition> closestPosition = transcript.introns().stream()
-                .map(GenomicRegion::endGenomicPosition)
-                .min(Comparator.comparingInt(border -> Math.abs(border.distanceTo(variant))));
+        // find the closest acceptor site
+        Optional<Position> closestPosition = transcript.introns().stream()
+                .map(intron -> intron.toZeroBased().endPosition())
+                .min(Comparator.comparingInt(border -> Math.abs(border.distanceToRegion(variant))));
 
         if (closestPosition.isEmpty()) {
-            // this happens only if the transcript has no introns. We should not assess such transcripts in
+            // This happens only if the transcript has no introns. We should not assess such transcripts in
             // the first place, since there is no splicing there.
             if (LOGGER.isWarnEnabled())
                 LOGGER.warn("Transcript with 0 introns {} passed here", transcript.accessionId());
             return Double.NaN;
         }
 
-        return Utils.getDiff(variant, closestPosition.get());
+        return DistanceUtils.getDiff(variant, closestPosition.get());
     }
 }

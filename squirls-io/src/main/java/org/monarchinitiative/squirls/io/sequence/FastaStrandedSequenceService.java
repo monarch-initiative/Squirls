@@ -89,15 +89,17 @@ import org.monarchinitiative.variant.api.Contig;
 import org.monarchinitiative.variant.api.GenomicAssembly;
 import org.monarchinitiative.variant.api.GenomicRegion;
 import org.monarchinitiative.variant.api.SequenceRole;
-import org.monarchinitiative.variant.api.impl.Seq;
 import org.monarchinitiative.variant.api.parsers.GenomicAssemblyParser;
+import org.monarchinitiative.variant.api.util.Seq;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.nio.file.Path;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -127,8 +129,9 @@ public class FastaStrandedSequenceService implements StrandedSequenceService, Au
     }
 
     private static void check(GenomicAssembly assembly, SAMSequenceDictionary sequenceDictionary) throws InvalidFastaFileException {
+        // we require assembly contigs with `SequenceRole.ASSEMBLED_MOLECULE` to be present in the FASTA file
         Set<String> assemblyContigNames = assembly.contigs().stream()
-                .filter(c -> !c.equals(Contig.unknown()) && c.sequenceRole().equals(SequenceRole.ASSEMBLED_MOLECULE))
+                .filter(c -> c.sequenceRole().equals(SequenceRole.ASSEMBLED_MOLECULE))
                 .map(c -> List.of(c.name(), c.refSeqAccession(), c.genBankAccession(), c.ucscName()))
                 .flatMap(Collection::stream)
                 .collect(Collectors.toSet());
@@ -139,6 +142,24 @@ public class FastaStrandedSequenceService implements StrandedSequenceService, Au
         if (!assemblyContigNames.containsAll(dictContigNames)) {
             throw new InvalidFastaFileException("Required contigs are missing in FASTA file");
         }
+
+        // check that contig lengths match
+        Map<String, Integer> assemblyContigLengths = assemblyContigNames.stream()
+                .collect(Collectors.toMap(Function.identity(), contigName -> assembly.contigByName(contigName).length()));
+
+        Map<String, Integer> dictionaryContigLengths = dictContigNames.stream()
+                .collect(Collectors.toMap(Function.identity(), contigName -> sequenceDictionary.getSequence(contigName).getSequenceLength()));
+
+        boolean lengthMismatch = false;
+        for (String dictContig : dictionaryContigLengths.keySet()) {
+            int dictContigLength = dictionaryContigLengths.get(dictContig);
+            int assemblyContigLength = assemblyContigLengths.get(dictContig);
+            if (dictContigLength != assemblyContigLength) {
+                LOGGER.warn("Contig length mismatch {}!={} between `{}` (genome assembly report)  and `{}` (FASTA sequence dictionary)", assemblyContigLength, dictContigLength, dictContig, dictContig);
+                lengthMismatch = true;
+            }
+        }
+        if (lengthMismatch) throw new InvalidFastaFileException("Contig length mismatch");
     }
 
     private static SAMSequenceDictionary buildSequenceDictionary(Path dictPath) {

@@ -97,15 +97,15 @@ abstract class AbstractSplicingAnnotator implements SplicingAnnotator {
 
     @Override
     public SquirlsFeatures annotate(VariantOnTranscript data) {
-        Variant variant = data.variant();
         TranscriptModel transcript = data.transcript();
-        StrandedSequence sequence = data.sequence();
 
-        Variant variantOnStrand = variant.withStrand(transcript.strand());
+        // all variant-related calculations must be done on transcript's strand and coordinate system
+        Variant variant = data.variant().withStrand(transcript.strand()).withCoordinateSystem(transcript.coordinateSystem());
+        StrandedSequence sequence = data.sequence();
 
         Map<String, Double> features = new HashMap<>(calculatorMap.size());
         for (String feature : calculatorMap.keySet()) {
-            features.put(feature, calculatorMap.get(feature).score(variantOnStrand, transcript, sequence));
+            features.put(feature, calculatorMap.get(feature).score(variant, transcript, sequence));
         }
 
         return SquirlsFeatures.of(features);
