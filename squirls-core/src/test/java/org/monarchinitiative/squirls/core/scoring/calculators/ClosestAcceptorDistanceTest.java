@@ -79,10 +79,10 @@ package org.monarchinitiative.squirls.core.scoring.calculators;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
-import org.monarchinitiative.variant.api.CoordinateSystem;
-import org.monarchinitiative.variant.api.Position;
-import org.monarchinitiative.variant.api.Strand;
-import org.monarchinitiative.variant.api.Variant;
+import org.monarchinitiative.svart.CoordinateSystem;
+import org.monarchinitiative.svart.Position;
+import org.monarchinitiative.svart.Strand;
+import org.monarchinitiative.svart.Variant;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -109,10 +109,10 @@ public class ClosestAcceptorDistanceTest extends CalculatorTestBase {
     })
     public void score(int pos, double expected) {
         // ref and alt do not matter
-        Variant oneBased = Variant.nonSymbolic(contig, "", Strand.POSITIVE, CoordinateSystem.oneBased(), Position.of(pos), "g", "a");
+        Variant oneBased = Variant.of(contig, "", Strand.POSITIVE, CoordinateSystem.oneBased(), Position.of(pos), "g", "a");
         assertThat(scorer.score(oneBased, tx, sequence), is(closeTo(expected, EPSILON)));
 
-        Variant zeroBased = Variant.nonSymbolic(contig, "", Strand.POSITIVE, CoordinateSystem.zeroBased(), Position.of(pos - 1), "g", "a");
+        Variant zeroBased = Variant.of(contig, "", Strand.POSITIVE, CoordinateSystem.zeroBased(), Position.of(pos - 1), "g", "a");
         assertThat(scorer.score(zeroBased, tx, sequence), is(closeTo(expected, EPSILON)));
     }
 

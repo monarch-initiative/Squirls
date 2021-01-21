@@ -81,8 +81,8 @@ import org.monarchinitiative.squirls.core.reference.StrandedSequence;
 import org.monarchinitiative.squirls.core.reference.StrandedSequenceService;
 import org.monarchinitiative.squirls.core.reference.TranscriptModel;
 import org.monarchinitiative.squirls.core.reference.TranscriptModelService;
-import org.monarchinitiative.variant.api.GenomicAssembly;
-import org.monarchinitiative.variant.api.GenomicRegion;
+import org.monarchinitiative.svart.GenomicAssembly;
+import org.monarchinitiative.svart.GenomicRegion;
 
 import java.util.List;
 import java.util.Objects;

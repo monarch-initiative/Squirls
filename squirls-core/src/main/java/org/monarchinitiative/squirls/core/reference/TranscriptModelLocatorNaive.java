@@ -76,7 +76,7 @@
 
 package org.monarchinitiative.squirls.core.reference;
 
-import org.monarchinitiative.variant.api.GenomicRegion;
+import org.monarchinitiative.svart.GenomicRegion;
 
 /**
  * This class figures out where exactly the variant is located with respect to given <code>transcript</code>.

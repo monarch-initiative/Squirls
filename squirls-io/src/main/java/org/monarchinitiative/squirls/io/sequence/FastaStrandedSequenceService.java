@@ -85,12 +85,12 @@ import htsjdk.samtools.reference.ReferenceSequence;
 import htsjdk.variant.utils.SAMSequenceDictionaryExtractor;
 import org.monarchinitiative.squirls.core.reference.StrandedSequence;
 import org.monarchinitiative.squirls.core.reference.StrandedSequenceService;
-import org.monarchinitiative.variant.api.Contig;
-import org.monarchinitiative.variant.api.GenomicAssembly;
-import org.monarchinitiative.variant.api.GenomicRegion;
-import org.monarchinitiative.variant.api.SequenceRole;
-import org.monarchinitiative.variant.api.parsers.GenomicAssemblyParser;
-import org.monarchinitiative.variant.api.util.Seq;
+import org.monarchinitiative.svart.Contig;
+import org.monarchinitiative.svart.GenomicAssembly;
+import org.monarchinitiative.svart.GenomicRegion;
+import org.monarchinitiative.svart.SequenceRole;
+import org.monarchinitiative.svart.parsers.GenomicAssemblyParser;
+import org.monarchinitiative.svart.util.Seq;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

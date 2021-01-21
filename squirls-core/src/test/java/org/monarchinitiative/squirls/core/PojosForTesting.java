@@ -80,7 +80,7 @@ import org.monarchinitiative.squirls.core.reference.DoubleMatrix;
 import org.monarchinitiative.squirls.core.reference.SplicingParameters;
 import org.monarchinitiative.squirls.core.reference.StrandedSequence;
 import org.monarchinitiative.squirls.core.reference.TranscriptModel;
-import org.monarchinitiative.variant.api.*;
+import org.monarchinitiative.svart.*;
 
 import java.util.List;
 

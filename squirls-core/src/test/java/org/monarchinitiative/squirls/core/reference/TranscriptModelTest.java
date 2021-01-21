@@ -79,7 +79,7 @@ package org.monarchinitiative.squirls.core.reference;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
-import org.monarchinitiative.variant.api.*;
+import org.monarchinitiative.svart.*;
 
 import java.util.List;
 

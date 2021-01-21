@@ -76,7 +76,7 @@
 
 package org.monarchinitiative.squirls.core.reference;
 
-import org.monarchinitiative.variant.api.GenomicAssembly;
+import org.monarchinitiative.svart.GenomicAssembly;
 
 import java.util.Collection;
 import java.util.Set;

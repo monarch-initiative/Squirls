@@ -81,7 +81,7 @@ import de.charite.compbio.jannovar.data.JannovarDataSerializer;
 import de.charite.compbio.jannovar.data.SerializationException;
 import de.charite.compbio.jannovar.reference.GenomeInterval;
 import org.monarchinitiative.squirls.core.reference.TranscriptModel;
-import org.monarchinitiative.variant.api.*;
+import org.monarchinitiative.svart.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

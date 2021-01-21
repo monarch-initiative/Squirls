@@ -78,7 +78,7 @@ package org.monarchinitiative.squirls.core;
 
 import org.monarchinitiative.squirls.core.reference.StrandedSequence;
 import org.monarchinitiative.squirls.core.reference.TranscriptModel;
-import org.monarchinitiative.variant.api.Variant;
+import org.monarchinitiative.svart.Variant;
 
 import java.util.Objects;
 

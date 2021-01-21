@@ -86,7 +86,7 @@ import org.monarchinitiative.squirls.cli.writers.OutputFormat;
 import org.monarchinitiative.squirls.cli.writers.ResultWriter;
 import org.monarchinitiative.squirls.cli.writers.WritableSplicingAllele;
 import org.monarchinitiative.squirls.core.SquirlsResult;
-import org.monarchinitiative.variant.api.Variant;
+import org.monarchinitiative.svart.Variant;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 import org.thymeleaf.templatemode.TemplateMode;

@@ -76,7 +76,7 @@
 
 package org.monarchinitiative.squirls.core.reference;
 
-import org.monarchinitiative.variant.api.*;
+import org.monarchinitiative.svart.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

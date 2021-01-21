@@ -76,8 +76,8 @@
 
 package org.monarchinitiative.squirls.core.scoring.calculators;
 
-import org.monarchinitiative.variant.api.GenomicRegion;
-import org.monarchinitiative.variant.api.Position;
+import org.monarchinitiative.svart.GenomicRegion;
+import org.monarchinitiative.svart.Position;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

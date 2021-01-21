@@ -79,7 +79,7 @@ package org.monarchinitiative.squirls.core.scoring.calculators;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.monarchinitiative.squirls.core.reference.StrandedSequence;
-import org.monarchinitiative.variant.api.*;
+import org.monarchinitiative.svart.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
@@ -106,7 +106,7 @@ public class HexamerTest extends CalculatorTestBase {
 
     @Test
     public void score() {
-        Variant variant = Variant.nonSymbolic(contig, "", Strand.POSITIVE, CoordinateSystem.zeroBased(), Position.of(1201), "t", "g");
+        Variant variant = Variant.of(contig, "", Strand.POSITIVE, CoordinateSystem.zeroBased(), Position.of(1201), "t", "g");
         assertThat(calculator.score(variant, tx, sequence), is(closeTo(-.837930, EPSILON)));
     }
 
@@ -127,15 +127,15 @@ public class HexamerTest extends CalculatorTestBase {
                         "C" + // c.617C>G
                         "TACTGTGCTCATAGgtaat");
         // representing the c.520C>T variant from Figure 3
-        Variant first = Variant.nonSymbolic(contig, "", Strand.POSITIVE, CoordinateSystem.oneBased(), Position.of(9), "C", "T");
+        Variant first = Variant.of(contig, "", Strand.POSITIVE, CoordinateSystem.oneBased(), Position.of(9), "C", "T");
         assertThat(calculator.score(first, tx, si), is(closeTo(-2.811, EPSILON)));
 
         // representing the c.581G>A variant from Figure 3
-        Variant second = Variant.nonSymbolic(contig, "", Strand.POSITIVE, CoordinateSystem.oneBased(), Position.of(70), "G", "A");
+        Variant second = Variant.of(contig, "", Strand.POSITIVE, CoordinateSystem.oneBased(), Position.of(70), "G", "A");
         assertThat(calculator.score(second, tx, si), is(closeTo(-3.006, EPSILON)));
 
         // representing the c.617C>G variant from Figure 3
-        Variant third = Variant.nonSymbolic(contig, "", Strand.POSITIVE, CoordinateSystem.oneBased(), Position.of(106), "C", "G");
+        Variant third = Variant.of(contig, "", Strand.POSITIVE, CoordinateSystem.oneBased(), Position.of(106), "C", "G");
         assertThat(calculator.score(third, tx, si), is(closeTo(-1.115, EPSILON)));
     }
 }

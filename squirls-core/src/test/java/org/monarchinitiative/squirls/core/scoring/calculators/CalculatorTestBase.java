@@ -81,10 +81,10 @@ import org.monarchinitiative.squirls.core.PojosForTesting;
 import org.monarchinitiative.squirls.core.TestDataSourceConfig;
 import org.monarchinitiative.squirls.core.reference.*;
 import org.monarchinitiative.squirls.core.scoring.calculators.ic.SplicingInformationContentCalculator;
-import org.monarchinitiative.variant.api.AssignedMoleculeType;
-import org.monarchinitiative.variant.api.Contig;
-import org.monarchinitiative.variant.api.GenomicRegion;
-import org.monarchinitiative.variant.api.SequenceRole;
+import org.monarchinitiative.svart.AssignedMoleculeType;
+import org.monarchinitiative.svart.Contig;
+import org.monarchinitiative.svart.GenomicRegion;
+import org.monarchinitiative.svart.SequenceRole;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 

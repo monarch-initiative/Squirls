@@ -79,10 +79,10 @@ package org.monarchinitiative.squirls.core.scoring.calculators;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
-import org.monarchinitiative.variant.api.CoordinateSystem;
-import org.monarchinitiative.variant.api.Position;
-import org.monarchinitiative.variant.api.Strand;
-import org.monarchinitiative.variant.api.Variant;
+import org.monarchinitiative.svart.CoordinateSystem;
+import org.monarchinitiative.svart.Position;
+import org.monarchinitiative.svart.Strand;
+import org.monarchinitiative.svart.Variant;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -104,7 +104,7 @@ public class SStrengthDiffDonorTest extends CalculatorTestBase {
             "1600, g, c,      0.0000",
     })
     public void score(int pos, String ref, String alt, double expected) {
-        Variant variant = Variant.nonSymbolic(contig, "", Strand.POSITIVE, CoordinateSystem.zeroBased(), Position.of(pos), ref, alt);
+        Variant variant = Variant.of(contig, "", Strand.POSITIVE, CoordinateSystem.zeroBased(), Position.of(pos), ref, alt);
         assertThat(scorer.score(variant, tx, sequence), is(closeTo(expected, EPSILON)));
     }
 

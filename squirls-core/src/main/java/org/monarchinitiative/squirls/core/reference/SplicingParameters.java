@@ -76,8 +76,9 @@
 
 package org.monarchinitiative.squirls.core.reference;
 
-import org.monarchinitiative.variant.api.GenomicRegion;
-import org.monarchinitiative.variant.api.Position;
+
+import org.monarchinitiative.svart.GenomicRegion;
+import org.monarchinitiative.svart.Position;
 
 /**
  * Container for tunable parameters for scoring of splicing variants.

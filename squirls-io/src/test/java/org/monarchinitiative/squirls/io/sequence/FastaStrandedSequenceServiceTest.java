@@ -82,8 +82,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.monarchinitiative.squirls.core.reference.StrandedSequence;
-import org.monarchinitiative.variant.api.*;
-import org.monarchinitiative.variant.api.parsers.GenomicAssemblyParser;
+import org.monarchinitiative.svart.*;
+import org.monarchinitiative.svart.parsers.GenomicAssemblyParser;
 
 import java.nio.file.Paths;
 

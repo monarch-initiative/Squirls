@@ -79,10 +79,10 @@ package org.monarchinitiative.squirls.io.db;
 import org.monarchinitiative.squirls.core.reference.TranscriptModel;
 import org.monarchinitiative.squirls.core.reference.TranscriptModelService;
 import org.monarchinitiative.squirls.io.SquirlsResourceException;
-import org.monarchinitiative.variant.api.Contig;
-import org.monarchinitiative.variant.api.GenomicAssembly;
-import org.monarchinitiative.variant.api.GenomicRegion;
-import org.monarchinitiative.variant.api.Strand;
+import org.monarchinitiative.svart.Contig;
+import org.monarchinitiative.svart.GenomicAssembly;
+import org.monarchinitiative.svart.GenomicRegion;
+import org.monarchinitiative.svart.Strand;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

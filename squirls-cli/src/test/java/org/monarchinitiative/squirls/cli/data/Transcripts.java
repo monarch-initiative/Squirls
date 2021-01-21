@@ -77,10 +77,10 @@
 package org.monarchinitiative.squirls.cli.data;
 
 import org.monarchinitiative.squirls.core.reference.TranscriptModel;
-import org.monarchinitiative.variant.api.Contig;
-import org.monarchinitiative.variant.api.CoordinateSystem;
-import org.monarchinitiative.variant.api.GenomicRegion;
-import org.monarchinitiative.variant.api.Strand;
+import org.monarchinitiative.svart.Contig;
+import org.monarchinitiative.svart.CoordinateSystem;
+import org.monarchinitiative.svart.GenomicRegion;
+import org.monarchinitiative.svart.Strand;
 
 import java.util.List;
 

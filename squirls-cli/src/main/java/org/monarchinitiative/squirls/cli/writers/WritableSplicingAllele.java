@@ -80,7 +80,7 @@ import de.charite.compbio.jannovar.annotation.VariantAnnotations;
 import htsjdk.variant.variantcontext.Allele;
 import htsjdk.variant.variantcontext.VariantContext;
 import org.monarchinitiative.squirls.core.SquirlsResult;
-import org.monarchinitiative.variant.api.Variant;
+import org.monarchinitiative.svart.Variant;
 
 
 /**

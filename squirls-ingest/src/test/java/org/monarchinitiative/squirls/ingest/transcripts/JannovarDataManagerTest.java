@@ -78,8 +78,8 @@ package org.monarchinitiative.squirls.ingest.transcripts;
 
 import org.junit.jupiter.api.Test;
 import org.monarchinitiative.squirls.core.reference.TranscriptModel;
-import org.monarchinitiative.variant.api.GenomicAssembly;
-import org.monarchinitiative.variant.api.parsers.GenomicAssemblyParser;
+import org.monarchinitiative.svart.GenomicAssembly;
+import org.monarchinitiative.svart.parsers.GenomicAssemblyParser;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;

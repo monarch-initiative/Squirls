@@ -78,7 +78,7 @@ package org.monarchinitiative.squirls.core.scoring.calculators;
 
 import org.monarchinitiative.squirls.core.reference.*;
 import org.monarchinitiative.squirls.core.scoring.calculators.ic.SplicingInformationContentCalculator;
-import org.monarchinitiative.variant.api.Variant;
+import org.monarchinitiative.svart.Variant;
 
 abstract class BaseFeatureCalculator implements FeatureCalculator {
 

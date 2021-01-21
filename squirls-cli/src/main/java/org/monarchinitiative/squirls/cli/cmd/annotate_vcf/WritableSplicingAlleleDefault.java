@@ -81,7 +81,7 @@ import htsjdk.variant.variantcontext.Allele;
 import htsjdk.variant.variantcontext.VariantContext;
 import org.monarchinitiative.squirls.cli.writers.WritableSplicingAllele;
 import org.monarchinitiative.squirls.core.SquirlsResult;
-import org.monarchinitiative.variant.api.Variant;
+import org.monarchinitiative.svart.Variant;
 
 import java.util.Objects;
 

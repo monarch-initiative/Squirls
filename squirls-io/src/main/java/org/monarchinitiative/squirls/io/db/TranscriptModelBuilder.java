@@ -77,7 +77,7 @@
 package org.monarchinitiative.squirls.io.db;
 
 import org.monarchinitiative.squirls.core.reference.TranscriptModel;
-import org.monarchinitiative.variant.api.*;
+import org.monarchinitiative.svart.*;
 
 import java.util.HashMap;
 import java.util.List;

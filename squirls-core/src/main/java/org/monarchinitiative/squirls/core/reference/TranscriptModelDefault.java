@@ -76,7 +76,7 @@
 
 package org.monarchinitiative.squirls.core.reference;
 
-import org.monarchinitiative.variant.api.*;
+import org.monarchinitiative.svart.*;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -76,8 +76,8 @@
 
 package org.monarchinitiative.squirls.core.reference;
 
-import org.monarchinitiative.variant.api.*;
-import org.monarchinitiative.variant.api.util.Seq;
+import org.monarchinitiative.svart.*;
+import org.monarchinitiative.svart.util.Seq;
 
 import java.util.Objects;
 

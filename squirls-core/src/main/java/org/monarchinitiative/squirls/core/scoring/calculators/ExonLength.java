@@ -80,7 +80,7 @@ import org.monarchinitiative.squirls.core.reference.SplicingLocationData;
 import org.monarchinitiative.squirls.core.reference.StrandedSequence;
 import org.monarchinitiative.squirls.core.reference.TranscriptModel;
 import org.monarchinitiative.squirls.core.reference.TranscriptModelLocator;
-import org.monarchinitiative.variant.api.Variant;
+import org.monarchinitiative.svart.Variant;
 
 /**
  * Calculate length of the exon the variant is located in. The length is calculated only for variants with

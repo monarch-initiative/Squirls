@@ -89,8 +89,8 @@ import org.monarchinitiative.squirls.cli.visualization.selector.SimpleVisualizat
 import org.monarchinitiative.squirls.cli.visualization.selector.VisualizationContextSelector;
 import org.monarchinitiative.squirls.core.SquirlsDataService;
 import org.monarchinitiative.squirls.core.reference.*;
-import org.monarchinitiative.variant.api.GenomicAssembly;
-import org.monarchinitiative.variant.api.parsers.GenomicAssemblyParser;
+import org.monarchinitiative.svart.GenomicAssembly;
+import org.monarchinitiative.svart.parsers.GenomicAssemblyParser;
 import org.monarchinitiative.vmvt.core.VmvtGenerator;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

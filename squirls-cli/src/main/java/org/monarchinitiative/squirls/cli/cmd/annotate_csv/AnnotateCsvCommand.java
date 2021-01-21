@@ -83,7 +83,7 @@ import org.apache.commons.csv.CSVRecord;
 import org.monarchinitiative.squirls.cli.Main;
 import org.monarchinitiative.squirls.cli.cmd.SquirlsCommand;
 import org.monarchinitiative.squirls.core.*;
-import org.monarchinitiative.variant.api.*;
+import org.monarchinitiative.svart.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ConfigurableApplicationContext;
@@ -169,7 +169,7 @@ public class AnnotateCsvCommand extends SquirlsCommand {
                     }
 
                     Contig contig = assembly.contigByName(chrom);
-                    Variant variant = Variant.nonSymbolic(contig, "", Strand.POSITIVE, CoordinateSystem.oneBased(), Position.of(pos), ref, alt);
+                    Variant variant = Variant.of(contig, "", Strand.POSITIVE, CoordinateSystem.oneBased(), Position.of(pos), ref, alt);
                     SquirlsResult squirlsResult = evaluator.evaluate(variant);
 
                     // figure out max pathogenicity and whether the variant is a splice variant

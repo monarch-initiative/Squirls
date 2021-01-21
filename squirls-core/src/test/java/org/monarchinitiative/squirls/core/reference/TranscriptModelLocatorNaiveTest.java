@@ -82,7 +82,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.monarchinitiative.squirls.core.PojosForTesting;
 import org.monarchinitiative.squirls.core.TestDataSourceConfig;
-import org.monarchinitiative.variant.api.*;
+import org.monarchinitiative.svart.*;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.util.Optional;

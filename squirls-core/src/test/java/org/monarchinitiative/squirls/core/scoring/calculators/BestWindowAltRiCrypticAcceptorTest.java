@@ -78,10 +78,10 @@ package org.monarchinitiative.squirls.core.scoring.calculators;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.monarchinitiative.variant.api.CoordinateSystem;
-import org.monarchinitiative.variant.api.Position;
-import org.monarchinitiative.variant.api.Strand;
-import org.monarchinitiative.variant.api.Variant;
+import org.monarchinitiative.svart.CoordinateSystem;
+import org.monarchinitiative.svart.Position;
+import org.monarchinitiative.svart.Strand;
+import org.monarchinitiative.svart.Variant;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -100,13 +100,13 @@ public class BestWindowAltRiCrypticAcceptorTest extends CalculatorTestBase {
 
     @Test
     public void snpUpstreamFromAcceptorSite() {
-        Variant variant = Variant.nonSymbolic(contig, "", Strand.POSITIVE, CoordinateSystem.zeroBased(), Position.of(1374), "c", "g");
+        Variant variant = Variant.of(contig, "", Strand.POSITIVE, CoordinateSystem.zeroBased(), Position.of(1374), "c", "g");
         assertThat(scorer.score(variant, tx, sequence), is(closeTo(2.0423, EPSILON)));
     }
 
     @Test
     public void notEnoughSequence() {
-        Variant variant = Variant.nonSymbolic(contig, "", Strand.POSITIVE, CoordinateSystem.zeroBased(), Position.of(1374), "c", "g");
+        Variant variant = Variant.of(contig, "", Strand.POSITIVE, CoordinateSystem.zeroBased(), Position.of(1374), "c", "g");
         assertThat(scorer.score(variant, tx, sequenceOnOtherChrom), is(notANumber()));
     }
 }

@@ -79,9 +79,9 @@ package org.monarchinitiative.squirls.core.scoring.calculators;
 import org.monarchinitiative.squirls.core.reference.SplicingLocationData;
 import org.monarchinitiative.squirls.core.reference.TranscriptModel;
 import org.monarchinitiative.squirls.core.reference.TranscriptModelLocator;
-import org.monarchinitiative.variant.api.GenomicRegion;
-import org.monarchinitiative.variant.api.Position;
-import org.monarchinitiative.variant.api.Variant;
+import org.monarchinitiative.svart.GenomicRegion;
+import org.monarchinitiative.svart.Position;
+import org.monarchinitiative.svart.Variant;
 
 abstract class BaseAgezCalculator implements FeatureCalculator {
 

@@ -1,8 +1,9 @@
 package org.monarchinitiative.squirls.core;
 
-import org.monarchinitiative.variant.api.AssignedMoleculeType;
-import org.monarchinitiative.variant.api.Contig;
-import org.monarchinitiative.variant.api.SequenceRole;
+
+import org.monarchinitiative.svart.AssignedMoleculeType;
+import org.monarchinitiative.svart.Contig;
+import org.monarchinitiative.svart.SequenceRole;
 
 import java.util.Objects;
 

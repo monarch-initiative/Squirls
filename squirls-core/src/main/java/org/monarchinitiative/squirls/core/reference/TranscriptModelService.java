@@ -76,8 +76,7 @@
 
 package org.monarchinitiative.squirls.core.reference;
 
-
-import org.monarchinitiative.variant.api.GenomicRegion;
+import org.monarchinitiative.svart.GenomicRegion;
 
 import java.util.List;
 import java.util.Optional;

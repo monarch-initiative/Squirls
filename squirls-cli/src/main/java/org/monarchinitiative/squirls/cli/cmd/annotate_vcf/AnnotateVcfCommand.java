@@ -98,7 +98,7 @@ import org.monarchinitiative.squirls.cli.writers.*;
 import org.monarchinitiative.squirls.core.SquirlsDataService;
 import org.monarchinitiative.squirls.core.SquirlsResult;
 import org.monarchinitiative.squirls.core.VariantSplicingEvaluator;
-import org.monarchinitiative.variant.api.*;
+import org.monarchinitiative.svart.*;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -212,7 +212,7 @@ public class AnnotateVcfCommand extends SquirlsCommand {
                     variant = null;
                     squirlsResult = SquirlsResult.empty();
                 } else {
-                    variant = Variant.nonSymbolic(contig, vc.getID(), org.monarchinitiative.variant.api.Strand.POSITIVE, CoordinateSystem.oneBased(),
+                    variant = Variant.of(contig, vc.getID(), org.monarchinitiative.svart.Strand.POSITIVE, CoordinateSystem.oneBased(),
                             Position.of(vc.getStart()), vc.getReference().getDisplayString(), allele.getDisplayString());
                     Set<String> txAccessions = variantAnnotations.getAnnotations().stream()
                             .map(Annotation::getTranscript)
