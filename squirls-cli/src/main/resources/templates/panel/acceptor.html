@@ -39,12 +39,6 @@
                     <th>Value</th>
                 </tr>
                 <tr>
-                    <td>Acceptor offset</td>
-                    <td th:text="${feature.isPresent()} ? ${#numbers.formatInteger(feature.getAsDouble(), 1)} : missing"
-                        th:with="feature=${highest_prediction.featureValue('acceptor_offset')}">-7
-                    </td>
-                </tr>
-                <tr>
                     <td><i>&Delta;R<sub>i</sub></i> canonical acceptor</td>
                     <td th:text="${feature.isPresent()} ? ${#numbers.formatDecimal(feature.getAsDouble(), 1, 2)} : missing"
                         th:with="feature=${highest_prediction.featureValue('canonical_acceptor')}">3.45
@@ -57,14 +51,20 @@
                     </td>
                 </tr>
                 <tr>
+                    <td>Creates AG in <i>AGEZ</i></td>
+                    <td th:text="${#numbers.formatInteger(highest_prediction.featureValue('creates_ag_in_agez').orElse(0.), 1) == 1 ? 'Yes': 'No'}">Yes</td>
+                </tr>
+                <tr>
+                    <td>Acceptor offset</td>
+                    <td th:text="${feature.isPresent()} ? ${#numbers.formatInteger(feature.getAsDouble(), 1)} : missing"
+                        th:with="feature=${highest_prediction.featureValue('acceptor_offset')}">-7
+                    </td>
+                </tr>
+                <tr>
                     <td>Exon length</td>
                     <td th:text="${feature.isPresent()} ? ${#numbers.formatInteger(feature.getAsDouble(), 1)} : missing"
                         th:with="feature=${highest_prediction.featureValue('exon_length')}">123
                     </td>
-                </tr>
-                <tr>
-                    <td>Creates AG in <i>AGEZ</i></td>
-                    <td th:text="${#numbers.formatInteger(highest_prediction.featureValue('creates_ag_in_agez').orElse(0.), 1) == 1 ? 'Yes': 'No'}">Yes</td>
                 </tr>
                 <tr>
                     <td>ESRSeq</td>
@@ -106,11 +106,17 @@
                     </div>
                 </div>
                 <div class="graphics-content">
-                    <div class="graphics-subcontent" th:utext="${primary}">
-                        <svg height="200" style="border: solid black;" width="300" xmlns="http://www.w3.org/2000/svg"/>
+                    <div class="graphics-subcontent">
+                        <span th:remove="tag" th:utext="${primaryLabel}">PRIMARY LABEL</span>
+                        <div th:utext="${primary}">
+                            <svg height="200" style="border: solid black;" width="300" xmlns="http://www.w3.org/2000/svg"/>
+                        </div>
                     </div>
-                    <div class="graphics-subcontent" th:utext="${secondary}">
-                        <svg height="200" style="border: solid black;" width="300" xmlns="http://www.w3.org/2000/svg"/>
+                    <div class="graphics-subcontent">
+                        <span th:remove="tag" th:utext="${secondaryLabel}">SECONDARY LABEL</span>
+                        <div th:utext="${secondary}">
+                            <svg height="200" style="border: solid black;" width="300" xmlns="http://www.w3.org/2000/svg"/>
+                        </div>
                     </div>
                 </div>
             </div>

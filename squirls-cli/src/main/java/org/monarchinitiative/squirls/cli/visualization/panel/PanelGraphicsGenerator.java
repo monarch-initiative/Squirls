@@ -220,6 +220,7 @@ public class PanelGraphicsGenerator implements SplicingVariantGraphicsGenerator 
         Optional<GenomicRegion> aOpt = locationData.getAcceptorRegion();
 
         String primary = EMPTY_SVG_IMAGE, secondary = EMPTY_SVG_IMAGE;
+        String primaryLabel = "", secondaryLabel = "";
         String crypticCoordinate = "";
         int basesChanged = 0;
         context.setVariable("basesChanged", basesChanged);
@@ -268,7 +269,11 @@ public class PanelGraphicsGenerator implements SplicingVariantGraphicsGenerator 
                     // primary - donor logo, ruler, and bar chart
                     // secondary - donor distribution SVG
                     altAllele = alleleGenerator.getDonorSiteWithAltAllele(donorRegion, variant, sequence);
+                    primaryLabel = "Canonical donor site";
                     primary = vmvtGenerator.getDonorSequenceLogoRulerAndBarChart(refAllele, altAllele);
+
+                    secondaryLabel = "<a href=\"https://squirls.readthedocs.io/en/latest/interpretation.html#delta-ri-ref\">" +
+                            "<em>&Delta;R<sub>i</sub></em> score distribution</a>";
                     secondary = vmvtGenerator.getDonorDistributionSvg(refAllele, altAllele);
                     break;
 
@@ -287,7 +292,11 @@ public class PanelGraphicsGenerator implements SplicingVariantGraphicsGenerator 
                     // primary - acceptor logo, ruler, and bar chart
                     // secondary - acceptor distribution SVG
                     altAllele = alleleGenerator.getAcceptorSiteWithAltAllele(acceptorRegion, variant, sequence);
+                    primaryLabel = "Canonical acceptor site";
                     primary = vmvtGenerator.getAcceptorSequenceLogoRulerAndBarChart(refAllele, altAllele);
+
+                    secondaryLabel = "<a href=\"https://squirls.readthedocs.io/en/latest/interpretation.html#delta-ri-ref\">" +
+                            "<em>&Delta;R<sub>i</sub></em> score distribution</a>";
                     secondary = vmvtGenerator.getAcceptorDistributionSvg(refAllele, altAllele);
                     break;
 
@@ -307,6 +316,7 @@ public class PanelGraphicsGenerator implements SplicingVariantGraphicsGenerator 
                     donorRegion = dOpt.get();
                     refAllele = sequence.subsequence(donorRegion);
                     altAllele = alleleGenerator.getDonorSiteWithAltAllele(donorRegion, variant, sequence);
+                    primaryLabel = "Canonical donor site";
                     primary = vmvtGenerator.getDonorSequenceLogoRulerAndBarChart(refAllele, altAllele);
 
                     altBestWindow = altSnippet.substring(altMaxIdx, altMaxIdx + splicingParameters.getDonorLength());
@@ -317,6 +327,7 @@ public class PanelGraphicsGenerator implements SplicingVariantGraphicsGenerator 
                     int donorDiff = getDiff(variant, donorRegion.startPosition().shift(splicingParameters.getDonorExonic())) - variantCrypticDonorSiteIdx;
                     basesChanged = donorDiff + splicingParameters.getDonorExonic();
 
+                    secondaryLabel = "Predicted cryptic donor site";
                     secondary = vmvtGenerator.getDonorSequenceRulerAndBarChartWithOffset(refCorrespondingWindow, altBestWindow, basesChanged);
                     int crypticDonorDelta = splicingParameters.getDonorExonic() - variantCrypticDonorSiteIdx;
                     int crypticDonorPos = variant.toPositiveStrand().toOneBased().start() + crypticDonorDelta;
@@ -342,6 +353,7 @@ public class PanelGraphicsGenerator implements SplicingVariantGraphicsGenerator 
                     altAllele = alleleGenerator.getAcceptorSiteWithAltAllele(acceptorRegion, variant, sequence);
 
                     primary = vmvtGenerator.getAcceptorSequenceLogoRulerAndBarChart(refAllele, altAllele);
+                    primaryLabel = "Canonical acceptor site";
 
                     altBestWindow = altSnippet.substring(altMaxIdx, altMaxIdx + splicingParameters.getAcceptorLength());
                     refCorrespondingWindow = refSnippet.substring(altMaxIdx, altMaxIdx + splicingParameters.getAcceptorLength());
@@ -352,6 +364,7 @@ public class PanelGraphicsGenerator implements SplicingVariantGraphicsGenerator 
                     basesChanged = acceptorDiff + splicingParameters.getAcceptorIntronic();
 
                     secondary = vmvtGenerator.getAcceptorSequenceRulerAndBarChartWithOffset(refCorrespondingWindow, altBestWindow, basesChanged);
+                    secondaryLabel = "Predicted cryptic acceptor site";
 
                     int crypticAcceptorDelta = splicingParameters.getAcceptorIntronic() - variantCrypticAcceptorSiteIdx;
                     int crypticAcceptorPos = variant.toPositiveStrand().toOneBased().start() + crypticAcceptorDelta;
@@ -372,7 +385,9 @@ public class PanelGraphicsGenerator implements SplicingVariantGraphicsGenerator 
         context.setVariable("crypticCoordinate", crypticCoordinate);
         context.setVariable("basesChanged", basesChanged);
         context.setVariable("primary", primary);
+        context.setVariable("primaryLabel", primaryLabel);
         context.setVariable("secondary", secondary);
+        context.setVariable("secondaryLabel", secondaryLabel);
 
         return templateEngine.process(templateName, context);
     }
