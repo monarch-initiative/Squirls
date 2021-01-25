@@ -91,23 +91,22 @@
             padding: 2rem;
             display: table-cell;
             vertical-align: middle;
-            horiz-align: center;
         }
 
         .donor .graphics-subcontent:nth-child(1) svg:nth-child(1) {
             display: block;
         }
 
-        .donor .graphics-content {
-            margin: 0 auto;
-            padding: 2rem;
-            display: table;
-        }
-
         /* All figures wrapped within `.graphics-subcontent` are wrapped within this element. */
         .graphics-content {
-            max-width: available;
-            padding: 2rem;
+            margin: 0 auto;
+            /*padding: 2rem;*/
+            display: flex;
+            justify-content: center;
+        }
+
+        .graphics-label {
+            padding: 0 0 .7rem 0;
         }
 
         div svg {
@@ -125,10 +124,10 @@
             border-radius: 5px;
         }
 
-        .effects-title {
+        .variant-section-title {
             font-size: 16px;
             font-weight: bold;
-            margin: 5px 0 0 0;
+            margin: 5px 0 5px 0;
         }
 
         .transcript-list {

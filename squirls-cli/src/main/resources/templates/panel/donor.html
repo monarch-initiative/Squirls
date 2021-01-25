@@ -1,4 +1,4 @@
-<div th:remove="tag" lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<div lang="en" th:remove="tag" xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
     <div class="variant-box">
         <div class="row">
             <div class="col-md-12">
@@ -10,103 +10,105 @@
                         <thead>
                         <tr>
                             <th>Transcript Accession</th>
-                        <th>CDS Change</th>
-                        <th>Variant Effect</th>
-                        <th>Squirls Score</th>
-                    </tr>
-                    </thead>
-                    <tbody th:with="maxScore=${squirls_results.maxPathogenicity()}">
-                    <tr th:each="txAnn: ${variantAnnotations}"
-                        th:styleappend="${squirls_results.pathogenicityForTranscript(accession_id).orElse(0.) >= maxScore} ? 'color: black; background-color: #d8ecf6;'"
-                        th:with="accession_id=${txAnn.getTranscript().getAccession()}">
+                            <th>CDS Change</th>
+                            <th>Variant Effect</th>
+                            <th>Squirls Score</th>
+                        </tr>
+                        </thead>
+                        <tbody th:with="maxScore=${squirls_results.maxPathogenicity()}">
+                        <tr th:each="txAnn: ${variantAnnotations}"
+                            th:styleappend="${squirls_results.pathogenicityForTranscript(accession_id).orElse(0.) >= maxScore} ? 'color: black; background-color: #d8ecf6;'"
+                            th:with="accession_id=${txAnn.getTranscript().getAccession()}">
 
-                        <td><em th:text="${accession_id}">NM_0012234.5</em></td>
-                        <td>
-                            <span th:remove="tag" th:text="${txAnn.getCDSNTChangeStr()}">c.123A>G</span>
-                        </td>
-                        <td>
-                            <span th:remove="tag" th:text="${txAnn.getMostPathogenicVarType()}">MISSENSE_VARIANT</span>
-                        </td>
-                        <td>
-                            <span th:remove="tag" th:text="${#numbers.formatDecimal(squirls_results.pathogenicityForTranscript(accession_id).orElse(0.), 1, 3)}">0.890</span>
+                            <td><em th:text="${accession_id}">NM_0012234.5</em></td>
+                            <td>
+                                <span th:remove="tag" th:text="${txAnn.getCDSNTChangeStr()}">c.123A>G</span>
+                            </td>
+                            <td>
+                                <span th:remove="tag" th:text="${txAnn.getMostPathogenicVarType()}">MISSENSE_VARIANT</span>
+                            </td>
+                            <td>
+                                <span th:remove="tag" th:text="${#numbers.formatDecimal(squirls_results.pathogenicityForTranscript(accession_id).orElse(0.), 1, 3)}">0.890</span>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <!-- SPLICING FEATURES TABLE -->
+                <span class="variant-section-title"><a href="https://squirls.readthedocs.io/en/latest/model.html#splice-features">Squirls features</a></span>
+                <table class="table table-striped feature-table" th:with="missing='NaN'">
+                    <tr>
+                        <th>Feature</th>
+                        <th>Value</th>
+                    </tr>
+                    <tr>
+                        <td><i>R<sub>i</sub> wt</i> donor</td>
+                        <td th:text="${feature.isPresent()} ? ${#numbers.formatDecimal(feature.getAsDouble(), 1, 2)} : missing"
+                            th:with="feature=${highest_prediction.featureValue('wt_ri_donor')}">1.23
                         </td>
                     </tr>
-                    </tbody>
+                    <tr>
+                        <td><i>&Delta;R<sub>i</sub></i> canonical donor</td>
+                        <td th:text="${feature.isPresent()} ? ${#numbers.formatDecimal(feature.getAsDouble(), 1, 2)}:missing"
+                            th:with="feature=${highest_prediction.featureValue('canonical_donor')}">-2.1
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><i>&Delta;R<sub>i</sub> wt</i> closest donor</td>
+                        <td th:text="${feature.isPresent()} ? ${#numbers.formatDecimal(feature.getAsDouble(), 1, 2)}:missing"
+                            th:with="feature=${highest_prediction.featureValue('s_strength_diff_donor')}">3.4
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Donor offset</td>
+                        <td th:text="${feature.isPresent()} ? ${#numbers.formatInteger(feature.getAsDouble(), 1)} : missing"
+                            th:with="feature=${highest_prediction.featureValue('donor_offset')}">2
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>max <i>R<sub>i</sub></i> cryptic donor window</td>
+                        <td th:text="${feature.isPresent()} ? ${#numbers.formatDecimal(feature.getAsDouble(), 1, 2)}: missing"
+                            th:with="feature=${highest_prediction.featureValue('alt_ri_best_window_donor')}">3.4
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><i>&Delta;R<sub>i</sub></i> cryptic donor</td>
+                        <td th:text="${feature.isPresent()} ? ${#numbers.formatDecimal(feature.getAsDouble(), 1, 2)}:missing"
+                            th:with="feature=${highest_prediction.featureValue('cryptic_donor')}">3.4
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>phyloP</td>
+                        <td th:text="${feature.isPresent()} ? ${#numbers.formatDecimal(feature.getAsDouble(), 1, 2)} : missing"
+                            th:with="feature=${highest_prediction.featureValue('phylop')}">3.4
+                        </td>
+                    </tr>
                 </table>
-            </div>
-            <!-- SPLICING FEATURES TABLE -->
-            <span class="effects-title"><a href="https://squirls.readthedocs.io/en/latest/model.html#splice-features">Squirls features</a></span>
-            <table class="table table-striped feature-table" th:with="missing='NaN'">
-                <tr>
-                    <th>Feature</th>
-                    <th>Value</th>
-                </tr>
-                <tr>
-                    <td><i>R<sub>i</sub> wt</i> donor</td>
-                    <td th:text="${feature.isPresent()} ? ${#numbers.formatDecimal(feature.getAsDouble(), 1, 2)} : missing"
-                        th:with="feature=${highest_prediction.featureValue('wt_ri_donor')}">1.23
-                    </td>
-                </tr>
-                <tr>
-                    <td><i>&Delta;R<sub>i</sub></i> canonical donor</td>
-                    <td th:text="${feature.isPresent()} ? ${#numbers.formatDecimal(feature.getAsDouble(), 1, 2)}:missing"
-                        th:with="feature=${highest_prediction.featureValue('canonical_donor')}">-2.1
-                    </td>
-                </tr>
-                <tr>
-                    <td><i>&Delta;R<sub>i</sub> wt</i> closest donor</td>
-                    <td th:text="${feature.isPresent()} ? ${#numbers.formatDecimal(feature.getAsDouble(), 1, 2)}:missing"
-                        th:with="feature=${highest_prediction.featureValue('s_strength_diff_donor')}">3.4
-                    </td>
-                </tr>
-                <tr>
-                    <td>Donor offset</td>
-                    <td th:text="${feature.isPresent()} ? ${#numbers.formatInteger(feature.getAsDouble(), 1)} : missing"
-                        th:with="feature=${highest_prediction.featureValue('donor_offset')}">2
-                    </td>
-                </tr>
-                <tr>
-                    <td>max <i>R<sub>i</sub></i> cryptic donor window</td>
-                    <td th:text="${feature.isPresent()} ? ${#numbers.formatDecimal(feature.getAsDouble(), 1, 2)}: missing"
-                        th:with="feature=${highest_prediction.featureValue('alt_ri_best_window_donor')}">3.4
-                    </td>
-                </tr>
-                <tr>
-                    <td><i>&Delta;R<sub>i</sub></i> cryptic donor</td>
-                    <td th:text="${feature.isPresent()} ? ${#numbers.formatDecimal(feature.getAsDouble(), 1, 2)}:missing"
-                        th:with="feature=${highest_prediction.featureValue('cryptic_donor')}">3.4
-                    </td>
-                </tr>
-                <tr>
-                    <td>phyloP</td>
-                    <td th:text="${feature.isPresent()} ? ${#numbers.formatDecimal(feature.getAsDouble(), 1, 2)} : missing"
-                        th:with="feature=${highest_prediction.featureValue('phylop')}">3.4
-                    </td>
-                </tr>
-            </table>
             </div>
         </div>
         <div class="row">
-            <div class="graphics-container">
-                <div class='graphics-title' th:text="${context}">Cryptic donor</div>
-                <div class="interpretation" th:if="${basesChanged}" th:with="sequenceAdded=${basesChanged > 0}">
-                    Using cryptic donor site at <em th:text="${crypticCoordinate}">chr1:123,456,789</em>
-                    would lead to <span th:remove="tag" th:text="${sequenceAdded}? 'addition' : 'removal'">addition</span>
-                    of <span th:remove="tag" th:text="${sequenceAdded ? basesChanged: -basesChanged}">4</span>
-                    <span th:remove="tag" th:text="${basesChanged > 1 or basesChanged < -1 ? 'bases' : 'base'}">bases</span>
-                    <span th:remove="tag" th:text="${sequenceAdded} ? 'to' : 'from'">to</span> the coding sequence.
-                </div>
-                <div class="graphics-content">
-                    <div class="graphics-subcontent">
-                        <span th:remove="tag" th:utext="${primaryLabel}">PRIMARY LABEL</span>
-                        <div th:utext="${primary}">
-                            <svg height="200" style="border: solid black;" width="300" xmlns="http://www.w3.org/2000/svg"/>
-                        </div>
+            <div class="col-md-12">
+                <div class="graphics-container">
+                    <div class='variant-section-title' th:text="${context}">Cryptic donor</div>
+                    <div class="interpretation" th:if="${basesChanged}" th:with="sequenceAdded=${basesChanged > 0}">
+                        Using cryptic donor site at <em th:text="${crypticCoordinate}">chr1:123,456,789</em>
+                        would lead to <span th:remove="tag" th:text="${sequenceAdded}? 'addition' : 'removal'">addition</span>
+                        of <span th:remove="tag" th:text="${sequenceAdded ? basesChanged: -basesChanged}">4</span>
+                        <span th:remove="tag" th:text="${basesChanged > 1 or basesChanged < -1 ? 'bases' : 'base'}">bases</span>
+                        <span th:remove="tag" th:text="${sequenceAdded} ? 'to' : 'from'">to</span> the coding sequence.
                     </div>
-                    <div class="graphics-subcontent">
-                        <span th:remove="tag" th:utext="${secondaryLabel}">SECONDARY LABEL</span>
-                        <div th:utext="${secondary}">
-                            <svg height="200" style="border: solid black;" width="300" xmlns="http://www.w3.org/2000/svg"/>
+                    <div class="graphics-content">
+                        <div class="graphics-subcontent">
+                            <div class="graphics-label" th:utext="${primaryLabel}">PRIMARY LABEL</div>
+                            <div th:utext="${primary}">
+                                <svg height="200" style="border: solid black;" width="300" xmlns="http://www.w3.org/2000/svg"/>
+                            </div>
+                        </div>
+                        <div class="graphics-subcontent">
+                            <div class="graphics-label" th:utext="${secondaryLabel}">SECONDARY LABEL</div>
+                            <div th:utext="${secondary}">
+                                <svg height="200" style="border: solid black;" width="300" xmlns="http://www.w3.org/2000/svg"/>
+                            </div>
                         </div>
                     </div>
                 </div>
