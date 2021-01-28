@@ -86,7 +86,6 @@ import org.monarchinitiative.squirls.core.reference.StrandedSequence;
 import org.monarchinitiative.squirls.core.reference.TranscriptModel;
 import org.monarchinitiative.squirls.core.scoring.SplicingAnnotator;
 import org.monarchinitiative.svart.*;
-import org.monarchinitiative.svart.impl.DefaultGenomicAssembly;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.util.*;
@@ -124,9 +123,9 @@ public class VariantSplicingEvaluatorDefaultTest {
     public static void beforeAll() {
         Contig chr9 = Contig.of(1, "9", SequenceRole.ASSEMBLED_MOLECULE, "9", AssignedMoleculeType.CHROMOSOME, 141_213_431,
                 "CM000671.1", "NC_000009.11", "chr9");
-        assembly = DefaultGenomicAssembly.builder().name("GRCh37.custom").organismName("Homo sapiens (human)")
-                .taxId("9606").submitter("Me").date("2020-01-04").genBankAccession("GB1").refSeqAccession("RS1")
-                .contigs(List.of(chr9)).build();
+        assembly = GenomicAssembly.of("GRCh37.custom", "Homo sapiens (human)", "9606",
+                "Me", "2020-01-04", "GB1", "RS1",
+                List.of(chr9));
         char[] chars = new char[136_230_000 - 136_210_000 + 1];
         Arrays.fill(chars, 'A'); // the sequence does not really matter since we use mocks
         sequence = StrandedSequence.of(chr9, Strand.POSITIVE, CoordinateSystem.oneBased(),
