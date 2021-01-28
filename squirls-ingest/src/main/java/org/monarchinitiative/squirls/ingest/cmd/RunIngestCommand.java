@@ -79,6 +79,8 @@ package org.monarchinitiative.squirls.ingest.cmd;
 import net.sourceforge.argparse4j.inf.Namespace;
 import net.sourceforge.argparse4j.inf.Subparser;
 import net.sourceforge.argparse4j.inf.Subparsers;
+import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.commons.codec.digest.MessageDigestAlgorithms;
 import org.monarchinitiative.squirls.core.SquirlsException;
 import org.monarchinitiative.squirls.ingest.IngestProperties;
 import org.monarchinitiative.squirls.ingest.SquirlsDataBuilder;
@@ -88,15 +90,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
+import java.io.BufferedWriter;
 import java.io.File;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Component
@@ -199,10 +199,32 @@ public class RunIngestCommand extends IngestCommand {
                 Path.of(ingestProperties.getSeptamerTsvPath()),
                 classifiers, versionedAssembly);
 
-        // 4 - compress all the files into a single ZIP file
-        List<File> resources = Arrays.stream(Objects.requireNonNull(genomeBuildDir.toFile().listFiles()))
-                .filter(f -> !f.getName().endsWith("trace.db"))
-                .collect(Collectors.toList());
+        // 4 - calculate SHA256 digest for the resource files
+        List<File> resources = Arrays.stream(Objects.requireNonNull(genomeBuildDir.toFile().listFiles())).collect(Collectors.toList());
+        LOGGER.info("Calculating SHA256 digest for resource files in `{}`", genomeBuildDir);
+        Map<File, String> fileToDigest = new HashMap<>();
+        DigestUtils digest = new DigestUtils(MessageDigestAlgorithms.SHA_256);
+
+        // calculate digests
+        for (File resource : resources) {
+            if (LOGGER.isDebugEnabled()) LOGGER.debug("Calculating SHA256 digest for `{}`", resource);
+            String hexDigest = digest.digestAsHex(resource);
+            fileToDigest.put(resource, hexDigest);
+        }
+
+        // write digests to a file
+        Path digestFilePath = genomeBuildDir.resolve(versionedAssembly + ".sha256");
+        LOGGER.info("Storing the digest into `{}`", digestFilePath);
+        try (BufferedWriter digestWriter = Files.newBufferedWriter(digestFilePath)) {
+            for (File resource : fileToDigest.keySet()) {
+                String line = String.format("%s  %s", fileToDigest.get(resource), resource.getName());
+                digestWriter.write(line);
+                digestWriter.write(System.lineSeparator());
+            }
+        }
+
+        // 5 - compress all the files into a single ZIP file
+        resources = Arrays.stream(Objects.requireNonNull(genomeBuildDir.toFile().listFiles())).collect(Collectors.toList());
         Path zipPath = buildDirPath.resolve(versionedAssembly + ".zip");
         LOGGER.info("Compressing the resource files into a single ZIP file `{}`", zipPath);
         try (ZipCompressionWrapper wrapper = new ZipCompressionWrapper(zipPath.toFile())) {
