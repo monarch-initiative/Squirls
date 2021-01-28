@@ -79,8 +79,10 @@ package org.monarchinitiative.squirls.core.scoring.calculators;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
-import org.monarchinitiative.variant.api.Variant;
-import org.monarchinitiative.variant.api.impl.SequenceVariant;
+import org.monarchinitiative.svart.CoordinateSystem;
+import org.monarchinitiative.svart.Position;
+import org.monarchinitiative.svart.Strand;
+import org.monarchinitiative.svart.Variant;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -106,8 +108,12 @@ public class ClosestAcceptorDistanceTest extends CalculatorTestBase {
             "1601,  -200",
     })
     public void score(int pos, double expected) {
-        Variant variant = SequenceVariant.oneBased(contig, pos, "g", "a"); // ref and alt do not matter
-        assertThat(scorer.score(variant, tx, sequenceInterval), is(closeTo(expected, EPSILON)));
+        // ref and alt do not matter
+        Variant oneBased = Variant.of(contig, "", Strand.POSITIVE, CoordinateSystem.oneBased(), Position.of(pos), "g", "a");
+        assertThat(scorer.score(oneBased, tx, sequence), is(closeTo(expected, EPSILON)));
+
+        Variant zeroBased = Variant.of(contig, "", Strand.POSITIVE, CoordinateSystem.zeroBased(), Position.of(pos - 1), "g", "a");
+        assertThat(scorer.score(zeroBased, tx, sequence), is(closeTo(expected, EPSILON)));
     }
 
 }

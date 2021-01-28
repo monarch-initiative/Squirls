@@ -76,14 +76,10 @@
 
 package org.monarchinitiative.squirls.core.scoring.calculators;
 
-import org.monarchinitiative.squirls.core.reference.AlleleGenerator;
-import org.monarchinitiative.squirls.core.reference.SplicingLocationData;
-import org.monarchinitiative.squirls.core.reference.StrandedSequence;
-import org.monarchinitiative.squirls.core.reference.TranscriptModelLocator;
+import org.monarchinitiative.squirls.core.reference.*;
 import org.monarchinitiative.squirls.core.scoring.calculators.ic.SplicingInformationContentCalculator;
-import org.monarchinitiative.variant.api.GenomicPosition;
-import org.monarchinitiative.variant.api.GenomicRegion;
-import org.monarchinitiative.variant.api.Variant;
+import org.monarchinitiative.svart.GenomicRegion;
+import org.monarchinitiative.svart.Variant;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -99,23 +95,24 @@ public class CanonicalAcceptor extends BaseFeatureCalculator {
     }
 
     @Override
-    protected double score(Variant variant, SplicingLocationData locationData, StrandedSequence sequence) {
-        return locationData.getAcceptorBoundary()
-                .map(anchor -> score(variant, anchor, sequence))
-                .orElse(0.);
+    protected double score(Variant variant, SplicingLocationData locationData, TranscriptModel tx, StrandedSequence sequence) {
+        if (locationData.getPosition() == SplicingLocationData.SplicingPosition.ACCEPTOR) {
+            return locationData.getAcceptorRegion()
+                    .map(acceptor -> score(variant, acceptor, sequence))
+                    .orElse(0.);
+        }
+        return 0.;
     }
 
 
-    private double score(Variant variant, GenomicPosition anchor, StrandedSequence sequence) {
-        final GenomicRegion acceptorRegion = generator.makeAcceptorInterval(anchor);
-
-        if (!acceptorRegion.overlapsWith(variant)) {
+    private double score(Variant variant, GenomicRegion acceptor, StrandedSequence sequence) {
+        if (!acceptor.overlapsWith(variant)) {
             // shortcut - if variant does not affect the donor site
             return 0;
         }
 
-        final String acceptorSiteSnippet = generator.getAcceptorSiteSnippet(anchor, sequence);
-        final String acceptorSiteWithAltAllele = generator.getAcceptorSiteWithAltAllele(anchor, variant, sequence);
+        String acceptorSiteSnippet = sequence.subsequence(acceptor);
+        String acceptorSiteWithAltAllele = generator.getAcceptorSiteWithAltAllele(acceptor, variant, sequence);
 
         if (acceptorSiteSnippet == null || acceptorSiteWithAltAllele == null) {
             if (LOGGER.isDebugEnabled())
@@ -123,8 +120,8 @@ public class CanonicalAcceptor extends BaseFeatureCalculator {
             return Double.NaN;
         }
 
-        final double refScore = calculator.getSpliceAcceptorScore(acceptorSiteSnippet);
-        final double altScore = calculator.getSpliceAcceptorScore(acceptorSiteWithAltAllele);
+        double refScore = calculator.getSpliceAcceptorScore(acceptorSiteSnippet);
+        double altScore = calculator.getSpliceAcceptorScore(acceptorSiteWithAltAllele);
 
         return refScore - altScore;
     }

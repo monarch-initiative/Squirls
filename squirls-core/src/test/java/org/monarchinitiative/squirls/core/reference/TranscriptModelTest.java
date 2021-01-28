@@ -79,7 +79,7 @@ package org.monarchinitiative.squirls.core.reference;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
-import org.monarchinitiative.variant.api.*;
+import org.monarchinitiative.svart.*;
 
 import java.util.List;
 
@@ -92,11 +92,11 @@ public class TranscriptModelTest {
 
     @Test
     public void properties() {
-        TranscriptModel tx = TranscriptModel.coding(CONTIG, Strand.POSITIVE, CoordinateSystem.ZERO_BASED, 100, 200,
+        TranscriptModel tx = TranscriptModel.coding(CONTIG, Strand.POSITIVE, CoordinateSystem.zeroBased(), 100, 200,
                 110, 190, "NM_123456.3", "GENE",
-                List.of(GenomicRegion.of(CONTIG, Strand.POSITIVE, CoordinateSystem.ZERO_BASED, Position.of(100), Position.of(130)),
-                        GenomicRegion.of(CONTIG, Strand.POSITIVE, CoordinateSystem.ZERO_BASED, Position.of(150), Position.of(170)),
-                        GenomicRegion.of(CONTIG, Strand.POSITIVE, CoordinateSystem.ZERO_BASED, Position.of(180), Position.of(200))));
+                List.of(GenomicRegion.of(CONTIG, Strand.POSITIVE, CoordinateSystem.zeroBased(), Position.of(100), Position.of(130)),
+                        GenomicRegion.of(CONTIG, Strand.POSITIVE, CoordinateSystem.zeroBased(), Position.of(150), Position.of(170)),
+                        GenomicRegion.of(CONTIG, Strand.POSITIVE, CoordinateSystem.zeroBased(), Position.of(180), Position.of(200))));
 
         assertThat(tx.start(), equalTo(100));
         assertThat(tx.end(), equalTo(200));
@@ -118,11 +118,11 @@ public class TranscriptModelTest {
     @CsvSource({"POSITIVE, NEGATIVE",
             "NEGATIVE, POSITIVE"})
     public void withStrand(Strand strand, Strand oppositeStrand) {
-        TranscriptModel instance = TranscriptModel.coding(CONTIG, strand, CoordinateSystem.ZERO_BASED, 100, 200,
+        TranscriptModel instance = TranscriptModel.coding(CONTIG, strand, CoordinateSystem.zeroBased(), 100, 200,
                 110, 190, "NM_123456.3", "GENE",
-                List.of(GenomicRegion.of(CONTIG, strand, CoordinateSystem.ZERO_BASED, Position.of(100), Position.of(130)),
-                        GenomicRegion.of(CONTIG, strand, CoordinateSystem.ZERO_BASED, Position.of(150), Position.of(170)),
-                        GenomicRegion.of(CONTIG, strand, CoordinateSystem.ZERO_BASED, Position.of(180), Position.of(200))));
+                List.of(GenomicRegion.of(CONTIG, strand, CoordinateSystem.zeroBased(), Position.of(100), Position.of(130)),
+                        GenomicRegion.of(CONTIG, strand, CoordinateSystem.zeroBased(), Position.of(150), Position.of(170)),
+                        GenomicRegion.of(CONTIG, strand, CoordinateSystem.zeroBased(), Position.of(180), Position.of(200))));
 
         assertThat(instance.withStrand(strand), sameInstance(instance));
 
@@ -131,9 +131,7 @@ public class TranscriptModelTest {
         assertThat(tx.start(), equalTo(300));
         assertThat(tx.end(), equalTo(400));
         assertThat(tx.cdsStartPosition().pos(), equalTo(310));
-        assertThat(tx.cdsStartGenomicPosition().pos(), equalTo(310));
         assertThat(tx.cdsEndPosition().pos(), equalTo(390));
-        assertThat(tx.cdsEndGenomicPosition().pos(), equalTo(390));
         assertThat(tx.length(), equalTo(100));
         assertThat(tx.strand(), equalTo(oppositeStrand));
 
@@ -157,11 +155,11 @@ public class TranscriptModelTest {
     @CsvSource({"POSITIVE, NEGATIVE",
             "NEGATIVE, POSITIVE"})
     public void withStrand_noncodingTx(Strand strand, Strand oppositeStrand) {
-        TranscriptModel instance = TranscriptModel.noncoding(CONTIG, strand, CoordinateSystem.ZERO_BASED, 100, 200,
+        TranscriptModel instance = TranscriptModel.noncoding(CONTIG, strand, CoordinateSystem.zeroBased(), 100, 200,
                 "NM_123456.3", "GENE",
-                List.of(GenomicRegion.of(CONTIG, strand, CoordinateSystem.ZERO_BASED, Position.of(100), Position.of(130)),
-                        GenomicRegion.of(CONTIG, strand, CoordinateSystem.ZERO_BASED, Position.of(150), Position.of(170)),
-                        GenomicRegion.of(CONTIG, strand, CoordinateSystem.ZERO_BASED, Position.of(180), Position.of(200))));
+                List.of(GenomicRegion.of(CONTIG, strand, CoordinateSystem.zeroBased(), Position.of(100), Position.of(130)),
+                        GenomicRegion.of(CONTIG, strand, CoordinateSystem.zeroBased(), Position.of(150), Position.of(170)),
+                        GenomicRegion.of(CONTIG, strand, CoordinateSystem.zeroBased(), Position.of(180), Position.of(200))));
 
         assertThat(instance.withStrand(strand), sameInstance(instance));
 
@@ -170,9 +168,7 @@ public class TranscriptModelTest {
         assertThat(tx.start(), equalTo(300));
         assertThat(tx.end(), equalTo(400));
         assertThat(tx.cdsStartPosition(), nullValue());
-        assertThat(tx.cdsStartGenomicPosition(), nullValue());
         assertThat(tx.cdsEndPosition(), nullValue());
-        assertThat(tx.cdsEndGenomicPosition(), nullValue());
         assertThat(tx.length(), equalTo(100));
         assertThat(tx.strand(), equalTo(oppositeStrand));
 
@@ -194,21 +190,19 @@ public class TranscriptModelTest {
 
     @Test
     public void withCoordinateSystem() {
-        TranscriptModel instance = TranscriptModel.coding(CONTIG, Strand.POSITIVE, CoordinateSystem.ZERO_BASED, 100, 200,
+        TranscriptModel instance = TranscriptModel.coding(CONTIG, Strand.POSITIVE, CoordinateSystem.zeroBased(), 100, 200,
                 110, 190, "NM_123456.3", "GENE",
-                List.of(GenomicRegion.of(CONTIG, Strand.POSITIVE, CoordinateSystem.ZERO_BASED, Position.of(100), Position.of(130)),
-                        GenomicRegion.of(CONTIG, Strand.POSITIVE, CoordinateSystem.ZERO_BASED, Position.of(150), Position.of(170)),
-                        GenomicRegion.of(CONTIG, Strand.POSITIVE, CoordinateSystem.ZERO_BASED, Position.of(180), Position.of(200))));
-        assertThat(instance.withCoordinateSystem(CoordinateSystem.ZERO_BASED), sameInstance(instance));
+                List.of(GenomicRegion.of(CONTIG, Strand.POSITIVE, CoordinateSystem.zeroBased(), Position.of(100), Position.of(130)),
+                        GenomicRegion.of(CONTIG, Strand.POSITIVE, CoordinateSystem.zeroBased(), Position.of(150), Position.of(170)),
+                        GenomicRegion.of(CONTIG, Strand.POSITIVE, CoordinateSystem.zeroBased(), Position.of(180), Position.of(200))));
+        assertThat(instance.withCoordinateSystem(CoordinateSystem.zeroBased()), sameInstance(instance));
 
-        TranscriptModel tx = instance.withCoordinateSystem(CoordinateSystem.ONE_BASED);
+        TranscriptModel tx = instance.withCoordinateSystem(CoordinateSystem.oneBased());
 
         assertThat(tx.start(), equalTo(101));
         assertThat(tx.end(), equalTo(200));
         assertThat(tx.cdsStartPosition().pos(), equalTo(111));
-        assertThat(tx.cdsStartGenomicPosition().pos(), equalTo(110));
         assertThat(tx.cdsEndPosition().pos(), equalTo(190));
-        assertThat(tx.cdsEndGenomicPosition().pos(), equalTo(190));
 
         assertThat(tx.accessionId(), equalTo("NM_123456.3"));
         assertThat(tx.hgvsSymbol(), equalTo("GENE"));
@@ -223,22 +217,20 @@ public class TranscriptModelTest {
 
     @Test
     public void withCoordinateSystem_noncodingTx() {
-        TranscriptModel instance = TranscriptModel.noncoding(CONTIG, Strand.POSITIVE, CoordinateSystem.ZERO_BASED, 100, 200,
+        TranscriptModel instance = TranscriptModel.noncoding(CONTIG, Strand.POSITIVE, CoordinateSystem.zeroBased(), 100, 200,
                 "NM_123456.3", "GENE",
-                List.of(GenomicRegion.of(CONTIG, Strand.POSITIVE, CoordinateSystem.ZERO_BASED, Position.of(100), Position.of(130)),
-                        GenomicRegion.of(CONTIG, Strand.POSITIVE, CoordinateSystem.ZERO_BASED, Position.of(150), Position.of(170)),
-                        GenomicRegion.of(CONTIG, Strand.POSITIVE, CoordinateSystem.ZERO_BASED, Position.of(180), Position.of(200))));
+                List.of(GenomicRegion.of(CONTIG, Strand.POSITIVE, CoordinateSystem.zeroBased(), Position.of(100), Position.of(130)),
+                        GenomicRegion.of(CONTIG, Strand.POSITIVE, CoordinateSystem.zeroBased(), Position.of(150), Position.of(170)),
+                        GenomicRegion.of(CONTIG, Strand.POSITIVE, CoordinateSystem.zeroBased(), Position.of(180), Position.of(200))));
 
-        assertThat(instance.withCoordinateSystem(CoordinateSystem.ZERO_BASED), sameInstance(instance));
+        assertThat(instance.withCoordinateSystem(CoordinateSystem.zeroBased()), sameInstance(instance));
 
-        TranscriptModel tx = instance.withCoordinateSystem(CoordinateSystem.ONE_BASED);
+        TranscriptModel tx = instance.withCoordinateSystem(CoordinateSystem.oneBased());
 
         assertThat(tx.start(), equalTo(101));
         assertThat(tx.end(), equalTo(200));
         assertThat(tx.cdsStartPosition(), nullValue());
-        assertThat(tx.cdsStartGenomicPosition(), nullValue());
         assertThat(tx.cdsEndPosition(), nullValue());
-        assertThat(tx.cdsEndGenomicPosition(), nullValue());
 
         assertThat(tx.accessionId(), equalTo("NM_123456.3"));
         assertThat(tx.hgvsSymbol(), equalTo("GENE"));
@@ -253,11 +245,11 @@ public class TranscriptModelTest {
 
     @Test
     public void introns() {
-        TranscriptModel instance = TranscriptModel.coding(CONTIG, Strand.POSITIVE, CoordinateSystem.ZERO_BASED, 100, 200,
+        TranscriptModel instance = TranscriptModel.coding(CONTIG, Strand.POSITIVE, CoordinateSystem.zeroBased(), 100, 200,
                 110, 190, "NM_123456.3", "GENE",
-                List.of(GenomicRegion.of(CONTIG, Strand.POSITIVE, CoordinateSystem.ZERO_BASED, Position.of(100), Position.of(130)),
-                        GenomicRegion.of(CONTIG, Strand.POSITIVE, CoordinateSystem.ZERO_BASED, Position.of(150), Position.of(170)),
-                        GenomicRegion.of(CONTIG, Strand.POSITIVE, CoordinateSystem.ZERO_BASED, Position.of(180), Position.of(200))));
+                List.of(GenomicRegion.of(CONTIG, Strand.POSITIVE, CoordinateSystem.zeroBased(), Position.of(100), Position.of(130)),
+                        GenomicRegion.of(CONTIG, Strand.POSITIVE, CoordinateSystem.zeroBased(), Position.of(150), Position.of(170)),
+                        GenomicRegion.of(CONTIG, Strand.POSITIVE, CoordinateSystem.zeroBased(), Position.of(180), Position.of(200))));
 
         assertThat(instance.intronCount(), equalTo(2));
         assertThat(instance.introns(), hasItems(

@@ -77,8 +77,8 @@
 package org.monarchinitiative.squirls.cli.data;
 
 import org.monarchinitiative.squirls.core.reference.StrandedSequence;
-import org.monarchinitiative.variant.api.Contig;
-import org.monarchinitiative.variant.api.GenomicRegion;
+import org.monarchinitiative.svart.Contig;
+import org.monarchinitiative.svart.GenomicRegion;
 
 class Sequences {
 

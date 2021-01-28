@@ -87,10 +87,19 @@ import org.monarchinitiative.squirls.cli.visualization.selector.VisualizationCon
 import org.monarchinitiative.squirls.cli.visualization.selector.VisualizationContextSelector;
 import org.monarchinitiative.squirls.cli.writers.WritableSplicingAllele;
 import org.monarchinitiative.squirls.core.SquirlsDataService;
+import org.monarchinitiative.squirls.core.VariantOnTranscript;
+import org.monarchinitiative.squirls.core.reference.StrandedSequence;
+import org.monarchinitiative.svart.GenomicAssembly;
+import org.monarchinitiative.svart.GenomicRegion;
+import org.springframework.beans.factory.annotation.Autowired;
 
+import java.io.BufferedWriter;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.anyMap;
 import static org.mockito.Mockito.when;
 
@@ -104,12 +113,15 @@ public class PanelGraphicsGeneratorTest extends GraphicsGeneratorTestBase {
     @Mock
     public SquirlsDataService squirlsDataService;
 
+    @Autowired
+    public GenomicAssembly assembly;
+
     private PanelGraphicsGenerator generator;
 
     @BeforeEach
     public void setUp() {
         super.setUp();
-        generator = new PanelGraphicsGenerator(vmvtGenerator, splicingPwmData, selector, squirlsDataService);
+        generator = new PanelGraphicsGenerator(vmvtGenerator, selector, squirlsDataService, splicingPwmData);
         when(squirlsDataService.genomicAssembly()).thenReturn(null);
     }
 
@@ -120,7 +132,7 @@ public class PanelGraphicsGeneratorTest extends GraphicsGeneratorTestBase {
 
         when(selector.selectContext(anyMap())).thenReturn(VisualizationContext.CANONICAL_DONOR);
         when(squirlsDataService.sequenceForRegion(any())).thenReturn(null);
-        when(squirlsDataService.getByAccession(txAccession)).thenReturn(Optional.empty());
+        when(squirlsDataService.transcriptByAccession(txAccession)).thenReturn(Optional.empty());
 
         VisualizableVariantAllele allele = toVisualizableAllele(writableSplicingAllele);
 
@@ -148,5 +160,33 @@ public class PanelGraphicsGeneratorTest extends GraphicsGeneratorTestBase {
         final String content = generator.generateGraphics(allele);
 
 //        System.err.println(content);
+    }
+
+    @Test
+    public void crypticDonor() throws Exception {
+        WritableSplicingAllele wsa = variantsForTesting.HBBcodingExon1UpstreamCryptic();
+
+        when(selector.selectContext(anyMap())).thenReturn(VisualizationContext.CRYPTIC_DONOR);
+        // >chr11:5,247,501-5,248,500
+        String seq = "TTTTTTTAAGTTACTTAATGTATCTCAGAGATATTTCCTTTTGTTATACACAATGTTAAGGCATTAAGTATAATAGTAAAAATTGCGgagaagaaaaaaaaagaaagcaagaattaaaca" +
+                "aaagaaaacaattgttatgaacagcaaataaaagaaactaaaaCGATCCTGAGACTTCCACACTGATGCAATCATTCGTCTGTTTCCCATTCTAAACTGTACCCTGTTACTTATCCCCTT" +
+                "CCTATGACATGAACTTAACCATAGAAAAGAAGGGGAAAGAAAACATCAAGCGTCCCATAGACTCACCCTGAAGTTCTCAGGATCCACGTGCAGCTTGTCACAGTGCAGCTCACTCAGTGT" +
+                "GGCAAAGGTGCCCTTGAGGTTGTCCAGGTGAGCCAGGCCATCACTAAAGGCACCGAGCACTTTCTTGCCATGAGCCTTCACCTTAGGGTTGCCCATAACAGCATCAGGAGTGGACAGATC" +
+                "CCCAAAGGACTCAAAGAACCTCTGGGTCCAAGGGTAGACCACCAGCAGCCTAAGGGTGGGAAAATAGACCAATAGGCAGAGAGAGTCAGTGCCTATCAGAAACCCAAGAGTCTTCTCTGT" +
+                "CTCCACATGCCCAGTTTCTATTGGTCTCCTTAAACCTGTCTTGTAACCTTGATACCAACCTGCCCAGGGCCTCACCACCAACTTCATCCACGTTCACCTTGCCCCACAGGGCAGTAACGG" +
+                "CAGACTTCTCCTCAGGAGTCAGATGCACCATGGTGTCTGTTTGAGGTTGCTAGTGAACACAGTTGTGTCAGAAGCAAATGTAAGCAATAGATGGCTCTGCCCTGACTTTTATGCCCAGCC" +
+                "CTGGCTCCTGCCCTCCCTGCTCCTGGGAGTAGATTGGCCAACCCTAGGGTGTGGCTCCACAGGGTGAGGTCTAAGTGATGACAGCCGTACCTGTCCTTGGCTCTTCTGGCACTGGCTTAG" +
+                "GAGTTGGACTTCAAACCCTCAGCCCTCCCTCTAAGATATA";
+        when(squirlsDataService.sequenceForRegion(any()))
+                .thenReturn(StrandedSequence.of(GenomicRegion.oneBased(assembly.contigByName("11"), 5_247_501, 5_248_500), seq));
+        when(squirlsDataService.transcriptByAccession(anyString()))
+                .thenReturn(Optional.ofNullable(((VariantOnTranscript) wsa).transcript()));
+
+        VisualizableVariantAllele allele = toVisualizableAllele(wsa);
+        String content = generator.generateGraphics(allele);
+
+        try (BufferedWriter writer = Files.newBufferedWriter(Paths.get("target/crypticDonor.txt"))) {
+            writer.write(content);
+        }
     }
 }

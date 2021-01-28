@@ -80,7 +80,7 @@ import org.monarchinitiative.squirls.core.reference.AlleleGenerator;
 import org.monarchinitiative.squirls.core.reference.StrandedSequence;
 import org.monarchinitiative.squirls.core.reference.TranscriptModel;
 import org.monarchinitiative.squirls.core.reference.TranscriptModelLocator;
-import org.monarchinitiative.variant.api.Variant;
+import org.monarchinitiative.svart.Variant;
 
 import java.util.regex.Pattern;
 
@@ -94,7 +94,7 @@ import java.util.regex.Pattern;
 public class ExclusionZoneFeatureCalculator extends BaseAgezCalculator {
 
     /**
-     * Default AGEZ begin and end coordinates.
+     * Default AGEZ 0-based begin and end coordinates.
      */
     public static final int AGEZ_BEGIN = -51, AGEZ_END = -3;
 

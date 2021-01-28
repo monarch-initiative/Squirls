@@ -81,8 +81,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.monarchinitiative.squirls.core.reference.TranscriptModel;
 import org.monarchinitiative.squirls.ingest.data.GenomeAssemblyDownloaderTest;
-import org.monarchinitiative.variant.api.*;
-import org.monarchinitiative.variant.api.impl.DefaultGenomicAssembly;
+import org.monarchinitiative.svart.*;
+import org.monarchinitiative.svart.impl.DefaultGenomicAssembly;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.jdbc.Sql;
@@ -112,12 +112,12 @@ public class SquirlsDataBuilderTest {
     private static final String VERSIONED_ASSEMBLY = VERSION + "_" + ASSEMBLY;
 
     private static final URL FASTA_URL = GenomeAssemblyDownloaderTest.class.getResource("shortHg19ChromFa.tar.gz");
-    private static final URL ASSEMBLY_REPORT_URL = SquirlsDataBuilderTest.class.getResource("GCF_000001405.25_GRCh37.p13_assembly_report.txt");
+    private static final URL ASSEMBLY_REPORT_URL = SquirlsDataBuilderTest.class.getResource("GCF_000001405.25_GRCh37.p13_assembly_report.short.txt");
 
     private static final List<Contig> CONTIGS = List.of(
             Contig.unknown(),
-            Contig.of(2, "2", SequenceRole.ASSEMBLED_MOLECULE, "2", AssignedMoleculeType.CHROMOSOME, 100_000, "", "", "chr2"),
-            Contig.of(3, "3", SequenceRole.ASSEMBLED_MOLECULE, "3", AssignedMoleculeType.CHROMOSOME, 200_000, "", "", "chr3"));
+            Contig.of(1, "2", SequenceRole.ASSEMBLED_MOLECULE, "2", AssignedMoleculeType.CHROMOSOME, 100_000, "", "", "chr2"),
+            Contig.of(2, "3", SequenceRole.ASSEMBLED_MOLECULE, "3", AssignedMoleculeType.CHROMOSOME, 200_000, "", "", "chr3"));
 
     private static final GenomicAssembly GENOMIC_ASSEMBLY = DefaultGenomicAssembly.builder().contigs(CONTIGS).build();
 
@@ -127,7 +127,7 @@ public class SquirlsDataBuilderTest {
 
     private static List<TranscriptModel> makeTranscripts() {
         Contig chr2 = CONTIGS.get(1);
-        TranscriptModel tx = TranscriptModel.coding(chr2, Strand.POSITIVE, CoordinateSystem.ZERO_BASED, 10_000, 20_000, 11_000, 19_000,
+        TranscriptModel tx = TranscriptModel.coding(chr2, Strand.POSITIVE, CoordinateSystem.zeroBased(), 10_000, 20_000, 11_000, 19_000,
                 "adam", "ADAM",
                 List.of(GenomicRegion.zeroBased(chr2, 10_000, 12_000),
                         GenomicRegion.zeroBased(chr2, 14_000, 16_000),
@@ -190,7 +190,7 @@ public class SquirlsDataBuilderTest {
             }
         }
         assertThat(tms, hasSize(1));
-        assertThat(tms, hasItem(String.join(",", "2", "10000", "20000", "10000", "20000", "TRUE", "adam")));
+        assertThat(tms, hasItem(String.join(",", "1", "10000", "20000", "10000", "20000", "TRUE", "adam")));
 
         String efSql = "select TX_ID, BEGIN, END, EXON_NUMBER from SQUIRLS.EXONS;";
 

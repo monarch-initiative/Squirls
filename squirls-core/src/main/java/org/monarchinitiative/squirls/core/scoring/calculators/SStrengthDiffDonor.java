@@ -78,8 +78,8 @@ package org.monarchinitiative.squirls.core.scoring.calculators;
 
 import org.monarchinitiative.squirls.core.reference.*;
 import org.monarchinitiative.squirls.core.scoring.calculators.ic.SplicingInformationContentCalculator;
-import org.monarchinitiative.variant.api.GenomicPosition;
-import org.monarchinitiative.variant.api.Variant;
+import org.monarchinitiative.svart.GenomicRegion;
+import org.monarchinitiative.svart.Variant;
 
 /**
  * This calculator computes the feature <code>sstrength_diff_donor</code> denoting the difference between the donor
@@ -111,10 +111,13 @@ public class SStrengthDiffDonor implements FeatureCalculator {
                 int exonIdx = locationData.getExonIdx();
                 if (transcript.exons().size() - exonIdx > 2) {
                     // the current exon is NOT the last or the second last exon of the transcript
-                    GenomicPosition thisDonorAnchor = transcript.exons().get(exonIdx).endGenomicPosition();
-                    String thisDonorSiteSnippet = generator.getDonorSiteWithAltAllele(thisDonorAnchor, variant, sequence);
-                    GenomicPosition nextDonorAnchor = transcript.exons().get(exonIdx + 1).endGenomicPosition();
-                    String nextDonorSiteSnippet = generator.getDonorSiteWithAltAllele(nextDonorAnchor, variant, sequence);
+                    GenomicRegion thisExon = transcript.exons().get(exonIdx);
+                    GenomicRegion thisDonor = generator.makeDonorInterval(thisExon);
+                    String thisDonorSiteSnippet = generator.getDonorSiteWithAltAllele(thisDonor, variant, sequence);
+
+                    GenomicRegion nextExon = transcript.exons().get(exonIdx + 1);
+                    GenomicRegion nextDonor = generator.makeDonorInterval(nextExon);
+                    String nextDonorSiteSnippet = generator.getDonorSiteWithAltAllele(nextDonor, variant, sequence);
 
                     if (thisDonorSiteSnippet != null && nextDonorSiteSnippet != null) {
                         return calculator.getSpliceDonorScore(thisDonorSiteSnippet) - calculator.getSpliceDonorScore(nextDonorSiteSnippet);

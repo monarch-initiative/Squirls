@@ -80,13 +80,13 @@ import org.monarchinitiative.squirls.core.reference.SplicingLocationData;
 import org.monarchinitiative.squirls.core.reference.StrandedSequence;
 import org.monarchinitiative.squirls.core.reference.TranscriptModel;
 import org.monarchinitiative.squirls.core.reference.TranscriptModelLocator;
-import org.monarchinitiative.variant.api.Variant;
+import org.monarchinitiative.svart.Variant;
 
 /**
  * Calculate length of the exon the variant is located in. The length is calculated only for variants with
- * {@link org.monarchinitiative.squirls.core.reference.SplicingLocationData.SplicingPosition#DONOR},
- * {@link org.monarchinitiative.squirls.core.reference.SplicingLocationData.SplicingPosition#ACCEPTOR}, and
- * {@link org.monarchinitiative.squirls.core.reference.SplicingLocationData.SplicingPosition#EXON}.
+ * {@link SplicingLocationData.SplicingPosition#DONOR},
+ * {@link SplicingLocationData.SplicingPosition#ACCEPTOR}, and
+ * {@link SplicingLocationData.SplicingPosition#EXON}.
  * <p>
  * For the remaining variants, <code>-1</code> is returned.
  */
@@ -100,8 +100,8 @@ public class ExonLength implements FeatureCalculator {
 
     @Override
     public double score(Variant variant, TranscriptModel transcript, StrandedSequence sequence) {
-        final SplicingLocationData locationData = locator.locate(variant, transcript);
-        final SplicingLocationData.SplicingPosition position = locationData.getPosition();
+        SplicingLocationData locationData = locator.locate(variant, transcript);
+        SplicingLocationData.SplicingPosition position = locationData.getPosition();
         switch (position) {
             case DONOR:
             case ACCEPTOR:

@@ -81,8 +81,8 @@ import org.monarchinitiative.squirls.core.reference.StrandedSequence;
 import org.monarchinitiative.squirls.core.reference.StrandedSequenceService;
 import org.monarchinitiative.squirls.core.reference.TranscriptModel;
 import org.monarchinitiative.squirls.core.reference.TranscriptModelService;
-import org.monarchinitiative.variant.api.GenomicAssembly;
-import org.monarchinitiative.variant.api.GenomicRegion;
+import org.monarchinitiative.svart.GenomicAssembly;
+import org.monarchinitiative.svart.GenomicRegion;
 
 import java.util.List;
 import java.util.Objects;
@@ -117,13 +117,13 @@ public class SquirlsDataServiceImpl implements SquirlsDataService {
     }
 
     @Override
-    public List<TranscriptModel> getOverlapping(GenomicRegion query) {
-        return transcriptModelService.getOverlapping(query);
+    public List<TranscriptModel> overlappingTranscripts(GenomicRegion query) {
+        return transcriptModelService.overlappingTranscripts(query);
     }
 
     @Override
-    public Optional<TranscriptModel> getByAccession(String txAccession) {
-        return transcriptModelService.getByAccession(txAccession);
+    public Optional<TranscriptModel> transcriptByAccession(String txAccession) {
+        return transcriptModelService.transcriptByAccession(txAccession);
     }
 
     @Override

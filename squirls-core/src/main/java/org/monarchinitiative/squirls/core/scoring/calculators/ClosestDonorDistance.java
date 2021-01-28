@@ -78,9 +78,8 @@ package org.monarchinitiative.squirls.core.scoring.calculators;
 
 import org.monarchinitiative.squirls.core.reference.StrandedSequence;
 import org.monarchinitiative.squirls.core.reference.TranscriptModel;
-import org.monarchinitiative.variant.api.GenomicPosition;
-import org.monarchinitiative.variant.api.GenomicRegion;
-import org.monarchinitiative.variant.api.Variant;
+import org.monarchinitiative.svart.Position;
+import org.monarchinitiative.svart.Variant;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -89,20 +88,17 @@ import java.util.Optional;
 
 /**
  * This class calculates the <code>closest donor</code> feature.
- * <p>
- * A runtime exception is thrown if the class is used to calculate distance to donor site with respect to single-exon
- * transcript.
  */
-public class ClosestDonorDistance extends BaseDistanceCalculator {
+public class ClosestDonorDistance implements FeatureCalculator {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ClosestDonorDistance.class);
 
     @Override
     public double score(Variant variant, TranscriptModel transcript, StrandedSequence sequence) {
         // find the closest donor site
-        Optional<GenomicPosition> closestPosition = transcript.introns().stream()
-                .map(GenomicRegion::startGenomicPosition)
-                .min(Comparator.comparingInt(border -> Math.abs(border.distanceTo(variant))));
+        Optional<Position> closestPosition = transcript.introns().stream()
+                .map(intron -> intron.toZeroBased().startPosition())
+                .min(Comparator.comparingInt(border -> Math.abs(border.distanceToRegion(variant))));
 
         if (closestPosition.isEmpty()) {
             // this happens only if the transcript has no introns. We should not assess such transcripts in
@@ -112,6 +108,6 @@ public class ClosestDonorDistance extends BaseDistanceCalculator {
             return Double.NaN;
         }
 
-        return getDiff(variant, closestPosition.get());
+        return DistanceUtils.getDiff(variant, closestPosition.get());
     }
 }

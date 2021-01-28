@@ -76,14 +76,10 @@
 
 package org.monarchinitiative.squirls.core.scoring.calculators;
 
-import org.monarchinitiative.squirls.core.reference.AlleleGenerator;
-import org.monarchinitiative.squirls.core.reference.SplicingLocationData;
-import org.monarchinitiative.squirls.core.reference.StrandedSequence;
-import org.monarchinitiative.squirls.core.reference.TranscriptModelLocator;
+import org.monarchinitiative.squirls.core.reference.*;
 import org.monarchinitiative.squirls.core.scoring.calculators.ic.SplicingInformationContentCalculator;
-import org.monarchinitiative.variant.api.GenomicPosition;
-import org.monarchinitiative.variant.api.GenomicRegion;
-import org.monarchinitiative.variant.api.Variant;
+import org.monarchinitiative.svart.GenomicRegion;
+import org.monarchinitiative.svart.Variant;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -98,23 +94,24 @@ public class CanonicalDonor extends BaseFeatureCalculator {
     }
 
     @Override
-    protected double score(Variant variant, SplicingLocationData locationData, StrandedSequence sequence) {
-        return locationData.getDonorBoundary()
-                .map(anchor -> score(variant, anchor, sequence))
-                .orElse(0.);
+    protected double score(Variant variant, SplicingLocationData locationData, TranscriptModel tx, StrandedSequence sequence) {
+        if (locationData.getPosition() == SplicingLocationData.SplicingPosition.DONOR) {
+            return locationData.getDonorRegion()
+                    .map(donor -> score(variant, donor, sequence))
+                    .orElse(0.);
+        }
+        return 0.;
     }
 
 
-    private double score(Variant variant, GenomicPosition anchor, StrandedSequence sequence) {
-        GenomicRegion donorRegion = generator.makeDonorInterval(anchor);
-
-        if (!donorRegion.overlapsWith(variant)) {
+    private double score(Variant variant, GenomicRegion donor, StrandedSequence sequence) {
+        if (!donor.overlapsWith(variant)) {
             // shortcut - if variant does not affect the donor site
             return 0;
         }
 
-        final String donorSiteSnippet = generator.getDonorSiteSnippet(anchor, sequence);
-        final String donorSiteWithAltAllele = generator.getDonorSiteWithAltAllele(anchor, variant, sequence);
+        String donorSiteSnippet = sequence.subsequence(donor);
+        String donorSiteWithAltAllele = generator.getDonorSiteWithAltAllele(donor, variant, sequence);
 
         if (donorSiteSnippet == null || donorSiteWithAltAllele == null) {
             if (LOGGER.isDebugEnabled())
@@ -122,8 +119,8 @@ public class CanonicalDonor extends BaseFeatureCalculator {
             return Double.NaN;
         }
 
-        final double refScore = calculator.getSpliceDonorScore(donorSiteSnippet);
-        final double altScore = calculator.getSpliceDonorScore(donorSiteWithAltAllele);
+        double refScore = calculator.getSpliceDonorScore(donorSiteSnippet);
+        double altScore = calculator.getSpliceDonorScore(donorSiteWithAltAllele);
 
         return refScore - altScore;
     }

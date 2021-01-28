@@ -92,10 +92,7 @@ import org.monarchinitiative.squirls.core.Prediction;
 import org.monarchinitiative.squirls.core.SquirlsTxResult;
 import org.monarchinitiative.squirls.core.reference.StrandedSequence;
 import org.monarchinitiative.squirls.core.reference.TranscriptModel;
-import org.monarchinitiative.variant.api.Contig;
-import org.monarchinitiative.variant.api.GenomicAssembly;
-import org.monarchinitiative.variant.api.Variant;
-import org.monarchinitiative.variant.api.impl.DefaultVariant;
+import org.monarchinitiative.svart.*;
 import org.monarchinitiative.vmvt.core.VmvtGenerator;
 
 import java.util.*;
@@ -180,7 +177,7 @@ public class VariantsForTesting {
                 .collect(Collectors.toMap(v -> v[0], v -> Double.parseDouble(v[1])));
 
         TranscriptModel st = transcripts.stream().min(Comparator.comparing(TranscriptModel::accessionId)).orElseThrow();
-        Variant variant = DefaultVariant.oneBased(contig, pos, ref, alt);
+        Variant variant = Variant.of(contig, "", org.monarchinitiative.svart.Strand.POSITIVE, CoordinateSystem.oneBased(), Position.of(pos), ref, alt);
 
         /*
         Prepare test object
@@ -392,9 +389,10 @@ public class VariantsForTesting {
                 "TGGg" + "c" + "aggt",  // ref best window snippet
                 "TGGg" + "t" + "aggt"); // alt best window snippet
 
-        String secondary = generator.getDonorCanonicalCryptic(
-                "T" + "AGgttggt",     // alt canonical site snippet
-                "TGGg" + "t" + "aggt"); // alt best window snippet
+//        String secondary = generator.getDonorCanonicalCryptic(
+//                "T" + "AGgttggt",     // alt canonical site snippet
+//                "TGGg" + "t" + "aggt"); // alt best window snippet
+        String secondary = "";
 
         // *************************************************************************************************************
 
@@ -455,9 +453,10 @@ public class VariantsForTesting {
                 "GTGgt" + "g" + "agg",  // ref best window snippet
                 "GTGgt" + "a" + "agg");  // alt best window snippet
 
-        String secondary = generator.getDonorCanonicalCryptic(
-                "CAGgttggt",  // alt canonical site snippet
-                "GTGgt" + "a" + "agg");  // alt best window snippet
+//        String secondary = generator.getDonorCanonicalCryptic(
+//                "CAGgttggt",  // alt canonical site snippet
+//                "GTGgt" + "a" + "agg");  // alt best window snippet
+        String secondary = "";
 
         // *************************************************************************************************************
 
@@ -641,9 +640,10 @@ public class VariantsForTesting {
                 "tttgttgtgttttgtcatgtgta" + "t" + "gct", // ref best window
                 "tttgttgtgttttgtcatgtgta" + "a" + "gct"); // alt best window
 
-        String secondary = generator.getAcceptorCanonicalCryptic(
-                "gtgttttgtcatgtgta" + "t" + "gctcaagGG", // alt canonical site snippet
-                "tttgttgtgttttgtcatgtgta" + "a" + "gct"); // alt best window snippet
+//        String secondary = generator.getAcceptorCanonicalCryptic(
+//                "gtgttttgtcatgtgta" + "t" + "gctcaagGG", // alt canonical site snippet
+//                "tttgttgtgttttgtcatgtgta" + "a" + "gct"); // alt best window snippet
+        String secondary = "";
 
         // *************************************************************************************************************
 
@@ -705,9 +705,10 @@ public class VariantsForTesting {
                 "tcagtgttacctgtttcacatgta" + "c" + "GT",  // ref best window
                 "tcagtgttacctgtttcacatgta" + "g" + "GT");  // alt best window
 
-        String secondary = generator.getAcceptorCanonicalCryptic(
-                "tgaccagtgtgctcccctccctcagTG",  // alt canonical site snippet
-                "tcagtgttacctgtttcacatgta" + "g" + "GT");  // alt best window snippet
+//        String secondary = generator.getAcceptorCanonicalCryptic(
+//                "tgaccagtgtgctcccctccctcagTG",  // alt canonical site snippet
+//                "tcagtgttacctgtttcacatgta" + "g" + "GT");  // alt best window snippet
+        String secondary = "";
 
         // *************************************************************************************************************
 

@@ -80,7 +80,7 @@ import org.monarchinitiative.squirls.core.scoring.calculators.conservation.bbfil
 import org.monarchinitiative.squirls.core.scoring.calculators.conservation.bbfile.BBFileReader;
 import org.monarchinitiative.squirls.core.scoring.calculators.conservation.bbfile.BigWigIterator;
 import org.monarchinitiative.squirls.core.scoring.calculators.conservation.bbfile.WigItem;
-import org.monarchinitiative.variant.api.GenomicRegion;
+import org.monarchinitiative.svart.GenomicRegion;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

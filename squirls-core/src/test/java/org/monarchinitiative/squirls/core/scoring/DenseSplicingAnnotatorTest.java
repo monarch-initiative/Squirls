@@ -80,8 +80,10 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.monarchinitiative.squirls.core.SimpleAnnotatableSquirlsFeatures;
 import org.monarchinitiative.squirls.core.classifier.SquirlsFeatures;
-import org.monarchinitiative.variant.api.Variant;
-import org.monarchinitiative.variant.api.impl.SequenceVariant;
+import org.monarchinitiative.svart.CoordinateSystem;
+import org.monarchinitiative.svart.Position;
+import org.monarchinitiative.svart.Strand;
+import org.monarchinitiative.svart.Variant;
 
 import java.util.List;
 
@@ -102,7 +104,7 @@ public class DenseSplicingAnnotatorTest extends BaseSplicingAnnotatorTest {
 
     @Test
     public void firstExonDonor() {
-        Variant variant = SequenceVariant.zeroBased(contig, 1199, "G", "A");
+        Variant variant = Variant.of(contig, "", Strand.POSITIVE, CoordinateSystem.zeroBased(), Position.of(1199), "G", "A");
 
         SimpleAnnotatableSquirlsFeatures ann = new SimpleAnnotatableSquirlsFeatures(variant, st, sequence);
         SquirlsFeatures features = annotator.annotate(ann);
@@ -113,7 +115,7 @@ public class DenseSplicingAnnotatorTest extends BaseSplicingAnnotatorTest {
 
     @Test
     public void secondExonDonor() throws Exception {
-        Variant variant = SequenceVariant.zeroBased(contig, 1599, "C", "A");
+        Variant variant = Variant.of(contig, "", Strand.POSITIVE, CoordinateSystem.zeroBased(), Position.of(1599), "C", "A");
         when(accessor.getScores(variant)).thenReturn(List.of(.12345F));
 
         SimpleAnnotatableSquirlsFeatures ann = new SimpleAnnotatableSquirlsFeatures(variant, st, sequence);
@@ -132,7 +134,7 @@ public class DenseSplicingAnnotatorTest extends BaseSplicingAnnotatorTest {
 
     @Test
     public void secondExonAcceptor() {
-        Variant variant = SequenceVariant.zeroBased(contig, 1399, "g", "a");
+        Variant variant = Variant.of(contig, "", Strand.POSITIVE, CoordinateSystem.zeroBased(), Position.of(1399), "g", "a");
         SimpleAnnotatableSquirlsFeatures ann = new SimpleAnnotatableSquirlsFeatures(variant, st, sequence);
         SquirlsFeatures features = annotator.annotate(ann);
 
@@ -144,7 +146,7 @@ public class DenseSplicingAnnotatorTest extends BaseSplicingAnnotatorTest {
 
     @Test
     public void thirdExonAcceptor() {
-        Variant variant = SequenceVariant.zeroBased(contig, 1804, "C", "T");
+        Variant variant = Variant.of(contig, "", Strand.POSITIVE, CoordinateSystem.zeroBased(), Position.of(1804), "C", "T");
         SimpleAnnotatableSquirlsFeatures ann = new SimpleAnnotatableSquirlsFeatures(variant, st, sequence);
         SquirlsFeatures features = annotator.annotate(ann);
 

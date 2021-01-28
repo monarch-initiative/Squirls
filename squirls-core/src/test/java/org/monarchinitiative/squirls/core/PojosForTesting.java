@@ -80,7 +80,7 @@ import org.monarchinitiative.squirls.core.reference.DoubleMatrix;
 import org.monarchinitiative.squirls.core.reference.SplicingParameters;
 import org.monarchinitiative.squirls.core.reference.StrandedSequence;
 import org.monarchinitiative.squirls.core.reference.TranscriptModel;
-import org.monarchinitiative.variant.api.*;
+import org.monarchinitiative.svart.*;
 
 import java.util.List;
 
@@ -137,7 +137,7 @@ public class PojosForTesting {
 
     public static TranscriptModel getTranscriptWithThreeExons(Contig contig) {
         return TranscriptModel.coding(
-                contig, Strand.POSITIVE, CoordinateSystem.ZERO_BASED, 1000, 2000, 1100, 1900,
+                contig, Strand.POSITIVE, CoordinateSystem.zeroBased(), 1000, 2000, 1100, 1900,
                 "THREE_EXON", "HGVS_SYMBOL",
                 List.of(
                         GenomicRegion.zeroBased(contig, 1000, 1200),
@@ -148,20 +148,20 @@ public class PojosForTesting {
 
     public static TranscriptModel getTranscriptWithSingleExon(Contig contig) {
         return TranscriptModel.coding(
-                contig, Strand.POSITIVE, CoordinateSystem.ZERO_BASED, 1000, 2000, 1100, 1900,
+                contig, Strand.POSITIVE, CoordinateSystem.zeroBased(), 1000, 2000, 1100, 1900,
                 "SINGLE_EXON", "HGVS_SYMBOL",
                 List.of(GenomicRegion.zeroBased(contig, 1000, 2000)));
     }
 
     public static TranscriptModel getTranscriptWithThreeExonsOnRevStrand(Contig contig) {
         return TranscriptModel.coding(
-                contig, Strand.POSITIVE, CoordinateSystem.ZERO_BASED, 1000, 2000, 1100, 1900,
+                contig, Strand.NEGATIVE, CoordinateSystem.zeroBased(), 1000, 2000, 1100, 1900,
                 "THREE_EXON", "HGVS_SYMBOL",
                 List.of(
-                        GenomicRegion.zeroBased(contig, 1000, 1200),
-                        GenomicRegion.zeroBased(contig, 1400, 1600),
-                        GenomicRegion.zeroBased(contig, 1800, 2000)
-                )).withStrand(Strand.NEGATIVE);
+                        GenomicRegion.of(contig, Strand.NEGATIVE, CoordinateSystem.zeroBased(), 1000, 1200),
+                        GenomicRegion.of(contig, Strand.NEGATIVE, CoordinateSystem.zeroBased(), 1400, 1600),
+                        GenomicRegion.of(contig, Strand.NEGATIVE, CoordinateSystem.zeroBased(), 1800, 2000)
+                ));
     }
 
 
@@ -171,7 +171,7 @@ public class PojosForTesting {
      * @return transcript
      */
     public static TranscriptModel surf2_NM_017503_5(Contig contig) {
-        return TranscriptModel.coding(contig, Strand.POSITIVE, CoordinateSystem.ZERO_BASED,
+        return TranscriptModel.coding(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(),
                 136_223_425, 136_228_034, 136_223_425, 136_228_034, "NM_017503.5", "SURF2",
                 List.of(
                         GenomicRegion.zeroBased(contig, 136_223_425, 136_223_546),
@@ -180,59 +180,6 @@ public class PojosForTesting {
                         GenomicRegion.zeroBased(contig, 136_226_825, 136_227_005),
                         GenomicRegion.zeroBased(contig, 136_227_140, 136_227_310),
                         GenomicRegion.zeroBased(contig, 136_227_931, 136_228_034)));
-//        return SplicingTranscript.builder()
-//                .setAccessionId("NM_017503.5")
-//                .setCoordinates(new GenomeInterval(rd, Strand.FWD, 9, 136223425, 136228034))
-//                // 1
-//                .addExon(SplicingExon.builder()
-//                        .setInterval(new GenomeInterval(rd, Strand.FWD, 9, 136223425, 136223546))
-//                        .build())
-//                .addIntron(SplicingIntron.builder()
-//                        .setInterval(new GenomeInterval(rd, Strand.FWD, 9, 136223546, 136223789))
-//                        .setDonorScore(3.6156746223715936)
-//                        .setAcceptorScore(4.277366650982434)
-//                        .build())
-//                // 2
-//                .addExon(SplicingExon.builder()
-//                        .setInterval(new GenomeInterval(rd, Strand.FWD, 9, 136223789, 136223944))
-//                        .build())
-//                .addIntron(SplicingIntron.builder()
-//                        .setInterval(new GenomeInterval(rd, Strand.FWD, 9, 136223944, 136224586))
-//                        .setDonorScore(2.937332682375464)
-//                        .setAcceptorScore(10.499414519258275)
-//                        .build())
-//                // 3
-//                .addExon(SplicingExon.builder()
-//                        .setInterval(new GenomeInterval(rd, Strand.FWD, 9, 136224586, 136224690))
-//                        .build())
-//                .addIntron(SplicingIntron.builder()
-//                        .setInterval(new GenomeInterval(rd, Strand.FWD, 9, 136224690, 136226825))
-//                        .setDonorScore(9.136968204255682)
-//                        .setAcceptorScore(6.7796902152895875)
-//                        .build())
-//                // 4
-//                .addExon(SplicingExon.builder()
-//                        .setInterval(new GenomeInterval(rd, Strand.FWD, 9, 136226825, 136227005))
-//                        .build())
-//                .addIntron(SplicingIntron.builder()
-//                        .setInterval(new GenomeInterval(rd, Strand.FWD, 9, 136227005, 136227140))
-//                        .setDonorScore(6.3660441535158965)
-//                        .setAcceptorScore(8.610070990445257)
-//                        .build())
-//                // 5
-//                .addExon(SplicingExon.builder()
-//                        .setInterval(new GenomeInterval(rd, Strand.FWD, 9, 136227140, 136227310))
-//                        .build())
-//                .addIntron(SplicingIntron.builder()
-//                        .setInterval(new GenomeInterval(rd, Strand.FWD, 9, 136227310, 136227931))
-//                        .setDonorScore(10.25048397144629)
-//                        .setAcceptorScore(10.042811633569952)
-//                        .build())
-//                // 6
-//                .addExon(SplicingExon.builder()
-//                        .setInterval(new GenomeInterval(rd, Strand.FWD, 9, 136227931, 136228034))
-//                        .build())
-//                .build();
     }
 
 

@@ -76,8 +76,7 @@
 
 package org.monarchinitiative.squirls.core.reference;
 
-
-import org.monarchinitiative.variant.api.GenomicRegion;
+import org.monarchinitiative.svart.GenomicRegion;
 
 import java.util.List;
 import java.util.Optional;
@@ -92,7 +91,7 @@ public interface TranscriptModelService {
      *
      * @return list with all transcripts that overlap with query interval
      */
-    List<TranscriptModel> getOverlapping(GenomicRegion query);
+        List<TranscriptModel> overlappingTranscripts(GenomicRegion query);
 
     /**
      * Fetch transcript by accession ID.
@@ -100,5 +99,5 @@ public interface TranscriptModelService {
      * @param txAccession transcript accession ID, e.g. `NM_004004.2`
      * @return {@link Optional} with transcript data. The optional is empty if no such transcript is present in the database
      */
-    Optional<TranscriptModel> getByAccession(String txAccession);
+    Optional<TranscriptModel> transcriptByAccession(String txAccession);
 }

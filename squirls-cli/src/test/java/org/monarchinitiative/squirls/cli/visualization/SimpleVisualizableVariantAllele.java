@@ -78,7 +78,7 @@ package org.monarchinitiative.squirls.cli.visualization;
 
 import de.charite.compbio.jannovar.annotation.VariantAnnotations;
 import org.monarchinitiative.squirls.core.SquirlsResult;
-import org.monarchinitiative.variant.api.Variant;
+import org.monarchinitiative.svart.Variant;
 
 import java.util.Objects;
 

@@ -77,9 +77,12 @@
 package org.monarchinitiative.squirls.core.scoring.calculators;
 
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.monarchinitiative.variant.api.Variant;
-import org.monarchinitiative.variant.api.impl.SequenceVariant;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.monarchinitiative.svart.CoordinateSystem;
+import org.monarchinitiative.svart.Position;
+import org.monarchinitiative.svart.Strand;
+import org.monarchinitiative.svart.Variant;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -95,15 +98,14 @@ public class SStrengthDiffDonorTest extends CalculatorTestBase {
         scorer = new SStrengthDiffDonor(calculator, generator, locator);
     }
 
-    @Test
-    public void variantInDonorOfTheFirstExon() {
-        Variant variant = SequenceVariant.zeroBased(contig, 1200, "g", "a");
-        assertThat(scorer.score(variant, tx, sequenceInterval), is(closeTo(-8.1511, EPSILON)));
+    @ParameterizedTest
+    @CsvSource({
+            "1200, g, a,     -8.1511",
+            "1600, g, c,      0.0000",
+    })
+    public void score(int pos, String ref, String alt, double expected) {
+        Variant variant = Variant.of(contig, "", Strand.POSITIVE, CoordinateSystem.zeroBased(), Position.of(pos), ref, alt);
+        assertThat(scorer.score(variant, tx, sequence), is(closeTo(expected, EPSILON)));
     }
 
-    @Test
-    public void variantInDonorOfTheSecondExon() {
-        Variant variant = SequenceVariant.zeroBased(contig, 1600, "g", "c");
-        assertThat(scorer.score(variant, tx, sequenceInterval), is(closeTo(0., EPSILON)));
-    }
 }

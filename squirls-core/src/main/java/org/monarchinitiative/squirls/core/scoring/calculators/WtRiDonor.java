@@ -76,13 +76,10 @@
 
 package org.monarchinitiative.squirls.core.scoring.calculators;
 
-import org.monarchinitiative.squirls.core.reference.AlleleGenerator;
-import org.monarchinitiative.squirls.core.reference.SplicingLocationData;
-import org.monarchinitiative.squirls.core.reference.StrandedSequence;
-import org.monarchinitiative.squirls.core.reference.TranscriptModelLocator;
+import org.monarchinitiative.squirls.core.reference.*;
 import org.monarchinitiative.squirls.core.scoring.calculators.ic.SplicingInformationContentCalculator;
-import org.monarchinitiative.variant.api.GenomicPosition;
-import org.monarchinitiative.variant.api.Variant;
+import org.monarchinitiative.svart.GenomicRegion;
+import org.monarchinitiative.svart.Variant;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -101,15 +98,25 @@ public class WtRiDonor extends BaseFeatureCalculator {
     }
 
     @Override
-    protected double score(Variant variant, SplicingLocationData locationData, StrandedSequence sequence) {
-        return locationData.getDonorBoundary()
-                .map(anchor -> score(variant, anchor, sequence))
-                .orElse(0.);
+    protected double score(Variant variant, SplicingLocationData locationData, TranscriptModel tx, StrandedSequence sequence) {
+        switch (locationData.getPosition()) {
+            case DONOR:
+            case ACCEPTOR:
+            case EXON:
+            case INTRON:
+                return locationData.getDonorRegion()
+                        .map(donor -> score(variant, donor, sequence))
+                        .orElse(0.);
+            case OUTSIDE:
+            default:
+                return 0.;
+
+        }
     }
 
 
-    private double score(Variant variant, GenomicPosition anchor, StrandedSequence sequence) {
-        final String donorSiteSnippet = generator.getDonorSiteSnippet(anchor, sequence);
+    private double score(Variant variant, GenomicRegion donor, StrandedSequence sequence) {
+        String donorSiteSnippet = sequence.subsequence(donor);
 
         if (donorSiteSnippet == null) {
             if (LOGGER.isWarnEnabled())

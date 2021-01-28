@@ -76,7 +76,7 @@
 
 package org.monarchinitiative.squirls.core.reference;
 
-import org.monarchinitiative.variant.api.*;
+import org.monarchinitiative.svart.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -113,10 +113,7 @@ class TranscriptModelDefault extends BaseGenomicRegion<TranscriptModelDefault> i
         if (exons.isEmpty()) {
             throw new IllegalArgumentException("Cannot create a transcript with no exon");
         }
-        this.exons = new ArrayList<>(exons.size());
-        for (GenomicRegion exon : exons) {
-            this.exons.add(exon.withCoordinateSystem(coordinateSystem));
-        }
+        this.exons = List.copyOf(exons);
 
         this.introns = TranscriptModel.computeIntronLocations(exons);
         // TODO - perform some other checks
@@ -133,7 +130,13 @@ class TranscriptModelDefault extends BaseGenomicRegion<TranscriptModelDefault> i
                                      boolean isCoding,
                                      GenomicRegion cdsRegion,
                                      List<GenomicRegion> exons) {
-        return new TranscriptModelDefault(contig, strand, coordinateSystem, start, end, accessionId, hgvsSymbol, isCoding, cdsRegion, exons);
+        // normalize coordinate systems, if necessary
+        List<GenomicRegion> exonBuilder = new ArrayList<>(exons.size());
+        for (GenomicRegion exon : exons) {
+            exonBuilder.add(exon.withCoordinateSystem(coordinateSystem));
+        }
+        GenomicRegion cdsOnCoordinateSystem = cdsRegion == null ? null : cdsRegion.withCoordinateSystem(coordinateSystem);
+        return new TranscriptModelDefault(contig, strand, coordinateSystem, start, end, accessionId, hgvsSymbol, isCoding, cdsOnCoordinateSystem, exonBuilder);
     }
 
     @Override
@@ -196,15 +199,14 @@ class TranscriptModelDefault extends BaseGenomicRegion<TranscriptModelDefault> i
             return this;
         } else {
             GenomicRegion cdsWithCoordinateSystem = isCoding ? cdsRegion.withCoordinateSystem(other) : null;
-            List<GenomicRegion> exonsWithCoordinateSystem = new ArrayList<>(exons.size());
+            List<GenomicRegion> builder = new ArrayList<>(exons.size());
             for (GenomicRegion region : exons) {
                 GenomicRegion exon = region.withCoordinateSystem(other);
-                exonsWithCoordinateSystem.add(exon);
+                builder.add(exon);
             }
 
-            return new TranscriptModelDefault(contig(), strand(), other, normalisedStartPosition(other), endPosition(),
-                    accessionId, hgvsSymbol, isCoding, cdsWithCoordinateSystem,
-                    exonsWithCoordinateSystem);
+            return new TranscriptModelDefault(contig(), strand(), other, startPositionWithCoordinateSystem(other), endPositionWithCoordinateSystem(other),
+                    accessionId, hgvsSymbol, isCoding, cdsWithCoordinateSystem, builder);
         }
     }
 

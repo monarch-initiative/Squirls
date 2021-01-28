@@ -76,9 +76,7 @@
 
 package org.monarchinitiative.squirls.core.reference;
 
-import org.monarchinitiative.variant.api.GenomicPosition;
-import org.monarchinitiative.variant.api.GenomicRegion;
-import org.monarchinitiative.variant.api.Variant;
+import org.monarchinitiative.svart.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -113,6 +111,7 @@ public class AlleleGenerator {
      */
     public static String getPaddedAllele(GenomicRegion interval, StrandedSequence sequence, String allele, int padding) {
         if (padding < 0) return null;
+        if (padding == 0) return allele;
         interval = interval.toZeroBased();
         GenomicRegion upstream = GenomicRegion.zeroBased(interval.contig(), interval.strand(), interval.startPosition().shift(-padding), interval.startPosition());
         GenomicRegion downstream = GenomicRegion.zeroBased(interval.contig(), interval.strand(), interval.endPosition(), interval.endPosition().shift(padding));
@@ -124,119 +123,94 @@ public class AlleleGenerator {
                 : null;
     }
 
-    /**
-     * Create nucleotide snippet for splice donor site.
-     *
-     * @param anchor           position of `exon|intron` boundary
-     * @param sequenceInterval sequence to use for creating snippet
-     * @return wt nucleotide snippet for splice donor site or <code>null</code> if e.g. <code>sequenceInterval</code>
-     * on different contig is provided
-     */
-    public String getDonorSiteSnippet(GenomicPosition anchor, StrandedSequence sequenceInterval) {
-        return sequenceInterval.subsequence(splicingParameters.makeDonorRegion(anchor));
+    private static GenomicRegion makeGenomicRegionWithLength(Contig contig, Strand strand, CoordinateSystem coordinateSystem, Position start, int length) {
+        if (length < 0)
+            throw new IllegalArgumentException("Cannot make a region with negative length");
+        return GenomicRegion.of(contig, strand, coordinateSystem, start, start.shift(length));
     }
 
     /**
-     * @param anchor position of `exon|intron` boundary
+     * @param exon a region that represents an exon
      * @return interval of splice donor site
      */
-    public GenomicRegion makeDonorInterval(GenomicPosition anchor) {
-        return splicingParameters.makeDonorRegion(anchor);
+    public GenomicRegion makeDonorInterval(GenomicRegion exon) {
+        return splicingParameters.makeDonorRegion(exon);
     }
 
     /**
-     * Create nucleotide snippet for splice acceptor site.
-     *
-     * @param anchor           position of `intron|exon` boundary
-     * @param sequenceInterval sequence to use for creating snippet
-     * @return wt nucleotide snippet for splice acceptor site or <code>null</code> if e.g. <code>sequenceInterval</code>
-     * on different contig is provided
-     */
-    public String getAcceptorSiteSnippet(GenomicPosition anchor, StrandedSequence sequenceInterval) {
-        return sequenceInterval.subsequence(splicingParameters.makeAcceptorRegion(anchor));
-    }
-
-    /**
-     * @param anchor position of `intron|exon` boundary
+     * @param exon a region that represents an exon
      * @return interval of splice acceptor site
      */
-    public GenomicRegion makeAcceptorInterval(GenomicPosition anchor) {
-        return splicingParameters.makeAcceptorRegion(anchor);
-    }
-
-    private static GenomicRegion makeGenomicRegion(GenomicPosition pos, int length) {
-        GenomicPosition end = GenomicPosition.zeroBased(pos.contig(), pos.strand(), pos.position().shift(length));
-        return GenomicRegion.of(pos, end);
+    public GenomicRegion makeAcceptorInterval(GenomicRegion exon) {
+        return splicingParameters.makeAcceptorRegion(exon);
     }
 
     /**
      * Create nucleotide snippet for splice donor site with presence of ALT allele.
      *
-     * @param anchor           {@link GenomicPosition} denoting exon|intron boundary
-     * @param variant          variant to incorporate into the snippet
-     * @param sequenceInterval sequence to use for creating snippet
+     * @param donor    region that represents the splice donor site
+     * @param variant  variant to incorporate into the snippet
+     * @param sequence sequence to use for creating snippet
      * @return nucleotide snippet for splice donor site or <code>null</code> if wrong input is provided
      */
-    public String getDonorSiteWithAltAllele(GenomicPosition anchor, Variant variant, StrandedSequence sequenceInterval) {
+    public String getDonorSiteWithAltAllele(GenomicRegion donor, Variant variant, StrandedSequence sequence) {
         try {
             String result; // this method creates the result String in 5' --> 3' direction
 
-            if (anchor.contigId() != variant.contigId() || anchor.contigId() != sequenceInterval.contigId()) {
+            if (donor.contigId() != variant.contigId() || donor.contigId() != sequence.contigId()) {
                 // sanity check
                 if (LOGGER.isWarnEnabled())
-                    LOGGER.warn("Chromosome mismatch - anchor: `{}`, variant: `{}`, sequence: `{}`",
-                            anchor.contigId(), variant.contigId(), sequenceInterval.contigId());
+                    LOGGER.warn("Chromosome mismatch - exon: `{}`, variant: `{}`, sequence: `{}`",
+                            donor.contigId(), variant.contigId(), sequence.contigId());
                 return null;
             }
 
             // adjust variant to transcript's strand
-            if (anchor.strand() != variant.strand()) {
-                variant = variant.withStrand(anchor.strand());
-            }
+            GenomicRegion variantRegion = variant.withStrand(donor.strand()).withCoordinateSystem(donor.coordinateSystem());
 
-            GenomicRegion donor = splicingParameters.makeDonorRegion(anchor);
-
-            if (!donor.overlapsWith(variant)) {
+            if (!donor.overlapsWith(variantRegion)) {
                 // shortcut, return wt donor sequence since variant does not change the site
-                return sequenceInterval.subsequence(donor);
+                return sequence.subsequence(donor);
             }
 
-            if (variant.contains(donor)) {
+            if (variantRegion.contains(donor)) {
                 // whole donor site is deleted, nothing more to be done here
                 return null;
             }
 
             String alt = variant.alt();
-            if (variant.contains(donor.startGenomicPosition())) {
-                // there will be no upstream region, even some nucleotides from before the variantRegion region will be added,
+            Position donorStart = donor.startPosition();
+            int variantStart = variantRegion.start();
+            if (variantRegion.contains(donorStart)) {
+                // there will be no upstream region, even some nucleotides from before the variantRegion will be added,
                 // if the first positions of donor site are deleted
-                int idx = variant.end() - donor.start();
+                int idx = variantRegion.end() - donor.start();
                 result = alt.substring(alt.length() - Math.min(idx, alt.length()));
                 // there should be already 'idx' nucleotides in 'result' string but there are only 'missing' nucleotides there. Perhaps because the variantRegion is a deletion
                 // therefore, we need to add some nucleotides from region before the variantRegion
                 int missing = idx - result.length();
                 if (missing > 0) {
-                    GenomicRegion interval = variant.startGenomicPosition().toRegion(-missing, 0);
-                    String seq = sequenceInterval.subsequence(interval);
+                    GenomicRegion interval = GenomicRegion.of(donor.contig(), donor.strand(), donor.coordinateSystem(), variantStart - missing, variantStart);
+                    String seq = sequence.subsequence(interval);
                     if (seq == null) {
-                        if (LOGGER.isInfoEnabled())
-                            LOGGER.info("Not enough of fasta sequence provided for variant `{}` - sequence: `{}`, required: `{}`",
-                                    variant, sequenceInterval, interval);
+                        if (LOGGER.isWarnEnabled())
+                            LOGGER.warn("Not enough of fasta sequence provided for variant `{}` - sequence: `{}`, required: `{}`",
+                                    variant, sequence, interval);
                         return null;
                     }
                     result = seq + result;
                 }
             } else {
                 // simple scenario when we just add bases between donor beginning and variant beginning
-                int length = donor.startGenomicPosition().distanceTo(variant.startGenomicPosition());
-                GenomicRegion interval = makeGenomicRegion(donor.startGenomicPosition(), length);
+                int length = donorStart.distanceTo(variantStart);
+                GenomicRegion interval = makeGenomicRegionWithLength(donor.contig(), donor.strand(), donor.coordinateSystem(), donorStart, length);
 
-                String seq = sequenceInterval.subsequence(interval);
+                String seq = sequence.subsequence(interval);
 
                 if (seq == null) {
-                    if (LOGGER.isInfoEnabled())
-                        LOGGER.info("Not enough of fasta sequence provided for variant `{}` - sequence: `{}`, required: `{}`",
-                                variant, sequenceInterval, interval);
+                    if (LOGGER.isWarnEnabled())
+                        LOGGER.warn("Not enough of fasta sequence provided for variant `{}` - sequence: `{}`, required: `{}`",
+                                variant, sequence, interval);
                     return null;
                 }
                 result = seq + alt;
@@ -248,13 +222,13 @@ public class AlleleGenerator {
                 return result.substring(0, splicingParameters.getDonorLength());
             }
 
-            GenomicRegion interval = makeGenomicRegion(variant.endGenomicPosition(), max);
+            GenomicRegion interval = makeGenomicRegionWithLength(donor.contig(), donor.strand(), donor.coordinateSystem(), variantRegion.endPosition(), max);
 
-            String seq = sequenceInterval.subsequence(interval);
+            String seq = sequence.subsequence(interval);
             if (seq == null) {
-                if (LOGGER.isInfoEnabled())
-                    LOGGER.info("Not enough of fasta sequence provided for variant `{}` - sequence: `{}`, required: `{}`",
-                            variant, sequenceInterval, interval);
+                if (LOGGER.isWarnEnabled())
+                    LOGGER.warn("Not enough of fasta sequence provided for variant `{}` - sequence: `{}`, required: `{}`",
+                            variant, sequence, interval);
                 return null;
             }
             result += seq;
@@ -270,63 +244,64 @@ public class AlleleGenerator {
     /**
      * Create nucleotide snippet for splice acceptor site.
      *
-     * @param anchor   {@link GenomicPosition} denoting intron|exon boundary
+     * @param acceptor region that represents splice acceptor site
      * @param variant  variant to incorporate into the snippet
      * @param sequence sequence to use for creating snippet
      * @return nucleotide snippet for splice acceptor site or <code>null</code> if wrong input is provided
      */
-    public String getAcceptorSiteWithAltAllele(GenomicPosition anchor, Variant variant, StrandedSequence sequence) {
+    public String getAcceptorSiteWithAltAllele(GenomicRegion acceptor, Variant variant, StrandedSequence sequence) {
         String result = ""; // this method creates the result String in 3' --> 5' direction
 
-        if (anchor.contigId() != variant.contigId() || anchor.contigId() != sequence.contigId()) {
+        if (acceptor.contigId() != variant.contigId() || acceptor.contigId() != sequence.contigId()) {
             // sanity check
-            if (LOGGER.isWarnEnabled()) LOGGER.warn("Chromosome mismatch - anchor: `{}`, variant: `{}`, sequence: `{}`",
-                    anchor.contigId(), variant.contigId(), sequence.contigId());
+            if (LOGGER.isWarnEnabled())
+                LOGGER.warn("Chromosome mismatch - acceptor: `{}`, variant: `{}`, sequence: `{}`",
+                        acceptor.contigId(), variant.contigId(), sequence.contigId());
             return null;
         }
 
         // adjust variant to transcript's strand
-        GenomicRegion region = variant.withStrand(anchor.strand()).toZeroBased();
+        GenomicRegion variantRegion = variant.withStrand(acceptor.strand()).withCoordinateSystem(acceptor.coordinateSystem());
 
-        GenomicRegion acceptor = splicingParameters.makeAcceptorRegion(anchor);
-
-        if (!acceptor.overlapsWith(region)) {
+        if (!acceptor.overlapsWith(variantRegion)) {
             // shortcut, return wt acceptor sequence since variant does not change the site
             return sequence.subsequence(acceptor);
         }
 
-        if (region.contains(acceptor)) {
+        if (variantRegion.contains(acceptor)) {
             // whole acceptor site is deleted, nothing more to be done here
             return null;
         }
 
         String alt = variant.alt();
-        if (region.contains(acceptor.endGenomicPosition())) {
+        Position acceptorEnd = acceptor.endPosition();
+        Position variantEnd = variantRegion.endPosition();
+        if (variantRegion.contains(acceptorEnd)) {
             // we should have at least 'idx' nucleotides in result after writing 'alt' but it might be less if there
             // is a deletion. Write 'alt' to result
-            int idx = acceptor.end() - region.start();
+            int idx = acceptor.end() - variantRegion.start();
             result = alt.substring(0, Math.min(idx, alt.length()));
 
             int missing = idx - result.length();
             if (missing > 0) {
-                GenomicRegion interval = makeGenomicRegion(region.endGenomicPosition(), missing);
+                GenomicRegion interval = makeGenomicRegionWithLength(acceptor.contig(), acceptor.strand(), acceptor.coordinateSystem(), variantEnd, missing);
                 String seq = sequence.subsequence(interval);
                 if (seq == null) {
-                    if (LOGGER.isInfoEnabled())
-                        LOGGER.info("Not enough of fasta sequence provided for variant `{}` - sequence: `{}`, required: `{}`",
+                    if (LOGGER.isWarnEnabled())
+                        LOGGER.warn("Not enough of fasta sequence provided for variant `{}` - sequence: `{}`, required: `{}`",
                                 variant, sequence, interval);
                     return null;
                 }
                 result = result + seq;
             }
         } else {
-            int length = region.endGenomicPosition().distanceTo(acceptor.endGenomicPosition());
+            int length = variantEnd.distanceTo(acceptorEnd);
             if (length > 0) {
-                GenomicRegion interval = makeGenomicRegion(region.endGenomicPosition(), length);
+                GenomicRegion interval = makeGenomicRegionWithLength(acceptor.contig(), acceptor.strand(), acceptor.coordinateSystem(), variantEnd, length);
                 String seq = sequence.subsequence(interval);
                 if (seq == null) {
-                    if (LOGGER.isInfoEnabled())
-                        LOGGER.info("Not enough of fasta sequence provided for variant `{}` - sequence: `{}`, required: `{}`",
+                    if (LOGGER.isWarnEnabled())
+                        LOGGER.warn("Not enough of fasta sequence provided for variant `{}` - sequence: `{}`, required: `{}`",
                                 variant, sequence, interval);
                     return null;
                 }
@@ -339,12 +314,12 @@ public class AlleleGenerator {
         if (min == 0) {
             return result.substring(0, splicingParameters.getAcceptorLength());
         }
-        GenomicRegion interval = region.startGenomicPosition().toRegion(min, 0);
+        GenomicRegion interval = GenomicRegion.of(acceptor.contig(), acceptor.strand(), acceptor.coordinateSystem(), variantRegion.startPosition().shift(min), variantRegion.startPosition());
 
         String seq = sequence.subsequence(interval);
         if (seq == null) {
-            if (LOGGER.isInfoEnabled())
-                LOGGER.info("Not enough of fasta sequence provided for variant `{}` - sequence: `{}`, required: `{}`",
+            if (LOGGER.isWarnEnabled())
+                LOGGER.warn("Not enough of fasta sequence provided for variant `{}` - sequence: `{}`, required: `{}`",
                         variant, sequence, interval);
             return null;
         }

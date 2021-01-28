@@ -79,7 +79,7 @@ package org.monarchinitiative.squirls.core;
 import org.apiguardian.api.API;
 import org.monarchinitiative.squirls.core.classifier.SquirlsClassifier;
 import org.monarchinitiative.squirls.core.scoring.SplicingAnnotator;
-import org.monarchinitiative.variant.api.Variant;
+import org.monarchinitiative.svart.Variant;
 
 import java.util.Set;
 

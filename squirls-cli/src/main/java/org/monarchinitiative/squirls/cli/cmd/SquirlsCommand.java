@@ -132,7 +132,7 @@ public abstract class SquirlsCommand implements Callable<Integer> {
                                                                              SplicingPwmData splicingPwmData,
                                                                              VisualizationContextSelector visualizationContextSelector,
                                                                              SquirlsDataService squirlsDataService) {
-        return new PanelGraphicsGenerator(vmvtGenerator, splicingPwmData, visualizationContextSelector, squirlsDataService);
+        return new PanelGraphicsGenerator(vmvtGenerator, visualizationContextSelector, squirlsDataService, splicingPwmData);
     }
 
     @Bean

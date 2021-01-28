@@ -82,8 +82,8 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.monarchinitiative.squirls.core.reference.TranscriptModel;
 import org.monarchinitiative.squirls.io.TestDataSourceConfig;
-import org.monarchinitiative.variant.api.*;
-import org.monarchinitiative.variant.api.impl.DefaultGenomicAssembly;
+import org.monarchinitiative.svart.*;
+import org.monarchinitiative.svart.impl.DefaultGenomicAssembly;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.jdbc.Sql;
@@ -161,7 +161,7 @@ public class TranscriptModelServiceDbTest {
     @Sql({"transcripts_create_tables.sql", "transcripts_insert.sql"})
     public void fetchTranscripts() {
         GenomicRegion query = GenomicRegion.zeroBased(one, 100, 900);
-        List<TranscriptModel> models = instance.getOverlapping(query);
+        List<TranscriptModel> models = instance.overlappingTranscripts(query);
         assertThat(models, hasSize(2));
 
         TranscriptModel first = models.get(0);
@@ -169,7 +169,7 @@ public class TranscriptModelServiceDbTest {
         assertThat(first.start(), equalTo(100));
         assertThat(first.end(), equalTo(900));
         assertThat(first.strand(), equalTo(Strand.POSITIVE));
-        assertThat(first.coordinateSystem(), equalTo(CoordinateSystem.ZERO_BASED));
+        assertThat(first.coordinateSystem(), equalTo(CoordinateSystem.zeroBased()));
         assertThat(first.isCoding(), equalTo(true));
         assertThat(first.cdsStartPosition().pos(), equalTo(200));
         assertThat(first.cdsEndPosition().pos(), equalTo(800));
@@ -185,7 +185,7 @@ public class TranscriptModelServiceDbTest {
     @Sql({"transcripts_create_tables.sql", "transcripts_insert.sql"})
     public void fetchNonCodingTranscript() {
         GenomicRegion query = GenomicRegion.zeroBased(two, 1300, 1500);
-        List<TranscriptModel> models = instance.getOverlapping(query);
+        List<TranscriptModel> models = instance.overlappingTranscripts(query);
         assertThat(models, hasSize(1));
 
         TranscriptModel tx = models.get(0);
@@ -194,7 +194,7 @@ public class TranscriptModelServiceDbTest {
         assertThat(tx.start(), equalTo(1000));
         assertThat(tx.end(), equalTo(2000));
         assertThat(tx.strand(), equalTo(Strand.POSITIVE));
-        assertThat(tx.coordinateSystem(), equalTo(CoordinateSystem.ZERO_BASED));
+        assertThat(tx.coordinateSystem(), equalTo(CoordinateSystem.zeroBased()));
         assertThat(tx.isCoding(), equalTo(false));
         assertThat(tx.cdsStartPosition(), is(nullValue(Position.class)));
         assertThat(tx.cdsEndPosition(), is(nullValue(Position.class)));
@@ -211,7 +211,7 @@ public class TranscriptModelServiceDbTest {
             "NM_000002.2,   false"})
     @Sql({"transcripts_create_tables.sql", "transcripts_insert.sql"})
     public void fetchTranscriptByAccession(String accession, boolean expected) {
-        Optional<TranscriptModel> tx = instance.getByAccession(accession);
+        Optional<TranscriptModel> tx = instance.transcriptByAccession(accession);
         assertThat(tx.isPresent(), equalTo(expected));
     }
 

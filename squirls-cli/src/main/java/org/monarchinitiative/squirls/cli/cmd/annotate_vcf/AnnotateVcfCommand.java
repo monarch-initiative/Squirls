@@ -86,6 +86,7 @@ import de.charite.compbio.jannovar.data.JannovarDataSerializer;
 import de.charite.compbio.jannovar.data.ReferenceDictionary;
 import de.charite.compbio.jannovar.data.SerializationException;
 import de.charite.compbio.jannovar.reference.*;
+import de.charite.compbio.jannovar.reference.Strand;
 import htsjdk.samtools.util.CloseableIterator;
 import htsjdk.variant.variantcontext.Allele;
 import htsjdk.variant.variantcontext.VariantContext;
@@ -97,10 +98,8 @@ import org.monarchinitiative.squirls.cli.writers.*;
 import org.monarchinitiative.squirls.core.SquirlsDataService;
 import org.monarchinitiative.squirls.core.SquirlsResult;
 import org.monarchinitiative.squirls.core.VariantSplicingEvaluator;
-import org.monarchinitiative.variant.api.Contig;
-import org.monarchinitiative.variant.api.GenomicAssembly;
-import org.monarchinitiative.variant.api.Variant;
-import org.monarchinitiative.variant.api.impl.DefaultVariant;
+import org.monarchinitiative.svart.*;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ConfigurableApplicationContext;
@@ -213,7 +212,8 @@ public class AnnotateVcfCommand extends SquirlsCommand {
                     variant = null;
                     squirlsResult = SquirlsResult.empty();
                 } else {
-                    variant = DefaultVariant.oneBased(contig, vc.getID(), vc.getStart(), vc.getReference().getDisplayString(), allele.getDisplayString());
+                    variant = Variant.of(contig, vc.getID(), org.monarchinitiative.svart.Strand.POSITIVE, CoordinateSystem.oneBased(),
+                            Position.of(vc.getStart()), vc.getReference().getDisplayString(), allele.getDisplayString());
                     Set<String> txAccessions = variantAnnotations.getAnnotations().stream()
                             .map(Annotation::getTranscript)
                             .map(TranscriptModel::getAccession)
@@ -258,7 +258,7 @@ public class AnnotateVcfCommand extends SquirlsCommand {
     private static Map<String, Contig> prepareContigMap(GenomicAssembly assembly) {
         Map<String, Contig> builder = new HashMap<>();
         for (Contig contig : assembly.contigs()) {
-            if (contig.isUnknownContig()) continue;
+            if (contig.equals(Contig.unknown())) continue;
             builder.put(contig.name(), contig);
             builder.put(contig.genBankAccession(), contig);
             builder.put(contig.refSeqAccession(), contig);

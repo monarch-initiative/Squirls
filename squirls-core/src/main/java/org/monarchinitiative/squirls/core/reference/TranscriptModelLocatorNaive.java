@@ -76,8 +76,7 @@
 
 package org.monarchinitiative.squirls.core.reference;
 
-import org.monarchinitiative.variant.api.GenomicPosition;
-import org.monarchinitiative.variant.api.GenomicRegion;
+import org.monarchinitiative.svart.GenomicRegion;
 
 /**
  * This class figures out where exactly the variant is located with respect to given <code>transcript</code>.
@@ -115,6 +114,9 @@ public class TranscriptModelLocatorNaive implements TranscriptModelLocator {
             return SplicingLocationData.outside();
         }
 
+        // adjust variant's strand and the coordinate system
+        variant = variant.withCoordinateSystem(transcript.coordinateSystem()).withStrand(transcript.strand());
+
         int n_introns = transcript.introns().size();
         int n_exons = transcript.exons().size();
         assert n_introns == n_exons - 1;
@@ -134,20 +136,18 @@ public class TranscriptModelLocatorNaive implements TranscriptModelLocator {
         for (int i = 0; i < n_introns; i++) {
             GenomicRegion exon = transcript.exons().get(i);
             GenomicRegion intron = transcript.introns().get(i);
+            GenomicRegion nextExon = transcript.exons().get(i + 1);
 
-            GenomicRegion donor = parameters.makeDonorRegion(intron.startGenomicPosition());
-            GenomicRegion acceptor = parameters.makeAcceptorRegion(intron.endGenomicPosition());
+            GenomicRegion donor = parameters.makeDonorRegion(exon);
+            GenomicRegion acceptor = parameters.makeAcceptorRegion(nextExon);
 
             // 1 - does the variant overlap with the donor site?
-            GenomicPosition exonBeginPosition = exon.startGenomicPosition();
             if (donor.overlapsWith(variant)) {
-                if (i != 0) {
+                if (i != 0)
                     // this is not the first exon, so set the acceptor site of this exon as the acceptor location
-                    locationData.setAcceptorBoundary(exonBeginPosition)
-                            .setAcceptorRegion(parameters.makeAcceptorRegion(exonBeginPosition));
-                }
+                    locationData.setAcceptorRegion(parameters.makeAcceptorRegion(exon));
+
                 return locationData.setSplicingPosition(SplicingLocationData.SplicingPosition.DONOR)
-                        .setDonorBoundary(intron.startGenomicPosition())
                         .setDonorRegion(donor)
                         .setIntronIndex(i)
                         .setExonIndex(i)
@@ -157,16 +157,13 @@ public class TranscriptModelLocatorNaive implements TranscriptModelLocator {
             // 2 - does the variant overlap with the acceptor site?
             if (acceptor.overlapsWith(variant)) {
                 locationData.setSplicingPosition(SplicingLocationData.SplicingPosition.ACCEPTOR)
-                        .setAcceptorBoundary(intron.endGenomicPosition())
                         .setAcceptorRegion(acceptor)
                         .setIntronIndex(i)
                         .setExonIndex(i + 1);
                 if (i != n_introns - 1) {
                     // we are not processing the last intron. If this is not the acceptor site of the last intron,
                     // then we have a splice donor site
-                    GenomicPosition donorBoundary = transcript.exons().get(i + 1).endGenomicPosition();
-                    locationData.setDonorBoundary(donorBoundary)
-                            .setDonorRegion(parameters.makeDonorRegion(donorBoundary));
+                    locationData.setDonorRegion(parameters.makeDonorRegion(nextExon));
                 }
                 // We iterate through introns so the current `donor` defined above is the donor of the previous exon.
                 // Let's use the donor of the current exon!
@@ -177,9 +174,7 @@ public class TranscriptModelLocatorNaive implements TranscriptModelLocator {
             if (intron.overlapsWith(variant)) {
                 return locationData
                         .setSplicingPosition(SplicingLocationData.SplicingPosition.INTRON)
-                        .setDonorBoundary(intron.startGenomicPosition())
                         .setDonorRegion(donor)
-                        .setAcceptorBoundary(intron.endGenomicPosition())
                         .setAcceptorRegion(acceptor)
                         .setIntronIndex(i)
                         .build();
@@ -187,16 +182,13 @@ public class TranscriptModelLocatorNaive implements TranscriptModelLocator {
 
             // 4 - does the variant overlap with the current exon?
             if (exon.overlapsWith(variant)) {
-                GenomicPosition donorBoundary = exon.endGenomicPosition();
                 locationData
                         .setSplicingPosition(SplicingLocationData.SplicingPosition.EXON)
-                        .setDonorBoundary(donorBoundary)
-                        .setDonorRegion(parameters.makeDonorRegion(donorBoundary))
+                        .setDonorRegion(donor)
                         .setExonIndex(i);
                 if (i != 0) {
                     // we're not processing the first exon, so we have the acceptor site
-                    locationData.setAcceptorBoundary(exonBeginPosition)
-                            .setAcceptorRegion(parameters.makeAcceptorRegion(exonBeginPosition));
+                    locationData.setAcceptorRegion(parameters.makeAcceptorRegion(exon));
                 }
                 return locationData.build();
             }
@@ -208,12 +200,11 @@ public class TranscriptModelLocatorNaive implements TranscriptModelLocator {
 
         // the last exon does not have the donor site, hence not setting the donor boundary
         int lastExonIdx = n_exons - 1;
-        GenomicPosition acceptorBoundary = transcript.exons().get(lastExonIdx).startGenomicPosition();
+        GenomicRegion lastExon = transcript.exons().get(lastExonIdx);
         return locationData
                 .setSplicingPosition(SplicingLocationData.SplicingPosition.EXON)
                 .setExonIndex(lastExonIdx)
-                .setAcceptorBoundary(acceptorBoundary)
-                .setAcceptorRegion(parameters.makeAcceptorRegion(acceptorBoundary))
+                .setAcceptorRegion(parameters.makeAcceptorRegion(lastExon))
                 .build();
     }
 }

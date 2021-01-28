@@ -78,8 +78,10 @@ package org.monarchinitiative.squirls.core.scoring.calculators;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.monarchinitiative.variant.api.Variant;
-import org.monarchinitiative.variant.api.impl.SequenceVariant;
+import org.monarchinitiative.svart.CoordinateSystem;
+import org.monarchinitiative.svart.Position;
+import org.monarchinitiative.svart.Strand;
+import org.monarchinitiative.svart.Variant;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -98,13 +100,13 @@ public class BestWindowAltRiCrypticDonorTest extends CalculatorTestBase {
 
     @Test
     public void snpInDonor() {
-        Variant variant = SequenceVariant.zeroBased(contig, 1200, "g", "a");
-        assertThat(scorer.score(variant, tx, sequenceInterval), is(closeTo(-2.3987, EPSILON)));
+        Variant variant = Variant.of(contig, "", Strand.POSITIVE, CoordinateSystem.zeroBased(), Position.of(1200), "g", "a");
+        assertThat(scorer.score(variant, tx, sequence), is(closeTo(-2.3987, EPSILON)));
     }
 
     @Test
     public void notEnoughSequence() {
-        Variant variant = SequenceVariant.zeroBased(contig, 1200, "g", "a");
+        Variant variant = Variant.of(contig, "", Strand.POSITIVE, CoordinateSystem.zeroBased(), Position.of(1200), "g", "a");
         assertThat(scorer.score(variant, tx, sequenceOnOtherChrom), is(notANumber()));
     }
 }

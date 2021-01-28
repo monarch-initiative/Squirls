@@ -87,7 +87,6 @@ public interface VisualizationContextSelector {
      *
      * @param features map with splicing features
      * @return context
-     * @throws MissingFeatureException when a feature that is required to decide about the context is not present
      */
-    VisualizationContext selectContext(Map<String, Double> features) throws MissingFeatureException;
+    VisualizationContext selectContext(Map<String, Double> features);
 }

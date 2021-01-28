@@ -79,10 +79,10 @@ package org.monarchinitiative.squirls.io.db;
 import org.monarchinitiative.squirls.core.reference.TranscriptModel;
 import org.monarchinitiative.squirls.core.reference.TranscriptModelService;
 import org.monarchinitiative.squirls.io.SquirlsResourceException;
-import org.monarchinitiative.variant.api.Contig;
-import org.monarchinitiative.variant.api.GenomicAssembly;
-import org.monarchinitiative.variant.api.GenomicRegion;
-import org.monarchinitiative.variant.api.Strand;
+import org.monarchinitiative.svart.Contig;
+import org.monarchinitiative.svart.GenomicAssembly;
+import org.monarchinitiative.svart.GenomicRegion;
+import org.monarchinitiative.svart.Strand;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -111,7 +111,7 @@ public class TranscriptModelServiceDb implements TranscriptModelService {
         sanityCheck(dataSource);
         contigIdMap = new HashMap<>();
         for (Contig contig : genomicAssembly.contigs()) {
-            if (contig.isUnknownContig()) continue;
+            if (contig.equals(Contig.unknown())) continue;
 
             contigIdMap.put(contig.name(), contig.id());
             contigIdMap.put(contig.genBankAccession(), contig.id());
@@ -217,7 +217,7 @@ public class TranscriptModelServiceDb implements TranscriptModelService {
     }
 
     @Override
-    public List<TranscriptModel> getOverlapping(GenomicRegion query) {
+    public List<TranscriptModel> overlappingTranscripts(GenomicRegion query) {
         GenomicRegion region = query.toPositiveStrand().toZeroBased();
         String sql = "select tx.TX_ID, tx.CONTIG, tx.STRAND, tx.BEGIN, tx.END, " +
                 "  tx.TX_ACCESSION, tx.HGVS_SYMBOL, tx.CDS_START, tx.CDS_END, " +
@@ -245,7 +245,7 @@ public class TranscriptModelServiceDb implements TranscriptModelService {
     }
 
     @Override
-    public Optional<TranscriptModel> getByAccession(String txAccession) {
+    public Optional<TranscriptModel> transcriptByAccession(String txAccession) {
         String sql = "select tx.TX_ID, tx.CONTIG, tx.STRAND, tx.BEGIN, tx.END, " +
                 " tx.TX_ACCESSION, tx.HGVS_SYMBOL, tx.CDS_START, tx.CDS_END, " +
                 " e.EXON_NUMBER, e.BEGIN exon_begin, e.END exon_end " +

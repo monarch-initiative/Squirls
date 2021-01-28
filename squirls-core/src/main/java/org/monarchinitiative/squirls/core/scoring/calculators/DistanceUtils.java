@@ -71,29 +71,33 @@
  *
  * version:6-8-18
  *
- * Daniel Danis, Peter N Robinson, 2020
+ * Daniel Danis, Peter N Robinson, 2021
  */
 
 package org.monarchinitiative.squirls.core.scoring.calculators;
 
-import org.monarchinitiative.variant.api.GenomicPosition;
-import org.monarchinitiative.variant.api.GenomicRegion;
+import org.monarchinitiative.svart.GenomicRegion;
+import org.monarchinitiative.svart.Position;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-abstract class BaseDistanceCalculator implements FeatureCalculator {
+class DistanceUtils {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(BaseDistanceCalculator.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(DistanceUtils.class);
 
-    protected static int getDiff(GenomicRegion variant, GenomicPosition closestSite) {
-        variant = variant.toZeroBased();
-        int diff = closestSite.distanceTo(variant);
+    private DistanceUtils() {
+        // private no-op
+    }
+
+
+    static int getDiff(GenomicRegion variant, Position closestSite) {
+        int diff = closestSite.distanceToRegion(variant);
         if (diff < 0) {
             // variant is upstream from the border position
             return diff - 1;
         } else if (diff > 0) {
             // variant is downstream from the border position
-            return diff + 1;
+            return diff;
         } else {
             /*
             Due to representation of exon|Intron / intron|Exon boundary as a GenomePosition that represents position of
@@ -103,13 +107,11 @@ abstract class BaseDistanceCalculator implements FeatureCalculator {
 
             The code below handles these situations.
             */
+            variant = variant.toOneBased();
             if (variant.contains(closestSite) && variant.length() > 1) {
                 // deletion of the boundary
                 return 0;
             } else if (variant.start() == closestSite.pos()) {
-                // SNP at +1 position
-                return 1;
-            } else if (variant.end() == closestSite.pos()) {
                 // SNP at -1 position
                 return -1;
             } else {
@@ -119,4 +121,5 @@ abstract class BaseDistanceCalculator implements FeatureCalculator {
             }
         }
     }
+
 }
