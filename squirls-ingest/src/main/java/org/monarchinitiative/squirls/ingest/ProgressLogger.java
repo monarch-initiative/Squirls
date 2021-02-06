@@ -83,7 +83,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
 /**
- * Utility class for progress reporting
+ * Utility class for progress reporting.
+ * @author Daniel Danis
  */
 public class ProgressLogger {
 

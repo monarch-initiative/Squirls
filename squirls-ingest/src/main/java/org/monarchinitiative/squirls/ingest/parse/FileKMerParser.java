@@ -87,6 +87,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Predicate;
 
+/**
+ * @author Daniel Danis
+ */
 public class FileKMerParser {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FileKMerParser.class);

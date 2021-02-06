@@ -89,6 +89,9 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
+/**
+ * @author Daniel Danis
+ */
 public class SquirlsDataServiceImpl implements SquirlsDataService {
 
     private final StrandedSequenceService sequenceService;

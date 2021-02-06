@@ -100,7 +100,7 @@ import java.util.stream.StreamSupport;
  * This class downloads tar archive from given url, extracts chromosomes stored as tar entries into a single FASTA file,
  * creates FASTA index, and finally also FASTA sequence dictionary.
  *
- * @author <a href="mailto:daniel.danis@jax.org">Daniel Danis</a>
+ * @author Daniel Danis
  */
 public final class GenomeAssemblyDownloader implements Runnable {
 

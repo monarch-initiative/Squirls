@@ -87,6 +87,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+/**
+ * @author Daniel Danis
+ */
 public class TranscriptsIngestRunner implements Runnable {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(TranscriptsIngestRunner.class);

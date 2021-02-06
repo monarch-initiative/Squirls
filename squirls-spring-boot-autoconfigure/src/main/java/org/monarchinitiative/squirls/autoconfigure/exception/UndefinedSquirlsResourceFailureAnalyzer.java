@@ -80,7 +80,7 @@ import org.springframework.boot.diagnostics.AbstractFailureAnalyzer;
 import org.springframework.boot.diagnostics.FailureAnalysis;
 
 /**
- *
+ * @author Daniel Danis
  */
 public class UndefinedSquirlsResourceFailureAnalyzer extends AbstractFailureAnalyzer<UndefinedSquirlsResourceException> {
 

@@ -92,6 +92,7 @@ import java.util.Map;
 
 /**
  * Command responsible for building resource directory.
+ * @author Daniel Danis
  */
 @SpringBootApplication
 @EnableConfigurationProperties(value = {IngestProperties.class})

@@ -119,6 +119,7 @@ import java.util.concurrent.TimeUnit;
  * A static class with methods for building splicing database.
  *
  * @see Main for an example usage
+ * @author Daniel Danis
  */
 public class SquirlsDataBuilder {
 

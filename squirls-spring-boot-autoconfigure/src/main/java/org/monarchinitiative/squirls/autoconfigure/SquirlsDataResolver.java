@@ -86,6 +86,7 @@ import java.util.List;
  * This class provides paths to resources, such as path to FASTA file, or splicing transcript database.
  * <p>
  * The paths are provided based on {@code squirlsDataDirectory}, {@code dataVersion}, and {@code genomeAssembly}.
+ * @author Daniel Danis
  */
 public class SquirlsDataResolver {
 

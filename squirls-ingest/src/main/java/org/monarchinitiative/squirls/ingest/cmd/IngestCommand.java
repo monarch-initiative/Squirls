@@ -80,6 +80,7 @@ import net.sourceforge.argparse4j.inf.Namespace;
 
 /**
  * Base CLI command within the ingest module.
+ * @author Daniel Danis
  */
 public abstract class IngestCommand {
 

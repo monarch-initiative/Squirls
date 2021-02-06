@@ -79,6 +79,9 @@ package org.monarchinitiative.squirls.autoconfigure.exception;
 import org.springframework.boot.diagnostics.AbstractFailureAnalyzer;
 import org.springframework.boot.diagnostics.FailureAnalysis;
 
+/**
+ * @author Daniel Danis
+ */
 public class InvalidSquirlsResourceFailureAnalyzer extends AbstractFailureAnalyzer<InvalidSquirlsResourceException> {
 
     @Override

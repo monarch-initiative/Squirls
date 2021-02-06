@@ -81,6 +81,9 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import java.util.List;
 import java.util.Objects;
 
+/**
+ * @author Daniel Danis
+ */
 @ConfigurationProperties(prefix = "squirls.ingest")
 public class IngestProperties {
 

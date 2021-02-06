@@ -80,6 +80,9 @@ import org.monarchinitiative.squirls.core.scoring.SplicingAnnotator;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.NestedConfigurationProperty;
 
+/**
+ * @author Daniel Danis
+ */
 @ConfigurationProperties(prefix = "squirls")
 public class SquirlsProperties {
 

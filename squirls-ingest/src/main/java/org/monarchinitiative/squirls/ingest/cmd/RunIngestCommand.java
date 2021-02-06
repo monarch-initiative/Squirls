@@ -99,6 +99,9 @@ import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.Collectors;
 
+/**
+ * @author Daniel Danis
+ */
 @Component
 public class RunIngestCommand extends IngestCommand {
 

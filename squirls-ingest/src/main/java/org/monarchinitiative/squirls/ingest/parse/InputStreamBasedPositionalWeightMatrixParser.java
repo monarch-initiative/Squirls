@@ -95,7 +95,7 @@ import java.util.Map;
 /**
  * Decode Yaml file with <em>position weight matrix</em> definitions into {@link PositionWeightMatrix} objects.
  *
- * @author <a href="mailto:daniel.danis@jax.org">Daniel Danis</a>
+ * @author Daniel Danis
  * @see PositionWeightMatrix
  */
 public class InputStreamBasedPositionalWeightMatrixParser implements SplicingPositionalWeightMatrixParser {
