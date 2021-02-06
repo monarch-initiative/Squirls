@@ -136,6 +136,7 @@ public interface TranscriptModel extends GenomicRegion {
         for (int i = 1; i < exons.size(); i++) { // start from the 2nd exon
             GenomicRegion exon = exons.get(i);
             Position intronEnd = exon.startPositionWithCoordinateSystem(CoordinateSystem.zeroBased());
+            // TODO - can we do this without creating the temporary object?
             introns.add(GenomicRegion.of(exon.contig(), exon.strand(), exon.coordinateSystem(), intronStart, intronEnd).withCoordinateSystem(exon.coordinateSystem()));
             intronStart = exon.endPositionWithCoordinateSystem(CoordinateSystem.zeroBased());
         }
