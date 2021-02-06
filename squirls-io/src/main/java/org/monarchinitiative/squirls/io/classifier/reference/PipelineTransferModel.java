@@ -84,6 +84,9 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 
+/**
+ * @author Daniel Danis
+ */
 public class PipelineTransferModel {
 
     private List<String> featureNames;

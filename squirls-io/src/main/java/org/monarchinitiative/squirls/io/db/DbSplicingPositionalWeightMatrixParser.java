@@ -92,6 +92,7 @@ import java.util.List;
 
 /**
  * This parser reads PWMs for splice donor, acceptor, and data for splicing parameters from database.
+ * @author Daniel Danis
  */
 public class DbSplicingPositionalWeightMatrixParser implements SplicingPositionalWeightMatrixParser {
 

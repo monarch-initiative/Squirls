@@ -84,6 +84,9 @@ import org.slf4j.LoggerFactory;
 import java.util.*;
 import java.util.stream.Collectors;
 
+/**
+ * @author Daniel Danis
+ */
 public class SplicingDataImputer<T extends SquirlsFeatures> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SplicingDataImputer.class);

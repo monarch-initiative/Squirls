@@ -81,6 +81,9 @@ import org.monarchinitiative.squirls.core.classifier.SquirlsClassifier;
 import java.util.Optional;
 import java.util.Set;
 
+/**
+ * @author Daniel Danis
+ */
 public interface ClassifierDataManager {
 
     /**

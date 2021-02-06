@@ -97,6 +97,7 @@ import java.util.stream.Collectors;
 
 /**
  * This dao handles business regarding classifier and prediction process.
+ * @author Daniel Danis
  */
 public class DbClassifierDataManager implements ClassifierDataManager {
 

@@ -91,6 +91,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+/**
+ * @author Daniel Danis
+ */
 class SquirlsClassifierV041 implements SquirlsClassifier {
 
     private static final String PREDICTOR_NAME = "regular_logistic_regression";

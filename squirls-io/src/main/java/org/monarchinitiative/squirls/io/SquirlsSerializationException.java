@@ -3,6 +3,7 @@ package org.monarchinitiative.squirls.io;
 /**
  * Checked exception which is thrown when there are issues with constructing a Squirls domain object from provided
  * input.
+ * @author Daniel Danis
  */
 public class SquirlsSerializationException extends SquirlsResourceException {
 

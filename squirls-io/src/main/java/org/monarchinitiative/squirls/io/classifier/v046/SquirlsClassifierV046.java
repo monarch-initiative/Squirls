@@ -16,6 +16,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+/**
+ * @author Daniel Danis
+ */
 class SquirlsClassifierV046 implements SquirlsClassifier {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SquirlsClassifierV046.class);

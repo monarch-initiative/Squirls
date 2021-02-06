@@ -8,6 +8,9 @@ import org.monarchinitiative.squirls.io.classifier.v046.SquirlsClassifierDeseria
 import java.io.InputStream;
 import java.util.Set;
 
+/**
+ * @author Daniel Danis
+ */
 public interface SquirlsClassifierDeserializer {
 
     static <T extends SquirlsFeatures> SquirlsClassifierDeserializer forVersion(SquirlsClassifierVersion version) {

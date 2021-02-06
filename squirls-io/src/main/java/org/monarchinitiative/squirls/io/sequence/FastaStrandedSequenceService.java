@@ -106,6 +106,7 @@ import java.util.stream.Collectors;
 /**
  * Implementation of {@link StrandedSequenceService} that uses HtsJDK to fetch sequence from a single indexed FASTA file
  * containing all contigs of the assembly.
+ * @author Daniel Danis
  */
 public class FastaStrandedSequenceService implements StrandedSequenceService, AutoCloseable {
 

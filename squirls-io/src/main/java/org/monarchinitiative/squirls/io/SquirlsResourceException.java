@@ -78,6 +78,9 @@ package org.monarchinitiative.squirls.io;
 
 import org.monarchinitiative.squirls.core.SquirlsException;
 
+/**
+ * @author Daniel Danis
+ */
 public class SquirlsResourceException extends SquirlsException {
 
     public SquirlsResourceException() {

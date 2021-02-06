@@ -81,6 +81,9 @@ import org.monarchinitiative.squirls.io.classifier.reference.PipelineTransferMod
 import java.util.List;
 import java.util.Objects;
 
+/**
+ * @author Daniel Danis
+ */
 public class OverallModelDataV041 {
 
     private double donorThreshold;

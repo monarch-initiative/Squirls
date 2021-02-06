@@ -3,6 +3,9 @@ package org.monarchinitiative.squirls.io.sequence;
 
 import org.monarchinitiative.squirls.core.SquirlsException;
 
+/**
+ * @author Daniel Danis
+ */
 public class InvalidFastaFileException extends SquirlsException {
 
     public InvalidFastaFileException() {

@@ -79,6 +79,7 @@ package org.monarchinitiative.squirls.io.classifier;
 /**
  * Static utility class to hold constants used in the <code>org.monarchinitiative.squirls.core.classifier</code>
  * package.
+ * @author Daniel Danis
  */
 public class Constants {
 

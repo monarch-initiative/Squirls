@@ -76,6 +76,9 @@
 
 package org.monarchinitiative.squirls.io;
 
+/**
+ * @author Daniel Danis
+ */
 public class CorruptedPwmException extends SquirlsResourceException {
 
     public CorruptedPwmException() {

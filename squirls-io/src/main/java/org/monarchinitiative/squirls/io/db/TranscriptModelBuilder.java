@@ -85,6 +85,9 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+/**
+ * @author Daniel Danis
+ */
 class TranscriptModelBuilder {
 
     // all transcripts are stored in the database using 0-based system

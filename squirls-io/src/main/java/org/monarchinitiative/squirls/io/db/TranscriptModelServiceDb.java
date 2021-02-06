@@ -91,6 +91,9 @@ import java.sql.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
+/**
+ * @author Daniel Danis
+ */
 public class TranscriptModelServiceDb implements TranscriptModelService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(TranscriptModelServiceDb.class);

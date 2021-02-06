@@ -79,6 +79,9 @@ package org.monarchinitiative.squirls.io;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * @author Daniel Danis
+ */
 public enum SquirlsClassifierVersion {
 
     v0_4_1(0, 4, 1),

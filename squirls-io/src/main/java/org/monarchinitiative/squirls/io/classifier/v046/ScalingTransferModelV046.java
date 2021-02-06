@@ -3,6 +3,9 @@ package org.monarchinitiative.squirls.io.classifier.v046;
 import java.util.List;
 import java.util.Objects;
 
+/**
+ * @author Daniel Danis
+ */
 public class ScalingTransferModelV046 {
 
     private List<Double> standardScalerMean;

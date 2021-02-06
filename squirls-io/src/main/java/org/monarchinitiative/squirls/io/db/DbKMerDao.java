@@ -87,6 +87,9 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * @author Daniel Danis
+ */
 public class DbKMerDao {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DbKMerDao.class);

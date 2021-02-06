@@ -6,7 +6,8 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * POJO for representing the content that we expect to find in a well-formated YAML file.
+ * POJO for representing the content that we expect to find in a well-formatted YAML file.
+ * @author Daniel Danis
  */
 public class OverallModelDataV046 {
 

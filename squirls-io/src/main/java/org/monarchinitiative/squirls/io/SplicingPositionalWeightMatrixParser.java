@@ -81,6 +81,9 @@ import org.monarchinitiative.squirls.core.reference.SplicingPwmData;
 
 import java.util.List;
 
+/**
+ * @author Daniel Danis
+ */
 public interface SplicingPositionalWeightMatrixParser {
 
     /**

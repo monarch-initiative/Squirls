@@ -88,6 +88,7 @@ import java.util.stream.Stream;
 
 /**
  * Pipeline class inspired by scikit-learn. This pipeline consists of an imputer followed by a classifier.
+ * @author Daniel Danis
  */
 public class Pipeline<T extends SquirlsFeatures> extends AbstractBinaryClassifier<T> {
 

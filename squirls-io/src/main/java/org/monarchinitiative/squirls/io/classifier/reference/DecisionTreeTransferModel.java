@@ -81,6 +81,7 @@ import java.util.Objects;
 
 /**
  * This class represents a single decision tree in the transfer format from Python to Java.
+ * @author Daniel Danis
  */
 public class DecisionTreeTransferModel {
 
