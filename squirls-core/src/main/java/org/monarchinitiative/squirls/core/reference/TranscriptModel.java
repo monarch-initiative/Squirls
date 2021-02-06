@@ -127,19 +127,17 @@ public interface TranscriptModel extends GenomicRegion {
     }
 
     static List<GenomicRegion> computeIntronLocations(List<GenomicRegion> exons) {
-        // TODO - this is very likely only working when using half-open coordinate systems.
-        //  Test thoroughly using all coordinate systems!
         if (exons.size() == 1) { // shortcut
             return List.of();
         }
 
         ArrayList<GenomicRegion> introns = new ArrayList<>(exons.size() - 1);
-        Position intronStart = exons.get(0).endPosition();
+        Position intronStart = exons.get(0).endPositionWithCoordinateSystem(CoordinateSystem.zeroBased());
         for (int i = 1; i < exons.size(); i++) { // start from the 2nd exon
             GenomicRegion exon = exons.get(i);
-            Position intronEnd = exon.startPosition();
-            introns.add(GenomicRegion.of(exon.contig(), exon.strand(), exon.coordinateSystem(), intronStart, intronEnd));
-            intronStart = exon.endPosition();
+            Position intronEnd = exon.startPositionWithCoordinateSystem(CoordinateSystem.zeroBased());
+            introns.add(GenomicRegion.of(exon.contig(), exon.strand(), exon.coordinateSystem(), intronStart, intronEnd).withCoordinateSystem(exon.coordinateSystem()));
+            intronStart = exon.endPositionWithCoordinateSystem(CoordinateSystem.zeroBased());
         }
         return List.copyOf(introns);
     }
