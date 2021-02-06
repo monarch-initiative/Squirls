@@ -80,6 +80,9 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
+/**
+ * @author Daniel Danis
+ */
 class SquirlsFeaturesDefault implements SquirlsFeatures {
 
     private final Map<String, Double> features;

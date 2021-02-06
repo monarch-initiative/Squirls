@@ -86,6 +86,7 @@ import java.util.stream.Collectors;
  * An implementation of a decision tree that only supports prediction, not training.
  *
  * @param <T>
+ * @author Daniel Danis
  */
 public class BinaryDecisionTree<T extends SquirlsFeatures> extends AbstractBinaryClassifier<T> {
 

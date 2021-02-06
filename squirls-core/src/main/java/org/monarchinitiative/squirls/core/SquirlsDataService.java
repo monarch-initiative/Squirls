@@ -81,6 +81,7 @@ import org.monarchinitiative.squirls.core.reference.TranscriptModelService;
 
 /**
  * Convenience interface that extends the other services.
+ * @author Daniel Danis
  */
 public interface SquirlsDataService extends TranscriptModelService, StrandedSequenceService {
 

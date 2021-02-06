@@ -81,6 +81,9 @@ import org.monarchinitiative.svart.*;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * @author Daniel Danis
+ */
 public interface TranscriptModel extends GenomicRegion {
 
     static TranscriptModel coding(Contig contig,

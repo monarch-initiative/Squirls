@@ -86,6 +86,7 @@ import org.slf4j.LoggerFactory;
 /**
  * This class calculates <code>wt_ri_acceptor</code> feature - individual information of the <em>wt/ref</em> allele of the
  * acceptor site.
+ * @author Daniel Danis
  */
 public class WtRiAcceptor extends BaseFeatureCalculator {
 

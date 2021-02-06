@@ -78,6 +78,9 @@ package org.monarchinitiative.squirls.core.classifier;
 
 import org.monarchinitiative.squirls.core.Prediction;
 
+/**
+ * @author Daniel Danis
+ */
 public interface SquirlsClassifier {
 
     Prediction predict(SquirlsFeatures feature);

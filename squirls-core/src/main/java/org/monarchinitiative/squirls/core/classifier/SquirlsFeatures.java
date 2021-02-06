@@ -80,6 +80,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+/**
+ * @author Daniel Danis
+ */
 public interface SquirlsFeatures {
 
     static SquirlsFeatures of(Map<String, Double> featureMap) {

@@ -78,6 +78,9 @@ package org.monarchinitiative.squirls.core.reference;
 
 import org.monarchinitiative.svart.GenomicRegion;
 
+/**
+ * @author Daniel Danis
+ */
 public interface TranscriptModelLocator {
 
     /**

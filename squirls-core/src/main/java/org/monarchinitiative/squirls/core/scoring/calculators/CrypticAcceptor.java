@@ -84,6 +84,9 @@ import org.monarchinitiative.svart.Variant;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * @author Daniel Danis
+ */
 public class CrypticAcceptor extends BaseFeatureCalculator {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CanonicalAcceptor.class);

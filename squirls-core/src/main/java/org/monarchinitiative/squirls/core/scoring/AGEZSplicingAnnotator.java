@@ -96,6 +96,7 @@ import java.util.stream.Stream;
  * <a href="https://pubmed.ncbi.nlm.nih.gov/32126153/">this paper</a>.
  * <p>
  * In addition to
+ * @author Daniel Danis
  */
 public class AGEZSplicingAnnotator extends AbstractSplicingAnnotator {
 

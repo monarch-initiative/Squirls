@@ -90,6 +90,7 @@ import java.util.regex.Pattern;
  * <p>
  * To simplify things, AGEZ is not defined specifically for each transcript, but as a region spanning (-51,-3] positions
  * upstream from the acceptor site.
+ * @author Daniel Danis
  */
 public class ExclusionZoneFeatureCalculator extends BaseAgezCalculator {
 

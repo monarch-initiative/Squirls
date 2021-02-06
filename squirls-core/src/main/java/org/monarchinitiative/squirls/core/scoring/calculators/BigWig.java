@@ -85,6 +85,7 @@ import java.util.List;
 
 /**
  * This class operates on a bigWig file and gets score for a given {@link Variant} from a bigWig file.
+ * @author Daniel Danis
  */
 public class BigWig implements FeatureCalculator {
 

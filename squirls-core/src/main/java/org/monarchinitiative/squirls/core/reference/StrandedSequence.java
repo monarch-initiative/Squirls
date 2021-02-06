@@ -81,6 +81,9 @@ import org.monarchinitiative.svart.util.Seq;
 
 import java.util.Objects;
 
+/**
+ * @author Daniel Danis
+ */
 public class StrandedSequence extends BaseGenomicRegion<StrandedSequence> {
 
     private final int start;

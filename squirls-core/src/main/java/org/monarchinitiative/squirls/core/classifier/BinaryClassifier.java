@@ -82,6 +82,7 @@ import java.util.Set;
  * Class for labeling of an <code>instance</code> either as <code>positive</code> or <code>negative</code>.
  *
  * @param <T> <code>instance</code> type
+ * @author Daniel Danis
  */
 public interface BinaryClassifier<T extends SquirlsFeatures> extends Named {
 

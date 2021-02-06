@@ -88,6 +88,7 @@ import java.util.Optional;
 
 /**
  * This class calculates the <code>closest donor</code> feature.
+ * @author Daniel Danis
  */
 public class ClosestDonorDistance implements FeatureCalculator {
 

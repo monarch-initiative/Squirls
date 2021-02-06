@@ -86,6 +86,7 @@ import org.slf4j.LoggerFactory;
  * <p>
  * Obviously, it is trivial to create a snippet for SNP. It's harder for INDELs, that's the main task of this class.
  * </p>
+ * @author Daniel Danis
  */
 public class AlleleGenerator {
 

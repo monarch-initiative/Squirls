@@ -81,6 +81,7 @@ import org.monarchinitiative.squirls.core.classifier.SquirlsFeatures;
 
 /**
  * Implementors calculate a set of features for each {@link VariantOnTranscript}.
+ * @author Daniel Danis
  */
 public interface SplicingAnnotator {
 

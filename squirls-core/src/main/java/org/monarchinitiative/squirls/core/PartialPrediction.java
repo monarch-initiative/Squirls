@@ -79,6 +79,9 @@ package org.monarchinitiative.squirls.core;
 import org.apiguardian.api.API;
 import org.monarchinitiative.squirls.core.classifier.Named;
 
+/**
+ * @author Daniel Danis
+ */
 @API(status = API.Status.STABLE, since = "1.0.0")
 public interface PartialPrediction extends Named {
 

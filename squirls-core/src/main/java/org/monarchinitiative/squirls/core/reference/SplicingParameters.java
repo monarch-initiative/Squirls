@@ -83,7 +83,7 @@ import org.monarchinitiative.svart.Position;
 /**
  * Container for tunable parameters for scoring of splicing variants.
  *
- * @author <a href="mailto:daniel.danis@jax.org">Daniel Danis</a>
+ * @author Daniel Danis
  */
 public class SplicingParameters {
 

@@ -96,7 +96,7 @@ import java.util.stream.IntStream;
  * <p>
  * The bigwig parser developed at Broad Institute is used under the hood.
  * <p>
- * Created by Daniel Danis on 5/16/17.
+ * @author Daniel Danis
  */
 public class BigWigAccessor implements AutoCloseable {
 

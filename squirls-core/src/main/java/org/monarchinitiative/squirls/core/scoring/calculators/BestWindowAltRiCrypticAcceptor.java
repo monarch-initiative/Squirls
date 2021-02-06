@@ -88,6 +88,7 @@ import org.slf4j.LoggerFactory;
 /**
  * This class calculates <code>alt_ri_acceptor_best_window</code> feature - maximum individual information observed
  * after applying sliding window to the neighboring sequence.
+ * @author Daniel Danis
  */
 public class BestWindowAltRiCrypticAcceptor implements FeatureCalculator {
 

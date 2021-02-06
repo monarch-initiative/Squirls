@@ -80,6 +80,9 @@ import org.monarchinitiative.squirls.core.reference.StrandedSequence;
 import org.monarchinitiative.squirls.core.reference.TranscriptModel;
 import org.monarchinitiative.svart.Variant;
 
+/**
+ * @author Daniel Danis
+ */
 public interface FeatureCalculator {
 
     /**

@@ -91,6 +91,7 @@ import org.monarchinitiative.svart.GenomicRegion;
  * <li>{@link SplicingLocationData.SplicingPosition#INTRON} if ... you get it</li>
  * </ul>
  * </p>
+ * @author Daniel Danis
  */
 public class TranscriptModelLocatorNaive implements TranscriptModelLocator {
 

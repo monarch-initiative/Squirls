@@ -87,6 +87,7 @@ import org.monarchinitiative.svart.Variant;
  * <p>
  * The calculator only works for coding variants and variants overlapping with the canonical donor sites of all exons
  * except for the second last and the last exon.
+ * @author Daniel Danis
  */
 public class SStrengthDiffDonor implements FeatureCalculator {
 

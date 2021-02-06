@@ -85,6 +85,7 @@ import java.util.Comparator;
 /**
  * A prediction made by the {@link org.monarchinitiative.squirls.core.classifier.SquirlsClassifier} with respect
  * to a single transcript.
+ * @author Daniel Danis
  */
 @API(status = API.Status.STABLE, since = "1.0.0")
 public interface Prediction extends Comparable<Prediction> {

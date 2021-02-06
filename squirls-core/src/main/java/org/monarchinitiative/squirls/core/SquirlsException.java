@@ -78,6 +78,7 @@ package org.monarchinitiative.squirls.core;
 
 /**
  * Thrown when an error that can be dealt with happens.
+ * @author Daniel Danis
  */
 public class SquirlsException extends Exception {
 

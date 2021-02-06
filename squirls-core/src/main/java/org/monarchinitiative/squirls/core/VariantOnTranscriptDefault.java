@@ -82,6 +82,9 @@ import org.monarchinitiative.svart.Variant;
 
 import java.util.Objects;
 
+/**
+ * @author Daniel Danis
+ */
 class VariantOnTranscriptDefault implements VariantOnTranscript {
 
     private final Variant variant;

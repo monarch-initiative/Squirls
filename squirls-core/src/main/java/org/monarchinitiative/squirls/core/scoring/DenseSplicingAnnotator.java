@@ -101,6 +101,7 @@ import java.util.Map;
  *     <li><code>donor_offset</code></li>
  *     <li><code>acceptor_offset</code></li>
  * </ul>
+ * @author Daniel Danis
  */
 public class DenseSplicingAnnotator extends AbstractSplicingAnnotator {
 

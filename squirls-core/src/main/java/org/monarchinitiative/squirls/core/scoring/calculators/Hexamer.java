@@ -79,6 +79,9 @@ package org.monarchinitiative.squirls.core.scoring.calculators;
 
 import java.util.Map;
 
+/**
+ * @author Daniel Danis
+ */
 public class Hexamer extends BaseKmer {
 
     /**

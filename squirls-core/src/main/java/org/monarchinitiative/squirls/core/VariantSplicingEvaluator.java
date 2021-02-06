@@ -83,6 +83,9 @@ import org.monarchinitiative.svart.Variant;
 
 import java.util.Set;
 
+/**
+ * @author Daniel Danis
+ */
 @API(status = API.Status.STABLE, since = "1.0.0")
 public interface VariantSplicingEvaluator {
 

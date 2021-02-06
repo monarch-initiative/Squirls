@@ -80,6 +80,9 @@ import java.util.Collection;
 import java.util.Objects;
 import java.util.Set;
 
+/**
+ * @author Daniel Danis
+ */
 class PredictionDefault implements Prediction {
 
     /**

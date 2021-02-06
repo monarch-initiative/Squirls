@@ -82,6 +82,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+/**
+ * @author Daniel Danis
+ */
 class TranscriptModelDefault extends BaseGenomicRegion<TranscriptModelDefault> implements TranscriptModel {
     private final String accessionId;
     private final String hgvsSymbol;

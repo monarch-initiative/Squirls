@@ -86,6 +86,9 @@ import org.slf4j.LoggerFactory;
 import java.util.Comparator;
 import java.util.Optional;
 
+/**
+ * @author Daniel Danis
+ */
 public class ClosestAcceptorDistance implements FeatureCalculator {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ClosestAcceptorDistance.class);

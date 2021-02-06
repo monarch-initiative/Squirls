@@ -81,6 +81,9 @@ import org.monarchinitiative.svart.GenomicRegion;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * @author Daniel Danis
+ */
 public interface TranscriptModelService {
 
     List<String> getTranscriptAccessionIds();

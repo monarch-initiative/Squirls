@@ -86,7 +86,9 @@ import org.monarchinitiative.svart.Variant;
 import java.util.HashMap;
 import java.util.Map;
 
-
+/**
+ * @author Daniel Danis
+ */
 abstract class AbstractSplicingAnnotator implements SplicingAnnotator {
 
     private final Map<String, FeatureCalculator> calculatorMap;

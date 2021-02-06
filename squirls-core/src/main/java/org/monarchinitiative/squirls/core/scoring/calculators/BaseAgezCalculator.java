@@ -83,6 +83,9 @@ import org.monarchinitiative.svart.GenomicRegion;
 import org.monarchinitiative.svart.Position;
 import org.monarchinitiative.svart.Variant;
 
+/**
+ * @author Daniel Danis
+ */
 abstract class BaseAgezCalculator implements FeatureCalculator {
 
 

@@ -89,7 +89,7 @@ import java.util.regex.Pattern;
  * href="https://www.ncbi.nlm.nih.gov/pubmed/9711873">Information Analysis of Human Splice Site Mutations</a> by Rogan
  * et al.<p></p>
  *
- * @author <a href="mailto:daniel.danis@jax.org">Daniel Danis</a>
+ * @author Daniel Danis
  * @version 0.0.1
  * @since 0.0
  */

@@ -87,6 +87,9 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Map;
 
+/**
+ * @author Daniel Danis
+ */
 public abstract class BaseKmer implements FeatureCalculator {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BaseKmer.class);

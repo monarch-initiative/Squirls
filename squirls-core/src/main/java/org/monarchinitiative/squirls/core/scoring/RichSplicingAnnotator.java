@@ -114,6 +114,7 @@ import java.util.stream.Stream;
  * </ul>
  * <p>
  * Note that the features are computed only if the transcript has at least a single intron.
+ * @author Daniel Danis
  */
 public class RichSplicingAnnotator extends AbstractSplicingAnnotator {
 

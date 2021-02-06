@@ -87,6 +87,7 @@ import java.util.stream.Stream;
 
 /**
  * Squirls results for a variant.
+ * @author Daniel Danis
  */
 @API(status = API.Status.STABLE, since = "1.0.0")
 public interface SquirlsResult {

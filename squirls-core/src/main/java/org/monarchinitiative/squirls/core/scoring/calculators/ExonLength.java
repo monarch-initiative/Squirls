@@ -89,6 +89,7 @@ import org.monarchinitiative.svart.Variant;
  * {@link SplicingLocationData.SplicingPosition#EXON}.
  * <p>
  * For the remaining variants, <code>-1</code> is returned.
+ * @author Daniel Danis
  */
 public class ExonLength implements FeatureCalculator {
 

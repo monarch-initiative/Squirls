@@ -84,6 +84,9 @@ import org.slf4j.LoggerFactory;
 
 import java.util.regex.Pattern;
 
+/**
+ * @author Daniel Danis
+ */
 public class PyrimidineToPurineAtMinusThree implements FeatureCalculator {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PyrimidineToPurineAtMinusThree.class);

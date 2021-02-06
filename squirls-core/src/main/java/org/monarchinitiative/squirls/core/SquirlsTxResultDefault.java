@@ -81,6 +81,7 @@ import java.util.Objects;
 
 /**
  * Squirls prediction results wrt. single transcript.
+ * @author Daniel Danis
  */
 class SquirlsTxResultDefault implements SquirlsTxResult {
 

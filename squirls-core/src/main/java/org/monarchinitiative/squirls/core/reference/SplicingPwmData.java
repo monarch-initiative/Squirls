@@ -85,6 +85,7 @@ import java.util.Objects;
  *     <li>{@link DoubleMatrix} for <em>acceptor</em> site, and</li>
  *     <li>{@link SplicingParameters} with data regarding both splice donor and acceptor sites</li>
  * </ul>
+ * @author Daniel Danis
  */
 public class SplicingPwmData {
 

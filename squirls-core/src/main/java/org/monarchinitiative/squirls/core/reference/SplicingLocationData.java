@@ -83,6 +83,7 @@ import java.util.Optional;
 
 /**
  * POJO for grouping location data of variant with respect to transcript.
+ * @author Daniel Danis
  */
 public class SplicingLocationData {
 

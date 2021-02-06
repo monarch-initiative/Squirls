@@ -81,6 +81,7 @@ import java.util.Objects;
 /**
  * This class represents a fragment of information from the decision function, a single prediction of an ensemble
  * which calculated pathogenicity probability.
+ * @author Daniel Danis
  */
 class PartialPredictionDefault implements PartialPrediction {
 

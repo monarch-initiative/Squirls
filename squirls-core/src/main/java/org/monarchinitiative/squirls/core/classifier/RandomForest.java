@@ -94,6 +94,7 @@ import java.util.stream.Collectors;
  * The predictions are being performed in parallel.
  *
  * @param <T> type of the data point
+ * @author Daniel Danis
  */
 public class RandomForest<T extends SquirlsFeatures> extends AbstractBinaryClassifier<T> {
 

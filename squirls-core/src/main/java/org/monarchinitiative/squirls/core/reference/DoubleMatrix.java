@@ -81,6 +81,7 @@ import java.util.Objects;
 
 /**
  * An implementation of double matrix simplified from JBlas.
+ * @author Daniel Danis
  */
 public class DoubleMatrix {
 
