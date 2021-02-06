@@ -113,8 +113,8 @@ public class AlleleGenerator {
         if (padding < 0) return null;
         if (padding == 0) return allele;
         interval = interval.toZeroBased();
-        GenomicRegion upstream = GenomicRegion.zeroBased(interval.contig(), interval.strand(), interval.startPosition().shift(-padding), interval.startPosition());
-        GenomicRegion downstream = GenomicRegion.zeroBased(interval.contig(), interval.strand(), interval.endPosition(), interval.endPosition().shift(padding));
+        GenomicRegion upstream = GenomicRegion.of(interval.contig(), interval.strand(), CoordinateSystem.zeroBased(), interval.startPosition().shift(-padding), interval.startPosition());
+        GenomicRegion downstream = GenomicRegion.of(interval.contig(), interval.strand(), CoordinateSystem.zeroBased(), interval.endPosition(), interval.endPosition().shift(padding));
         String useq = sequence.subsequence(upstream);
         String dseq = sequence.subsequence(downstream);
 

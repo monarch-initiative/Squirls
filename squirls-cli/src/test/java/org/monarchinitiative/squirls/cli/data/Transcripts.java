@@ -77,10 +77,7 @@
 package org.monarchinitiative.squirls.cli.data;
 
 import org.monarchinitiative.squirls.core.reference.TranscriptModel;
-import org.monarchinitiative.svart.Contig;
-import org.monarchinitiative.svart.CoordinateSystem;
-import org.monarchinitiative.svart.GenomicRegion;
-import org.monarchinitiative.svart.Strand;
+import org.monarchinitiative.svart.*;
 
 import java.util.List;
 
@@ -200,9 +197,9 @@ class Transcripts {
     private static TranscriptModel reduced_nf1_NM_000267_3(Contig contig) {
         return TranscriptModel.coding(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(),
                 29_421_944, 29_704_695, 29_421_944, 29_704_695, "NM_000267.3", "NF1",
-                List.of(GenomicRegion.zeroBased(contig, 29_421_944, 29_422_387),
-                        GenomicRegion.zeroBased(contig, 29_527_439, 29_527_613),
-                        GenomicRegion.zeroBased(contig, 29_701_030, 29_704_695)));
+                List.of(GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(), 29_421_944, 29_422_387),
+                        GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(), 29_527_439, 29_527_613),
+                        GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(), 29_701_030, 29_704_695)));
 //        return SplicingTranscript.builder()
 //                .setAccessionId("NM_000267.3")
 //                .setCoordinates(new GenomeInterval(rd, Strand.FWD, 17, 29_421_945, 29_704_695, PositionType.ONE_BASED))
@@ -237,12 +234,12 @@ class Transcripts {
     private static TranscriptModel surf2_NM_017503_4(Contig contig) {
         return TranscriptModel.coding(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(),
                 136_223_424, 136_228_034, 136_223_424, 136_228_034, "NM_017503.4", "SURF2",
-                List.of(GenomicRegion.zeroBased(contig, 136_223_424, 136_223_546),
-                        GenomicRegion.zeroBased(contig, 136_223_788, 136_223_944),
-                        GenomicRegion.zeroBased(contig, 136_224_585, 136_224_690),
-                        GenomicRegion.zeroBased(contig, 136_226_824, 136_227_005),
-                        GenomicRegion.zeroBased(contig, 136_227_139, 136_227_310),
-                        GenomicRegion.zeroBased(contig, 136_227_930, 136_228_034)));
+                List.of(GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(), 136_223_424, 136_223_546),
+                        GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(), 136_223_788, 136_223_944),
+                        GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(), 136_224_585, 136_224_690),
+                        GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(), 136_226_824, 136_227_005),
+                        GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(), 136_227_139, 136_227_310),
+                        GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(), 136_227_930, 136_228_034)));
 //        return SplicingTranscript.builder()
 //                .setAccessionId("NM_017503.4")
 //                .setCoordinates(new GenomeInterval(rd, Strand.FWD, 9, 136223425, 136228034))
@@ -313,12 +310,12 @@ class Transcripts {
         // this is the same transcript as in the method surf2_NM_017503_4, except for the accession ID
         return TranscriptModel.coding(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(),
                 136_223_424, 136_228_034, 136_223_424, 136_228_034, "NM_001278928.1", "SURF2",
-                List.of(GenomicRegion.zeroBased(contig, 136_223_424, 136_223_546),
-                        GenomicRegion.zeroBased(contig, 136_223_788, 136_223_944),
-                        GenomicRegion.zeroBased(contig, 136_224_585, 136_224_690),
-                        GenomicRegion.zeroBased(contig, 136_226_824, 136_227_005),
-                        GenomicRegion.zeroBased(contig, 136_227_139, 136_227_310),
-                        GenomicRegion.zeroBased(contig, 136_227_930, 136_228_034)));
+                List.of(GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(), 136_223_424, 136_223_546),
+                        GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(), 136_223_788, 136_223_944),
+                        GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(), 136_224_585, 136_224_690),
+                        GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(), 136_226_824, 136_227_005),
+                        GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(), 136_227_139, 136_227_310),
+                        GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(), 136_227_930, 136_228_034)));
 //        return SplicingTranscript.builder()
 //                .setAccessionId("NM_001278928.1")
 //                .setCoordinates(new GenomeInterval(rd, Strand.FWD, 9, 136223425, 136228034))
@@ -383,18 +380,18 @@ class Transcripts {
     private static TranscriptModel alpl_NM_000478_4(Contig contig) {
         return TranscriptModel.coding(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(),
                 21_835_915, 21_904_903, 21_835_915, 21_904_903, "NM_000478.4", "ALPL",
-                List.of(GenomicRegion.zeroBased(contig, 21_835_915, 21_836_010),
-                        GenomicRegion.zeroBased(contig, 21_880_470, 21_880_635),
-                        GenomicRegion.zeroBased(contig, 21_887_118, 21_887_238),
-                        GenomicRegion.zeroBased(contig, 21_887_589, 21_887_705),
-                        GenomicRegion.zeroBased(contig, 21_889_602, 21_889_777),
-                        GenomicRegion.zeroBased(contig, 21_890_533, 21_890_709),
-                        GenomicRegion.zeroBased(contig, 21_894_596, 21_894_740),
-                        GenomicRegion.zeroBased(contig, 21_896_797, 21_896_867),
-                        GenomicRegion.zeroBased(contig, 21_900_157, 21_900_292),
-                        GenomicRegion.zeroBased(contig, 21_902_225, 21_902_417),
-                        GenomicRegion.zeroBased(contig, 21_903_014, 21_903_134),
-                        GenomicRegion.zeroBased(contig, 21_903_875, 21_904_903)));
+                List.of(GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(), 21_835_915, 21_836_010),
+                        GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(), 21_880_470, 21_880_635),
+                        GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(), 21_887_118, 21_887_238),
+                        GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(), 21_887_589, 21_887_705),
+                        GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(), 21_889_602, 21_889_777),
+                        GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(), 21_890_533, 21_890_709),
+                        GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(), 21_894_596, 21_894_740),
+                        GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(), 21_896_797, 21_896_867),
+                        GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(), 21_900_157, 21_900_292),
+                        GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(), 21_902_225, 21_902_417),
+                        GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(), 21_903_014, 21_903_134),
+                        GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(), 21_903_875, 21_904_903)));
 //        return SplicingTranscript.builder()
 //                .setAccessionId("NM_000478.4")
 //                .setCoordinates(new GenomeInterval(rd, Strand.FWD, 1, 21_835_916, 21_904_903, PositionType.ONE_BASED))
@@ -493,9 +490,9 @@ class Transcripts {
     private static TranscriptModel reduced_tsc2_NM000548_3(Contig contig) {
         return TranscriptModel.coding(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(),
                 2_097_985, 2_139_492, 2_097_985, 2_139_492, "NM_000548.3", "TSC2",
-                List.of(GenomicRegion.zeroBased(contig, 2_097_985, 2_098_066),
-                        GenomicRegion.zeroBased(contig, 2_110_670, 2_110_814),
-                        GenomicRegion.zeroBased(contig, 2_138_446, 2_139_492)));
+                List.of(GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(), 2_097_985, 2_098_066),
+                        GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(), 2_110_670, 2_110_814),
+                        GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(), 2_138_446, 2_139_492)));
 //        return SplicingTranscript.builder()
 //                .setAccessionId("NM_000548.3")
 //                .setCoordinates(new GenomeInterval(rd, Strand.FWD, 16, 2_097_986, 2_139_492, PositionType.ONE_BASED))
@@ -531,9 +528,9 @@ class Transcripts {
     private static TranscriptModel reduced_col4a5_NM_000495_4(Contig contig) {
         return TranscriptModel.coding(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(),
                 107_683_067, 107_940_775, 107_683_067, 107_940_775, "NM_000495.4", "COL4A5",
-                List.of(GenomicRegion.zeroBased(contig, 107_683_067, 107_683_436),
-                        GenomicRegion.zeroBased(contig, 107_849_971, 107_850_122),
-                        GenomicRegion.zeroBased(contig, 107_939_526, 107_940_775)));
+                List.of(GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(), 107_683_067, 107_683_436),
+                        GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(), 107_849_971, 107_850_122),
+                        GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(), 107_939_526, 107_940_775)));
 //        return SplicingTranscript.builder()
 //                .setAccessionId("NM_000495.4")
 //                .setCoordinates(new GenomeInterval(rd, Strand.FWD, 23, 107_683_068, 107_940_775, PositionType.ONE_BASED))
@@ -569,9 +566,9 @@ class Transcripts {
     private static TranscriptModel reduced_ryr1_NM_000540_2(Contig contig) {
         return TranscriptModel.coding(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(),
                 38_924_330, 39_078_204, 38_924_330, 39_078_204, "NM_000540.2", "RYR1",
-                List.of(GenomicRegion.zeroBased(contig, 38_924_330, 38_924_514),
-                        GenomicRegion.zeroBased(contig, 39_075_582, 39_075_739),
-                        GenomicRegion.zeroBased(contig, 39_077_964, 39_078_204)));
+                List.of(GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(), 38_924_330, 38_924_514),
+                        GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(), 39_075_582, 39_075_739),
+                        GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(), 39_077_964, 39_078_204)));
 //        return SplicingTranscript.builder()
 //                .setAccessionId("NM_000540.2")
 //                .setCoordinates(new GenomeInterval(rd, Strand.FWD, 19, 38_924_331, 39_078_204, PositionType.ONE_BASED))
@@ -607,9 +604,9 @@ class Transcripts {
     private static TranscriptModel hbb_NM_000518_4(Contig contig) {
         return TranscriptModel.coding(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(),
                 5_246_693, 5_248_301, 5_246_693, 5_248_301, "NM_000518.4", "HBB",
-                List.of(GenomicRegion.zeroBased(contig, 5_246_693, 5_246_956),
-                        GenomicRegion.zeroBased(contig, 5_247_806, 5_248_029),
-                        GenomicRegion.zeroBased(contig, 5_248_159, 5_248_301))).withStrand(Strand.NEGATIVE);
+                List.of(GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(), 5_246_693, 5_246_956),
+                        GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(), 5_247_806, 5_248_029),
+                        GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(), 5_248_159, 5_248_301))).withStrand(Strand.NEGATIVE);
 //        return SplicingTranscript.builder()
 //                .setAccessionId("NM_000518.4")
 //                .setCoordinates(new GenomeInterval(rd, Strand.FWD, 11, 5_246_694, 5_248_301, PositionType.ONE_BASED).withStrand(Strand.REV))
@@ -645,9 +642,9 @@ class Transcripts {
     private static TranscriptModel reduced_brca2_NM_000059_3(Contig contig) {
         return TranscriptModel.coding(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(),
                 32_889_616, 32_973_809, 32_889_616, 32_973_809, "NM_000059.3", "BRCA2",
-                List.of(GenomicRegion.zeroBased(contig, 32_889_616, 32_889_804),
-                        GenomicRegion.zeroBased(contig, 32_930_564, 32_930_746),
-                        GenomicRegion.zeroBased(contig, 32_972_298, 32_973_809)));
+                List.of(GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(), 32_889_616, 32_889_804),
+                        GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(), 32_930_564, 32_930_746),
+                        GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(), 32_972_298, 32_973_809)));
 //        return SplicingTranscript.builder()
 //                .setAccessionId("NM_000059.3")
 //                .setCoordinates(new GenomeInterval(rd, Strand.FWD, 13, 32_889_617, 32_973_809, PositionType.ONE_BASED))
@@ -684,9 +681,9 @@ class Transcripts {
     private static TranscriptModel reduced_vwf_NM_000552_3(Contig contig) {
         return TranscriptModel.coding(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(),
                 6_058_039, 6_233_841, 6_058_039, 6_233_841, "NM_000552.3", "VWF",
-                List.of(GenomicRegion.zeroBased(contig, 6_058_039, 6_058_369),
-                        GenomicRegion.zeroBased(contig, 6_131_905, 6_132_064),
-                        GenomicRegion.zeroBased(contig, 6_233_586, 6_233_841)))
+                List.of(GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(), 6_058_039, 6_058_369),
+                        GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(), 6_131_905, 6_132_064),
+                        GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(), 6_233_586, 6_233_841)))
                 .withStrand(Strand.NEGATIVE);
 //        return SplicingTranscript.builder()
 //                .setAccessionId("NM_000552.3")

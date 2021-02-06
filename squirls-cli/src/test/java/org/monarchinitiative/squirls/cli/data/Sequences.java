@@ -78,7 +78,9 @@ package org.monarchinitiative.squirls.cli.data;
 
 import org.monarchinitiative.squirls.core.reference.StrandedSequence;
 import org.monarchinitiative.svart.Contig;
+import org.monarchinitiative.svart.CoordinateSystem;
 import org.monarchinitiative.svart.GenomicRegion;
+import org.monarchinitiative.svart.Strand;
 
 class Sequences {
 
@@ -220,7 +222,7 @@ class Sequences {
      */
     static StrandedSequence getSurf2Exon3Sequence(Contig contig) {
         return StrandedSequence.of(
-                GenomicRegion.oneBased(contig, 136_224_501, 136_224_80), SURF2_EXON3);
+                GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.oneBased(), 136_224_501, 136_224_80), SURF2_EXON3);
     }
 
     /**
@@ -231,7 +233,7 @@ class Sequences {
      */
     static StrandedSequence getAlplExon7Sequence(Contig contig) {
         return StrandedSequence.of(
-                GenomicRegion.oneBased(contig, 21894401, 21895000), ALPL_EXON7);
+                GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.oneBased(), 21894401, 21895000), ALPL_EXON7);
     }
 
     /**
@@ -242,7 +244,7 @@ class Sequences {
      */
     static StrandedSequence getTsc2Exon11Sequence(Contig contig) {
         return StrandedSequence.of(
-                GenomicRegion.oneBased(contig, 2_110_401, 2_111_000), TSC2_EXON11);
+                GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.oneBased(),2_110_401, 2_111_000), TSC2_EXON11);
     }
 
     /**
@@ -253,7 +255,7 @@ class Sequences {
      */
     static StrandedSequence getCol4a5Exon29Sequence(Contig contig) {
         return StrandedSequence.of(
-                GenomicRegion.oneBased(contig, 107_849_601, 107_850_400), COL4A5_EXON29);
+                GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.oneBased(),107_849_601, 107_850_400), COL4A5_EXON29);
     }
 
     /**
@@ -264,7 +266,7 @@ class Sequences {
      */
     static StrandedSequence getRyr1Exon102Sequence(Contig contig) {
         return StrandedSequence.of(
-                GenomicRegion.oneBased(contig, 39_075_401, 39_075_900), RYR1_EXON102);
+                GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.oneBased(),39_075_401, 39_075_900), RYR1_EXON102);
     }
 
     /**
@@ -275,7 +277,7 @@ class Sequences {
      */
     static StrandedSequence getHbbExon1Sequence(Contig contig) {
         return StrandedSequence.of(
-                GenomicRegion.oneBased(contig, 5_248_001, 5_248_400), HBB_EXON1);
+                GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.oneBased(),5_248_001, 5_248_400), HBB_EXON1);
     }
 
     /**
@@ -286,7 +288,7 @@ class Sequences {
      */
     static StrandedSequence getBrca2Exon15Sequence(Contig contig) {
         return StrandedSequence.of(
-                GenomicRegion.oneBased(contig, 32_930_401, 32_930_900), BRCA2_EXON15);
+                GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.oneBased(),32_930_401, 32_930_900), BRCA2_EXON15);
     }
 
     /**
@@ -297,7 +299,7 @@ class Sequences {
      */
     static StrandedSequence getVwfExon26Sequence(Contig contig) {
         return StrandedSequence.of(
-                GenomicRegion.oneBased(contig, 6131801, 6132200), VWF_EXON26);
+                GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.oneBased(),6131801, 6132200), VWF_EXON26);
     }
 
     /**
@@ -308,7 +310,7 @@ class Sequences {
      */
     static StrandedSequence getNf1Exon9Sequence(Contig contig) {
         return StrandedSequence.of(
-                GenomicRegion.oneBased(contig, 29_527_201, 29_527_800), NF1_EXON9);
+                GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.oneBased(),29_527_201, 29_527_800), NF1_EXON9);
     }
 
 }

@@ -138,7 +138,7 @@ class TranscriptModelBuilder {
     }
 
     TranscriptModelBuilder setExon(int n, Strand strand, int start, int end) {
-        exons.put(n, GenomicRegion.zeroBased(contig, strand, Position.of(start), Position.of(end)));
+        exons.put(n, GenomicRegion.of(contig, strand, CoordinateSystem.zeroBased(), Position.of(start), Position.of(end)));
         return this;
     }
 

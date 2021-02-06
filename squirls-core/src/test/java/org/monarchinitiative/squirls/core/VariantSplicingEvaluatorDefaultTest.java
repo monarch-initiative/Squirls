@@ -179,7 +179,7 @@ public class VariantSplicingEvaluatorDefaultTest {
         assertThat(actual.prediction(), is(prediction));
 
         verify(squirlsDataService).knownContigNames();
-        verify(squirlsDataService).sequenceForRegion(GenomicRegion.zeroBased(chr9, 136_223_275, 136_228_184));
+        verify(squirlsDataService).sequenceForRegion(GenomicRegion.of(chr9, Strand.POSITIVE, CoordinateSystem.zeroBased(), 136_223_275, 136_228_184));
         verify(squirlsDataService).transcriptByAccession("NM_017503.5");
         verify(annotator).annotate(vot);
         verify(classifier).predict(features);
@@ -270,7 +270,7 @@ public class VariantSplicingEvaluatorDefaultTest {
         assertThat(actual.prediction(), is(prediction));
 
         verify(squirlsDataService).knownContigNames();
-        verify(squirlsDataService).sequenceForRegion(GenomicRegion.zeroBased(chr9, 136_223_275, 136_228_184));
+        verify(squirlsDataService).sequenceForRegion(GenomicRegion.of(chr9, Strand.POSITIVE, CoordinateSystem.zeroBased(), 136_223_275, 136_228_184));
         verify(squirlsDataService).overlappingTranscripts(variant.toZeroBased());
         verify(annotator).annotate(vot);
         verify(classifier).predict(features);

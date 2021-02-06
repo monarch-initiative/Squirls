@@ -133,7 +133,7 @@ import java.util.stream.Collectors;
  *     </ul>
  * </p>
  *
- * @author Daniel Danis <daniel.danis@jax.org>
+ * @author Daniel Danis
  * @see SquirlsProperties
  */
 @Configuration

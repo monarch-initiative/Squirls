@@ -67,48 +67,29 @@
 
     <dependencies>
         <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter</artifactId>
-        </dependency>
-        <dependency>
             <groupId>org.monarchinitiative.squirls</groupId>
             <artifactId>squirls-spring-boot-starter</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
-
-        <!-- VMVT is a library for visualisation of variant impact on splice donor/acceptor sites in form of
-        SVG images. -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter</artifactId>
+        </dependency>
         <dependency>
             <groupId>org.monarchinitiative.vmvt</groupId>
             <artifactId>vmvt-core</artifactId>
-            <version>${vmvt.version}</version>
         </dependency>
-
         <dependency>
             <groupId>de.charite.compbio</groupId>
             <artifactId>jannovar-htsjdk</artifactId>
-            <version>${jannovar.version}</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.testng</groupId>
-                    <artifactId>testng</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>com.github.samtools</groupId>
-                    <artifactId>htsjdk</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-csv</artifactId>
-            <version>1.7</version>
         </dependency>
-
         <dependency>
             <groupId>info.picocli</groupId>
             <artifactId>picocli</artifactId>
-            <version>4.5.2</version>
         </dependency>
 
         <!--Thymeleaf is a templating engine used for creating the HTML results pages -->
@@ -126,16 +107,6 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>junit</groupId>
-                    <artifactId>junit</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.junit.vintage</groupId>
-                    <artifactId>junit-vintage-engine</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
     </dependencies>
 

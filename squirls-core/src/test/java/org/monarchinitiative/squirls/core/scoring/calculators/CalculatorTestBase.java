@@ -81,10 +81,7 @@ import org.monarchinitiative.squirls.core.PojosForTesting;
 import org.monarchinitiative.squirls.core.TestDataSourceConfig;
 import org.monarchinitiative.squirls.core.reference.*;
 import org.monarchinitiative.squirls.core.scoring.calculators.ic.SplicingInformationContentCalculator;
-import org.monarchinitiative.svart.AssignedMoleculeType;
-import org.monarchinitiative.svart.Contig;
-import org.monarchinitiative.svart.GenomicRegion;
-import org.monarchinitiative.svart.SequenceRole;
+import org.monarchinitiative.svart.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
@@ -119,7 +116,7 @@ public class CalculatorTestBase {
         tx = PojosForTesting.getTranscriptWithThreeExons(contig);
         sequence = PojosForTesting.getSequenceIntervalForTranscriptWithThreeExons(contig);
         Contig other = Contig.of(44, "44", SequenceRole.ASSEMBLED_MOLECULE, "44", AssignedMoleculeType.CHROMOSOME, 100_000, "", "", "");
-        sequenceOnOtherChrom = StrandedSequence.of(GenomicRegion.zeroBased(other, 0, 4), "ACGT");
+        sequenceOnOtherChrom = StrandedSequence.of(GenomicRegion.of(other, Strand.POSITIVE, CoordinateSystem.zeroBased(), 0, 4), "ACGT");
     }
 
 }

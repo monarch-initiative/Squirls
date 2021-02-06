@@ -95,7 +95,7 @@ public class PojosForTesting {
 
     public static StrandedSequence getSequenceIntervalForTranscriptWithThreeExons(Contig contig) {
         return StrandedSequence.of(
-                GenomicRegion.zeroBased(contig, Strand.POSITIVE, Position.of(900), Position.of(2100)),
+                GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(), Position.of(900), Position.of(2100)),
                 // upstream 100bp
                 "AAACAGGTTAATCGCCACGACATAGTAGTATTTAGAGTTACTAGTAAGCCTGATGCCACT" + // 960
                         "ACACAATTCTAGCTTTTCTCAGAGCCCCGCCCCCGGCTCC" + // 1000
@@ -140,9 +140,9 @@ public class PojosForTesting {
                 contig, Strand.POSITIVE, CoordinateSystem.zeroBased(), 1000, 2000, 1100, 1900,
                 "THREE_EXON", "HGVS_SYMBOL",
                 List.of(
-                        GenomicRegion.zeroBased(contig, 1000, 1200),
-                        GenomicRegion.zeroBased(contig, 1400, 1600),
-                        GenomicRegion.zeroBased(contig, 1800, 2000)
+                        GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(), 1000, 1200),
+                        GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(), 1400, 1600),
+                        GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(), 1800, 2000)
                 ));
     }
 
@@ -150,7 +150,7 @@ public class PojosForTesting {
         return TranscriptModel.coding(
                 contig, Strand.POSITIVE, CoordinateSystem.zeroBased(), 1000, 2000, 1100, 1900,
                 "SINGLE_EXON", "HGVS_SYMBOL",
-                List.of(GenomicRegion.zeroBased(contig, 1000, 2000)));
+                List.of(GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(), 1000, 2000)));
     }
 
     public static TranscriptModel getTranscriptWithThreeExonsOnRevStrand(Contig contig) {
@@ -174,12 +174,12 @@ public class PojosForTesting {
         return TranscriptModel.coding(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(),
                 136_223_425, 136_228_034, 136_223_425, 136_228_034, "NM_017503.5", "SURF2",
                 List.of(
-                        GenomicRegion.zeroBased(contig, 136_223_425, 136_223_546),
-                        GenomicRegion.zeroBased(contig, 136_223_789, 136_223_944),
-                        GenomicRegion.zeroBased(contig, 136_224_586, 136_224_690),
-                        GenomicRegion.zeroBased(contig, 136_226_825, 136_227_005),
-                        GenomicRegion.zeroBased(contig, 136_227_140, 136_227_310),
-                        GenomicRegion.zeroBased(contig, 136_227_931, 136_228_034)));
+                        GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(), 136_223_425, 136_223_546),
+                        GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(), 136_223_789, 136_223_944),
+                        GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(), 136_224_586, 136_224_690),
+                        GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(), 136_226_825, 136_227_005),
+                        GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(), 136_227_140, 136_227_310),
+                        GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(), 136_227_931, 136_228_034)));
     }
 
 

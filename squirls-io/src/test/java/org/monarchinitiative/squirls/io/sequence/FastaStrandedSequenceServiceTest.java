@@ -149,7 +149,7 @@ public class FastaStrandedSequenceServiceTest {
     @Test
     public void sequenceForRegion_unknownContig() {
         // unknown contig
-        GenomicRegion query = GenomicRegion.zeroBased(Contig.unknown(), 0, 0);
+        GenomicRegion query = GenomicRegion.of(Contig.unknown(), Strand.POSITIVE, CoordinateSystem.zeroBased(), 0, 0);
         StrandedSequence sequence = sequenceService.sequenceForRegion(query);
         assertThat(sequence, is(nullValue()));
     }

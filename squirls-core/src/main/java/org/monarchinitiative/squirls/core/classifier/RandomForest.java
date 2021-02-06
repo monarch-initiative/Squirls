@@ -86,7 +86,7 @@ import java.util.stream.Collectors;
  * This class uses a collection of {@link BinaryDecisionTree}s to perform classification of a {@link T} instance.
  * <p>
  * When making class predictions the prediction is based on the most likely class label as identified by
- * {@link #predictProba(T)}.
+ * {@link #predictProba(SquirlsFeatures)}.
  * <p>
  * When predicting probabilities, a mean probability values of individual trees is provided.
  *

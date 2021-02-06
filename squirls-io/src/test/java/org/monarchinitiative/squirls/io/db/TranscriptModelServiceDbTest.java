@@ -160,7 +160,7 @@ public class TranscriptModelServiceDbTest {
     @Test
     @Sql({"transcripts_create_tables.sql", "transcripts_insert.sql"})
     public void fetchTranscripts() {
-        GenomicRegion query = GenomicRegion.zeroBased(one, 100, 900);
+        GenomicRegion query = GenomicRegion.of(one, Strand.POSITIVE, CoordinateSystem.zeroBased(), 100, 900);
         List<TranscriptModel> models = instance.overlappingTranscripts(query);
         assertThat(models, hasSize(2));
 
@@ -184,7 +184,7 @@ public class TranscriptModelServiceDbTest {
     @Test
     @Sql({"transcripts_create_tables.sql", "transcripts_insert.sql"})
     public void fetchNonCodingTranscript() {
-        GenomicRegion query = GenomicRegion.zeroBased(two, 1300, 1500);
+        GenomicRegion query = GenomicRegion.of(two, Strand.POSITIVE, CoordinateSystem.zeroBased(), 1300, 1500);
         List<TranscriptModel> models = instance.overlappingTranscripts(query);
         assertThat(models, hasSize(1));
 

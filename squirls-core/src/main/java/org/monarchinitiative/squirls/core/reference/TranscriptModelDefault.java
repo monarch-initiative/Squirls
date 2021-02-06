@@ -177,8 +177,8 @@ class TranscriptModelDefault extends BaseGenomicRegion<TranscriptModelDefault> i
         if (strand() == other) {
             return this;
         } else {
-            Position start = endPosition().invert(contig(), coordinateSystem());
-            Position end = startPosition().invert(contig(), coordinateSystem());
+            Position start = endPosition().invert(coordinateSystem(), contig());
+            Position end = startPosition().invert(coordinateSystem(), contig());
 
             GenomicRegion cdsRegionWithStrand = isCoding ? cdsRegion.withStrand(other) : null;
 

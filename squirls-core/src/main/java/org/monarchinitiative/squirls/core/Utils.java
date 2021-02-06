@@ -168,7 +168,7 @@ public class Utils {
      * @param sequence {@link String} with nucleotide sequence to generate subsequences from
      * @param ws       window size
      * @return {@link Stream} of {@link String}s - subsequences of given <code>sequence</code> with length
-     * <code>ws</code> or empty {@link Stream}, if '<code>ws</code> > <code>sequence.length()</code>'
+     * <code>ws</code> or empty {@link Stream}, if '<code>ws</code> &gt; <code>sequence.length()</code>'
      */
     public static Stream<String> slidingWindow(String sequence, int ws) {
         return ws > sequence.length()

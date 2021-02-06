@@ -118,7 +118,7 @@ public class HexamerTest extends CalculatorTestBase {
     @Test
     public void realVariant() {
         StrandedSequence si = StrandedSequence.of(
-                GenomicRegion.zeroBased(contig, 0, 125),
+                GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(), 0, 125),
                 "cccagGGT" +
                         "C" + // c.520C>T
                         "GTCAGACACCAAAACATATTTCTGAAAGTCTAGGAGCTGAGGTGGATCCTGATATGTCTT" +

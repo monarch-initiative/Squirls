@@ -83,7 +83,7 @@ import org.monarchinitiative.svart.Variant;
 
 
 /**
- * Calculator that returns <code>1.</code> if the variant removes >1 pyrimidines from the poly-pyrimidine tract (PPT)
+ * Calculator that returns <code>1.</code> if the variant removes &gt; 1 pyrimidines from the poly-pyrimidine tract (PPT)
  * of the splice acceptor site.
  * <p>
  * To simplify things at the beginning, PPT is actually defined to be identical to equal

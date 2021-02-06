@@ -89,8 +89,10 @@ import org.monarchinitiative.squirls.cli.writers.WritableSplicingAllele;
 import org.monarchinitiative.squirls.core.SquirlsDataService;
 import org.monarchinitiative.squirls.core.VariantOnTranscript;
 import org.monarchinitiative.squirls.core.reference.StrandedSequence;
+import org.monarchinitiative.svart.CoordinateSystem;
 import org.monarchinitiative.svart.GenomicAssembly;
 import org.monarchinitiative.svart.GenomicRegion;
+import org.monarchinitiative.svart.Strand;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.BufferedWriter;
@@ -178,7 +180,7 @@ public class PanelGraphicsGeneratorTest extends GraphicsGeneratorTestBase {
                 "CTGGCTCCTGCCCTCCCTGCTCCTGGGAGTAGATTGGCCAACCCTAGGGTGTGGCTCCACAGGGTGAGGTCTAAGTGATGACAGCCGTACCTGTCCTTGGCTCTTCTGGCACTGGCTTAG" +
                 "GAGTTGGACTTCAAACCCTCAGCCCTCCCTCTAAGATATA";
         when(squirlsDataService.sequenceForRegion(any()))
-                .thenReturn(StrandedSequence.of(GenomicRegion.oneBased(assembly.contigByName("11"), 5_247_501, 5_248_500), seq));
+                .thenReturn(StrandedSequence.of(GenomicRegion.of(assembly.contigByName("11"), Strand.POSITIVE, CoordinateSystem.oneBased(), 5_247_501, 5_248_500), seq));
         when(squirlsDataService.transcriptByAccession(anyString()))
                 .thenReturn(Optional.ofNullable(((VariantOnTranscript) wsa).transcript()));
 

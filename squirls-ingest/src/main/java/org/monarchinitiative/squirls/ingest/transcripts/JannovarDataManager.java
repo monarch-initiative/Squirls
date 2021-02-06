@@ -197,7 +197,7 @@ public class JannovarDataManager {
         List<GenomicRegion> remapped = new ArrayList<>(exons.size());
 
         for (GenomeInterval exon : exons) {
-            remapped.add(GenomicRegion.zeroBased(contig, strand, Position.of(exon.getBeginPos()), Position.of(exon.getEndPos())));
+            remapped.add(GenomicRegion.of(contig, strand, CoordinateSystem.zeroBased(), Position.of(exon.getBeginPos()), Position.of(exon.getEndPos())));
         }
 
         return remapped;
