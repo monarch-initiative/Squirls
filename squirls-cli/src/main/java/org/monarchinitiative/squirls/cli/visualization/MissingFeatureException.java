@@ -78,6 +78,9 @@ package org.monarchinitiative.squirls.cli.visualization;
 
 import org.monarchinitiative.squirls.core.SquirlsException;
 
+/**
+ * @author Daniel Danis
+ */
 public class MissingFeatureException extends SquirlsException {
     public MissingFeatureException() {
         super();

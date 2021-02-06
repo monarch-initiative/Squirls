@@ -94,6 +94,9 @@ import java.nio.file.Paths;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+/**
+ * @author Daniel Danis
+ */
 public class VcfResultWriter implements ResultWriter {
 
     private static final String SQUIRLS_FLAG_FIELD_NAME = "SQUIRLS";

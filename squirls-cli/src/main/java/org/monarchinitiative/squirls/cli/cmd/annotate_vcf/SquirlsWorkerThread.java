@@ -80,6 +80,9 @@ import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.ForkJoinWorkerThread;
 import java.util.concurrent.atomic.AtomicInteger;
 
+/**
+ * @author Daniel Danis
+ */
 class SquirlsWorkerThread extends ForkJoinWorkerThread {
 
     private static final AtomicInteger THREAD_COUNTER = new AtomicInteger(1);

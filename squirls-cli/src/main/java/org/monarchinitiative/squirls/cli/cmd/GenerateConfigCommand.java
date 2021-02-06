@@ -88,6 +88,9 @@ import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.concurrent.Callable;
 
+/**
+ * @author Daniel Danis
+ */
 @CommandLine.Command(name = "generate-config",
         aliases = {"G"},
         header = "Generate a configuration YAML file",

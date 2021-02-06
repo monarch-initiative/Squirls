@@ -89,6 +89,8 @@ import org.monarchinitiative.svart.Variant;
  * <p>
  * Note that although {@link VariantContext} can contain multiple <em>alt</em> alleles, this object represents only
  * a single <em>allele</em>.
+ *
+ * @author Daniel Danis
  */
 public interface WritableSplicingAllele {
 

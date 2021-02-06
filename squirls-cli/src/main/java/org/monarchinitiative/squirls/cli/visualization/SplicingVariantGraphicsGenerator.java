@@ -80,6 +80,8 @@ package org.monarchinitiative.squirls.cli.visualization;
 /**
  * The implementing classes generate an appropriate SVG graphics for any given {@link VisualizableVariantAllele}.
  * The graphics is then returned as a string.
+ *
+ * @author Daniel Danis
  */
 public interface SplicingVariantGraphicsGenerator {
 

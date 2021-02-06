@@ -106,6 +106,7 @@ import static org.monarchinitiative.squirls.core.Utils.slidingWindow;
 
 /**
  * This graphics generator makes graphics for the splice variant.
+ * @author Daniel Danis
  */
 public class PanelGraphicsGenerator implements SplicingVariantGraphicsGenerator {
 

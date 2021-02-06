@@ -81,6 +81,9 @@ import org.monarchinitiative.squirls.cli.writers.html.HtmlResultWriter;
 import org.monarchinitiative.squirls.cli.writers.tabular.TabularResultWriter;
 import org.monarchinitiative.squirls.cli.writers.vcf.VcfResultWriter;
 
+/**
+ * @author Daniel Danis
+ */
 public class ResultWriterFactory {
 
     private final SplicingVariantGraphicsGenerator graphicsGenerator;

@@ -81,6 +81,7 @@ import java.util.Objects;
 
 /**
  * This class represents variant data that is available within the variant box in the HTML report.
+ * @author Daniel Danis
  */
 public class PresentableVariant {
 

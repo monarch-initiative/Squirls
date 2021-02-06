@@ -84,6 +84,8 @@ import org.monarchinitiative.svart.Variant;
 /**
  * This interface specifies what an instance must meet in order to be usable for {@link SplicingVariantGraphicsGenerator}
  * for graphics generation.
+ *
+ * @author Daniel Danis
  */
 public interface VisualizableVariantAllele {
 

@@ -114,6 +114,9 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+/**
+ * @author Daniel Danis
+ */
 @CommandLine.Command(name = "annotate-vcf",
         aliases = {"A"},
         header = "Annotate variants in a VCF file",

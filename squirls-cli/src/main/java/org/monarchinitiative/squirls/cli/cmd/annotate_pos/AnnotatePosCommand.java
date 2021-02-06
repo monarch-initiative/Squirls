@@ -91,6 +91,9 @@ import java.util.stream.Collectors;
 
 import static picocli.CommandLine.Parameters;
 
+/**
+ * @author Daniel Danis
+ */
 @CommandLine.Command(name = "annotate-pos",
         aliases = {"P"},
         header = "Annotate several variant positions",

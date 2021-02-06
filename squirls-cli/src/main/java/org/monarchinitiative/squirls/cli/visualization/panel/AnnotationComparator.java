@@ -86,6 +86,8 @@ import java.util.regex.Pattern;
 /**
  * Comparator that sorts {@link Annotation} by transcript accession IDs to put transcripts with the lowest
  * <em>numbers</em> on top. Here, the <em>number</em> is e.g. <code>1234</code> for <em>NM_1234.5</em>, etc.
+ *
+ * @author Daniel Danis
  */
 class AnnotationComparator implements Comparator<Annotation> {
 

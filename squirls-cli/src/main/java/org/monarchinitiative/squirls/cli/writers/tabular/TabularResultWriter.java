@@ -95,7 +95,8 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 /**
- * Writer for storing <em>n</em> most pathogenic variants in a tabular format
+ * Writer for storing <em>n</em> most pathogenic variants in a tabular format.
+ * @author Daniel Danis
  */
 public class TabularResultWriter implements ResultWriter {
 

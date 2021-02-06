@@ -80,6 +80,7 @@ import java.util.*;
 
 /**
  * Container for analysis results, as presented by the `templates/results.html` template.
+ * @author Daniel Danis
  */
 public class AnalysisResults {
 

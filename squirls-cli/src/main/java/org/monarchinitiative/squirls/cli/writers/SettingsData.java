@@ -76,6 +76,9 @@
 
 package org.monarchinitiative.squirls.cli.writers;
 
+/**
+ * @author Daniel Danis
+ */
 public class SettingsData {
 
     /**

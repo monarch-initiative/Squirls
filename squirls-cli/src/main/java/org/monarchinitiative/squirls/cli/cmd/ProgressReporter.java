@@ -85,6 +85,9 @@ import java.time.Instant;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
+/**
+ * @author Daniel Danis
+ */
 public class ProgressReporter {
 
     protected static final NumberFormat NUMBER_FORMAT;

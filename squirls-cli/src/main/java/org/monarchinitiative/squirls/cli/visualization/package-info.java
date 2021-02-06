@@ -80,5 +80,6 @@
  * for a single {@link org.monarchinitiative.squirls.cli.visualization.VisualizableVariantAllele}.
  *
  * @see org.monarchinitiative.squirls.cli.visualization.panel.PanelGraphicsGenerator
+ * @author Daniel Danis
  */
 package org.monarchinitiative.squirls.cli.visualization;

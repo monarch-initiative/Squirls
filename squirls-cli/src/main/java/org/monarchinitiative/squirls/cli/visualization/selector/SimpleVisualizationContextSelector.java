@@ -76,7 +76,6 @@
 
 package org.monarchinitiative.squirls.cli.visualization.selector;
 
-import org.monarchinitiative.squirls.cli.visualization.MissingFeatureException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -84,6 +83,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+/**
+ * @author Daniel Danis
+ */
 public class SimpleVisualizationContextSelector implements VisualizationContextSelector {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SimpleVisualizationContextSelector.class);

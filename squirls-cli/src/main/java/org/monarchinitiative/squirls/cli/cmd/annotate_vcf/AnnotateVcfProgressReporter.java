@@ -81,6 +81,9 @@ import org.monarchinitiative.squirls.cli.writers.AnalysisStats;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
+/**
+ * @author Daniel Danis
+ */
 class AnnotateVcfProgressReporter extends ProgressReporter {
 
     private final AtomicInteger variantCount = new AtomicInteger();

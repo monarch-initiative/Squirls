@@ -83,6 +83,7 @@ import java.io.IOException;
 
 /**
  * Implementors write {@link AnalysisResults} in different formats.
+ * @author Daniel Danis
  */
 public interface ResultWriter {
 

@@ -98,6 +98,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+/**
+ * @author Daniel Danis
+ */
 @CommandLine.Command(name = "annotate-csv",
         aliases = {"C"},
         header = "Annotate variants stored in tabular file",

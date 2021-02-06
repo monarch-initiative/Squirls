@@ -78,6 +78,7 @@ package org.monarchinitiative.squirls.cli.writers;
 
 /**
  * Squirls reports annotated variants in these formats.
+ * @author Daniel Danis
  */
 public enum OutputFormat {
 

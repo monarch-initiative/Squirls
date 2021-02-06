@@ -88,6 +88,10 @@ import java.util.concurrent.Callable;
 
 import static picocli.CommandLine.Help.Ansi.Style.*;
 
+
+/**
+ * @author Daniel Danis
+ */
 @CommandLine.Command(name = "squirls-cli.jar",
         header = "Super-quick Information Content and Random Forest Learning for Splice Variants\n",
         mixinStandardHelpOptions = true,

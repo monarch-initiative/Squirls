@@ -85,6 +85,9 @@ import org.monarchinitiative.svart.Variant;
 
 import java.util.Objects;
 
+/**
+ * @author Daniel Danis
+ */
 class WritableSplicingAlleleDefault implements WritableSplicingAllele {
 
     private final VariantContext variantContext;

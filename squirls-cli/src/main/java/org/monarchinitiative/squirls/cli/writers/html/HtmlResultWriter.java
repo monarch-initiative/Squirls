@@ -106,6 +106,7 @@ import java.util.stream.Collectors;
 
 /**
  * Write the {@link AnalysisResults} in HTML format.
+ * @author Daniel Danis
  */
 public class HtmlResultWriter implements ResultWriter {
 

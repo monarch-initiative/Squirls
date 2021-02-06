@@ -81,7 +81,9 @@ import org.monarchinitiative.squirls.cli.visualization.SplicingVariantGraphicsGe
 import org.monarchinitiative.squirls.cli.visualization.VisualizableVariantAllele;
 
 /**
- * This class returns the same SVG for each variant. Not really useful for anything except for testing.
+ * This class returns the same SVG for each variant. Not really useful for anything but for testing.
+ *
+ * @author Daniel Danis
  */
 public class ConstantSplicingVariantGraphicsGenerator implements SplicingVariantGraphicsGenerator {
 

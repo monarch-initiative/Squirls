@@ -97,6 +97,9 @@ import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
 
+/**
+ * @author Daniel Danis
+ */
 @Configuration
 @EnableAutoConfiguration
 public abstract class SquirlsCommand implements Callable<Integer> {
