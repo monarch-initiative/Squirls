@@ -292,8 +292,7 @@ public class SquirlsAutoConfiguration {
     @Bean
     public DataSource squirlsDatasource(SquirlsDataResolver squirlsDataResolver) {
         Path datasourcePath = squirlsDataResolver.dataSourcePath();
-
-        String jdbcUrl = String.format("jdbc:h2:file:%s;ACCESS_MODE_DATA=r", datasourcePath);
+        String jdbcUrl = String.format("jdbc:h2:file:%s;ACCESS_MODE_DATA=r", datasourcePath.toFile().getAbsolutePath());
         HikariConfig config = new HikariConfig();
         config.setUsername("sa");
         config.setPassword("sa");
