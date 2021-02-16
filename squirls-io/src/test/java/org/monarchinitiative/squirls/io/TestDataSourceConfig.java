@@ -91,7 +91,7 @@ public class TestDataSourceConfig {
      */
     @Bean
     public DataSource dataSource() {
-        String jdbcUrl = "jdbc:h2:mem:threes";
+        String jdbcUrl = "jdbc:h2:mem:squirls";
         final HikariConfig config = new HikariConfig();
         config.setUsername("sa");
         config.setDriverClassName("org.h2.Driver");

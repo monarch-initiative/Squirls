@@ -79,10 +79,7 @@ package org.monarchinitiative.squirls.io.db;
 import org.monarchinitiative.squirls.core.reference.TranscriptModel;
 import org.monarchinitiative.squirls.core.reference.TranscriptModelService;
 import org.monarchinitiative.squirls.io.SquirlsResourceException;
-import org.monarchinitiative.svart.Contig;
-import org.monarchinitiative.svart.GenomicAssembly;
-import org.monarchinitiative.svart.GenomicRegion;
-import org.monarchinitiative.svart.Strand;
+import org.monarchinitiative.svart.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -144,9 +141,6 @@ public class TranscriptModelServiceDb implements TranscriptModelService {
     }
 
     public int insertTranscript(TranscriptModel transcript) {
-        GenomicRegion region = transcript.toZeroBased();
-        GenomicRegion onPositive = region.toPositiveStrand();
-
         int updated = 0;
 
         String txSql = "insert into SQUIRLS.TRANSCRIPTS(CONTIG, BEGIN, END, " +
@@ -161,18 +155,18 @@ public class TranscriptModelServiceDb implements TranscriptModelService {
                  PreparedStatement exonPs = connection.prepareStatement(exonSql)) {
 
                 // insert transcript data
-                txPs.setInt(1, contigIdMap.getOrDefault(region.contigName(), unknownContigId));
-                txPs.setInt(2, region.start());
-                txPs.setInt(3, region.end());
-                txPs.setInt(4, onPositive.start());
-                txPs.setInt(5, onPositive.end());
+                txPs.setInt(1, contigIdMap.getOrDefault(transcript.contigName(), unknownContigId));
+                txPs.setInt(2, transcript.startWithCoordinateSystem(CoordinateSystem.zeroBased()));
+                txPs.setInt(3, transcript.endWithCoordinateSystem(CoordinateSystem.zeroBased()));
+                txPs.setInt(4, transcript.startOnStrandWithCoordinateSystem(Strand.POSITIVE, CoordinateSystem.zeroBased()));
+                txPs.setInt(5, transcript.endOnStrandWithCoordinateSystem(Strand.POSITIVE, CoordinateSystem.zeroBased()));
                 txPs.setBoolean(6, transcript.strand().isPositive());
                 txPs.setString(7, transcript.accessionId());
                 txPs.setString(8, transcript.hgvsSymbol());
                 if (transcript.isCoding()) {
                     GenomicRegion cds = transcript.cdsRegion().toZeroBased();
-                    txPs.setInt(9, cds.start());
-                    txPs.setInt(10, cds.end());
+                    txPs.setInt(9, cds.startWithCoordinateSystem(CoordinateSystem.zeroBased()));
+                    txPs.setInt(10, cds.endWithCoordinateSystem(CoordinateSystem.zeroBased()));
                 } else {
                     txPs.setNull(9, Types.INTEGER);
                     txPs.setNull(10, Types.INTEGER);
@@ -186,10 +180,10 @@ public class TranscriptModelServiceDb implements TranscriptModelService {
 
                 // insert exons
                 for (int i = 0; i < transcript.exons().size(); i++) {
-                    GenomicRegion exon = transcript.exons().get(i).toZeroBased();
+                    GenomicRegion exon = transcript.exons().get(i);
                     exonPs.setInt(1, txId);
-                    exonPs.setInt(2, exon.start());
-                    exonPs.setInt(3, exon.end());
+                    exonPs.setInt(2, exon.startWithCoordinateSystem(CoordinateSystem.zeroBased()));
+                    exonPs.setInt(3, exon.endWithCoordinateSystem(CoordinateSystem.zeroBased()));
                     exonPs.setInt(4, i);
                     updated += exonPs.executeUpdate();
                 }
@@ -221,7 +215,6 @@ public class TranscriptModelServiceDb implements TranscriptModelService {
 
     @Override
     public List<TranscriptModel> overlappingTranscripts(GenomicRegion query) {
-        GenomicRegion region = query.toPositiveStrand().toZeroBased();
         String sql = "select tx.TX_ID, tx.CONTIG, tx.STRAND, tx.BEGIN, tx.END, " +
                 "  tx.TX_ACCESSION, tx.HGVS_SYMBOL, tx.CDS_START, tx.CDS_END, " +
                 "  e.EXON_NUMBER, e.BEGIN exon_begin, e.END exon_end " +
@@ -233,10 +226,10 @@ public class TranscriptModelServiceDb implements TranscriptModelService {
         try (Connection connection = dataSource.getConnection();
              PreparedStatement statement = connection.prepareStatement(sql)) {
 
-            int contigId = contigIdMap.getOrDefault(region.contigName(), unknownContigId);
+            int contigId = contigIdMap.getOrDefault(query.contigName(), unknownContigId);
             statement.setInt(1, contigId);
-            statement.setInt(2, region.start());
-            statement.setInt(3, region.end());
+            statement.setInt(2, query.startOnStrandWithCoordinateSystem(Strand.POSITIVE, CoordinateSystem.zeroBased()));
+            statement.setInt(3, query.endOnStrandWithCoordinateSystem(Strand.POSITIVE, CoordinateSystem.zeroBased()));
 
             try (ResultSet rs = statement.executeQuery()) {
                 return processTranscriptResultSet(rs);
