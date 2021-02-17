@@ -110,7 +110,6 @@ public class ProgressReporter {
         this.tick = tick;
         begin = Instant.now();
         localBegin = new AtomicReference<>(begin);
-        LOGGER.info("Starting the analysis");
     }
 
     public <T> void logAllele(T allele) {

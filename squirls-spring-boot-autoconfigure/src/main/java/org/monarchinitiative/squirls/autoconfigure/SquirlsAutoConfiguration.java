@@ -156,6 +156,7 @@ public class SquirlsAutoConfiguration {
         if (!Files.isDirectory(dataDirPath)) {
             throw new UndefinedSquirlsResourceException(String.format("Path to Squirls data directory '%s' does not point to real directory", dataDirPath));
         }
+        if (LOGGER.isDebugEnabled()) LOGGER.debug("Setting `squirls.data-directory` to `{}`", dataDirPath.toAbsolutePath());
         return dataDirPath;
     }
 

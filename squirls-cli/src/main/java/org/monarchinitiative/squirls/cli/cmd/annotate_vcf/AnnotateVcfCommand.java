@@ -128,12 +128,6 @@ public class AnnotateVcfCommand extends SquirlsCommand {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AnnotateVcfCommand.class);
 
-    @CommandLine.Option(names = {"-d", "--jannovar-data"},
-            required = true,
-            paramLabel = "hg38_refseq.ser",
-            description = "Path to Jannovar transcript database")
-    public String jannovarDataPath;
-
     @CommandLine.Option(names = {"-f", "--output-format"},
             paramLabel = "html",
             description = "Comma separated list of output formats to use for writing the results (default: ${DEFAULT-VALUE})")
@@ -149,12 +143,17 @@ public class AnnotateVcfCommand extends SquirlsCommand {
             description = "Process variants using n threads (default: ${DEFAULT-VALUE})")
     public int nThreads = 4;
 
-    @CommandLine.Parameters(index = "0",
+    @CommandLine.Parameters(index = "1",
+            paramLabel = "hg38_refseq.ser",
+            description = "Path to Jannovar transcript database")
+    public Path jannovarDataPath;
+
+    @CommandLine.Parameters(index = "2",
             paramLabel = "input.vcf",
             description = "Path to input VCF file")
     public Path inputPath;
 
-    @CommandLine.Parameters(index = "1",
+    @CommandLine.Parameters(index = "3",
             paramLabel = "path/to/output",
             description = "Prefix for the output files")
     public String outputPrefix;
@@ -273,7 +272,6 @@ public class AnnotateVcfCommand extends SquirlsCommand {
     @Override
     public Integer call() {
         try (ConfigurableApplicationContext context = getContext()) {
-            LOGGER.info("Reading variants from `{}`", inputPath);
             Collection<OutputFormat> outputFormats = parseOutputFormats(this.outputFormats);
             VariantSplicingEvaluator evaluator = context.getBean(VariantSplicingEvaluator.class);
             SquirlsDataService dataService = context.getBean(SquirlsDataService.class);
@@ -291,9 +289,10 @@ public class AnnotateVcfCommand extends SquirlsCommand {
 
             JannovarData jd;
             try {
-                jd = new JannovarDataSerializer(jannovarDataPath).load();
+                LOGGER.info("Loading transcript database from `{}`", jannovarDataPath.toAbsolutePath());
+                jd = new JannovarDataSerializer(jannovarDataPath.toAbsolutePath().toString()).load();
             } catch (SerializationException e) {
-                LOGGER.error("Unable to deserialize jannovar data at {}: {}", jannovarDataPath, e.getMessage());
+                LOGGER.error("Unable to deserialize jannovar transcript database: {}", e.getMessage());
                 return 1;
             }
             VariantAnnotator annotator = new VariantAnnotator(jd.getRefDict(), jd.getChromosomes(), new AnnotationBuilderOptions());
@@ -310,6 +309,7 @@ public class AnnotateVcfCommand extends SquirlsCommand {
             ArrayList<String> sampleNames;
             LOGGER.info("Annotating variants on {} threads", nThreads);
             AnnotateVcfProgressReporter progressReporter = new AnnotateVcfProgressReporter(5_000);
+            LOGGER.info("Reading variants from `{}`", inputPath);
             try (VCFFileReader reader = new VCFFileReader(inputPath, false);
                  CloseableIterator<VariantContext> variantIterator = reader.iterator()) {
 
@@ -346,7 +346,7 @@ public class AnnotateVcfCommand extends SquirlsCommand {
                     .addAllSampleNames(sampleNames)
                     .settingsData(SettingsData.builder()
                             .inputPath(inputPath.toString())
-                            .transcriptDb(jannovarDataPath)
+                            .transcriptDb(jannovarDataPath.toAbsolutePath().toString())
                             .nReported(nVariantsToReport)
                             .build())
                     .analysisStats(progressReporter.getAnalysisStats())

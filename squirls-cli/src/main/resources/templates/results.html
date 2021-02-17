@@ -176,18 +176,18 @@
                   <h2>Analysis input</h2>
                   <h3>Analyzed variants</h3>
                   <p>
-                      We analyzed VCF file with variants located at:
+                      Squirls analyzed variants stored in the VCF file located at:
                   </p>
                   <p><div class="input-resource" th:text="${settings.getInputPath()}">/path/to/file.vcf</div></p>
 
                   <h3>Transcript database</h3>
                   <p>
-                      We use
+                      Squirls uses
                       <a href="https://github.com/charite/jannovar/">Jannovar</a>
                       library to perform functional annotation of variants
-                      <em>wrt.</em> genes and transcripts.
-                      For this analysis, the transcript definitions were read
-                      from the database file located at:
+                      with respect to genes and transcripts.
+                      The transcript definitions for the analysis were read
+                      from the database file at:
                   </p>
                   <p><div class="input-resource" th:text="${settings.getTranscriptDb()}">/path/to/jannovar.ser</div></p>
 
@@ -207,19 +207,19 @@
 
                   <table class="table table-striped">
                       <tr>
-                          <td>number of variants in the VCF file</td>
+                          <td>Number of variants in the VCF file</td>
                           <td th:text="${stats.allVariants()}">100</td>
                       </tr>
                       <tr>
-                          <td>number of distinct <em>ALT</em> alleles in the VCF file</td>
+                          <td>Number of distinct <em>ALT</em> alleles in the VCF file</td>
                           <td th:text="${stats.alleleCount()}">120</td>
                       </tr>
                       <tr>
-                          <td>number of <em>ALT</em> alleles annotated by Squirls</td>
+                          <td>Number of <em>ALT</em> alleles annotated by Squirls</td>
                           <td th:text="${stats.annotatedAlleleCount()}">110</td>
                       </tr>
                       <tr>
-                          <td>number of reported variants</td>
+                          <td>Number of reported variants</td>
                           <td th:text="${variants.size()}">100</td>
                       </tr>
                   </table>
@@ -240,12 +240,9 @@
                         <b><em th:text="${variant.getGeneSymbol()}">SURF2</em></b>
                     </div>
                     <div class="col-md-4">
-                        Pathogenicity:
+                        Squirls score:
                         <b th:text="${#numbers.formatDecimal(variant.getMaxPathogenicity(), 1, 3)}">0.89</b>
                     </div>
-                    <!-- <div class="col-md-4"> -->
-                        <!-- <span th:remove="tag" th:text="${variant_is.index + 1}">1</span> -->
-                    <!-- </div> -->
                 </div>
             </div>
             <div class="panel-body">

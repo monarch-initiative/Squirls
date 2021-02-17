@@ -113,8 +113,9 @@ public class AnnotatePosCommand extends SquirlsCommand {
     public List<String> rawChanges;
 
     @Override
-    public Integer call() throws Exception {
+    public Integer call() {
         try (ConfigurableApplicationContext context = getContext()) {
+            rawChanges.remove(0); // path to the config file
             LOGGER.info("Changes: {}", rawChanges);
             SquirlsDataService squirlsDataService = context.getBean(SquirlsDataService.class);
             Set<String> knownContigs = squirlsDataService.knownContigNames();

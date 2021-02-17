@@ -101,7 +101,7 @@ import java.util.stream.Collectors;
 public class TabularResultWriter implements ResultWriter {
 
     private static final List<String> HEADER = List.of("chrom", "pos", "ref", "alt",
-            "gene_symbol", "tx_accession", "pathogenic", "squirls_score");
+            "gene_symbol", "tx_accession", "interpretation", "squirls_score");
 
     private final String fileExtension;
 
@@ -121,7 +121,7 @@ public class TabularResultWriter implements ResultWriter {
             }
 
             // we write the following fields
-            // "chrom", "pos", "ref", "alt", "gene_symbol", "tx_accession", "pathogenic", "squirls_score"
+            // "chrom", "pos", "ref", "alt", "gene_symbol", "tx_accession", "interpretation", "squirls_score"
             String contig = vc.getContig();
             int pos = vc.getStart();
             String ref = vc.getReference().getDisplayString();
@@ -134,10 +134,10 @@ public class TabularResultWriter implements ResultWriter {
                     .forEachOrdered(result -> {
                         String txAccession = result.accessionId();
                         String geneSymbol = accessionToGene.getOrDefault(txAccession, "N/A");
-                        boolean isPathogenic = result.prediction().isPositive();
+                        String interpretation = result.prediction().isPositive() ? "pathogenic" : "neutral";
                         double squirlsScore = result.prediction().getMaxPathogenicity();
                         try {
-                            printer.printRecord(contig, pos, ref, alt, geneSymbol, txAccession, isPathogenic, squirlsScore);
+                            printer.printRecord(contig, pos, ref, alt, geneSymbol, txAccession, interpretation, squirlsScore);
                         } catch (IOException e) {
                             LOGGER.warn("Error writing variant {}: {}", vc, e.getMessage());
                         }
@@ -148,7 +148,7 @@ public class TabularResultWriter implements ResultWriter {
     @Override
     public void write(AnalysisResults results, String prefix) throws IOException {
         Path outputPath = Paths.get(prefix + '.' + fileExtension);
-        LOGGER.info("Writing VCF output to `{}`", outputPath);
+        LOGGER.info("Writing tabular output to `{}`", outputPath);
 
         try (CSVPrinter printer = CSVFormat.newFormat(columnSeparator)
                 .withRecordSeparator('\n')

@@ -114,12 +114,12 @@ public class AnnotateCsvCommand extends SquirlsCommand {
 
     private static final List<String> EXPECTED_HEADER = List.of("CHROM", "POS", "REF", "ALT");
 
-    @CommandLine.Parameters(index = "0",
+    @CommandLine.Parameters(index = "1",
             paramLabel = "input.csv",
             description = "Path to the input tabular file")
     public Path inputPath;
 
-    @CommandLine.Parameters(index = "1",
+    @CommandLine.Parameters(index = "2",
             paramLabel = "output.csv",
             description = "Where to write the output")
     public Path outputPath;
@@ -128,8 +128,8 @@ public class AnnotateCsvCommand extends SquirlsCommand {
     @Override
     public Integer call() {
         try (ConfigurableApplicationContext context = getContext()) {
-            LOGGER.info("Reading variants from `{}`", inputPath);
-            LOGGER.info("Writing annotated variants to `{}`", outputPath);
+            LOGGER.info("Reading variants from `{}`", inputPath.toAbsolutePath());
+            LOGGER.info("Writing annotated variants to `{}`", outputPath.toAbsolutePath());
 
             VariantSplicingEvaluator evaluator = context.getBean(VariantSplicingEvaluator.class);
             SquirlsDataService dataService = context.getBean(SquirlsDataService.class);
@@ -138,7 +138,7 @@ public class AnnotateCsvCommand extends SquirlsCommand {
             // make header
             List<String> header = new ArrayList<>();
             header.addAll(EXPECTED_HEADER);
-            header.addAll(List.of("PATHOGENIC", "MAX_SCORE", "SCORES"));
+            header.addAll(List.of("INTERPRETATION", "MAX_SCORE", "SCORES"));
 
             try (CSVParser parser = CSVFormat.DEFAULT.withFirstRecordAsHeader()
                     .parse(Files.newBufferedReader(inputPath));
@@ -191,8 +191,8 @@ public class AnnotateCsvCommand extends SquirlsCommand {
                         }
                         isSpliceVariant = isSpliceVariant || prediction.isPositive();
                     }
-
-                    printer.printRecord(chrom, pos, ref, alt, isSpliceVariant, maxScore, processScores(predictionMap));
+                    String isSpliceVariantColumn = isSpliceVariant ? "pathogenic" : "neutral";
+                    printer.printRecord(chrom, pos, ref, alt, isSpliceVariantColumn, maxScore, processScores(predictionMap));
                 }
 
             } catch (IOException e) {

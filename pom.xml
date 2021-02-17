@@ -23,7 +23,7 @@
         <java.version>11</java.version>
 
         <svart.version>1.0.0</svart.version>
-        <vmvt.version>0.9.3-SNAPSHOT</vmvt.version> <!-- TODO - update -->
+        <vmvt.version>0.9.3</vmvt.version>
         <htsjdk.version>2.23.0</htsjdk.version>
         <jannovar.version>0.35</jannovar.version>
         <apiguardian.version>1.1.0</apiguardian.version>
