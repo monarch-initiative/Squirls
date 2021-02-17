@@ -1,7 +1,7 @@
 .. _rstsetup:
 
-Setting up Squirls
-==================
+Set up Squirls
+==============
 
 Squirls is a desktop Java application that requires several external files to run. This document explains how to download
 these files and prepare to run Squirls.
@@ -27,10 +27,10 @@ Squirls database files
 Squirls database files are available for download from:
 
 **hg19/GRCh37**
-  `Download 2011_hg19 <https://squirls.s3.amazonaws.com/2011_hg19.zip>`_ (~10.5 GB for download, ~15 GB unpacked)
+  `Download 2102_hg19 <https://squirls.s3.amazonaws.com/2102_hg19.zip>`_ (~10.5 GB for download, ~15 GB unpacked)
 
 **hg38/GRCh38**
-  `Download 2011_hg38 <https://squirls.s3.amazonaws.com/2011_hg38.zip>`_ (~11.1 GB for download, ~16.5 GB unpacked)
+  `Download 2102_hg38 <https://squirls.s3.amazonaws.com/2102_hg38.zip>`_ (~11.1 GB for download, ~16.5 GB unpacked)
 
 After the download, unzip the archive(s) content into a folder and note the folder path.
 
@@ -39,8 +39,8 @@ After the download, unzip the archive(s) content into a folder and note the fold
 Jannovar transcript databases
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Functional annotation of variants that is required for some Squirls is performed using `Jannovar`_ library. To run the
-annotation, Jannovar transcript database files need to be provided. The Jannovar ``v0.35`` database files were
+Functional annotation of variants, which is required for certain Squirls tasks, is performed using `Jannovar`_ library.
+To run the annotation, Jannovar transcript database files need to be provided. The Jannovar ``v0.35`` database files were
 tested to work with Squirls.
 
 For your convenience, the files containing *UCSC*, *RefSeq*, or *ENSEMBL* transcripts
@@ -52,7 +52,7 @@ for *hg19* or *hg38* genome assemblies are available for download (~330 MB for d
 Build Squirls from source
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
-As an alternative to using pre-built Squirls JAR file, the Squirls JAR file can also be built from source.
+As an alternative to using prebuilt Squirls JAR file, the Squirls JAR file can also be built from Java sources.
 
 Run the following commands to download Squirls source code from GitHub repository and to build Squirls JAR file::
 
@@ -60,7 +60,10 @@ Run the following commands to download Squirls source code from GitHub repositor
   $ cd Squirls
   $ ./mvnw package
 
-The JAR file is located at ``squirls-cli/target/squirls-cli-1.0.0.jar``.
+.. note::
+  To build Squirls from sources, JDK 11 or better must be available in the environment
+
+After the successful build, the JAR file is located at ``squirls-cli/target/squirls-cli-1.0.0.jar``.
 
 To verify that the building process went well, run::
 
@@ -71,13 +74,13 @@ To verify that the building process went well, run::
 ``generate-config`` - Generate and fill the configuration file
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Squirls needs to know about the location of the external files that are required to run the analysis. The location along
-with other details are provided in a YAML configuration file. The command ``generate-config`` generates an empty
-configuration file. By running ::
+Squirls needs to know about the locations of the external files. The locations are provided in a YAML configuration file.
+The command ``generate-config`` generates an empty configuration file::
 
-  $ java -jar squirls-cli.jar generate-config squirls_config.yml
+  $ java -jar squirls-cli.jar generate-config squirls-config.yml
 
-an empty configuration file ``squirls_config.yml`` is generated in the current working directory.
+
+The command above generates an empty configuration file ``squirls-config.yml`` in the working directory.
 
 The configuration file has the following content::
 
@@ -95,33 +98,40 @@ The configuration file has the following content::
 
     #classifier:
     # Which classifier to use
-    #version: v0.4.4
+    #version: v0.4.6
     #annotator:
     # Which splicing annotator to use
     #  version: agez
 
+
+Mandatory parameters
+~~~~~~~~~~~~~~~~~~~~
+
 Open the file in your favorite text editor and provide the following three bits of information:
 
-``squirls.data-directory`` - location the the folder with Squirls data. The directory is expected to have a structure like::
+- ``squirls.data-directory`` - location the the folder with Squirls data. The directory is expected to have a structure like::
 
-  squirls_folder
-     |- 1902_hg19:
-     |   |- 1902_hg19.fa
-     |   |- 1902_hg19.fa.dict
-     |   |- 1902_hg19.fa.fai
-     |   |- 1902_hg19.phylop.bw
-     |   \- 1902_hg19_splicing.mv.db
-     \- 1902_hg38
-         |- 1902_hg38.fa
-         ...
+    squirls_folder
+       |- 1902_hg19:
+       |   |- 1902_hg19.fa
+       |   |- 1902_hg19.fa.dict
+       |   |- 1902_hg19.fa.fai
+       |   |- 1902_hg19.phylop.bw
+       |   \- 1902_hg19_splicing.mv.db
+       \- 1902_hg38
+           |- 1902_hg38.fa
+           ...
 
-where ``1902_hg19``, ``1902_hg38`` correspond to content of the ZIP files downloaded in the previous section
+  where ``1902_hg19``, ``1902_hg38`` correspond to content of the ZIP files downloaded in the previous section
 
-``squirls.genome-assembly`` - which genome assembly to use, choose from ``{hg19, hg38}``
+- ``squirls.genome-assembly`` - which genome assembly to use, choose from ``{hg19, hg38}``
 
-``squirls.data-version`` - which data version to use, the data version corresponds to ``1902`` in the example above
+- ``squirls.data-version`` - which data version to use, the data version corresponds to ``1902`` in the example above
 
-**Optional parameters:**
-``squirls.max-variant-length`` - set the maximal length of the variant to be analyzed, this is ``100`` by default
+
+Optional parameters
+~~~~~~~~~~~~~~~~~~~
+
+- ``squirls.max-variant-length`` - set the maximal length of the variant to be analyzed (``100 bp`` by default)
 
 .. _Jannovar: https://pubmed.ncbi.nlm.nih.gov/24677618

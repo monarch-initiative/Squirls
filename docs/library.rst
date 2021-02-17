@@ -8,10 +8,24 @@ Squirls has been designed to be used as a library within a larger frameworks for
 document explains how to use Squirls *API* classes to enable including splicing deleteriousness predictions into a Java
 software.
 
+The following sections describe how to use Squirls as a module in other Java tool.
+
+Install Squirls modules into your local Maven repository
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Please run the following command to install Squirls into the local Maven repository::
+
+  git checkout https://github.com/TheJacksonLaboratory/Squirls
+  cd Squirls
+  ./mvnw install
+
+.. note::
+  The installation requires JDK11+ to be present on the platform
+
 Spring Boot application
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-When the dependency::
+After the successful installation, add the following dependency into your ``pom.xml`` to use Squirls in a Spring boot app::
 
   <dependency>
     <groupId>org.monarchinitiative.squirls</groupId>
@@ -19,22 +33,20 @@ When the dependency::
     <version>1.0.0</version>
   </dependency>
 
-is added into the ``pom.xml`` file, then the ``VariantSplicingEvaluator`` bean is automatically configured by Spring,
-provided that the environment properties
+After adding the dependency, Spring configures ``VariantSplicingEvaluator`` bean, provided that the environment properties
 
 - ``squirls.data-directory``
 - ``squirls.genome-assembly``
 - ``squirls.data-version``
 
-are set to valid values.
+are set to proper values.
 
-The ``VariantSplicingEvaluator`` provides methods for calculating ``SquirlsResult`` from variant coordinates described
-using Java primitives:
+The ``VariantSplicingEvaluator`` provides the following methods to calculate ``SquirlsResult`` for a ``Variant`` specified by
+`Svart`_ library::
 
-- ``SquirlsResult evaluate(String contig, int pos, String ref, String alt)``
-- ``SquirlsResult evaluate(String contig, int pos, String ref, String alt, Set<String> txIds)``
-
-The first method calculates the results *wrt.* all transcripts that overlap the variant site, the second method narrows
-the calculation down to provided transcript accession IDs (e.g. ``NM_000111.2``).
+  SquirlsResult evaluate(Variant variant, Set<String> txIds);
+  SquirlsResult evaluate(Variant variant);
 
 Please see the corresponding *Javadocs* to learn more about ``VariantSplicingEvaluator``, ``SquirlsResult``, etc.
+
+.. _Svart: https://github.com/exomiser/svart
