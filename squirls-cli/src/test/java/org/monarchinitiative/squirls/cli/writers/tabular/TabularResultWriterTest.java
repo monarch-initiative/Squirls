@@ -150,8 +150,8 @@ public class TabularResultWriterTest {
         }
 
         assertThat(lines, hasSize(nVariantsToReport + 1)); // + header line
-        assertThat(lines, hasItem("chrom\tpos\tref\talt\tgene_symbol\ttx_accession\tpathogenic\tsquirls_score"));
-        assertThat(lines, hasItem("13\t32930748\tT\tG\tBRCA2\tNM_000059.3\ttrue\t0.95"));
-        assertThat(lines, hasItem("1\t21894739\tA\tG\tALPL\tNM_000478.4\ttrue\t0.94"));
+        assertThat(lines, hasItem("chrom\tpos\tref\talt\tgene_symbol\ttx_accession\tinterpretation\tsquirls_score"));
+        assertThat(lines, hasItem("13\t32930748\tT\tG\tBRCA2\tNM_000059.3\tpathogenic\t0.95"));
+        assertThat(lines, hasItem("1\t21894739\tA\tG\tALPL\tNM_000478.4\tpathogenic\t0.94"));
     }
 }
