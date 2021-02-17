@@ -7,7 +7,7 @@
     <groupId>org.monarchinitiative.squirls</groupId>
     <artifactId>Squirls</artifactId>
     <packaging>pom</packaging>
-    <version>1.0.0-RC4-SNAPSHOT</version>
+    <version>1.0.0-RC4</version>
     <modules>
         <module>squirls-core</module>
         <module>squirls-io</module>
@@ -16,6 +16,9 @@
         <module>squirls-spring-boot-autoconfigure</module>
         <module>squirls-spring-boot-starter</module>
     </modules>
+
+    <name>Squirls</name>
+    <description>Super-Quick Information Content and Random Forest Learning for Splice Variants</description>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

@@ -100,7 +100,8 @@ import static picocli.CommandLine.Help.Ansi.Style.*;
         footer = Main.FOOTER)
 public class Main implements Callable<Integer> {
 
-    public static final String VERSION = "squirls v1.0.0-RC4-SNAPSHOT";
+    public static final String VERSION = "squirls v1.0.0-RC4";
+
     public static final int WIDTH = 120;
 
     public static final String FOOTER = "See the full documentation at https://squirls.readthedocs.io/en/latest/";
@@ -125,7 +126,7 @@ public class Main implements Callable<Integer> {
 
 
     @Override
-    public Integer call() throws Exception {
+    public Integer call() {
         // work done in subcommands
         return 0;
     }
