@@ -113,12 +113,14 @@ import org.springframework.context.annotation.Configuration;
 
 import javax.sql.DataSource;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Properties;
 import java.util.stream.Collectors;
 
 
@@ -145,6 +147,10 @@ public class SquirlsAutoConfiguration {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SquirlsAutoConfiguration.class);
 
+    private static final Properties properties = readProperties();
+
+    private static final String SQUIRLS_VERSION = properties.getProperty("squirls.version", "unknown version");
+
     @Bean
     @ConditionalOnMissingBean(name = "squirlsDataDirectory")
     public Path squirlsDataDirectory(SquirlsProperties properties) throws UndefinedSquirlsResourceException {
@@ -156,7 +162,7 @@ public class SquirlsAutoConfiguration {
         if (!Files.isDirectory(dataDirPath)) {
             throw new UndefinedSquirlsResourceException(String.format("Path to Squirls data directory '%s' does not point to real directory", dataDirPath));
         }
-        if (LOGGER.isDebugEnabled()) LOGGER.debug("Setting `squirls.data-directory` to `{}`", dataDirPath.toAbsolutePath());
+        if (LOGGER.isInfoEnabled()) LOGGER.info("Spooling up Squirls v{} using resources in `{}`", SQUIRLS_VERSION, dataDirPath.toAbsolutePath());
         return dataDirPath;
     }
 
@@ -302,5 +308,16 @@ public class SquirlsAutoConfiguration {
         config.setPoolName("squirls-pool");
 
         return new HikariDataSource(config);
+    }
+
+    private static Properties readProperties() {
+        Properties properties = new Properties();
+
+        try (InputStream is = SquirlsAutoConfiguration.class.getResourceAsStream("/squirls.properties")) {
+            properties.load(is);
+        } catch (IOException e) {
+            if (LOGGER.isWarnEnabled()) LOGGER.warn("Error loading properties: {}", e.getMessage());
+        }
+        return properties;
     }
 }
