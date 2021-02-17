@@ -7,3 +7,4 @@ Release checklist items:
   - `pom.xml`
   - documentation
   - `org.monarchinitiative.squirls.cli.Main`
+  - `org.monarchinitiative.squirls.ingest.Main`
