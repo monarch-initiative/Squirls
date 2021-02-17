@@ -263,6 +263,7 @@ public class SquirlsDataBuilder {
         es.submit(new UrlResourceDownloader(genomeAssemblyReport, genomeAssemblyReportPath, false));
 
         // 1 - deserialize Jannovar transcript databases
+        LOGGER.info("Loading transcripts from Jannovar transcript databases located in `{}`", jannovarDbDir);
         JannovarDataManager manager = JannovarDataManager.fromDirectory(jannovarDbDir);
 
         // 2a - parse YAML with splicing matrices

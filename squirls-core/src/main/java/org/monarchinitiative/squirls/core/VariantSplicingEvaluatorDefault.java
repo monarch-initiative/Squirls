@@ -147,7 +147,6 @@ class VariantSplicingEvaluatorDefault implements VariantSplicingEvaluator {
          0 - perform some sanity checks at the beginning.
          */
         if (!squirlsDataService.knownContigNames().contains(variant.contigName())) {
-            // TODO - check if the contig accession matches
             // unknown contig, nothing to be done here
             if (LOGGER.isWarnEnabled())
                 LOGGER.warn("Unknown contig for variant {}:{}{}>{}", variant.contigName(), variant.start(), variant.ref(), variant.alt());

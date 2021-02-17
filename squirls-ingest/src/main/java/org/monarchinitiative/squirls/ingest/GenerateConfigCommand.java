@@ -74,15 +74,47 @@
  * Daniel Danis, Peter N Robinson, 2020
  */
 
-package org.monarchinitiative.squirls.ingest.cmd;
+package org.monarchinitiative.squirls.ingest;
 
-import net.sourceforge.argparse4j.inf.Namespace;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import picocli.CommandLine;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
+import java.util.concurrent.Callable;
 
 /**
- * Base CLI command within the ingest module.
  * @author Daniel Danis
  */
-public abstract class IngestCommand {
+@CommandLine.Command(name = "generate-config",
+        aliases = {"G"},
+        header = "Generate a configuration YAML file",
+        mixinStandardHelpOptions = true,
+        version = Main.VERSION,
+        usageHelpWidth = Main.WIDTH,
+        footer = Main.FOOTER)
+public class GenerateConfigCommand implements Callable<Integer> {
 
-    public abstract void run(Namespace args) throws Exception;
+    private static final Logger LOGGER = LoggerFactory.getLogger(GenerateConfigCommand.class);
+
+    @CommandLine.Parameters(arity = "1",
+            description = "Configuration file path",
+            defaultValue = "squirls-config.yml")
+    public Path outputPath;
+
+    @Override
+    public Integer call() {
+        LOGGER.info("Generating config template to `{}`", outputPath.toAbsolutePath());
+        try (InputStream is = GenerateConfigCommand.class.getResourceAsStream("/application-template.yml")) {
+            Files.copy(is, outputPath, StandardCopyOption.REPLACE_EXISTING);
+        } catch (IOException e) {
+            LOGGER.error("Error: {}", e.getMessage());
+            return 1;
+        }
+        return 0;
+    }
 }

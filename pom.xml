@@ -28,7 +28,6 @@
         <jannovar.version>0.35</jannovar.version>
         <apiguardian.version>1.1.0</apiguardian.version>
         <picocli.version>4.5.2</picocli.version>
-        <argparse.version>0.8.1</argparse.version>
         <commons-csv.version>1.7</commons-csv.version>
         <spring-boot-starter.version>2.2.1.RELEASE</spring-boot-starter.version>
         <h2.version>1.4.200</h2.version>
@@ -146,12 +145,6 @@
                 <groupId>info.picocli</groupId>
                 <artifactId>picocli</artifactId>
                 <version>${picocli.version}</version>
-            </dependency>
-
-            <dependency> <!-- remove in favor of Picocli -->
-                <groupId>net.sourceforge.argparse4j</groupId>
-                <artifactId>argparse4j</artifactId>
-                <version>${argparse.version}</version>
             </dependency>
 
             <!--                TEST                    -->

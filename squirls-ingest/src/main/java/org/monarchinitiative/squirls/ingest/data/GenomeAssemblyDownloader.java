@@ -131,7 +131,7 @@ public final class GenomeAssemblyDownloader implements Runnable {
         }
         try {
             // 1 - download genome tar.gz archive into a temporary location
-            File genomeTarGz = File.createTempFile("threes-genome-downloader", ".tar.gz");
+            File genomeTarGz = File.createTempFile("squirls-genome-downloader", ".tar.gz");
             genomeTarGz.deleteOnExit();
             UrlResourceDownloader downloader = new UrlResourceDownloader(genomeUrl, genomeTarGz.toPath());
             downloader.run(); // on the same thread!

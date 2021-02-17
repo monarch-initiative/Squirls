@@ -126,15 +126,6 @@ public class JannovarDataManager {
      * @return instance with loaded Jannovar data
      */
     public static JannovarDataManager fromPaths(Path... paths) {
-        /*
-        Jannovar data parsing is delegated to Exomiser's `JannovarDataSourceLoader` class.
-        This way we handle correctly deserialization of both types of Jannovar cache:
-         - Jannovar's native cache
-         - Exomiser's improved protobuf-based cache .
-
-        Unfortunately, in order to support this, we have to depend on `exomiser.core` JAR which is not yet
-        available in Maven central.
-        */
         Set<JannovarData> data = Arrays.stream(paths)
                 .map(loadJannovarData())
                 .filter(Optional::isPresent)
