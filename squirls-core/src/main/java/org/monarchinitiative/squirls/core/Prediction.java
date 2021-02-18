@@ -76,18 +76,34 @@
 
 package org.monarchinitiative.squirls.core;
 
+import org.apiguardian.api.API;
+
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
 
 /**
  * A prediction made by the {@link org.monarchinitiative.squirls.core.classifier.SquirlsClassifier} with respect
  * to a single transcript.
+ * @author Daniel Danis
  */
-@SquirlsApi
+@API(status = API.Status.STABLE, since = "1.0.0")
 public interface Prediction extends Comparable<Prediction> {
 
     Comparator<Prediction> PREDICTION_COMPARATOR = Comparator.comparing(Prediction::getMaxPathogenicity)
             .thenComparing(Prediction::isPositive);
+
+    static Prediction of(String name, double value, double threshold) {
+        return of(PartialPrediction.of(name, value, threshold));
+    }
+
+    static Prediction of(PartialPrediction... partials) {
+        return of(Arrays.asList(partials));
+    }
+
+    static Prediction of(Collection<PartialPrediction> partials) {
+        return PredictionDefault.of(partials);
+    }
 
     static Prediction emptyPrediction() {
         return PredictionEmpty.getInstance();
@@ -104,7 +120,9 @@ public interface Prediction extends Comparable<Prediction> {
     /**
      * @return <code>true</code> if binary classifier considers this {@link Prediction} to be positive
      */
-    boolean isPositive();
+    default boolean isPositive() {
+        return getPartialPredictions().stream().anyMatch(PartialPrediction::isPathogenic);
+    }
 
     default boolean isEmpty() {
         return this.equals(emptyPrediction());

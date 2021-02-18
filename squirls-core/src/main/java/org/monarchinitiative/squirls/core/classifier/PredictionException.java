@@ -78,6 +78,7 @@ package org.monarchinitiative.squirls.core.classifier;
 
 /**
  * An exception thrown when unable to perform prediction.
+ * @author Daniel Danis
  */
 public class PredictionException extends Exception {
 

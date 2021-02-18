@@ -76,15 +76,16 @@
 
 package org.monarchinitiative.squirls.core.scoring.calculators;
 
-import de.charite.compbio.jannovar.reference.GenomeVariant;
-import org.monarchinitiative.squirls.core.model.SplicingTranscript;
+import org.monarchinitiative.squirls.core.reference.StrandedSequence;
+import org.monarchinitiative.squirls.core.reference.TranscriptModel;
 import org.monarchinitiative.squirls.core.scoring.calculators.conservation.BigWigAccessor;
-import xyz.ielis.hyperutil.reference.fasta.SequenceInterval;
+import org.monarchinitiative.svart.Variant;
 
 import java.util.List;
 
 /**
- * This class operates on a bigWig file and gets score for a given {@link GenomeVariant} from a bigWig file.
+ * This class operates on a bigWig file and gets score for a given {@link Variant} from a bigWig file.
+ * @author Daniel Danis
  */
 public class BigWig implements FeatureCalculator {
 
@@ -104,8 +105,8 @@ public class BigWig implements FeatureCalculator {
      * @return score for given <code>variant</code> as described above
      */
     @Override
-    public double score(GenomeVariant variant, SplicingTranscript transcript, SequenceInterval sequence) {
-        final List<Float> scores = accessor.getScores(variant.getGenomeInterval());
+    public double score(Variant variant, TranscriptModel transcript, StrandedSequence sequence) {
+        List<Float> scores = accessor.getScores(variant);
         return scores.stream()
                 .mapToDouble(Float::doubleValue)
                 .average()

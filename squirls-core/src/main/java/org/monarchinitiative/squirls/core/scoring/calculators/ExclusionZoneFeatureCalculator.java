@@ -76,11 +76,11 @@
 
 package org.monarchinitiative.squirls.core.scoring.calculators;
 
-import de.charite.compbio.jannovar.reference.GenomeVariant;
-import org.monarchinitiative.squirls.core.model.SplicingTranscript;
-import org.monarchinitiative.squirls.core.reference.allele.AlleleGenerator;
-import org.monarchinitiative.squirls.core.reference.transcript.SplicingTranscriptLocator;
-import xyz.ielis.hyperutil.reference.fasta.SequenceInterval;
+import org.monarchinitiative.squirls.core.reference.AlleleGenerator;
+import org.monarchinitiative.squirls.core.reference.StrandedSequence;
+import org.monarchinitiative.squirls.core.reference.TranscriptModel;
+import org.monarchinitiative.squirls.core.reference.TranscriptModelLocator;
+import org.monarchinitiative.svart.Variant;
 
 import java.util.regex.Pattern;
 
@@ -90,11 +90,12 @@ import java.util.regex.Pattern;
  * <p>
  * To simplify things, AGEZ is not defined specifically for each transcript, but as a region spanning (-51,-3] positions
  * upstream from the acceptor site.
+ * @author Daniel Danis
  */
 public class ExclusionZoneFeatureCalculator extends BaseAgezCalculator {
 
     /**
-     * Default AGEZ begin and end coordinates.
+     * Default AGEZ 0-based begin and end coordinates.
      */
     public static final int AGEZ_BEGIN = -51, AGEZ_END = -3;
 
@@ -118,7 +119,7 @@ public class ExclusionZoneFeatureCalculator extends BaseAgezCalculator {
      * @param agezEnd   0-based (included) end position of AGEZ with respect to intron|exon boundary, e.g. -3
      * @param pattern   pattern to use for matching the acceptor snippet
      */
-    private ExclusionZoneFeatureCalculator(SplicingTranscriptLocator locator, int agezBegin, int agezEnd, Pattern pattern) {
+    private ExclusionZoneFeatureCalculator(TranscriptModelLocator locator, int agezBegin, int agezEnd, Pattern pattern) {
         super(locator, agezBegin, agezEnd);
         this.pattern = pattern;
     }
@@ -128,7 +129,7 @@ public class ExclusionZoneFeatureCalculator extends BaseAgezCalculator {
      * @param agezBegin 0-based (excluded) begin position of AGEZ with respect to intron|exon boundary, e.g -51
      * @param agezEnd   0-based (included) end position of AGEZ with respect to intron|exon boundary, e.g. -3
      */
-    public static ExclusionZoneFeatureCalculator makeAgCalculator(SplicingTranscriptLocator locator, int agezBegin, int agezEnd) {
+    public static ExclusionZoneFeatureCalculator makeAgCalculator(TranscriptModelLocator locator, int agezBegin, int agezEnd) {
         return new ExclusionZoneFeatureCalculator(locator, agezBegin, agezEnd, AG_PATTERN);
     }
 
@@ -139,7 +140,7 @@ public class ExclusionZoneFeatureCalculator extends BaseAgezCalculator {
      * @param agezBegin 0-based (excluded) begin position of AGEZ with respect to intron|exon boundary, e.g -51
      * @param agezEnd   0-based (included) end position of AGEZ with respect to intron|exon boundary, e.g. -3
      */
-    public static ExclusionZoneFeatureCalculator makeYagCalculator(SplicingTranscriptLocator locator, int agezBegin, int agezEnd) {
+    public static ExclusionZoneFeatureCalculator makeYagCalculator(TranscriptModelLocator locator, int agezBegin, int agezEnd) {
         return new ExclusionZoneFeatureCalculator(locator, agezBegin, agezEnd, YAG_PATTERN);
     }
 
@@ -154,14 +155,14 @@ public class ExclusionZoneFeatureCalculator extends BaseAgezCalculator {
      * sufficient nucleotide sequence
      */
     @Override
-    public double score(GenomeVariant variant, SplicingTranscript transcript, SequenceInterval sequence) {
+    public double score(Variant variant, TranscriptModel transcript, StrandedSequence sequence) {
         if (!overlapsWithAgezRegion(variant, transcript)) {
             return 0.;
         }
 
         // get alleles padded by 1 bp from each side
-        final String refAllele = AlleleGenerator.getPaddedAllele(variant.getGenomeInterval(), sequence, variant.getRef(), 2);
-        final String altAllele = AlleleGenerator.getPaddedAllele(variant.getGenomeInterval(), sequence, variant.getAlt(), 2);
+        String refAllele = AlleleGenerator.getPaddedAllele(variant, sequence, variant.ref(), 2);
+        String altAllele = AlleleGenerator.getPaddedAllele(variant, sequence, variant.alt(), 2);
         if (refAllele == null || altAllele == null) {
             // unable to create padded alleles due to insufficient sequence. This should not happen since we fetch
             // the entire sequence of the transcript region +- padding

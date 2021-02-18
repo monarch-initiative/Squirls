@@ -76,19 +76,17 @@
 
 package org.monarchinitiative.squirls.core.scoring.calculators;
 
-import de.charite.compbio.jannovar.reference.GenomePosition;
-import de.charite.compbio.jannovar.reference.GenomeVariant;
-import org.monarchinitiative.squirls.core.reference.SplicingLocationData;
-import org.monarchinitiative.squirls.core.reference.allele.AlleleGenerator;
-import org.monarchinitiative.squirls.core.reference.transcript.SplicingTranscriptLocator;
+import org.monarchinitiative.squirls.core.reference.*;
 import org.monarchinitiative.squirls.core.scoring.calculators.ic.SplicingInformationContentCalculator;
+import org.monarchinitiative.svart.GenomicRegion;
+import org.monarchinitiative.svart.Variant;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import xyz.ielis.hyperutil.reference.fasta.SequenceInterval;
 
 /**
  * This class calculates <code>wt_ri_donor</code> feature - individual information of the <em>wt/ref</em> allele of the
  * donor site.
+ * @author Daniel Danis
  */
 public class WtRiDonor extends BaseFeatureCalculator {
 
@@ -96,23 +94,34 @@ public class WtRiDonor extends BaseFeatureCalculator {
 
     public WtRiDonor(SplicingInformationContentCalculator calculator,
                      AlleleGenerator generator,
-                     SplicingTranscriptLocator locator) {
+                     TranscriptModelLocator locator) {
         super(calculator, generator, locator);
     }
 
     @Override
-    protected double score(GenomeVariant variant, SplicingLocationData locationData, SequenceInterval sequence) {
-        return locationData.getDonorBoundary()
-                .map(anchor -> score(variant, anchor, sequence))
-                .orElse(0.);
+    protected double score(Variant variant, SplicingLocationData locationData, TranscriptModel tx, StrandedSequence sequence) {
+        switch (locationData.getPosition()) {
+            case DONOR:
+            case ACCEPTOR:
+            case EXON:
+            case INTRON:
+                return locationData.getDonorRegion()
+                        .map(donor -> score(variant, donor, sequence))
+                        .orElse(0.);
+            case OUTSIDE:
+            default:
+                return 0.;
+
+        }
     }
 
 
-    private double score(GenomeVariant variant, GenomePosition anchor, SequenceInterval sequence) {
-        final String donorSiteSnippet = generator.getDonorSiteSnippet(anchor, sequence);
+    private double score(Variant variant, GenomicRegion donor, StrandedSequence sequence) {
+        String donorSiteSnippet = sequence.subsequence(donor);
 
         if (donorSiteSnippet == null) {
-            LOGGER.debug("Unable to create wt/alt snippets for variant `{}` using sequence `{}`", variant, sequence.getInterval());
+            if (LOGGER.isWarnEnabled())
+                LOGGER.warn("Unable to create wt/alt snippets for variant `{}` using sequence `{}`", variant, sequence);
             return Double.NaN;
         }
 

@@ -76,12 +76,13 @@
 
 package org.monarchinitiative.squirls.core.scoring.calculators;
 
-import de.charite.compbio.jannovar.reference.GenomePosition;
-import de.charite.compbio.jannovar.reference.GenomeVariant;
-import de.charite.compbio.jannovar.reference.Strand;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.monarchinitiative.svart.CoordinateSystem;
+import org.monarchinitiative.svart.Position;
+import org.monarchinitiative.svart.Strand;
+import org.monarchinitiative.svart.Variant;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -107,10 +108,8 @@ public class PptIsTruncatedTest extends CalculatorTestBase {
             "1384,g,a,0.", // non-match, this is a SNV and not a deletion
     })
     public void score(int pos, String ref, String alt, double expected) {
-        final GenomeVariant variant = new GenomeVariant(new GenomePosition(rd, Strand.FWD, 1, pos), ref, alt);
-        final double actual = calculator.score(variant, st, sequenceInterval);
-
-        assertThat(actual, is(closeTo(expected, EPSILON)));
+        Variant variant = Variant.of(contig, "", Strand.POSITIVE, CoordinateSystem.zeroBased(), Position.of(pos), ref, alt);
+        assertThat(calculator.score(variant, tx, sequence), is(closeTo(expected, EPSILON)));
     }
 
 }

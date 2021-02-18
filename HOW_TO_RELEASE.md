@@ -1,8 +1,10 @@
 # How to release
 
 Release checklist items:
-- update `CHANGELOG.md`
-- update version in: 
+
+- update `CHANGELOG.md`, sync the content of `CHANGELOG.md` and `squirls-cli/CHANGELOG.md`
+- update version in:
   - `pom.xml`
   - documentation
   - `org.monarchinitiative.squirls.cli.Main`
+  - `org.monarchinitiative.squirls.ingest.Main`

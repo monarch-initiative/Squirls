@@ -76,18 +76,17 @@
 
 package org.monarchinitiative.squirls.core.scoring.calculators;
 
-import de.charite.compbio.jannovar.reference.GenomePosition;
-import de.charite.compbio.jannovar.reference.GenomeVariant;
-import org.monarchinitiative.squirls.core.model.SplicingTranscript;
-import org.monarchinitiative.squirls.core.reference.SplicingLocationData;
-import org.monarchinitiative.squirls.core.reference.allele.AlleleGenerator;
-import org.monarchinitiative.squirls.core.reference.transcript.SplicingTranscriptLocator;
+import org.monarchinitiative.squirls.core.reference.*;
+import org.monarchinitiative.svart.GenomicRegion;
+import org.monarchinitiative.svart.Variant;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import xyz.ielis.hyperutil.reference.fasta.SequenceInterval;
 
 import java.util.regex.Pattern;
 
+/**
+ * @author Daniel Danis
+ */
 public class PyrimidineToPurineAtMinusThree implements FeatureCalculator {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PyrimidineToPurineAtMinusThree.class);
@@ -97,11 +96,11 @@ public class PyrimidineToPurineAtMinusThree implements FeatureCalculator {
      */
     private static final Pattern RAG = Pattern.compile("^[ACGT]+[AG]AG[ACGT]{2}$");
 
-    private final SplicingTranscriptLocator locator;
+    private final TranscriptModelLocator locator;
 
     private final AlleleGenerator generator;
 
-    public PyrimidineToPurineAtMinusThree(SplicingTranscriptLocator locator, AlleleGenerator generator) {
+    public PyrimidineToPurineAtMinusThree(TranscriptModelLocator locator, AlleleGenerator generator) {
         this.locator = locator;
         this.generator = generator;
     }
@@ -118,24 +117,19 @@ public class PyrimidineToPurineAtMinusThree implements FeatureCalculator {
      * (e.g. insufficient <code>sequence</code>)
      */
     @Override
-    public double score(GenomeVariant variant, SplicingTranscript transcript, SequenceInterval sequence) {
-        final SplicingLocationData locationData = locator.locate(variant, transcript);
+    public double score(Variant variant, TranscriptModel transcript, StrandedSequence sequence) {
+        SplicingLocationData locationData = locator.locate(variant, transcript);
 
         if (locationData.getPosition() != SplicingLocationData.SplicingPosition.ACCEPTOR) {
             // variant does not affect the acceptor site, therefore does not lead to `..YAG..` -> `..RAG..`
             return 0.;
         }
 
-        if (locationData.getAcceptorBoundary().isEmpty()) {
-            // this should not happen since the position has been set to ACCEPTOR but let's be sure!
-            LOGGER.warn("Inconsistency - position set to acceptor but the boundary is absent: {} - {}",
-                    variant, transcript.getAccessionId());
-            return Double.NaN;
-        }
+        GenomicRegion exon = transcript.exons().get(locationData.getExonIdx());
+        GenomicRegion acceptorInterval = generator.makeAcceptorInterval(exon);
 
-        final GenomePosition acceptorBoundary = locationData.getAcceptorBoundary().get();
-        final String refAcceptorSnippet = generator.getAcceptorSiteSnippet(acceptorBoundary, sequence);
-        final String altAcceptorSnippet = generator.getAcceptorSiteWithAltAllele(acceptorBoundary, variant, sequence);
+        String refAcceptorSnippet = sequence.subsequence(acceptorInterval);
+        String altAcceptorSnippet = generator.getAcceptorSiteWithAltAllele(acceptorInterval, variant, sequence);
 
         if (refAcceptorSnippet == null || altAcceptorSnippet == null) {
             // unable to create padded alleles due to insufficient sequence. This should not happen since we fetch

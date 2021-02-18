@@ -78,6 +78,9 @@ package org.monarchinitiative.squirls.core.scoring.calculators.conservation;
 
 import org.monarchinitiative.squirls.core.SquirlsException;
 
+/**
+ * @author Daniel Danis
+ */
 public class SquirlsWigException extends SquirlsException {
     public SquirlsWigException() {
         super();

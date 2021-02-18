@@ -82,23 +82,27 @@ import com.zaxxer.hikari.HikariDataSource;
 import org.monarchinitiative.squirls.autoconfigure.exception.InvalidSquirlsResourceException;
 import org.monarchinitiative.squirls.autoconfigure.exception.MissingSquirlsResourceException;
 import org.monarchinitiative.squirls.autoconfigure.exception.UndefinedSquirlsResourceException;
+import org.monarchinitiative.squirls.core.SquirlsDataService;
 import org.monarchinitiative.squirls.core.VariantSplicingEvaluator;
-import org.monarchinitiative.squirls.core.VariantSplicingEvaluatorDefault;
 import org.monarchinitiative.squirls.core.classifier.SquirlsClassifier;
-import org.monarchinitiative.squirls.core.classifier.transform.prediction.IdentityTransformer;
-import org.monarchinitiative.squirls.core.classifier.transform.prediction.PredictionTransformer;
-import org.monarchinitiative.squirls.core.data.ClassifierDataManager;
-import org.monarchinitiative.squirls.core.data.DbClassifierDataManager;
-import org.monarchinitiative.squirls.core.data.DbSplicingTranscriptSource;
-import org.monarchinitiative.squirls.core.data.SplicingTranscriptSource;
-import org.monarchinitiative.squirls.core.data.ic.CorruptedPwmException;
-import org.monarchinitiative.squirls.core.data.ic.DbSplicingPositionalWeightMatrixParser;
-import org.monarchinitiative.squirls.core.data.ic.SplicingPwmData;
-import org.monarchinitiative.squirls.core.data.kmer.DbKMerDao;
+import org.monarchinitiative.squirls.core.reference.SplicingPwmData;
+import org.monarchinitiative.squirls.core.reference.StrandedSequenceService;
+import org.monarchinitiative.squirls.core.reference.TranscriptModelService;
 import org.monarchinitiative.squirls.core.scoring.AGEZSplicingAnnotator;
 import org.monarchinitiative.squirls.core.scoring.DenseSplicingAnnotator;
 import org.monarchinitiative.squirls.core.scoring.SplicingAnnotator;
 import org.monarchinitiative.squirls.core.scoring.calculators.conservation.BigWigAccessor;
+import org.monarchinitiative.squirls.io.ClassifierDataManager;
+import org.monarchinitiative.squirls.io.CorruptedPwmException;
+import org.monarchinitiative.squirls.io.SquirlsClassifierVersion;
+import org.monarchinitiative.squirls.io.SquirlsResourceException;
+import org.monarchinitiative.squirls.io.db.DbClassifierDataManager;
+import org.monarchinitiative.squirls.io.db.DbKMerDao;
+import org.monarchinitiative.squirls.io.db.DbSplicingPositionalWeightMatrixParser;
+import org.monarchinitiative.squirls.io.db.TranscriptModelServiceDb;
+import org.monarchinitiative.squirls.io.sequence.FastaStrandedSequenceService;
+import org.monarchinitiative.squirls.io.sequence.InvalidFastaFileException;
+import org.monarchinitiative.svart.GenomicAssembly;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -106,17 +110,17 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import xyz.ielis.hyperutil.reference.fasta.GenomeSequenceAccessor;
-import xyz.ielis.hyperutil.reference.fasta.GenomeSequenceAccessorBuilder;
-import xyz.ielis.hyperutil.reference.fasta.InvalidFastaFileException;
 
 import javax.sql.DataSource;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collection;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.Properties;
 import java.util.stream.Collectors;
 
 
@@ -131,7 +135,7 @@ import java.util.stream.Collectors;
  *     </ul>
  * </p>
  *
- * @author Daniel Danis <daniel.danis@jax.org>
+ * @author Daniel Danis
  * @see SquirlsProperties
  */
 @Configuration
@@ -143,10 +147,14 @@ public class SquirlsAutoConfiguration {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SquirlsAutoConfiguration.class);
 
+    private static final Properties properties = readProperties();
+
+    private static final String SQUIRLS_VERSION = properties.getProperty("squirls.version", "unknown version");
+
     @Bean
     @ConditionalOnMissingBean(name = "squirlsDataDirectory")
     public Path squirlsDataDirectory(SquirlsProperties properties) throws UndefinedSquirlsResourceException {
-        final String dataDir = properties.getDataDirectory();
+        String dataDir = properties.getDataDirectory();
         if (dataDir == null || dataDir.isEmpty()) {
             throw new UndefinedSquirlsResourceException("Path to Squirls data directory (`--squirls.data-directory`) is not specified");
         }
@@ -154,6 +162,7 @@ public class SquirlsAutoConfiguration {
         if (!Files.isDirectory(dataDirPath)) {
             throw new UndefinedSquirlsResourceException(String.format("Path to Squirls data directory '%s' does not point to real directory", dataDirPath));
         }
+        if (LOGGER.isInfoEnabled()) LOGGER.info("Spooling up Squirls v{} using resources in `{}`", SQUIRLS_VERSION, dataDirPath.toAbsolutePath());
         return dataDirPath;
     }
 
@@ -161,7 +170,7 @@ public class SquirlsAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean(name = "squirlsGenomeAssembly")
     public String squirlsGenomeAssembly(SquirlsProperties properties) throws UndefinedSquirlsResourceException {
-        final String assembly = properties.getGenomeAssembly();
+        String assembly = properties.getGenomeAssembly();
         if (assembly == null) {
             throw new UndefinedSquirlsResourceException("Genome assembly (`--squirls.genome-assembly`) is not specified");
         }
@@ -178,10 +187,9 @@ public class SquirlsAutoConfiguration {
         return dataVersion;
     }
 
-
     @Bean
     public BigWigAccessor phylopBigwigAccessor(SquirlsDataResolver squirlsDataResolver) throws IOException {
-        LOGGER.debug("Using phyloP bigwig file at `{}`", squirlsDataResolver.phylopPath());
+        if (LOGGER.isDebugEnabled()) LOGGER.debug("Using phyloP bigwig file at `{}`", squirlsDataResolver.phylopPath());
         return new BigWigAccessor(squirlsDataResolver.phylopPath());
     }
 
@@ -194,25 +202,47 @@ public class SquirlsAutoConfiguration {
 
 
     @Bean
-    public SplicingTranscriptSource splicingTranscriptSource(DataSource squirlsDatasource) {
-        return new DbSplicingTranscriptSource(squirlsDatasource);
+    public StrandedSequenceService strandedSequenceService(SquirlsDataResolver squirlsDataResolver) throws InvalidFastaFileException {
+        return new FastaStrandedSequenceService(squirlsDataResolver.genomeAssemblyReportPath(),
+                squirlsDataResolver.genomeFastaPath(),
+                squirlsDataResolver.genomeFastaFaiPath(),
+                squirlsDataResolver.genomeFastaDictPath());
+    }
+
+    @Bean
+    public GenomicAssembly genomicAssembly(StrandedSequenceService strandedSequenceService) {
+        return strandedSequenceService.genomicAssembly();
+    }
+
+    @Bean
+    public TranscriptModelService transcriptModelService(DataSource squirlsDatasource, GenomicAssembly genomicAssembly) throws SquirlsResourceException {
+        return new TranscriptModelServiceDb(squirlsDatasource, genomicAssembly);
+    }
+
+    @Bean
+    public SquirlsDataService squirlsDataService(TranscriptModelService transcriptModelService, StrandedSequenceService strandedSequenceService) {
+        return new SquirlsDataServiceImpl(strandedSequenceService, transcriptModelService);
     }
 
     @Bean
     public VariantSplicingEvaluator variantSplicingEvaluator(SquirlsProperties properties,
-                                                             GenomeSequenceAccessor genomeSequenceAccessor,
-                                                             SplicingTranscriptSource splicingTranscriptSource,
+                                                             SquirlsDataService squirlsDataService,
                                                              SplicingAnnotator splicingAnnotator,
                                                              ClassifierDataManager classifierDataManager) throws InvalidSquirlsResourceException, UndefinedSquirlsResourceException {
-        final SquirlsProperties.ClassifierProperties classifierProperties = properties.getClassifier();
+        SquirlsProperties.ClassifierProperties classifierProperties = properties.getClassifier();
 
-        final String clfVersion = classifierProperties.getVersion();
-        final Collection<String> avail = classifierDataManager.getAvailableClassifiers();
+        SquirlsClassifierVersion clfVersion;
+        try {
+            clfVersion = SquirlsClassifierVersion.parseString(classifierProperties.getVersion());
+        } catch (IllegalArgumentException e) {
+            throw new UndefinedSquirlsResourceException(e.getMessage(), e);
+        }
+        Collection<SquirlsClassifierVersion> avail = classifierDataManager.getAvailableClassifiers();
         if (!avail.contains(clfVersion)) {
-            String msg = String.format("Classifier version `%s` is not available, choose one from `%s`",
+            String msg = String.format("Classifier version `%s` is not available, choose one from %s",
                     clfVersion,
-                    avail.stream().sorted().collect(Collectors.joining(", ", "[ ", " ]")));
-            LOGGER.error(msg);
+                    avail.stream().map(Objects::toString).sorted().collect(Collectors.joining(", ", "{", "}")));
+            if (LOGGER.isErrorEnabled()) LOGGER.error(msg);
             throw new UndefinedSquirlsResourceException(msg);
         }
 
@@ -227,25 +257,8 @@ public class SquirlsAutoConfiguration {
             throw new InvalidSquirlsResourceException(msg);
         }
 
-        // get transformer
-        final Optional<PredictionTransformer> transOpt = classifierDataManager.readTransformer(clfVersion);
-        final PredictionTransformer transformer;
-        if (transOpt.isPresent()) {
-            transformer = transOpt.get();
-        } else {
-            LOGGER.warn("Transformer for classifier `{}` is not available. Using identity transformer", clfVersion);
-            transformer = IdentityTransformer.getInstance();
-        }
-
         // make variant evaluator
-        return VariantSplicingEvaluatorDefault.builder()
-                .accessor(genomeSequenceAccessor)
-                .txSource(splicingTranscriptSource)
-                .annotator(splicingAnnotator)
-                .classifier(clf)
-                .transformer(transformer)
-                .maxVariantLength(classifierProperties.getMaxVariantLength())
-                .build();
+        return VariantSplicingEvaluator.of(squirlsDataService, splicingAnnotator, clf);
     }
 
     @Bean
@@ -254,13 +267,11 @@ public class SquirlsAutoConfiguration {
     }
 
     @Bean
-    public SplicingAnnotator splicingAnnotator(SquirlsProperties properties,
-                                               SplicingPwmData splicingPwmData,
-                                               DbKMerDao dbKMerDao,
-                                               BigWigAccessor phylopBigwigAccessor) throws UndefinedSquirlsResourceException {
+    public SplicingAnnotator splicingAnnotator(SquirlsProperties properties, SplicingPwmData splicingPwmData,
+                                               DbKMerDao dbKMerDao, BigWigAccessor phylopBigwigAccessor) throws UndefinedSquirlsResourceException {
         final SquirlsProperties.AnnotatorProperties annotatorProperties = properties.getAnnotator();
         final String version = annotatorProperties.getVersion();
-        LOGGER.debug("Using `{}` splicing annotator", version);
+        if (LOGGER.isDebugEnabled()) LOGGER.debug("Using `{}` splicing annotator", version);
         switch (version) {
             case "dense":
                 return new DenseSplicingAnnotator(splicingPwmData, dbKMerDao.getHexamerMap(), dbKMerDao.getSeptamerMap(), phylopBigwigAccessor);
@@ -277,16 +288,6 @@ public class SquirlsAutoConfiguration {
     }
 
     @Bean
-    public GenomeSequenceAccessor genomeSequenceAccessor(SquirlsDataResolver squirlsDataResolver) throws InvalidFastaFileException {
-        return GenomeSequenceAccessorBuilder.builder()
-                .setFastaPath(squirlsDataResolver.genomeFastaPath())
-                .setFastaFaiPath(squirlsDataResolver.genomeFastaFaiPath())
-                .setFastaDictPath(squirlsDataResolver.genomeFastaDictPath())
-                .setType(GenomeSequenceAccessor.Type.SINGLE_FASTA)
-                .build();
-    }
-
-    @Bean
     public SplicingPwmData splicingPwmData(DataSource squirlsDatasource) throws InvalidSquirlsResourceException {
         try {
             return new DbSplicingPositionalWeightMatrixParser(squirlsDatasource).getSplicingPwmData();
@@ -298,9 +299,8 @@ public class SquirlsAutoConfiguration {
     @Bean
     public DataSource squirlsDatasource(SquirlsDataResolver squirlsDataResolver) {
         Path datasourcePath = squirlsDataResolver.dataSourcePath();
-
-        String jdbcUrl = String.format("jdbc:h2:file:%s;ACCESS_MODE_DATA=r", datasourcePath);
-        final HikariConfig config = new HikariConfig();
+        String jdbcUrl = String.format("jdbc:h2:file:%s;ACCESS_MODE_DATA=r", datasourcePath.toFile().getAbsolutePath());
+        HikariConfig config = new HikariConfig();
         config.setUsername("sa");
         config.setPassword("sa");
         config.setDriverClassName("org.h2.Driver");
@@ -308,5 +308,16 @@ public class SquirlsAutoConfiguration {
         config.setPoolName("squirls-pool");
 
         return new HikariDataSource(config);
+    }
+
+    private static Properties readProperties() {
+        Properties properties = new Properties();
+
+        try (InputStream is = SquirlsAutoConfiguration.class.getResourceAsStream("/squirls.properties")) {
+            properties.load(is);
+        } catch (IOException e) {
+            if (LOGGER.isWarnEnabled()) LOGGER.warn("Error loading properties: {}", e.getMessage());
+        }
+        return properties;
     }
 }

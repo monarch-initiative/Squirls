@@ -83,11 +83,11 @@ import java.io.IOException;
 
 /**
  * Implementors write {@link AnalysisResults} in different formats.
+ * @author Daniel Danis
  */
 public interface ResultWriter {
 
     Logger LOGGER = LoggerFactory.getLogger(ResultWriter.class);
 
-    void write(AnalysisResults results, OutputSettings outputSettings) throws IOException;
-
+    void write(AnalysisResults results, String prefix) throws IOException;
 }

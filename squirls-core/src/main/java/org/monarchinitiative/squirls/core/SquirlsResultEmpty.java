@@ -78,6 +78,9 @@ package org.monarchinitiative.squirls.core;
 
 import java.util.stream.Stream;
 
+/**
+ * @author Daniel Danis
+ */
 class SquirlsResultEmpty implements SquirlsResult {
 
     private static final SquirlsResultEmpty INSTANCE = new SquirlsResultEmpty();

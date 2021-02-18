@@ -76,18 +76,19 @@
 
 package org.monarchinitiative.squirls.core.scoring.calculators;
 
-import de.charite.compbio.jannovar.reference.GenomePosition;
-import de.charite.compbio.jannovar.reference.GenomeVariant;
-import de.charite.compbio.jannovar.reference.Strand;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.monarchinitiative.svart.CoordinateSystem;
+import org.monarchinitiative.svart.Position;
+import org.monarchinitiative.svart.Strand;
+import org.monarchinitiative.svart.Variant;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.closeTo;
 import static org.hamcrest.Matchers.notANumber;
 
-class BestWindowAltRiCrypticAcceptorTest extends CalculatorTestBase {
+public class BestWindowAltRiCrypticAcceptorTest extends CalculatorTestBase {
 
     private BestWindowAltRiCrypticAcceptor scorer;
 
@@ -98,18 +99,14 @@ class BestWindowAltRiCrypticAcceptorTest extends CalculatorTestBase {
     }
 
     @Test
-    void snpUpstreamFromAcceptorSite() {
-        GenomeVariant variant = new GenomeVariant(new GenomePosition(rd, Strand.FWD, 1, 1374), "c", "g");
-
-        final double score = scorer.score(variant, st, sequenceInterval);
-
-        assertThat(score, is(closeTo(2.0423, EPSILON)));
+    public void snpUpstreamFromAcceptorSite() {
+        Variant variant = Variant.of(contig, "", Strand.POSITIVE, CoordinateSystem.zeroBased(), Position.of(1374), "c", "g");
+        assertThat(scorer.score(variant, tx, sequence), is(closeTo(2.0423, EPSILON)));
     }
 
     @Test
-    void notEnoughSequence() {
-        GenomeVariant variant = new GenomeVariant(new GenomePosition(rd, Strand.FWD, 1, 1374), "c", "g");
-        final double score = scorer.score(variant, st, sequenceOnOtherChrom);
-        assertThat(score, is(notANumber()));
+    public void notEnoughSequence() {
+        Variant variant = Variant.of(contig, "", Strand.POSITIVE, CoordinateSystem.zeroBased(), Position.of(1374), "c", "g");
+        assertThat(scorer.score(variant, tx, sequenceOnOtherChrom), is(notANumber()));
     }
 }

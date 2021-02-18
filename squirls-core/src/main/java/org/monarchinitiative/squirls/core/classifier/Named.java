@@ -76,6 +76,9 @@
 
 package org.monarchinitiative.squirls.core.classifier;
 
+/**
+ * @author Daniel Danis
+ */
 public interface Named {
 
     String getName();

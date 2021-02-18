@@ -13,6 +13,5 @@ This application performs prediction of deleteriousness of genomic variants with
    setup
    running
    interpretation
-   library
    model
-   tutorial
+   library

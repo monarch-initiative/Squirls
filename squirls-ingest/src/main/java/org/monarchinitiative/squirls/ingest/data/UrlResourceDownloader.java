@@ -89,6 +89,7 @@ import java.nio.file.Path;
 
 /**
  * Download a file from {@link URL} to given location.
+ * @author Daniel Danis
  */
 public class UrlResourceDownloader implements Runnable {
 

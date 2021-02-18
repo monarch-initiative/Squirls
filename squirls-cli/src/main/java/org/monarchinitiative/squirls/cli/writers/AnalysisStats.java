@@ -78,6 +78,7 @@ package org.monarchinitiative.squirls.cli.writers;
 
 /**
  * Container for storing statistics of the analysis.
+ * @author Daniel Danis
  */
 public class AnalysisStats {
 

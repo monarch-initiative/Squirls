@@ -88,19 +88,23 @@ import java.util.concurrent.Callable;
 
 import static picocli.CommandLine.Help.Ansi.Style.*;
 
+
+/**
+ * @author Daniel Danis
+ */
 @CommandLine.Command(name = "squirls-cli.jar",
         header = "Super-quick Information Content and Random Forest Learning for Splice Variants\n",
         mixinStandardHelpOptions = true,
         version = Main.VERSION,
         usageHelpWidth = Main.WIDTH,
         footer = Main.FOOTER)
-// TODO: 18. 11. 2020 fix documentation link
 public class Main implements Callable<Integer> {
 
-    public static final String VERSION = "squirls v1.0.0-RC3-SNAPSHOT";
+    public static final String VERSION = "squirls v1.0.0-RC4";
+
     public static final int WIDTH = 120;
 
-    public static final String FOOTER = "See the full documentation at https://github.com/TheJacksonLaboratory/Squirls/blob/master";
+    public static final String FOOTER = "See the full documentation at https://squirls.readthedocs.io/en/latest/";
 
     private static final CommandLine.Help.ColorScheme COLOR_SCHEME = new Builder()
             .commands(bold, fg_blue, underline)
@@ -122,7 +126,7 @@ public class Main implements Callable<Integer> {
 
 
     @Override
-    public Integer call() throws Exception {
+    public Integer call() {
         // work done in subcommands
         return 0;
     }

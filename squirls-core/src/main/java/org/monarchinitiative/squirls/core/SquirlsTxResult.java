@@ -76,14 +76,21 @@
 
 package org.monarchinitiative.squirls.core;
 
+import org.apiguardian.api.API;
+
 import java.util.Map;
 import java.util.OptionalDouble;
 
 /**
  * Result of Squirls prediction with respect to a single transcript.
+ * @author Daniel Danis
  */
-@SquirlsApi
+@API(status = API.Status.STABLE, since = "1.0.0")
 public interface SquirlsTxResult {
+
+    static SquirlsTxResult of(String accessionId, Prediction prediction, Map<String, Double> featureMap) {
+        return SquirlsTxResultDefault.of(accessionId, prediction, featureMap);
+    }
 
     /**
      * @return string with transcript accession ID

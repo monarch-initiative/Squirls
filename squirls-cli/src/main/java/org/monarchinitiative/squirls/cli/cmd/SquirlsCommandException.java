@@ -76,6 +76,9 @@
 
 package org.monarchinitiative.squirls.cli.cmd;
 
+/**
+ * @author Daniel Danis
+ */
 public class SquirlsCommandException extends Exception {
 
     public SquirlsCommandException() {

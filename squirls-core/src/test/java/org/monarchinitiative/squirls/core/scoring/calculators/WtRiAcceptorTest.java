@@ -76,11 +76,12 @@
 
 package org.monarchinitiative.squirls.core.scoring.calculators;
 
-import de.charite.compbio.jannovar.reference.GenomePosition;
-import de.charite.compbio.jannovar.reference.GenomeVariant;
-import de.charite.compbio.jannovar.reference.Strand;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.monarchinitiative.svart.CoordinateSystem;
+import org.monarchinitiative.svart.Position;
+import org.monarchinitiative.svart.Strand;
+import org.monarchinitiative.svart.Variant;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -99,20 +100,14 @@ class WtRiAcceptorTest extends CalculatorTestBase {
 
     @Test
     void snpInAcceptor() {
-        GenomeVariant variant = new GenomeVariant(new GenomePosition(rd, Strand.FWD, 1, 1399), "g", "a");
-
-        final double score = scorer.score(variant, st, sequenceInterval);
-
-        assertThat(score, is(closeTo(4.1148, EPSILON)));
+        Variant variant = Variant.of(contig, "", Strand.POSITIVE, CoordinateSystem.zeroBased(), Position.of(1399), "g", "a");
+        assertThat(scorer.score(variant, tx, sequence), is(closeTo(4.1148, EPSILON)));
     }
 
 
     @Test
     void notEnoughSequence() {
-        GenomeVariant variant = new GenomeVariant(new GenomePosition(rd, Strand.FWD, 1, 1399), "g", "a");
-
-        final double score = scorer.score(variant, st, sequenceOnOtherChrom);
-
-        assertThat(score, is(notANumber()));
+        Variant variant = Variant.of(contig, "", Strand.POSITIVE, CoordinateSystem.zeroBased(), Position.of(1399), "g", "a");
+        assertThat(scorer.score(variant, tx, sequenceOnOtherChrom), is(notANumber()));
     }
 }

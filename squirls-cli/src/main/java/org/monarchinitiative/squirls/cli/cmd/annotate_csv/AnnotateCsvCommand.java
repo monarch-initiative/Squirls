@@ -82,10 +82,8 @@ import org.apache.commons.csv.CSVPrinter;
 import org.apache.commons.csv.CSVRecord;
 import org.monarchinitiative.squirls.cli.Main;
 import org.monarchinitiative.squirls.cli.cmd.SquirlsCommand;
-import org.monarchinitiative.squirls.core.Prediction;
-import org.monarchinitiative.squirls.core.SquirlsResult;
-import org.monarchinitiative.squirls.core.SquirlsTxResult;
-import org.monarchinitiative.squirls.core.VariantSplicingEvaluator;
+import org.monarchinitiative.squirls.core.*;
+import org.monarchinitiative.svart.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ConfigurableApplicationContext;
@@ -97,8 +95,12 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
+/**
+ * @author Daniel Danis
+ */
 @CommandLine.Command(name = "annotate-csv",
         aliases = {"C"},
         header = "Annotate variants stored in tabular file",
@@ -112,12 +114,12 @@ public class AnnotateCsvCommand extends SquirlsCommand {
 
     private static final List<String> EXPECTED_HEADER = List.of("CHROM", "POS", "REF", "ALT");
 
-    @CommandLine.Parameters(index = "0",
+    @CommandLine.Parameters(index = "1",
             paramLabel = "input.csv",
             description = "Path to the input tabular file")
     public Path inputPath;
 
-    @CommandLine.Parameters(index = "1",
+    @CommandLine.Parameters(index = "2",
             paramLabel = "output.csv",
             description = "Where to write the output")
     public Path outputPath;
@@ -125,16 +127,18 @@ public class AnnotateCsvCommand extends SquirlsCommand {
 
     @Override
     public Integer call() {
-        try (final ConfigurableApplicationContext context = getContext()) {
-            LOGGER.info("Reading variants from `{}`", inputPath);
-            LOGGER.info("Writing annotated variants to `{}`", outputPath);
+        try (ConfigurableApplicationContext context = getContext()) {
+            LOGGER.info("Reading variants from `{}`", inputPath.toAbsolutePath());
+            LOGGER.info("Writing annotated variants to `{}`", outputPath.toAbsolutePath());
 
             VariantSplicingEvaluator evaluator = context.getBean(VariantSplicingEvaluator.class);
-
+            SquirlsDataService dataService = context.getBean(SquirlsDataService.class);
+            GenomicAssembly assembly = dataService.genomicAssembly();
+            Set<String> contigNames = dataService.knownContigNames();
             // make header
-            final List<String> header = new ArrayList<>();
+            List<String> header = new ArrayList<>();
             header.addAll(EXPECTED_HEADER);
-            header.addAll(List.of("PATHOGENIC", "MAX_SCORE", "SCORES"));
+            header.addAll(List.of("INTERPRETATION", "MAX_SCORE", "SCORES"));
 
             try (CSVParser parser = CSVFormat.DEFAULT.withFirstRecordAsHeader()
                     .parse(Files.newBufferedReader(inputPath));
@@ -150,19 +154,26 @@ public class AnnotateCsvCommand extends SquirlsCommand {
 
                 // iterate through rows of the tabular file
                 for (CSVRecord record : parser) {
-                    final String chrom = record.get("CHROM");
-                    final int pos;
-                    final String ref = record.get("REF");
-                    final String alt = record.get("ALT");
+                    String chrom = record.get("CHROM");
+                    if (!contigNames.contains(chrom)) {
+                        LOGGER.warn("Unknown contig `{}` observed on line #{}: `{}`", chrom, record.getRecordNumber(), record);
+                        continue;
+                    }
+
+                    int pos;
+                    String ref = record.get("REF");
+                    String alt = record.get("ALT");
 
                     try {
                         pos = Integer.parseInt(record.get("POS"));
                     } catch (NumberFormatException e) {
-                        LOGGER.warn("Invalid pos `{}` in record #{}", record.get("POS"), record.getRecordNumber());
+                        LOGGER.warn("Invalid pos `{}` observed on line #{}: `{}`", record.get("POS"), record.getRecordNumber(), record);
                         continue;
                     }
 
-                    SquirlsResult squirlsResult = evaluator.evaluate(chrom, pos, ref, alt);
+                    Contig contig = assembly.contigByName(chrom);
+                    Variant variant = Variant.of(contig, "", Strand.POSITIVE, CoordinateSystem.oneBased(), Position.of(pos), ref, alt);
+                    SquirlsResult squirlsResult = evaluator.evaluate(variant);
 
                     // figure out max pathogenicity and whether the variant is a splice variant
                     boolean isSpliceVariant = false;
@@ -180,8 +191,8 @@ public class AnnotateCsvCommand extends SquirlsCommand {
                         }
                         isSpliceVariant = isSpliceVariant || prediction.isPositive();
                     }
-
-                    printer.printRecord(chrom, pos, ref, alt, isSpliceVariant, maxScore, processScores(predictionMap));
+                    String isSpliceVariantColumn = isSpliceVariant ? "pathogenic" : "neutral";
+                    printer.printRecord(chrom, pos, ref, alt, isSpliceVariantColumn, maxScore, processScores(predictionMap));
                 }
 
             } catch (IOException e) {

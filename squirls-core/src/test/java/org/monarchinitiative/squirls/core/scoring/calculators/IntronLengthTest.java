@@ -76,17 +76,19 @@
 
 package org.monarchinitiative.squirls.core.scoring.calculators;
 
-import de.charite.compbio.jannovar.reference.GenomePosition;
-import de.charite.compbio.jannovar.reference.GenomeVariant;
-import de.charite.compbio.jannovar.reference.Strand;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.monarchinitiative.svart.CoordinateSystem;
+import org.monarchinitiative.svart.Position;
+import org.monarchinitiative.svart.Strand;
+import org.monarchinitiative.svart.Variant;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.closeTo;
 
-class IntronLengthTest extends CalculatorTestBase {
+public class IntronLengthTest extends CalculatorTestBase {
 
     private IntronLength scorer;
 
@@ -96,27 +98,14 @@ class IntronLengthTest extends CalculatorTestBase {
         scorer = new IntronLength(locator);
     }
 
-    @Test
-    void scoreCodingVariantInSecondLastExon() {
-        GenomeVariant variant = new GenomeVariant(new GenomePosition(rd, Strand.FWD, 1, 1596), "A", "C");
-
-        final double score = scorer.score(variant, st, sequenceInterval);
-        assertThat(score, is(closeTo(200., EPSILON)));
-    }
-
-    @Test
-    void scoreVariantInLastIntron() {
-        GenomeVariant variant = new GenomeVariant(new GenomePosition(rd, Strand.FWD, 1, 1774), "a", "g");
-
-        final double score = scorer.score(variant, st, sequenceInterval);
-        assertThat(score, is(closeTo(200., EPSILON)));
-    }
-
-    @Test
-    void scoreVariantInLastAcceptor() {
-        GenomeVariant variant = new GenomeVariant(new GenomePosition(rd, Strand.FWD, 1, 1775), "c", "g");
-
-        final double score = scorer.score(variant, st, sequenceInterval);
-        assertThat(score, is(closeTo(-1., EPSILON)));
+    @ParameterizedTest
+    @CsvSource({
+            "1596, A, C,     200.",
+            "1774, a, g,     200.",
+            "1775, c, g,     -1.",
+    })
+    public void scoreCodingVariantInSecondLastExon(int pos, String ref, String alt, double expected) {
+        Variant variant = Variant.of(contig, "", Strand.POSITIVE, CoordinateSystem.zeroBased(), Position.of(pos), ref, alt);
+        assertThat(scorer.score(variant, tx, sequence), is(closeTo(expected, EPSILON)));
     }
 }

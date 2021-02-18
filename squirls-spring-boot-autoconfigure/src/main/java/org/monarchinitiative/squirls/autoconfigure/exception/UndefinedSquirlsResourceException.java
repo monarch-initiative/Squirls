@@ -79,6 +79,8 @@ package org.monarchinitiative.squirls.autoconfigure.exception;
 /**
  * This exception is thrown during auto-configuration, if an information that should have been provided by the user
  * is missing or if the information is not well-formatted.
+ *
+ * @author Daniel Danis
  */
 public class UndefinedSquirlsResourceException extends Exception {
 

@@ -76,56 +76,39 @@
 
 package org.monarchinitiative.squirls.core;
 
-import de.charite.compbio.jannovar.data.ReferenceDictionary;
-import de.charite.compbio.jannovar.data.ReferenceDictionaryBuilder;
-import de.charite.compbio.jannovar.reference.*;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
-import org.monarchinitiative.squirls.core.classifier.PredictionDefault;
 import org.monarchinitiative.squirls.core.classifier.SquirlsClassifier;
-import org.monarchinitiative.squirls.core.classifier.transform.prediction.IdentityTransformer;
-import org.monarchinitiative.squirls.core.data.SplicingTranscriptSource;
-import org.monarchinitiative.squirls.core.model.SplicingTranscript;
+import org.monarchinitiative.squirls.core.classifier.SquirlsFeatures;
+import org.monarchinitiative.squirls.core.reference.StrandedSequence;
+import org.monarchinitiative.squirls.core.reference.TranscriptModel;
 import org.monarchinitiative.squirls.core.scoring.SplicingAnnotator;
+import org.monarchinitiative.svart.*;
 import org.springframework.boot.test.context.SpringBootTest;
-import xyz.ielis.hyperutil.reference.fasta.GenomeSequenceAccessor;
-import xyz.ielis.hyperutil.reference.fasta.SequenceInterval;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
-import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.hasItem;
-import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
- * Here we test some real-world variants.
+ * Here we test a real-world variant as an integration test.
  */
 @SpringBootTest(classes = TestDataSourceConfig.class)
-class VariantSplicingEvaluatorDefaultTest {
+public class VariantSplicingEvaluatorDefaultTest {
 
-    /**
-     * Tolerance for numeric comparisons.
-     */
-    private static final double EPSILON = 5E-6;
+    private static StrandedSequence sequence;
 
-    private static SequenceInterval SI;
-
-    private static ReferenceDictionary RD;
+    private static GenomicAssembly assembly;
 
     @Mock
-    private GenomeSequenceAccessor accessor;
-
-    @Mock
-    private SplicingTranscriptSource transcriptSource;
+    private SquirlsDataService squirlsDataService;
 
     @Mock
     private SplicingAnnotator annotator;
@@ -137,66 +120,52 @@ class VariantSplicingEvaluatorDefaultTest {
 
 
     @BeforeAll
-    static void beforeAll() {
-        final ReferenceDictionaryBuilder rdBuilder = new ReferenceDictionaryBuilder();
-        rdBuilder.putContigID("chr9", 9);
-        rdBuilder.putContigID("9", 9);
-        rdBuilder.putContigName(9, "chr9");
-        rdBuilder.putContigLength(9, 141_213_431);
-        RD = rdBuilder.build();
+    public static void beforeAll() {
+        Contig chr9 = Contig.of(1, "9", SequenceRole.ASSEMBLED_MOLECULE, "9", AssignedMoleculeType.CHROMOSOME, 141_213_431,
+                "CM000671.1", "NC_000009.11", "chr9");
+        assembly = GenomicAssembly.of("GRCh37.custom", "Homo sapiens (human)", "9606",
+                "Me", "2020-01-04", "GB1", "RS1",
+                List.of(chr9));
         char[] chars = new char[136_230_000 - 136_210_000 + 1];
         Arrays.fill(chars, 'A'); // the sequence does not really matter since we use mocks
-        SI = SequenceInterval.of(new GenomeInterval(RD, Strand.FWD, 9, 136_210_000, 136_230_000, PositionType.ONE_BASED), new String(chars));
+        sequence = StrandedSequence.of(chr9, Strand.POSITIVE, CoordinateSystem.oneBased(),
+                Position.of(136_210_000), Position.of(136_230_000), new String(chars));
     }
 
     @BeforeEach
-    void setUp() {
-        // genome sequence accessor
-        when(accessor.getReferenceDictionary()).thenReturn(RD);
-        evaluator = VariantSplicingEvaluatorDefault.builder()
-                .accessor(accessor)
-                .txSource(transcriptSource)
-                .annotator(annotator)
-                .classifier(classifier)
-                .transformer(IdentityTransformer.getInstance())
-                .build();
+    public void setUp() {
+        when(squirlsDataService.genomicAssembly()).thenReturn(assembly);
+        when(squirlsDataService.knownContigNames()).thenReturn(assembly.contigs().stream().map(Contig::name).collect(Collectors.toSet()));
+        evaluator = VariantSplicingEvaluatorDefault.of(squirlsDataService, annotator, classifier);
     }
 
     @Test
-    void evaluateWrtTx() throws Exception {
-        // arrange
-        final GenomeVariant variant = new GenomeVariant(new GenomePosition(RD, Strand.FWD, 9, 136_223_949, PositionType.ONE_BASED), "G", "C");
+    public void evaluateWrtTx() {
+        Contig chr9 = assembly.contigByName("9");
+        Variant variant = Variant.of(chr9, "", Strand.POSITIVE, CoordinateSystem.oneBased(), Position.of(136_223_949), "G", "C");
 
-        // 0 - splicing transcript source
-        final SplicingTranscript stx = PojosForTesting.surf2_NM_017503_5(RD);
-        when(transcriptSource.fetchTranscriptByAccession("NM_017503.5", RD))
-                .thenReturn(Optional.of(stx));
+        // 0 - squirls data service
+        TranscriptModel stx = PojosForTesting.surf2_NM_017503_5(chr9);
+        when(squirlsDataService.transcriptByAccession("NM_017503.5")).thenReturn(Optional.of(stx));
+        when(squirlsDataService.sequenceForRegion(any(GenomicRegion.class))).thenReturn(sequence);
 
-        // 1 - genome sequence accessor
-        when(accessor.fetchSequence(any(GenomeInterval.class))).thenReturn(Optional.of(SI));
+        // 1 - splicing annotator
+        VariantOnTranscript vot = VariantOnTranscript.of(variant, stx, sequence);
+        SquirlsFeatures features = SquirlsFeatures.of(Map.of("donor_offset", 5., "acceptor_offset", 1234.)); // not real feature values
+        when(annotator.annotate(vot)).thenReturn(features);
 
-        // 2 - splicing annotator
-        SplicingPredictionData plain = SplicingPredictionDataDefault.of(variant, stx, SI);
-        SplicingPredictionData annotated = SplicingPredictionDataDefault.of(variant, stx, SI);
-        annotated.putFeature("donor_offset", 5);
-        annotated.putFeature("acceptor_offset", 1234); // not real
-        when(annotator.annotate(plain)).thenReturn(annotated);
-
-        // 3 - classifier
-        PredictionDefault prediction = PredictionDefault.of(
+        // 2 - classifier
+        Prediction prediction = Prediction.of(
                 PartialPrediction.of("donor", .6, .7),
                 PartialPrediction.of("acceptor", .1, .6));
-        SplicingPredictionData predicted = SplicingPredictionDataDefault.of(variant, stx, SI);
-        predicted.putFeature("donor_offset", 5);
-        predicted.putFeature("acceptor_offset", 1234); // not real
-        predicted.setPrediction(prediction);
-        when(classifier.predict(annotated)).thenReturn(predicted);
-
-        // act
-        SquirlsResult squirlsResult = evaluator.evaluate("chr9", 136_223_949, "G", "C", Set.of("NM_017503.5"));
+        when(classifier.predict(features)).thenReturn(prediction);
 
 
-        // assert
+        // -------------------------------------------------------------------------------------------------------------
+        SquirlsResult squirlsResult = evaluator.evaluate(variant, Set.of("NM_017503.5"));
+        // -------------------------------------------------------------------------------------------------------------
+
+
         assertThat(squirlsResult.txAccessionIds().size(), is(1));
         assertThat(squirlsResult.txAccessionIds(), hasItem("NM_017503.5"));
 
@@ -209,45 +178,49 @@ class VariantSplicingEvaluatorDefaultTest {
         assertThat(actual.featureValue("acceptor_offset").orElseThrow(), is(1234.));
         assertThat(actual.prediction(), is(prediction));
 
-        verify(accessor).fetchSequence(new GenomeInterval(RD, Strand.FWD, 9, 136_223_176, 136_228_284, PositionType.ONE_BASED));
-        verify(annotator).annotate(plain);
+        verify(squirlsDataService).knownContigNames();
+        verify(squirlsDataService).sequenceForRegion(GenomicRegion.of(chr9, Strand.POSITIVE, CoordinateSystem.zeroBased(), 136_223_275, 136_228_184));
+        verify(squirlsDataService).transcriptByAccession("NM_017503.5");
+        verify(annotator).annotate(vot);
+        verify(classifier).predict(features);
     }
 
     @Test
-    void evaluateWrtTx_unknownContig() {
-        // arrange & act
-        SquirlsResult squirlsResult = evaluator.evaluate("BLA", 100, "G", "C");
+    public void evaluateWrtTx_unknownContig() {
+        Contig unknown = Contig.of(1_000, "Unknown", SequenceRole.ASSEMBLED_MOLECULE, "Unknown", AssignedMoleculeType.CHROMOSOME, 1_000_000_000, "", "", "");
+        Variant variant = Variant.of(unknown,"", Strand.POSITIVE, CoordinateSystem.oneBased(), Position.of(136_223_949), "G", "C");
+        SquirlsResult squirlsResult = evaluator.evaluate(variant);
 
-        // assert
         assertThat(squirlsResult.isEmpty(), is(true));
     }
 
     @Test
-    void evaluateWrtTx_unknownTx() {
-        // arrange
-        when(transcriptSource.fetchTranscriptByAccession("BLABLA", RD)).thenReturn(Optional.empty());
+    public void evaluateWrtTx_unknownTx() {
+        when(squirlsDataService.transcriptByAccession("BLABLA")).thenReturn(Optional.empty());
+        Contig chr9 = assembly.contigByName("9");
 
-        // act
-        SquirlsResult squirlsResult = evaluator.evaluate("chr9", 136_223_949, "G", "C", Set.of("BLABLA"));
+        Variant variant = Variant.of(chr9, "", Strand.POSITIVE, CoordinateSystem.oneBased(), Position.of(136_223_949), "G", "C");
 
-        // assert
+        // -------------------------------------------------------------------------------------------------------------
+        SquirlsResult squirlsResult = evaluator.evaluate(variant, Set.of("BLABLA"));
+        // -------------------------------------------------------------------------------------------------------------
+
         assertThat(squirlsResult.isEmpty(), is(true));
     }
 
     @Test
-    void evaluateWrtTx_notEnoughSequenceAvailable() {
-        // arrange
-        // 0 - splicing transcript source
-        final SplicingTranscript stx = PojosForTesting.surf2_NM_017503_5(RD);
-        when(transcriptSource.fetchTranscriptByAccession("NM_017503.5", RD)).thenReturn(Optional.of(stx));
+    public void evaluateWrtTx_notEnoughSequenceAvailable() {
+        Contig chr9 = assembly.contigByName("9");
+        TranscriptModel stx = PojosForTesting.surf2_NM_017503_5(chr9);
+        when(squirlsDataService.transcriptByAccession("NM_017503.5")).thenReturn(Optional.of(stx));
+        when(squirlsDataService.sequenceForRegion(any(GenomicRegion.class))).thenReturn(null);
 
-        // 1 - genome sequence accessor
-        when(accessor.fetchSequence(any(GenomeInterval.class))).thenReturn(Optional.empty());
+        Variant variant = Variant.of(chr9, "", Strand.POSITIVE, CoordinateSystem.oneBased(), Position.of(136_223_949), "G", "C");
 
-        // act
-        SquirlsResult squirlsResult = evaluator.evaluate("chr9", 136_223_949, "G", "C", Set.of("NM_017503.5"));
+        // -------------------------------------------------------------------------------------------------------------
+        SquirlsResult squirlsResult = evaluator.evaluate(variant, Set.of("NM_017503.5"));
+        // -------------------------------------------------------------------------------------------------------------
 
-        // assert
         assertThat(squirlsResult.isEmpty(), is(true));
     }
 
@@ -256,40 +229,34 @@ class VariantSplicingEvaluatorDefaultTest {
      * with. In this case, we evaluate the variant wrt one transcript <code>stx</code>.
      */
     @Test
-    void evaluateWrtCoordinates() throws Exception {
-        // arrange
-        final GenomeVariant variant = new GenomeVariant(new GenomePosition(RD, Strand.FWD, 9, 136_223_949, PositionType.ONE_BASED), "G", "C");
+    public void evaluateWrtCoordinates() {
+        Contig chr9 = assembly.contigByName("9");
+        Variant variant = Variant.of(chr9, "", Strand.POSITIVE, CoordinateSystem.oneBased(), Position.of(136_223_949), "G", "C");
 
-        // 0 - splicing transcript source
-        final SplicingTranscript stx = PojosForTesting.surf2_NM_017503_5(RD);
-        when(transcriptSource.fetchTranscripts("chr9", 136_223_948, 136_223_949, RD)).thenReturn(List.of(stx));
+        TranscriptModel stx = PojosForTesting.surf2_NM_017503_5(chr9);
 
-        // 1 - genome sequence accessor
-        when(accessor.fetchSequence(any(GenomeInterval.class))).thenReturn(Optional.of(SI));
+        when(squirlsDataService.sequenceForRegion(any(GenomicRegion.class))).thenReturn(sequence);
+        when(squirlsDataService.overlappingTranscripts(variant.toZeroBased())).thenReturn(List.of(stx));
 
-        // 2 - splicing annotator
-        final SplicingPredictionData plain = SplicingPredictionDataDefault.of(variant, stx, SI);
-        final SplicingPredictionData annotated = SplicingPredictionDataDefault.of(variant, stx, SI);
-        annotated.putFeature("donor_offset", 5);
-        annotated.putFeature("acceptor_offset", 1234); // not real
+        when(squirlsDataService.sequenceForRegion(any(GenomicRegion.class))).thenReturn(sequence);
 
-        when(annotator.annotate(plain)).thenReturn(annotated);
+        VariantOnTranscript vot = VariantOnTranscript.of(variant, stx, sequence);
+        SquirlsFeatures features = SquirlsFeatures.of(Map.of("donor_offset", 5., "acceptor_offset", 1234.)); // not real
 
-        // 3 - classifier
-        PredictionDefault prediction = PredictionDefault.of(
+        when(annotator.annotate(vot)).thenReturn(features);
+
+        Prediction prediction = Prediction.of(
                 PartialPrediction.of("donor", .6, .7),
                 PartialPrediction.of("acceptor", .1, .6));
-        SplicingPredictionData predicted = SplicingPredictionDataDefault.of(variant, stx, SI);
-        predicted.putFeature("donor_offset", 5);
-        predicted.putFeature("acceptor_offset", 1234); // not real
-        predicted.setPrediction(prediction);
 
-        when(classifier.predict(annotated)).thenReturn(predicted);
+        when(classifier.predict(features)).thenReturn(prediction);
 
-        // act
-        SquirlsResult squirlsResult = evaluator.evaluate("chr9", 136_223_949, "G", "C");
 
-        // assert
+        // -------------------------------------------------------------------------------------------------------------
+        SquirlsResult squirlsResult = evaluator.evaluate(variant);
+        // -------------------------------------------------------------------------------------------------------------
+
+
         assertThat(squirlsResult.txAccessionIds(), hasSize(1));
         assertThat(squirlsResult.txAccessionIds(), hasItem("NM_017503.5"));
 
@@ -302,7 +269,10 @@ class VariantSplicingEvaluatorDefaultTest {
         assertThat(actual.featureValue("acceptor_offset").orElseThrow(), is(1234.));
         assertThat(actual.prediction(), is(prediction));
 
-        verify(accessor).fetchSequence(new GenomeInterval(RD, Strand.FWD, 9, 136_223_176, 136_228_284, PositionType.ONE_BASED));
-        verify(annotator).annotate(plain);
+        verify(squirlsDataService).knownContigNames();
+        verify(squirlsDataService).sequenceForRegion(GenomicRegion.of(chr9, Strand.POSITIVE, CoordinateSystem.zeroBased(), 136_223_275, 136_228_184));
+        verify(squirlsDataService).overlappingTranscripts(variant.toZeroBased());
+        verify(annotator).annotate(vot);
+        verify(classifier).predict(features);
     }
 }

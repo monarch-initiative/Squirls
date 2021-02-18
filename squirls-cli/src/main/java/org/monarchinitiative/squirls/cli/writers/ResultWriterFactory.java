@@ -78,8 +78,12 @@ package org.monarchinitiative.squirls.cli.writers;
 
 import org.monarchinitiative.squirls.cli.visualization.SplicingVariantGraphicsGenerator;
 import org.monarchinitiative.squirls.cli.writers.html.HtmlResultWriter;
+import org.monarchinitiative.squirls.cli.writers.tabular.TabularResultWriter;
 import org.monarchinitiative.squirls.cli.writers.vcf.VcfResultWriter;
 
+/**
+ * @author Daniel Danis
+ */
 public class ResultWriterFactory {
 
     private final SplicingVariantGraphicsGenerator graphicsGenerator;
@@ -94,6 +98,10 @@ public class ResultWriterFactory {
                 return new HtmlResultWriter(graphicsGenerator);
             case VCF:
                 return new VcfResultWriter();
+            case TSV:
+                return new TabularResultWriter(OutputFormat.TSV.getFileExtension(), '\t');
+            case CSV:
+                return new TabularResultWriter(OutputFormat.CSV.getFileExtension(), ',');
             default:
                 // should not happen
                 throw new RuntimeException("Unknown output format `" + outputFormat + "`");

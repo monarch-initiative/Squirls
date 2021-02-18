@@ -76,18 +76,17 @@
 
 package org.monarchinitiative.squirls.core.scoring.calculators;
 
-import de.charite.compbio.jannovar.reference.GenomeInterval;
-import de.charite.compbio.jannovar.reference.GenomePosition;
-import de.charite.compbio.jannovar.reference.GenomeVariant;
+import org.monarchinitiative.squirls.core.reference.*;
 import org.monarchinitiative.squirls.core.Utils;
-import org.monarchinitiative.squirls.core.reference.SplicingLocationData;
-import org.monarchinitiative.squirls.core.reference.allele.AlleleGenerator;
-import org.monarchinitiative.squirls.core.reference.transcript.SplicingTranscriptLocator;
 import org.monarchinitiative.squirls.core.scoring.calculators.ic.SplicingInformationContentCalculator;
+import org.monarchinitiative.svart.GenomicRegion;
+import org.monarchinitiative.svart.Variant;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import xyz.ielis.hyperutil.reference.fasta.SequenceInterval;
 
+/**
+ * @author Daniel Danis
+ */
 public class CrypticDonor extends BaseFeatureCalculator {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CrypticDonor.class);
@@ -99,41 +98,51 @@ public class CrypticDonor extends BaseFeatureCalculator {
 
     public CrypticDonor(SplicingInformationContentCalculator calculator,
                         AlleleGenerator generator,
-                        SplicingTranscriptLocator locator) {
+                        TranscriptModelLocator locator) {
         super(calculator, generator, locator);
         this.padding = calculator.getSplicingParameters().getDonorLength() - 1;
     }
 
     @Override
-    protected double score(GenomeVariant variant, SplicingLocationData locationData, SequenceInterval sequence) {
-        return locationData.getDonorBoundary()
-                .map(anchor -> score(variant, anchor, sequence))
-                .orElse(0.);
+    protected double score(Variant variant, SplicingLocationData locationData, TranscriptModel transcript, StrandedSequence sequence) {
+        switch (locationData.getPosition()) {
+            case EXON:
+            case INTRON:
+            case DONOR:
+            case ACCEPTOR:
+                // we should have an exon
+                return locationData.getDonorRegion()
+                        .map(donor -> score(variant, donor, sequence))
+                        .orElse(0.);
+            case OUTSIDE:
+            default:
+                return 0.;
+        }
     }
 
 
-    private double score(GenomeVariant variant, GenomePosition anchor, SequenceInterval sequence) {
-        final GenomeInterval donorInterval = generator.makeDonorInterval(anchor);
-        final GenomeInterval variantInterval = variant.getGenomeInterval();
+    private double score(Variant variant, GenomicRegion donor, StrandedSequence sequence) {
 
         // prepare wt donor snippet
-        final String donorSnippet;
-        if (variantInterval.overlapsWith(donorInterval)) {
-            donorSnippet = generator.getDonorSiteWithAltAllele(anchor, variant, sequence);
+        String donorSnippet;
+        if (variant.overlapsWith(donor)) {
+            donorSnippet = generator.getDonorSiteWithAltAllele(donor, variant, sequence);
         } else {
-            donorSnippet = generator.getDonorSiteSnippet(anchor, sequence);
+            donorSnippet = sequence.subsequence(donor);
         }
         if (donorSnippet == null) {
-            LOGGER.debug("Unable to create donor snippet at `{}` for variant `{}` using sequence `{}`",
-                    anchor, variant, sequence.getInterval());
+            if (LOGGER.isWarnEnabled())
+                LOGGER.warn("Unable to create donor snippet at `{}` for variant `{}` using sequence `{}`",
+                        donor, variant, sequence);
             return Double.NaN;
         }
 
         // prepare snippet for sliding window with alt allele
-        final String donorNeighborSnippet = generator.getDonorNeighborSnippet(variantInterval, sequence, variant.getAlt());
+        final String donorNeighborSnippet = generator.getDonorNeighborSnippet(variant, sequence, variant.alt());
         if (donorNeighborSnippet == null) {
-            LOGGER.debug("Unable to create sliding window snippet +- {}bp for variant `{}` using sequence `{}`",
-                    padding, variant, sequence.getInterval());
+            if (LOGGER.isWarnEnabled())
+                LOGGER.warn("Unable to create sliding window snippet +- {}bp for variant `{}` using sequence `{}`",
+                        padding, variant, sequence);
             return Double.NaN;
         }
 

@@ -76,9 +76,9 @@
 
 package org.monarchinitiative.squirls.core.scoring.calculators.ic;
 
-import org.jblas.DoubleMatrix;
-import org.monarchinitiative.squirls.core.data.ic.SplicingPwmData;
-import org.monarchinitiative.squirls.core.model.SplicingParameters;
+import org.monarchinitiative.squirls.core.reference.DoubleMatrix;
+import org.monarchinitiative.squirls.core.reference.SplicingParameters;
+import org.monarchinitiative.squirls.core.reference.SplicingPwmData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -89,7 +89,7 @@ import java.util.regex.Pattern;
  * href="https://www.ncbi.nlm.nih.gov/pubmed/9711873">Information Analysis of Human Splice Site Mutations</a> by Rogan
  * et al.<p></p>
  *
- * @author <a href="mailto:daniel.danis@jax.org">Daniel Danis</a>
+ * @author Daniel Danis
  * @version 0.0.1
  * @since 0.0
  */
@@ -138,10 +138,9 @@ public class SplicingInformationContentCalculator {
     private static DoubleMatrix createICMatrix(DoubleMatrix freqMatrix) {
         DoubleMatrix icm = new DoubleMatrix(freqMatrix.rows, freqMatrix.columns);
 
-        for (int i = 0; i < freqMatrix.rows; i++) { // iterate through positions/rows of io
-            DoubleMatrix row = freqMatrix.getRow(i);
-            for (int j = 0; j < row.columns; j++) { // iterate through nucleotides at position
-                icm.put(i, j, calculateIC(row.get(j)));
+        for (int rowIdx = 0; rowIdx < freqMatrix.rows; rowIdx++) { // iterate through positions/rows of io
+            for (int colIdx = 0; colIdx < freqMatrix.columns; colIdx++) { // iterate through nucleotides at position
+                icm.put(rowIdx, colIdx, calculateIC(freqMatrix.get(rowIdx, colIdx)));
             }
         }
         return icm;

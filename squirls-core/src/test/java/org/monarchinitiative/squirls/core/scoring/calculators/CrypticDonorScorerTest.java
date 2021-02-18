@@ -76,17 +76,19 @@
 
 package org.monarchinitiative.squirls.core.scoring.calculators;
 
-import de.charite.compbio.jannovar.reference.GenomePosition;
-import de.charite.compbio.jannovar.reference.GenomeVariant;
-import de.charite.compbio.jannovar.reference.Strand;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.monarchinitiative.svart.CoordinateSystem;
+import org.monarchinitiative.svart.Position;
+import org.monarchinitiative.svart.Strand;
+import org.monarchinitiative.svart.Variant;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.closeTo;
 
-class CrypticDonorScorerTest extends CalculatorTestBase {
+public class CrypticDonorScorerTest extends CalculatorTestBase {
 
     private CrypticDonor scorer;
 
@@ -96,21 +98,14 @@ class CrypticDonorScorerTest extends CalculatorTestBase {
         scorer = new CrypticDonor(calculator, generator, locator);
     }
 
-    @Test
-    void snpInDonor() {
-        GenomeVariant variant = new GenomeVariant(new GenomePosition(rd, Strand.FWD, 1, 1201), "t", "g");
-
-        final double score = scorer.score(variant, st, sequenceInterval);
-
-        assertThat(score, is(closeTo(4.6317, EPSILON)));
+    @ParameterizedTest
+    @CsvSource({
+            "1201, t, g, 4.6317",
+            "1196, C, T, 0.3526",
+    })
+    public void score(int pos, String ref, String alt, double expected) {
+        Variant variant = Variant.of(contig,"", Strand.POSITIVE, CoordinateSystem.zeroBased(), Position.of(pos), ref, alt);
+        assertThat(scorer.score(variant, tx, sequence), is(closeTo(expected, EPSILON)));
     }
 
-    @Test
-    void snpUpstreamFromDonor() {
-        GenomeVariant variant = new GenomeVariant(new GenomePosition(rd, Strand.FWD, 1, 1196), "C", "T");
-
-        final double score = scorer.score(variant, st, sequenceInterval);
-
-        assertThat(score, is(closeTo(0.3526, EPSILON)));
-    }
 }

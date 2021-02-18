@@ -84,7 +84,10 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
-public abstract class AbstractBinaryClassifier<T extends Classifiable> implements BinaryClassifier<T> {
+/**
+ * @author Daniel Danis
+ */
+public abstract class AbstractBinaryClassifier<T extends SquirlsFeatures> implements BinaryClassifier<T> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractBinaryClassifier.class);
 
@@ -116,11 +119,6 @@ public abstract class AbstractBinaryClassifier<T extends Classifiable> implement
         return array;
     }
 
-    @Override
-    public String getName() {
-        return name;
-    }
-
     /**
      * Convert list of doubles to double array.
      *
@@ -133,6 +131,11 @@ public abstract class AbstractBinaryClassifier<T extends Classifiable> implement
             array[i] = doubles.get(i);
         }
         return array;
+    }
+
+    @Override
+    public String getName() {
+        return name;
     }
 
     /**
@@ -172,9 +175,8 @@ public abstract class AbstractBinaryClassifier<T extends Classifiable> implement
 
     public abstract static class Builder<A extends Builder<A>> {
 
-        private String name;
-
         private final List<Integer> classes = new ArrayList<>();
+        private String name;
 
         protected Builder() {
             // protected no-op

@@ -32,4 +32,4 @@ chr1	16451824	EPHA2_cryptic_acceptor_9bp_upstream_exon17	C	T	1000	.	AC=2;AF=1	GT
 chr9	136224694	SURF2_donor_4bp_downstream_exon3	A	T	1000	.	AC=2;AF=1	GT	1/1
 chr12	6132066	VWF_acceptor_2bp_upstream_exon26_quid	T	C	1000	.	AC=2;AF=1	GT	1/1
 chr13	32930748	BRCA2_donor_2bp_downstream_exon15_quid	T	G	1000	.	AC=2;AF=1	GT	1/1
-chr2	47702319	MSH2_cryptic_donor_SORT	C	T	1000	.	AC=2;AF=1	GT	1/1
+chr2	47702319	MSH2_cryptic_donor	C	T	1000	.	AC=2;AF=1	GT	1/1

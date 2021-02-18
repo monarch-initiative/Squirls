@@ -78,9 +78,6 @@
         <g transform='translate(340,50) scale(1,1.365133)'>
             <text x="0" y="0" fill="#4dbbd5">c</text>
         </g>
-        <g transform='translate(355,50) scale(1,1.995665)'>
-            <text x="0" y="0" fill="#00A087">a</text>
-        </g>
         <g transform='translate(370,50) scale(1,1.994218)'>
             <text x="0" y="0" fill="#ff9900">g</text>
         </g>
@@ -93,7 +90,5 @@
         <g fill="none" stroke="black" stroke-width="1">
             <path stroke-dasharray="2,2" d="M10 50 L420 50"/>
         </g>
-        <rect x="355.000000" y="26" width="15" height="119" rx="2" fill-opacity="0.1"
-              style="stroke-width:1; stroke:rgb(4, 12, 4);"/>
     </g>
 </svg>

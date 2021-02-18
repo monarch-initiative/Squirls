@@ -76,14 +76,12 @@
 
 package org.monarchinitiative.squirls.ingest;
 
-import org.springframework.boot.context.properties.ConfigurationProperties;
-
 import java.util.List;
+import java.util.Objects;
 
 /**
- *
+ * @author Daniel Danis
  */
-@ConfigurationProperties(prefix = "threes.ingest")
 public class IngestProperties {
 
 
@@ -92,6 +90,7 @@ public class IngestProperties {
     private String hexamerTsvPath;
     private String septamerTsvPath;
     private String fastaUrl;
+    private String assemblyReportUrl;
     private String phylopUrl;
     private List<ClassifierData> classifiers;
 
@@ -143,12 +142,47 @@ public class IngestProperties {
         this.fastaUrl = fastaUrl;
     }
 
+    public String assemblyReportUrl() {
+        return assemblyReportUrl;
+    }
+
+    public void setAssemblyReportUrl(String assemblyReportUrl) {
+        this.assemblyReportUrl = assemblyReportUrl;
+    }
+
     public String getPhylopUrl() {
         return phylopUrl;
     }
 
     public void setPhylopUrl(String phylopUrl) {
         this.phylopUrl = phylopUrl;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        IngestProperties that = (IngestProperties) o;
+        return Objects.equals(splicingInformationContentMatrix, that.splicingInformationContentMatrix) && Objects.equals(jannovarTranscriptDbDir, that.jannovarTranscriptDbDir) && Objects.equals(hexamerTsvPath, that.hexamerTsvPath) && Objects.equals(septamerTsvPath, that.septamerTsvPath) && Objects.equals(fastaUrl, that.fastaUrl) && Objects.equals(assemblyReportUrl, that.assemblyReportUrl) && Objects.equals(phylopUrl, that.phylopUrl) && Objects.equals(classifiers, that.classifiers);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(splicingInformationContentMatrix, jannovarTranscriptDbDir, hexamerTsvPath, septamerTsvPath, fastaUrl, assemblyReportUrl, phylopUrl, classifiers);
+    }
+
+    @Override
+    public String toString() {
+        return "IngestProperties{" +
+                "splicingInformationContentMatrix='" + splicingInformationContentMatrix + '\'' +
+                ", jannovarTranscriptDbDir='" + jannovarTranscriptDbDir + '\'' +
+                ", hexamerTsvPath='" + hexamerTsvPath + '\'' +
+                ", septamerTsvPath='" + septamerTsvPath + '\'' +
+                ", fastaUrl='" + fastaUrl + '\'' +
+                ", assemblyReportUrl='" + assemblyReportUrl + '\'' +
+                ", phylopUrl='" + phylopUrl + '\'' +
+                ", classifiers=" + classifiers +
+                '}';
     }
 
     public static class ClassifierData {

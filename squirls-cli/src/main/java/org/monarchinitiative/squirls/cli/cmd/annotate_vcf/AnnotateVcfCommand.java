@@ -86,6 +86,7 @@ import de.charite.compbio.jannovar.data.JannovarDataSerializer;
 import de.charite.compbio.jannovar.data.ReferenceDictionary;
 import de.charite.compbio.jannovar.data.SerializationException;
 import de.charite.compbio.jannovar.reference.*;
+import de.charite.compbio.jannovar.reference.Strand;
 import htsjdk.samtools.util.CloseableIterator;
 import htsjdk.variant.variantcontext.Allele;
 import htsjdk.variant.variantcontext.VariantContext;
@@ -94,8 +95,11 @@ import htsjdk.variant.vcf.VCFFileReader;
 import org.monarchinitiative.squirls.cli.Main;
 import org.monarchinitiative.squirls.cli.cmd.SquirlsCommand;
 import org.monarchinitiative.squirls.cli.writers.*;
+import org.monarchinitiative.squirls.core.SquirlsDataService;
 import org.monarchinitiative.squirls.core.SquirlsResult;
 import org.monarchinitiative.squirls.core.VariantSplicingEvaluator;
+import org.monarchinitiative.svart.*;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ConfigurableApplicationContext;
@@ -110,6 +114,9 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+/**
+ * @author Daniel Danis
+ */
 @CommandLine.Command(name = "annotate-vcf",
         aliases = {"A"},
         header = "Annotate variants in a VCF file",
@@ -121,33 +128,32 @@ public class AnnotateVcfCommand extends SquirlsCommand {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AnnotateVcfCommand.class);
 
-    @CommandLine.Option(names = {"-d", "--jannovar-data"},
-            required = true,
-            paramLabel = "hg38_refseq.ser",
-            description = "Path to Jannovar transcript database")
-    public String jannovarDataPath;
-
     @CommandLine.Option(names = {"-f", "--output-format"},
             paramLabel = "html",
-            description = "Comma separated list of output formats to use for writing the results")
+            description = "Comma separated list of output formats to use for writing the results (default: ${DEFAULT-VALUE})")
     public String outputFormats = "html";
 
     @CommandLine.Option(names = {"-n", "--n-variants-to-report"},
             paramLabel = "100",
-            description = "N most pathogenic variants to include into HTML report")
+            description = "N most pathogenic variants to include into HTML report (default: ${DEFAULT-VALUE})")
     public int nVariantsToReport = 100;
 
     @CommandLine.Option(names = {"-t", "--n-threads"},
             paramLabel = "4",
-            description = "Process variants using n threads")
+            description = "Process variants using n threads (default: ${DEFAULT-VALUE})")
     public int nThreads = 4;
 
-    @CommandLine.Parameters(index = "0",
+    @CommandLine.Parameters(index = "1",
+            paramLabel = "hg38_refseq.ser",
+            description = "Path to Jannovar transcript database")
+    public Path jannovarDataPath;
+
+    @CommandLine.Parameters(index = "2",
             paramLabel = "input.vcf",
             description = "Path to input VCF file")
     public Path inputPath;
 
-    @CommandLine.Parameters(index = "1",
+    @CommandLine.Parameters(index = "3",
             paramLabel = "path/to/output",
             description = "Prefix for the output files")
     public String outputPrefix;
@@ -158,7 +164,7 @@ public class AnnotateVcfCommand extends SquirlsCommand {
             List<VariantContext> contexts = new ArrayList<>(alts.size());
             for (Allele alt : alts) {
                 contexts.add(new VariantContextBuilder(vc)
-                        .alleles(List.<Allele>of()) // delete alleles
+                        .alleles(List.<Allele>of()) // delete the existing alleles from the builder
                         .alleles(List.of(vc.getReference(), alt))
                         .make());
             }
@@ -176,87 +182,134 @@ public class AnnotateVcfCommand extends SquirlsCommand {
      */
     private static Function<VariantContext, Collection<WritableSplicingAllele>> annotateVariant(VariantSplicingEvaluator evaluator,
                                                                                                 ReferenceDictionary rd,
-                                                                                                VariantAnnotator annotator) {
+                                                                                                VariantAnnotator annotator,
+                                                                                                Map<String, Contig> contigMap) {
         return vc -> {
             List<WritableSplicingAllele> evaluations = new ArrayList<>(vc.getAlternateAlleles().size());
             for (Allele allele : vc.getAlternateAlleles()) {
+                String contigName = vc.getContig();
                 // jannovar annotations
-                Integer contigId = rd.getContigNameToID().get(vc.getContig());
+                Integer contigId = rd.getContigNameToID().get(contigName);
                 if (contigId == null) {
-                    LOGGER.warn("Jannovar does not recognize contig {} for variant {}", vc.getContig(), vc);
+                    LOGGER.warn("Jannovar does not recognize contig {} for variant {}", contigName, vc);
                     continue;
                 }
 
                 GenomePosition pos = new GenomePosition(rd, Strand.FWD, contigId, vc.getStart(), PositionType.ONE_BASED);
-                GenomeVariant variant = new GenomeVariant(pos, vc.getReference().getDisplayString(), allele.getDisplayString());
+                GenomeVariant genomeVariant = new GenomeVariant(pos, vc.getReference().getDisplayString(), allele.getDisplayString());
                 VariantAnnotations variantAnnotations;
                 try {
-                    variantAnnotations = annotator.buildAnnotations(variant);
+                    variantAnnotations = annotator.buildAnnotations(genomeVariant);
                 } catch (AnnotationException e) {
-                    LOGGER.warn("Unable to annotate variant {}: {}", variant, e.getMessage());
+                    LOGGER.warn("Unable to annotate variant {}: {}", genomeVariant, e.getMessage());
                     continue;
                 }
 
                 // Squirls scores
+                Variant variant;
                 SquirlsResult squirlsResult;
-                if (!variantAnnotations.getHighestImpactEffect().isOffTranscript()) {
+                Contig contig = contigMap.getOrDefault(contigName, Contig.unknown());
+                if (contig.equals(Contig.unknown()) || variantAnnotations.getHighestImpactEffect().isOffTranscript()) {
+                    // don't bother with annotating an off-exome variant
+                    variant = null;
+                    squirlsResult = SquirlsResult.empty();
+                } else {
+                    variant = Variant.of(contig, vc.getID(), org.monarchinitiative.svart.Strand.POSITIVE, CoordinateSystem.oneBased(),
+                            Position.of(vc.getStart()), vc.getReference().getDisplayString(), allele.getDisplayString());
                     Set<String> txAccessions = variantAnnotations.getAnnotations().stream()
                             .map(Annotation::getTranscript)
                             .map(TranscriptModel::getAccession)
                             .collect(Collectors.toSet());
-                    squirlsResult = evaluator.evaluate(vc.getContig(), vc.getStart(), vc.getReference().getBaseString(), allele.getBaseString(), txAccessions);
-                } else {
-                    // don't bother with annotating an off-exome variant
-                    squirlsResult = SquirlsResult.empty();
+                    squirlsResult = evaluator.evaluate(variant, txAccessions);
                 }
 
-                evaluations.add(new WritableSplicingAlleleDefault(vc, allele, variantAnnotations, squirlsResult));
+                evaluations.add(new WritableSplicingAlleleDefault(vc, allele, variantAnnotations, squirlsResult, variant));
             }
 
             return evaluations;
         };
     }
 
+    /**
+     * Prepare <code>ForkJoinPool</code> for variant annotation.
+     *
+     * @param parallelism number of threads to use for variant annotation
+     * @return the pool
+     */
     private static ForkJoinPool makePool(int parallelism) {
         return new ForkJoinPool(parallelism, SquirlsWorkerThread::new, null, false);
     }
 
+    /**
+     * Parse input argument that specifies the desired output formats into a collection of {@link OutputFormat}s.
+     *
+     * @return a collection of output formats
+     */
+    private static Collection<OutputFormat> parseOutputFormats(String outputFormats) {
+        Set<OutputFormat> formats = new HashSet<>(2);
+        for (String format : outputFormats.split(",")) {
+            try {
+                formats.add(OutputFormat.valueOf(format.toUpperCase()));
+            } catch (IllegalArgumentException e) {
+                LOGGER.warn("Ignoring invalid output format `{}`", format);
+            }
+        }
+        return formats;
+    }
+
+    private static Map<String, Contig> prepareContigMap(GenomicAssembly assembly) {
+        Map<String, Contig> builder = new HashMap<>();
+        for (Contig contig : assembly.contigs()) {
+            if (contig.equals(Contig.unknown())) continue;
+            builder.put(contig.name(), contig);
+            builder.put(contig.genBankAccession(), contig);
+            builder.put(contig.refSeqAccession(), contig);
+            builder.put(contig.ucscName(), contig);
+        }
+        return Map.copyOf(builder);
+    }
 
     @Override
     public Integer call() {
         try (ConfigurableApplicationContext context = getContext()) {
-            LOGGER.info("Reading variants from `{}`", inputPath);
-            Set<OutputFormat> outputFormats = parseOutputFormats();
+            Collection<OutputFormat> outputFormats = parseOutputFormats(this.outputFormats);
             VariantSplicingEvaluator evaluator = context.getBean(VariantSplicingEvaluator.class);
+            SquirlsDataService dataService = context.getBean(SquirlsDataService.class);
+            Map<String, Contig> contigMap = prepareContigMap(dataService.genomicAssembly());
 
             if (nThreads < 1) {
                 LOGGER.error("Thread number must be positive: {}", nThreads);
                 return 1;
             }
 
-            JannovarData jd;
-            try {
-                jd = new JannovarDataSerializer(jannovarDataPath).load();
-            } catch (SerializationException e) {
-                LOGGER.error("Unable to deserialize jannovar data at {}: {}", jannovarDataPath, e.getMessage());
+            if (nVariantsToReport <= 0) {
+                LOGGER.error("Number of variants to report must be positive: {}", nVariantsToReport);
                 return 1;
             }
-            VariantAnnotator annotator = new VariantAnnotator(jd.getRefDict(),
-                    jd.getChromosomes(),
-                    new AnnotationBuilderOptions());
 
-            // TODO: 29. 5. 2020 improve behavior & logging
-            //  e.g. report progress in % if variant index and thus count is available
-            AnnotateVcfProgressReporter progressReporter = new AnnotateVcfProgressReporter(5_000);
-            List<WritableSplicingAllele> annotated; // = Collections.synchronizedList(new ArrayList<>());
-            ArrayList<String> sampleNames;
+            JannovarData jd;
+            try {
+                LOGGER.info("Loading transcript database from `{}`", jannovarDataPath.toAbsolutePath());
+                jd = new JannovarDataSerializer(jannovarDataPath.toAbsolutePath().toString()).load();
+            } catch (SerializationException e) {
+                LOGGER.error("Unable to deserialize jannovar transcript database: {}", e.getMessage());
+                return 1;
+            }
+            VariantAnnotator annotator = new VariantAnnotator(jd.getRefDict(), jd.getChromosomes(), new AnnotationBuilderOptions());
+
+            int processorsAvailable = Runtime.getRuntime().availableProcessors();
+            if (nThreads > processorsAvailable) {
+                LOGGER.warn("You asked for more threads ({}) than processors ({}) available on the system", nThreads, processorsAvailable);
+            }
 
             // annotate the variants
-            int procsAvail = Runtime.getRuntime().availableProcessors();
-            if (nThreads > procsAvail) {
-                LOGGER.warn("You asked for more threads ({}) than processors ({}) available on the system", nThreads, procsAvail);
-            }
+            // TODO: 29. 5. 2020 improve behavior & logging
+            //  e.g. report progress in % if variant index and thus count is available
+            List<WritableSplicingAllele> annotated;
+            ArrayList<String> sampleNames;
             LOGGER.info("Annotating variants on {} threads", nThreads);
+            AnnotateVcfProgressReporter progressReporter = new AnnotateVcfProgressReporter(5_000);
+            LOGGER.info("Reading variants from `{}`", inputPath);
             try (VCFFileReader reader = new VCFFileReader(inputPath, false);
                  CloseableIterator<VariantContext> variantIterator = reader.iterator()) {
 
@@ -272,7 +325,7 @@ public class AnnotateVcfCommand extends SquirlsCommand {
                             .flatMap(Collection::stream)
                             .peek(progressReporter::logAllele)
 
-                            .map(annotateVariant(evaluator, jd.getRefDict(), annotator))
+                            .map(annotateVariant(evaluator, jd.getRefDict(), annotator, contigMap))
                             .flatMap(Collection::stream)
                             .peek(wa -> {
                                 if (!wa.squirlsResult().isEmpty()) {
@@ -293,37 +346,24 @@ public class AnnotateVcfCommand extends SquirlsCommand {
                     .addAllSampleNames(sampleNames)
                     .settingsData(SettingsData.builder()
                             .inputPath(inputPath.toString())
-                            .transcriptDb(jannovarDataPath)
+                            .transcriptDb(jannovarDataPath.toAbsolutePath().toString())
                             .nReported(nVariantsToReport)
                             .build())
                     .analysisStats(progressReporter.getAnalysisStats())
-                    .variants(annotated)
+                    .addAllVariants(annotated)
                     .build();
 
             ResultWriterFactory resultWriterFactory = context.getBean(ResultWriterFactory.class);
-            OutputSettings settings = new OutputSettings(outputPrefix, nVariantsToReport);
             for (OutputFormat format : outputFormats) {
                 ResultWriter writer = resultWriterFactory.resultWriterForFormat(format);
                 try {
-                    writer.write(results, settings);
+                    writer.write(results, outputPrefix);
                 } catch (IOException e) {
-                    LOGGER.warn("Error writing {} results: {}", format, e.getMessage());
+                    if (LOGGER.isWarnEnabled()) LOGGER.warn("Error writing {} results: {}", format, e.getMessage());
                 }
             }
         }
 
         return 0;
-    }
-
-    private Set<OutputFormat> parseOutputFormats() {
-        Set<OutputFormat> formats = new HashSet<>(2);
-        for (String format : outputFormats.split(",")) {
-            try {
-                formats.add(OutputFormat.valueOf(format.toUpperCase()));
-            } catch (IllegalArgumentException e) {
-                LOGGER.warn("Ignoring invalid output format `{}`", format);
-            }
-        }
-        return formats;
     }
 }

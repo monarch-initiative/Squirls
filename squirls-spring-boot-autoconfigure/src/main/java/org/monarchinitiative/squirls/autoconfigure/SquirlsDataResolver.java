@@ -86,6 +86,7 @@ import java.util.List;
  * This class provides paths to resources, such as path to FASTA file, or splicing transcript database.
  * <p>
  * The paths are provided based on {@code squirlsDataDirectory}, {@code dataVersion}, and {@code genomeAssembly}.
+ * @author Daniel Danis
  */
 public class SquirlsDataResolver {
 
@@ -101,12 +102,16 @@ public class SquirlsDataResolver {
         this.genomeAssembly = genomeAssembly;
 
         // now check that we have all files present
-        List<Path> paths = List.of(genomeFastaPath(), genomeFastaFaiPath(), genomeFastaDictPath(), dataSourceFullPath(), phylopPath());
+        List<Path> paths = List.of(genomeAssemblyReportPath(), genomeFastaPath(), genomeFastaFaiPath(), genomeFastaDictPath(), dataSourceFullPath(), phylopPath());
         for (Path path : paths) {
             if (!(Files.isRegularFile(path) && Files.isReadable(path))) {
                 throw new MissingSquirlsResourceException(String.format("The file `%s` is missing in SQUIRLS directory", path.toFile().getName()));
             }
         }
+    }
+
+    public Path genomeAssemblyReportPath() {
+        return squirlsDataDirectory.resolve(String.format("%s_%s.assembly_report.txt", dataVersion, genomeAssembly));
     }
 
     public Path genomeFastaPath() {

@@ -90,7 +90,8 @@ import java.nio.file.Files;
 import java.util.zip.Deflater;
 
 /**
- * Add files into
+ * Add files into a ZIP file.
+ * @author Daniel Danis
  */
 public class ZipCompressionWrapper implements Closeable {
 
@@ -100,7 +101,7 @@ public class ZipCompressionWrapper implements Closeable {
 
     public ZipCompressionWrapper(File zipPath) throws IOException {
         archive = new ZipArchiveOutputStream(zipPath);
-        archive.setLevel(Deflater.BEST_COMPRESSION);
+        archive.setLevel(Deflater.DEFAULT_COMPRESSION);
     }
 
     public void addResource(File file, String name) throws IOException {

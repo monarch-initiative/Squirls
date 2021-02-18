@@ -76,38 +76,48 @@
 
 package org.monarchinitiative.squirls.core.scoring.calculators;
 
-import de.charite.compbio.jannovar.reference.GenomeInterval;
-import de.charite.compbio.jannovar.reference.GenomePosition;
-import de.charite.compbio.jannovar.reference.GenomeVariant;
-import org.monarchinitiative.squirls.core.model.SplicingTranscript;
 import org.monarchinitiative.squirls.core.reference.SplicingLocationData;
-import org.monarchinitiative.squirls.core.reference.transcript.SplicingTranscriptLocator;
+import org.monarchinitiative.squirls.core.reference.TranscriptModel;
+import org.monarchinitiative.squirls.core.reference.TranscriptModelLocator;
+import org.monarchinitiative.svart.GenomicRegion;
+import org.monarchinitiative.svart.Position;
+import org.monarchinitiative.svart.Variant;
 
+/**
+ * @author Daniel Danis
+ */
 abstract class BaseAgezCalculator implements FeatureCalculator {
 
 
-    protected final SplicingTranscriptLocator locator;
+    protected final TranscriptModelLocator locator;
     protected final int agezBegin;
     protected final int agezEnd;
 
-    BaseAgezCalculator(SplicingTranscriptLocator locator, int agezBegin, int agezEnd) {
+    BaseAgezCalculator(TranscriptModelLocator locator, int agezBegin, int agezEnd) {
         this.locator = locator;
         this.agezBegin = agezBegin;
         this.agezEnd = agezEnd;
     }
 
-    boolean overlapsWithAgezRegion(GenomeVariant variant, SplicingTranscript transcript) {
-        final SplicingLocationData locationData = locator.locate(variant, transcript);
+    boolean overlapsWithAgezRegion(Variant variant, TranscriptModel transcript) {
+        SplicingLocationData locationData = locator.locate(variant, transcript);
 
-        if (locationData.getAcceptorBoundary().isEmpty()) {
-            // no acceptor boundary, the variant is located within the coding region or canonical donor region
-            // of the first exon
-            return false;
+        GenomicRegion agezInterval = null;
+        switch (locationData.getPosition()) {
+            case ACCEPTOR:
+                GenomicRegion exon = transcript.exons().get(locationData.getExonIdx());
+                Position exonStart = exon.startPosition();
+                agezInterval = GenomicRegion.of(exon.contig(), exon.strand(), exon.coordinateSystem(), exonStart.shift(agezBegin), exonStart.shift(agezEnd));
+                break;
+            case INTRON:
+                GenomicRegion intron = transcript.introns().get(locationData.getIntronIdx());
+                Position intronEnd = intron.endPosition();
+                agezInterval = GenomicRegion.of(intron.contig(), intron.strand(), intron.coordinateSystem(),
+                        intronEnd.shift(agezBegin), intronEnd.shift(agezEnd));
+                break;
+            default:
+                break;
         }
-
-        final GenomePosition acceptorBoundary = locationData.getAcceptorBoundary().get();
-        final GenomeInterval agezInterval = new GenomeInterval(acceptorBoundary.shifted(agezBegin), -(agezBegin - agezEnd));
-
-        return variant.getGenomeInterval().overlapsWith(agezInterval);
+        return agezInterval != null && variant.overlapsWith(agezInterval);
     }
 }

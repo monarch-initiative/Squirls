@@ -78,6 +78,7 @@ package org.monarchinitiative.squirls.cli.visualization.selector;
 
 /**
  * Members of this enum define what type of visualization we make for splice variants.
+ * @author Daniel Danis
  */
 public enum VisualizationContext {
 

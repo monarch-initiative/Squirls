@@ -76,17 +76,16 @@
 
 package org.monarchinitiative.squirls.core.scoring.calculators;
 
-import de.charite.compbio.jannovar.reference.GenomeInterval;
-import de.charite.compbio.jannovar.reference.GenomePosition;
-import de.charite.compbio.jannovar.reference.GenomeVariant;
-import org.monarchinitiative.squirls.core.reference.SplicingLocationData;
-import org.monarchinitiative.squirls.core.reference.allele.AlleleGenerator;
-import org.monarchinitiative.squirls.core.reference.transcript.SplicingTranscriptLocator;
+import org.monarchinitiative.squirls.core.reference.*;
 import org.monarchinitiative.squirls.core.scoring.calculators.ic.SplicingInformationContentCalculator;
+import org.monarchinitiative.svart.GenomicRegion;
+import org.monarchinitiative.svart.Variant;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import xyz.ielis.hyperutil.reference.fasta.SequenceInterval;
 
+/**
+ * @author Daniel Danis
+ */
 public class CanonicalAcceptor extends BaseFeatureCalculator {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CanonicalAcceptor.class);
@@ -94,36 +93,38 @@ public class CanonicalAcceptor extends BaseFeatureCalculator {
 
     public CanonicalAcceptor(SplicingInformationContentCalculator annotator,
                              AlleleGenerator generator,
-                             SplicingTranscriptLocator locator) {
+                             TranscriptModelLocator locator) {
         super(annotator, generator, locator);
     }
 
     @Override
-    protected double score(GenomeVariant variant, SplicingLocationData locationData, SequenceInterval sequence) {
-        return locationData.getAcceptorBoundary()
-                .map(anchor -> score(variant, anchor, sequence))
-                .orElse(0.);
+    protected double score(Variant variant, SplicingLocationData locationData, TranscriptModel tx, StrandedSequence sequence) {
+        if (locationData.getPosition() == SplicingLocationData.SplicingPosition.ACCEPTOR) {
+            return locationData.getAcceptorRegion()
+                    .map(acceptor -> score(variant, acceptor, sequence))
+                    .orElse(0.);
+        }
+        return 0.;
     }
 
 
-    private double score(GenomeVariant variant, GenomePosition anchor, SequenceInterval sequence) {
-        final GenomeInterval acceptorRegion = generator.makeAcceptorInterval(anchor);
-
-        if (!acceptorRegion.overlapsWith(variant.getGenomeInterval())) {
+    private double score(Variant variant, GenomicRegion acceptor, StrandedSequence sequence) {
+        if (!acceptor.overlapsWith(variant)) {
             // shortcut - if variant does not affect the donor site
             return 0;
         }
 
-        final String acceptorSiteSnippet = generator.getAcceptorSiteSnippet(anchor, sequence);
-        final String acceptorSiteWithAltAllele = generator.getAcceptorSiteWithAltAllele(anchor, variant, sequence);
+        String acceptorSiteSnippet = sequence.subsequence(acceptor);
+        String acceptorSiteWithAltAllele = generator.getAcceptorSiteWithAltAllele(acceptor, variant, sequence);
 
         if (acceptorSiteSnippet == null || acceptorSiteWithAltAllele == null) {
-            LOGGER.debug("Unable to create wt/alt snippets for variant `{}` using interval `{}`", variant, sequence.getInterval());
+            if (LOGGER.isDebugEnabled())
+                LOGGER.debug("Unable to create wt/alt snippets for variant `{}` using interval `{}`", variant, sequence);
             return Double.NaN;
         }
 
-        final double refScore = calculator.getSpliceAcceptorScore(acceptorSiteSnippet);
-        final double altScore = calculator.getSpliceAcceptorScore(acceptorSiteWithAltAllele);
+        double refScore = calculator.getSpliceAcceptorScore(acceptorSiteSnippet);
+        double altScore = calculator.getSpliceAcceptorScore(acceptorSiteWithAltAllele);
 
         return refScore - altScore;
     }

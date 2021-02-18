@@ -76,10 +76,11 @@
 
 package org.monarchinitiative.squirls.core.scoring;
 
-import org.monarchinitiative.squirls.core.data.ic.SplicingPwmData;
-import org.monarchinitiative.squirls.core.reference.allele.AlleleGenerator;
-import org.monarchinitiative.squirls.core.reference.transcript.SplicingTranscriptLocator;
-import org.monarchinitiative.squirls.core.reference.transcript.SplicingTranscriptLocatorNaive;
+import org.monarchinitiative.squirls.core.VariantOnTranscript;
+import org.monarchinitiative.squirls.core.reference.AlleleGenerator;
+import org.monarchinitiative.squirls.core.reference.SplicingPwmData;
+import org.monarchinitiative.squirls.core.reference.TranscriptModelLocator;
+import org.monarchinitiative.squirls.core.reference.TranscriptModelLocatorNaive;
 import org.monarchinitiative.squirls.core.scoring.calculators.*;
 import org.monarchinitiative.squirls.core.scoring.calculators.conservation.BigWigAccessor;
 import org.monarchinitiative.squirls.core.scoring.calculators.ic.SplicingInformationContentCalculator;
@@ -87,7 +88,7 @@ import org.monarchinitiative.squirls.core.scoring.calculators.ic.SplicingInforma
 import java.util.Map;
 
 /**
- * This annotator calculates the following splicing features for each {@link Annotatable}:
+ * This annotator calculates the following splicing features for each {@link VariantOnTranscript}:
  * <ul>
  *     <li><code>canonical_donor</code></li>
  *     <li><code>cryptic_donor</code></li>
@@ -100,6 +101,7 @@ import java.util.Map;
  *     <li><code>donor_offset</code></li>
  *     <li><code>acceptor_offset</code></li>
  * </ul>
+ * @author Daniel Danis
  */
 public class DenseSplicingAnnotator extends AbstractSplicingAnnotator {
 
@@ -115,7 +117,7 @@ public class DenseSplicingAnnotator extends AbstractSplicingAnnotator {
                                   Map<String, Double> hexamerMap,
                                   Map<String, Double> septamerMap,
                                   BigWigAccessor bigWigAccessor) {
-        super(new SplicingTranscriptLocatorNaive(splicingPwmData.getParameters()), makeDenseCalculatorMap(splicingPwmData, hexamerMap, septamerMap, bigWigAccessor));
+        super(makeDenseCalculatorMap(splicingPwmData, hexamerMap, septamerMap, bigWigAccessor));
     }
 
     static Map<String, FeatureCalculator> makeDenseCalculatorMap(SplicingPwmData splicingPwmData,
@@ -123,7 +125,7 @@ public class DenseSplicingAnnotator extends AbstractSplicingAnnotator {
                                                                  Map<String, Double> septamerMap,
                                                                  BigWigAccessor bigWigAccessor) {
 
-        SplicingTranscriptLocator locator = new SplicingTranscriptLocatorNaive(splicingPwmData.getParameters());
+        TranscriptModelLocator locator = new TranscriptModelLocatorNaive(splicingPwmData.getParameters());
         SplicingInformationContentCalculator calculator = new SplicingInformationContentCalculator(splicingPwmData);
         AlleleGenerator generator = new AlleleGenerator(splicingPwmData.getParameters());
 

@@ -76,13 +76,14 @@
 
 package org.monarchinitiative.squirls.core.reference;
 
-import de.charite.compbio.jannovar.reference.GenomeInterval;
-import de.charite.compbio.jannovar.reference.GenomePosition;
+import org.monarchinitiative.svart.GenomicRegion;
 
+import java.util.Objects;
 import java.util.Optional;
 
 /**
  * POJO for grouping location data of variant with respect to transcript.
+ * @author Daniel Danis
  */
 public class SplicingLocationData {
 
@@ -94,21 +95,17 @@ public class SplicingLocationData {
 
     private final SplicingPosition position;
 
-    private final GenomePosition donorBoundary;
-    private final GenomeInterval donorRegion;
-    private final GenomePosition acceptorBoundary;
-    private final GenomeInterval acceptorRegion;
+    private final GenomicRegion donorRegion;
+    private final GenomicRegion acceptorRegion;
     private final int intronIdx;
     private final int exonIdx;
 
     private SplicingLocationData(Builder builder) {
+        position = builder.position;
+        donorRegion = builder.donorRegion;
+        acceptorRegion = builder.acceptorRegion;
         intronIdx = builder.intronIdx;
         exonIdx = builder.exonIdx;
-        position = builder.position;
-        donorBoundary = builder.donorBoundary;
-        donorRegion = builder.donorRegion;
-        acceptorBoundary = builder.acceptorBoundary;
-        acceptorRegion = builder.acceptorRegion;
     }
 
     public static SplicingLocationData outside() {
@@ -119,19 +116,11 @@ public class SplicingLocationData {
         return new Builder();
     }
 
-    public Optional<GenomePosition> getDonorBoundary() {
-        return Optional.ofNullable(donorBoundary);
-    }
-
-    public Optional<GenomeInterval> getDonorRegion() {
+    public Optional<GenomicRegion> getDonorRegion() {
         return Optional.ofNullable(donorRegion);
     }
 
-    public Optional<GenomePosition> getAcceptorBoundary() {
-        return Optional.ofNullable(acceptorBoundary);
-    }
-
-    public Optional<GenomeInterval> getAcceptorRegion() {
+    public Optional<GenomicRegion> getAcceptorRegion() {
         return Optional.ofNullable(acceptorRegion);
     }
 
@@ -147,6 +136,18 @@ public class SplicingLocationData {
         return position;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        SplicingLocationData that = (SplicingLocationData) o;
+        return intronIdx == that.intronIdx && exonIdx == that.exonIdx && position == that.position && Objects.equals(donorRegion, that.donorRegion) && Objects.equals(acceptorRegion, that.acceptorRegion);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(position, donorRegion, acceptorRegion, intronIdx, exonIdx);
+    }
 
     @Override
     public String toString() {
@@ -185,9 +186,7 @@ public class SplicingLocationData {
 
         private SplicingPosition position;
 
-        private GenomePosition donorBoundary, acceptorBoundary;
-
-        private GenomeInterval donorRegion, acceptorRegion;
+        private GenomicRegion donorRegion, acceptorRegion;
 
         private Builder() {
         }
@@ -207,22 +206,12 @@ public class SplicingLocationData {
             return this;
         }
 
-        public Builder setDonorBoundary(GenomePosition donorBoundary) {
-            this.donorBoundary = donorBoundary;
-            return this;
-        }
-
-        public Builder setDonorRegion(GenomeInterval donorRegion) {
+        public Builder setDonorRegion(GenomicRegion donorRegion) {
             this.donorRegion = donorRegion;
             return this;
         }
 
-        public Builder setAcceptorBoundary(GenomePosition acceptorBoundary) {
-            this.acceptorBoundary = acceptorBoundary;
-            return this;
-        }
-
-        public Builder setAcceptorRegion(GenomeInterval acceptorRegion) {
+        public Builder setAcceptorRegion(GenomicRegion acceptorRegion) {
             this.acceptorRegion = acceptorRegion;
             return this;
         }

@@ -78,11 +78,14 @@ package org.monarchinitiative.squirls.cli.writers;
 
 /**
  * Squirls reports annotated variants in these formats.
+ * @author Daniel Danis
  */
 public enum OutputFormat {
 
     HTML("html"),
-    VCF("vcf");
+    VCF("vcf"),
+    CSV("csv"),
+    TSV("tsv");
 
     private final String fileExtension;
 

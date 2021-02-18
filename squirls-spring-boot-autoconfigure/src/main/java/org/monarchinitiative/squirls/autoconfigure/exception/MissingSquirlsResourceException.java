@@ -78,6 +78,8 @@ package org.monarchinitiative.squirls.autoconfigure.exception;
 
 /**
  * An exception thrown when a resource file (e.g. FASTA file) is missing from SQUIRLS data directory.
+ *
+ * @author Daniel Danis
  */
 public class MissingSquirlsResourceException extends Exception {
 

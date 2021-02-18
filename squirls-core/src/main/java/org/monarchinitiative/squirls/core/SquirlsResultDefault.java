@@ -75,16 +75,20 @@
  */
 package org.monarchinitiative.squirls.core;
 
+import java.util.Collection;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+/**
+ * @author Daniel Danis
+ */
 class SquirlsResultDefault implements SquirlsResult {
 
     private final Set<SquirlsTxResult> results;
 
-    private SquirlsResultDefault(Set<SquirlsTxResult> results) {
+    private SquirlsResultDefault(Collection<SquirlsTxResult> results) {
         int nUniqueTxAccessions = results.stream()
                 .map(SquirlsTxResult::accessionId)
                 .collect(Collectors.toSet()).size();
@@ -96,7 +100,7 @@ class SquirlsResultDefault implements SquirlsResult {
         this.results = Set.copyOf(results);
     }
 
-    static SquirlsResultDefault of(Set<SquirlsTxResult> squirlsTxResults) {
+    static SquirlsResultDefault of(Collection<SquirlsTxResult> squirlsTxResults) {
         return new SquirlsResultDefault(squirlsTxResults);
     }
 

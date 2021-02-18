@@ -82,7 +82,10 @@ import htsjdk.variant.variantcontext.writer.Options;
 import htsjdk.variant.variantcontext.writer.VariantContextWriter;
 import htsjdk.variant.variantcontext.writer.VariantContextWriterBuilder;
 import htsjdk.variant.vcf.*;
-import org.monarchinitiative.squirls.cli.writers.*;
+import org.monarchinitiative.squirls.cli.writers.AnalysisResults;
+import org.monarchinitiative.squirls.cli.writers.OutputFormat;
+import org.monarchinitiative.squirls.cli.writers.ResultWriter;
+import org.monarchinitiative.squirls.cli.writers.WritableSplicingAllele;
 import org.monarchinitiative.squirls.core.SquirlsResult;
 
 import java.io.IOException;
@@ -91,15 +94,15 @@ import java.nio.file.Paths;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+/**
+ * @author Daniel Danis
+ */
 public class VcfResultWriter implements ResultWriter {
 
     private static final String SQUIRLS_FLAG_FIELD_NAME = "SQUIRLS";
 
-    private static final VCFInfoHeaderLine FLAG_LINE = new VCFInfoHeaderLine(
-            SQUIRLS_FLAG_FIELD_NAME,
-            VCFHeaderLineCount.A,
-            VCFHeaderLineType.Flag,
-            "Variant is considered as pathogenic if the flag is present");
+    private static final VCFFilterHeaderLine FLAG_LINE = new VCFFilterHeaderLine(SQUIRLS_FLAG_FIELD_NAME,
+            "Squirls considers the variant as pathogenic if the filter is present");
 
     private static final String SQUIRLS_SCORE_FIELD_NAME = "SQUIRLS_SCORE";
 
@@ -138,7 +141,9 @@ public class VcfResultWriter implements ResultWriter {
             }
 
             // is the ALT allele pathogenic wrt any overlapping transcript?
-            boolean isPathogenic = squirlsScores.isPathogenic();
+            builder = squirlsScores.isPathogenic()
+                    ? builder.filter(SQUIRLS_FLAG_FIELD_NAME)
+                    : builder;
 
             // prediction string wrt all overlapping transcripts
             String txPredictions = squirlsScores.results()
@@ -146,18 +151,15 @@ public class VcfResultWriter implements ResultWriter {
                     .map(sq -> String.format("%s=%f", sq.accessionId(), sq.prediction().getMaxPathogenicity()))
                     .collect(Collectors.joining("|", String.format("%s|", ve.allele().getBaseString()), ""));
 
-            return builder.attribute(SQUIRLS_FLAG_FIELD_NAME, isPathogenic)
-                    .attribute(SQUIRLS_SCORE_FIELD_NAME, txPredictions)
-                    .make();
+            return builder.attribute(SQUIRLS_SCORE_FIELD_NAME, txPredictions).make();
         };
     }
 
     @Override
-    public void write(AnalysisResults results, OutputSettings outputSettings) throws IOException {
+    public void write(AnalysisResults results, String prefix) throws IOException {
         Path inputVcfPath = Paths.get(results.getSettingsData().getInputPath());
-        Path outputVcfPath = Paths.get(outputSettings.outputPrefix() + '.' + OutputFormat.VCF.getFileExtension());
-
-        LOGGER.info("Writing VCF output to `{}`", outputVcfPath);
+        Path outputPath = Paths.get(prefix + '.' + OutputFormat.VCF.getFileExtension());
+        LOGGER.info("Writing VCF output to `{}`", outputPath);
 
         VCFHeader header;
         try (VCFFileReader reader = new VCFFileReader(inputVcfPath, false)) {
@@ -165,7 +167,7 @@ public class VcfResultWriter implements ResultWriter {
         }
 
         try (VariantContextWriter writer = new VariantContextWriterBuilder()
-                .setOutputPath(outputVcfPath)
+                .setOutputPath(outputPath)
                 .setReferenceDictionary(header.getSequenceDictionary())
                 .setOutputFileType(VariantContextWriterBuilder.OutputType.VCF)
                 .unsetOption(Options.INDEX_ON_THE_FLY)

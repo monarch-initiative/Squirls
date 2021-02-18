@@ -84,6 +84,9 @@ import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * @author Daniel Danis
+ */
 class VariantChange {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(VariantChange.class);

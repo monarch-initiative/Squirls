@@ -89,7 +89,8 @@ class SplicingLocationDataTest {
         assertThat(data.getPosition(), is(SplicingLocationData.SplicingPosition.OUTSIDE));
         assertThat(data.getExonIdx(), is(-1));
         assertThat(data.getIntronIdx(), is(-1));
-        assertThat(data.getDonorBoundary().isEmpty(), is(true));
-        assertThat(data.getAcceptorBoundary().isEmpty(), is(true));
+
+        assertThat(data.getDonorRegion().isEmpty(), is(true));
+        assertThat(data.getAcceptorRegion().isEmpty(), is(true));
     }
 }

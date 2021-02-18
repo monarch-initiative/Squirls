@@ -76,38 +76,40 @@
 
 package org.monarchinitiative.squirls.core.scoring;
 
-import de.charite.compbio.jannovar.reference.GenomeVariant;
-import org.monarchinitiative.squirls.core.model.SplicingTranscript;
-import org.monarchinitiative.squirls.core.reference.SplicingLocationData;
-import org.monarchinitiative.squirls.core.reference.transcript.SplicingTranscriptLocator;
+import org.monarchinitiative.squirls.core.VariantOnTranscript;
+import org.monarchinitiative.squirls.core.classifier.SquirlsFeatures;
+import org.monarchinitiative.squirls.core.reference.StrandedSequence;
+import org.monarchinitiative.squirls.core.reference.TranscriptModel;
 import org.monarchinitiative.squirls.core.scoring.calculators.FeatureCalculator;
-import xyz.ielis.hyperutil.reference.fasta.SequenceInterval;
+import org.monarchinitiative.svart.Variant;
 
+import java.util.HashMap;
 import java.util.Map;
 
-
+/**
+ * @author Daniel Danis
+ */
 abstract class AbstractSplicingAnnotator implements SplicingAnnotator {
 
-    private final SplicingTranscriptLocator locator;
     private final Map<String, FeatureCalculator> calculatorMap;
 
-    protected AbstractSplicingAnnotator(SplicingTranscriptLocator locator, Map<String, FeatureCalculator> calculatorMap) {
-        this.locator = locator;
+    protected AbstractSplicingAnnotator(Map<String, FeatureCalculator> calculatorMap) {
         this.calculatorMap = calculatorMap;
     }
 
     @Override
-    public <T extends Annotatable> T annotate(T data) {
-        final GenomeVariant variant = data.getVariant();
-        final SplicingTranscript transcript = data.getTranscript();
-        final SequenceInterval sequence = data.getSequence();
+    public SquirlsFeatures annotate(VariantOnTranscript data) {
+        TranscriptModel transcript = data.transcript();
 
-        final SplicingLocationData locationData = locator.locate(variant, transcript);
-        final GenomeVariant variantOnStrand = variant.withStrand(transcript.getStrand());
+        // all variant-related calculations must be done on transcript's strand and coordinate system
+        Variant variant = data.variant().withStrand(transcript.strand()).withCoordinateSystem(transcript.coordinateSystem());
+        StrandedSequence sequence = data.sequence();
 
-        // calculate the features
-        calculatorMap.forEach((name, calculator) -> data.putFeature(name, calculator.score(variantOnStrand, transcript, sequence)));
+        Map<String, Double> features = new HashMap<>(calculatorMap.size());
+        for (String feature : calculatorMap.keySet()) {
+            features.put(feature, calculatorMap.get(feature).score(variant, transcript, sequence));
+        }
 
-        return data;
+        return SquirlsFeatures.of(features);
     }
 }

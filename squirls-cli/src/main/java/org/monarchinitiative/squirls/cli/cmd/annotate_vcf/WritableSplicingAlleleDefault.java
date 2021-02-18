@@ -81,24 +81,31 @@ import htsjdk.variant.variantcontext.Allele;
 import htsjdk.variant.variantcontext.VariantContext;
 import org.monarchinitiative.squirls.cli.writers.WritableSplicingAllele;
 import org.monarchinitiative.squirls.core.SquirlsResult;
+import org.monarchinitiative.svart.Variant;
 
 import java.util.Objects;
 
+/**
+ * @author Daniel Danis
+ */
 class WritableSplicingAlleleDefault implements WritableSplicingAllele {
 
     private final VariantContext variantContext;
     private final Allele allele;
     private final VariantAnnotations annotations;
     private final SquirlsResult squirlsResult;
+    private final Variant variant;
 
     WritableSplicingAlleleDefault(VariantContext variantContext,
                                   Allele allele,
                                   VariantAnnotations annotations,
-                                  SquirlsResult squirlsResult) {
+                                  SquirlsResult squirlsResult,
+                                  Variant variant) {
         this.variantContext = variantContext;
         this.allele = allele;
         this.annotations = annotations;
         this.squirlsResult = squirlsResult;
+        this.variant = variant;
     }
 
     @Override
@@ -117,6 +124,11 @@ class WritableSplicingAlleleDefault implements WritableSplicingAllele {
     }
 
     @Override
+    public Variant variant() {
+        return variant;
+    }
+
+    @Override
     public SquirlsResult squirlsResult() {
         return squirlsResult;
     }
@@ -126,15 +138,12 @@ class WritableSplicingAlleleDefault implements WritableSplicingAllele {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         WritableSplicingAlleleDefault that = (WritableSplicingAlleleDefault) o;
-        return Objects.equals(variantContext, that.variantContext) &&
-                Objects.equals(allele, that.allele) &&
-                Objects.equals(annotations, that.annotations) &&
-                Objects.equals(squirlsResult, that.squirlsResult);
+        return Objects.equals(variantContext, that.variantContext) && Objects.equals(allele, that.allele) && Objects.equals(annotations, that.annotations) && Objects.equals(squirlsResult, that.squirlsResult) && Objects.equals(variant, that.variant);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(variantContext, allele, annotations, squirlsResult);
+        return Objects.hash(variantContext, allele, annotations, squirlsResult, variant);
     }
 
     @Override
@@ -144,6 +153,7 @@ class WritableSplicingAlleleDefault implements WritableSplicingAllele {
                 ", allele=" + allele +
                 ", annotations=" + annotations +
                 ", squirlsResult=" + squirlsResult +
+                ", variant=" + variant +
                 '}';
     }
 }

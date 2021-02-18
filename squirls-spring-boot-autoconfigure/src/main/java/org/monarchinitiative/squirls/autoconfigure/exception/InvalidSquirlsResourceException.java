@@ -79,6 +79,8 @@ package org.monarchinitiative.squirls.autoconfigure.exception;
 /**
  * This exception is thrown when a resource is corrupted or if the resource should be present but it is missing.
  * In contrast with {@link UndefinedSquirlsResourceException}, this has nothing to do with the user.
+ *
+ * @author Daniel Danis
  */
 public class InvalidSquirlsResourceException extends Exception {
 

@@ -76,17 +76,19 @@
 
 package org.monarchinitiative.squirls.core.scoring.calculators;
 
-import de.charite.compbio.jannovar.reference.GenomePosition;
-import de.charite.compbio.jannovar.reference.GenomeVariant;
-import de.charite.compbio.jannovar.reference.Strand;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.monarchinitiative.svart.CoordinateSystem;
+import org.monarchinitiative.svart.Position;
+import org.monarchinitiative.svart.Strand;
+import org.monarchinitiative.svart.Variant;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.closeTo;
 
-class SStrengthDiffDonorTest extends CalculatorTestBase {
+public class SStrengthDiffDonorTest extends CalculatorTestBase {
 
     private SStrengthDiffDonor scorer;
 
@@ -96,19 +98,14 @@ class SStrengthDiffDonorTest extends CalculatorTestBase {
         scorer = new SStrengthDiffDonor(calculator, generator, locator);
     }
 
-    @Test
-    void variantInDonorOfTheFirstExon() {
-        GenomeVariant variant = new GenomeVariant(new GenomePosition(rd, Strand.FWD, 1, 1200), "g", "a");
-
-        final double score = scorer.score(variant, st, sequenceInterval);
-        assertThat(score, is(closeTo(-8.1511, EPSILON)));
+    @ParameterizedTest
+    @CsvSource({
+            "1200, g, a,     -8.1511",
+            "1600, g, c,      0.0000",
+    })
+    public void score(int pos, String ref, String alt, double expected) {
+        Variant variant = Variant.of(contig, "", Strand.POSITIVE, CoordinateSystem.zeroBased(), Position.of(pos), ref, alt);
+        assertThat(scorer.score(variant, tx, sequence), is(closeTo(expected, EPSILON)));
     }
 
-    @Test
-    void variantInDonorOfTheSecondExon() {
-        GenomeVariant variant = new GenomeVariant(new GenomePosition(rd, Strand.FWD, 1, 1600), "g", "c");
-
-        final double score = scorer.score(variant, st, sequenceInterval);
-        assertThat(score, is(closeTo(0., EPSILON)));
-    }
 }

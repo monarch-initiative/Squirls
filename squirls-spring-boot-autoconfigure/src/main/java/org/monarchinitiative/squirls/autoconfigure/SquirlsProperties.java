@@ -80,6 +80,9 @@ import org.monarchinitiative.squirls.core.scoring.SplicingAnnotator;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.NestedConfigurationProperty;
 
+/**
+ * @author Daniel Danis
+ */
 @ConfigurationProperties(prefix = "squirls")
 public class SquirlsProperties {
 
@@ -153,7 +156,7 @@ public class SquirlsProperties {
     @ConfigurationProperties(prefix = "squirls.classifier")
     public static class ClassifierProperties {
 
-        private String version = "v0.4.4";
+        private String version = "v0.4.6";
 
         private int maxVariantLength = 100;
 
@@ -181,7 +184,7 @@ public class SquirlsProperties {
     public static class AnnotatorProperties {
 
         /**
-         * Which {@link SplicingAnnotator} to use (`dense` by default).
+         * Which {@link SplicingAnnotator} to use (`agez` by default).
          */
         private String version = "agez";
 

@@ -1,0 +1,338 @@
+<svg width="420" height="240" xmlns="http://www.w3.org/2000/svg" xmlns:svg="http://www.w3.org/2000/svg">
+    <!-- Created by vmvt -->
+    <style>
+        text { font: 24px courier, monospace; }
+        text.t20 { font: 20px courier, monospace; }
+        text.t14 { font: 14px courier, monospace; }
+        text.t12 { font: 12px courier, monospace; }
+    </style>
+    <g>
+        <g transform='translate(10,35.000000) scale(1,0.018851)'>
+            <text x="0" y="0" fill="#e64b35">T</text>
+        </g><g transform='translate(10,34.739989) scale(1,0.013357)'>
+        <text x="0" y="0" fill="#00A087">A</text>
+    </g><g transform='translate(10,34.555753) scale(1,0.013034)'>
+        <text x="0" y="0" fill="#4dbbd5">C</text>
+    </g><g transform='translate(10,34.375974) scale(1,0.008564)'>
+        <text x="0" y="0" fill="#ff9900">G</text>
+    </g><g transform='translate(25,35.000000) scale(1,0.020958)'>
+        <text x="0" y="0" fill="#e64b35">T</text>
+    </g><g transform='translate(25,34.710922) scale(1,0.014582)'>
+        <text x="0" y="0" fill="#4dbbd5">C</text>
+    </g><g transform='translate(25,34.509789) scale(1,0.014287)'>
+        <text x="0" y="0" fill="#00A087">A</text>
+    </g><g transform='translate(25,34.312727) scale(1,0.009151)'>
+        <text x="0" y="0" fill="#ff9900">G</text>
+    </g><g transform='translate(40,35.000000) scale(1,0.021809)'>
+        <text x="0" y="0" fill="#e64b35">T</text>
+    </g><g transform='translate(40,34.699183) scale(1,0.015230)'>
+        <text x="0" y="0" fill="#4dbbd5">C</text>
+    </g><g transform='translate(40,34.489116) scale(1,0.014499)'>
+        <text x="0" y="0" fill="#00A087">A</text>
+    </g><g transform='translate(40,34.289131) scale(1,0.009382)'>
+        <text x="0" y="0" fill="#ff9900">G</text>
+    </g><g transform='translate(55,35.000000) scale(1,0.026396)'>
+        <text x="0" y="0" fill="#e64b35">T</text>
+    </g><g transform='translate(55,34.635924) scale(1,0.017787)'>
+        <text x="0" y="0" fill="#4dbbd5">C</text>
+    </g><g transform='translate(55,34.390589) scale(1,0.016222)'>
+        <text x="0" y="0" fill="#00A087">A</text>
+    </g><g transform='translate(55,34.166844) scale(1,0.010743)'>
+        <text x="0" y="0" fill="#ff9900">G</text>
+    </g><g transform='translate(70,35.000000) scale(1,0.030226)'>
+        <text x="0" y="0" fill="#e64b35">T</text>
+    </g><g transform='translate(70,34.583090) scale(1,0.020071)'>
+        <text x="0" y="0" fill="#4dbbd5">C</text>
+    </g><g transform='translate(70,34.306244) scale(1,0.017057)'>
+        <text x="0" y="0" fill="#00A087">A</text>
+    </g><g transform='translate(70,34.070980) scale(1,0.011979)'>
+        <text x="0" y="0" fill="#ff9900">G</text>
+    </g><g transform='translate(85,35.000000) scale(1,0.037703)'>
+        <text x="0" y="0" fill="#e64b35">T</text>
+    </g><g transform='translate(85,34.479959) scale(1,0.024217)'>
+        <text x="0" y="0" fill="#4dbbd5">C</text>
+    </g><g transform='translate(85,34.145928) scale(1,0.019089)'>
+        <text x="0" y="0" fill="#00A087">A</text>
+    </g><g transform='translate(85,33.882633) scale(1,0.014056)'>
+        <text x="0" y="0" fill="#ff9900">G</text>
+    </g><g transform='translate(100,35.000000) scale(1,0.045572)'>
+        <text x="0" y="0" fill="#e64b35">T</text>
+    </g><g transform='translate(100,34.371419) scale(1,0.029304)'>
+        <text x="0" y="0" fill="#4dbbd5">C</text>
+    </g><g transform='translate(100,33.967222) scale(1,0.020168)'>
+        <text x="0" y="0" fill="#00A087">A</text>
+    </g><g transform='translate(100,33.689048) scale(1,0.016491)'>
+        <text x="0" y="0" fill="#ff9900">G</text>
+    </g><g transform='translate(115,35.000000) scale(1,0.059136)'>
+        <text x="0" y="0" fill="#e64b35">T</text>
+    </g><g transform='translate(115,34.184333) scale(1,0.037203)'>
+        <text x="0" y="0" fill="#4dbbd5">C</text>
+    </g><g transform='translate(115,33.671191) scale(1,0.022766)'>
+        <text x="0" y="0" fill="#00A087">A</text>
+    </g><g transform='translate(115,33.357178) scale(1,0.019712)'>
+        <text x="0" y="0" fill="#ff9900">G</text>
+    </g><g transform='translate(130,35.000000) scale(1,0.074826)'>
+        <text x="0" y="0" fill="#e64b35">T</text>
+    </g><g transform='translate(130,33.967918) scale(1,0.045671)'>
+        <text x="0" y="0" fill="#4dbbd5">C</text>
+    </g><g transform='translate(130,33.337975) scale(1,0.024773)'>
+        <text x="0" y="0" fill="#00A087">A</text>
+    </g><g transform='translate(130,32.996273) scale(1,0.023257)'>
+        <text x="0" y="0" fill="#ff9900">G</text>
+    </g><g transform='translate(145,35.000000) scale(1,0.085406)'>
+        <text x="0" y="0" fill="#e64b35">T</text>
+    </g><g transform='translate(145,33.821983) scale(1,0.051545)'>
+        <text x="0" y="0" fill="#4dbbd5">C</text>
+    </g><g transform='translate(145,33.111022) scale(1,0.025584)'>
+        <text x="0" y="0" fill="#00A087">A</text>
+    </g><g transform='translate(145,32.758136) scale(1,0.025584)'>
+        <text x="0" y="0" fill="#ff9900">G</text>
+    </g><g transform='translate(160,35.000000) scale(1,0.101319)'>
+        <text x="0" y="0" fill="#e64b35">T</text>
+    </g><g transform='translate(160,33.602493) scale(1,0.061096)'>
+        <text x="0" y="0" fill="#4dbbd5">C</text>
+    </g><g transform='translate(160,32.759790) scale(1,0.027830)'>
+        <text x="0" y="0" fill="#ff9900">G</text>
+    </g><g transform='translate(160,32.375926) scale(1,0.027178)'>
+        <text x="0" y="0" fill="#00A087">A</text>
+    </g><g transform='translate(175,35.000000) scale(1,0.120119)'>
+        <text x="0" y="0" fill="#e64b35">T</text>
+    </g><g transform='translate(175,33.343193) scale(1,0.069137)'>
+        <text x="0" y="0" fill="#4dbbd5">C</text>
+    </g><g transform='translate(175,32.389585) scale(1,0.030340)'>
+        <text x="0" y="0" fill="#ff9900">G</text>
+    </g><g transform='translate(175,31.971096) scale(1,0.028848)'>
+        <text x="0" y="0" fill="#00A087">A</text>
+    </g><g transform='translate(190,35.000000) scale(1,0.144301)'>
+        <text x="0" y="0" fill="#e64b35">T</text>
+    </g><g transform='translate(190,33.009645) scale(1,0.078449)'>
+        <text x="0" y="0" fill="#4dbbd5">C</text>
+    </g><g transform='translate(190,31.927587) scale(1,0.033212)'>
+        <text x="0" y="0" fill="#ff9900">G</text>
+    </g><g transform='translate(190,31.469490) scale(1,0.030349)'>
+        <text x="0" y="0" fill="#00A087">A</text>
+    </g><g transform='translate(205,35.000000) scale(1,0.167582)'>
+        <text x="0" y="0" fill="#e64b35">T</text>
+    </g><g transform='translate(205,32.688530) scale(1,0.089938)'>
+        <text x="0" y="0" fill="#4dbbd5">C</text>
+    </g><g transform='translate(205,31.448012) scale(1,0.034616)'>
+        <text x="0" y="0" fill="#ff9900">G</text>
+    </g><g transform='translate(205,30.970546) scale(1,0.031381)'>
+        <text x="0" y="0" fill="#00A087">A</text>
+    </g><g transform='translate(220,35.000000) scale(1,0.204056)'>
+        <text x="0" y="0" fill="#e64b35">T</text>
+    </g><g transform='translate(220,32.185433) scale(1,0.096267)'>
+        <text x="0" y="0" fill="#4dbbd5">C</text>
+    </g><g transform='translate(220,30.857614) scale(1,0.037912)'>
+        <text x="0" y="0" fill="#ff9900">G</text>
+    </g><g transform='translate(220,30.334689) scale(1,0.033452)'>
+        <text x="0" y="0" fill="#00A087">A</text>
+    </g><g transform='translate(235,35.000000) scale(1,0.172754)'>
+        <text x="0" y="0" fill="#e64b35">T</text>
+    </g><g transform='translate(235,32.617181) scale(1,0.093534)'>
+        <text x="0" y="0" fill="#4dbbd5">C</text>
+    </g><g transform='translate(235,31.327062) scale(1,0.035949)'>
+        <text x="0" y="0" fill="#ff9900">G</text>
+    </g><g transform='translate(235,30.831215) scale(1,0.030290)'>
+        <text x="0" y="0" fill="#00A087">A</text>
+    </g><g transform='translate(250,35.000000) scale(1,0.139680)'>
+        <text x="0" y="0" fill="#e64b35">T</text>
+    </g><g transform='translate(250,33.073380) scale(1,0.083068)'>
+        <text x="0" y="0" fill="#4dbbd5">C</text>
+    </g><g transform='translate(250,31.927610) scale(1,0.032431)'>
+        <text x="0" y="0" fill="#ff9900">G</text>
+    </g><g transform='translate(250,31.480289) scale(1,0.029017)'>
+        <text x="0" y="0" fill="#00A087">A</text>
+    </g><g transform='translate(265,35.000000) scale(1,0.125023)'>
+        <text x="0" y="0" fill="#e64b35">T</text>
+    </g><g transform='translate(265,33.275540) scale(1,0.085769)'>
+        <text x="0" y="0" fill="#4dbbd5">C</text>
+    </g><g transform='translate(265,32.092523) scale(1,0.029844)'>
+        <text x="0" y="0" fill="#00A087">A</text>
+    </g><g transform='translate(265,31.680878) scale(1,0.027962)'>
+        <text x="0" y="0" fill="#ff9900">G</text>
+    </g><g transform='translate(280,35.000000) scale(1,0.126961)'>
+        <text x="0" y="0" fill="#e64b35">T</text>
+    </g><g transform='translate(280,33.248815) scale(1,0.091081)'>
+        <text x="0" y="0" fill="#4dbbd5">C</text>
+    </g><g transform='translate(280,31.992531) scale(1,0.032292)'>
+        <text x="0" y="0" fill="#00A087">A</text>
+    </g><g transform='translate(280,31.547121) scale(1,0.025668)'>
+        <text x="0" y="0" fill="#ff9900">G</text>
+    </g><g transform='translate(295,35.000000) scale(1,0.200209)'>
+        <text x="0" y="0" fill="#e64b35">T</text>
+    </g><g transform='translate(295,32.238499) scale(1,0.134664)'>
+        <text x="0" y="0" fill="#4dbbd5">C</text>
+    </g><g transform='translate(295,30.381061) scale(1,0.036546)'>
+        <text x="0" y="0" fill="#00A087">A</text>
+    </g><g transform='translate(295,29.876978) scale(1,0.026218)'>
+        <text x="0" y="0" fill="#ff9900">G</text>
+    </g><g transform='translate(310,35.000000) scale(1,0.229160)'>
+        <text x="0" y="0" fill="#e64b35">T</text>
+    </g><g transform='translate(310,31.839172) scale(1,0.123200)'>
+        <text x="0" y="0" fill="#4dbbd5">C</text>
+    </g><g transform='translate(310,30.139864) scale(1,0.040366)'>
+        <text x="0" y="0" fill="#00A087">A</text>
+    </g><g transform='translate(310,29.583094) scale(1,0.027751)'>
+        <text x="0" y="0" fill="#ff9900">G</text>
+    </g><g transform='translate(325,35.000000) scale(1,0.002806)'>
+        <text x="0" y="0" fill="#e64b35">T</text>
+    </g><g transform='translate(325,34.961300) scale(1,0.002716)'>
+        <text x="0" y="0" fill="#4dbbd5">C</text>
+    </g><g transform='translate(325,34.923839) scale(1,0.002396)'>
+        <text x="0" y="0" fill="#00A087">A</text>
+    </g><g transform='translate(325,34.890785) scale(1,0.002067)'>
+        <text x="0" y="0" fill="#ff9900">G</text>
+    </g><g transform='translate(340,35.000000) scale(1,0.501504)'>
+        <text x="0" y="0" fill="#4dbbd5">C</text>
+    </g><g transform='translate(340,28.082704) scale(1,0.223496)'>
+        <text x="0" y="0" fill="#e64b35">T</text>
+    </g><g transform='translate(340,24.999996) scale(1,0.049060)'>
+        <text x="0" y="0" fill="#00A087">A</text>
+    </g><g transform='translate(340,24.323304) scale(1,0.004672)'>
+        <text x="0" y="0" fill="#ff9900">G</text>
+    </g><g transform='translate(355,35.000000) scale(1,1.959884)'>
+        <text x="0" y="0" fill="#00A087">A</text>
+    </g><g transform='translate(355,7.967121) scale(1,0.001966)'>
+        <text x="0" y="0" fill="#4dbbd5">C</text>
+    </g><g transform='translate(355,7.940007) scale(1,0.001966)'>
+        <text x="0" y="0" fill="#e64b35">T</text>
+    </g><g transform='translate(355,7.912893) scale(1,0.001966)'>
+        <text x="0" y="0" fill="#ff9900">G</text>
+    </g><g transform='translate(370,35.000000) scale(1,1.948552)'>
+        <text x="0" y="0" fill="#ff9900">G</text>
+    </g><g transform='translate(370,8.123419) scale(1,0.003913)'>
+        <text x="0" y="0" fill="#4dbbd5">C</text>
+    </g><g transform='translate(370,8.069450) scale(1,0.001956)'>
+        <text x="0" y="0" fill="#00A087">A</text>
+    </g><g transform='translate(370,8.042465) scale(1,0.001956)'>
+        <text x="0" y="0" fill="#e64b35">T</text>
+    </g><g transform='translate(385,35.000000) scale(1,0.105836)'>
+        <text x="0" y="0" fill="#ff9900">G</text>
+    </g><g transform='translate(385,33.540189) scale(1,0.057789)'>
+        <text x="0" y="0" fill="#00A087">A</text>
+    </g><g transform='translate(385,32.743096) scale(1,0.032548)'>
+        <text x="0" y="0" fill="#4dbbd5">C</text>
+    </g><g transform='translate(385,32.294158) scale(1,0.025241)'>
+        <text x="0" y="0" fill="#e64b35">T</text>
+    </g><g transform='translate(400,35.000000) scale(1,0.019553)'>
+        <text x="0" y="0" fill="#e64b35">T</text>
+    </g><g transform='translate(400,34.730307) scale(1,0.013446)'>
+        <text x="0" y="0" fill="#00A087">A</text>
+    </g><g transform='translate(400,34.544848) scale(1,0.010392)'>
+        <text x="0" y="0" fill="#ff9900">G</text>
+    </g><g transform='translate(400,34.401504) scale(1,0.010232)'>
+        <text x="0" y="0" fill="#4dbbd5">C</text>
+    </g><g transform='translate(10,65) scale(0.4,0.4)'>
+        <text x="0" y="0" fill="black">-25</text>
+    </g><g transform='translate(27,65) scale(0.4,0.4)'>
+        <text x="0" y="0" fill="black">.</text>
+    </g><g transform='translate(42,65) scale(0.4,0.4)'>
+        <text x="0" y="0" fill="black">.</text>
+    </g><g transform='translate(57,65) scale(0.4,0.4)'>
+        <text x="0" y="0" fill="black">.</text>
+    </g><g transform='translate(72,65) scale(0.4,0.4)'>
+        <text x="0" y="0" fill="black">.</text>
+    </g><g transform='translate(85,65) scale(0.4,0.4)'>
+        <text x="0" y="0" fill="black">-20</text>
+    </g><g transform='translate(102,65) scale(0.4,0.4)'>
+        <text x="0" y="0" fill="black">.</text>
+    </g><g transform='translate(117,65) scale(0.4,0.4)'>
+        <text x="0" y="0" fill="black">.</text>
+    </g><g transform='translate(132,65) scale(0.4,0.4)'>
+        <text x="0" y="0" fill="black">.</text>
+    </g><g transform='translate(147,65) scale(0.4,0.4)'>
+        <text x="0" y="0" fill="black">.</text>
+    </g><g transform='translate(160,65) scale(0.4,0.4)'>
+        <text x="0" y="0" fill="black">-15</text>
+    </g><g transform='translate(177,65) scale(0.4,0.4)'>
+        <text x="0" y="0" fill="black">.</text>
+    </g><g transform='translate(192,65) scale(0.4,0.4)'>
+        <text x="0" y="0" fill="black">.</text>
+    </g><g transform='translate(207,65) scale(0.4,0.4)'>
+        <text x="0" y="0" fill="black">.</text>
+    </g><g transform='translate(222,65) scale(0.4,0.4)'>
+        <text x="0" y="0" fill="black">.</text>
+    </g><g transform='translate(237,65) scale(0.4,0.4)'>
+        <text x="0" y="0" fill="black">.</text>
+    </g><g transform='translate(250,65) scale(0.4,0.4)'>
+        <text x="0" y="0" fill="black">-9</text>
+    </g><g transform='translate(265,65) scale(0.4,0.4)'>
+        <text x="0" y="0" fill="black">-8</text>
+    </g><g transform='translate(280,65) scale(0.4,0.4)'>
+        <text x="0" y="0" fill="black">-7</text>
+    </g><g transform='translate(295,65) scale(0.4,0.4)'>
+        <text x="0" y="0" fill="black">-6</text>
+    </g><g transform='translate(310,65) scale(0.4,0.4)'>
+        <text x="0" y="0" fill="black">-5</text>
+    </g><g transform='translate(325,65) scale(0.4,0.4)'>
+        <text x="0" y="0" fill="black">-4</text>
+    </g><g transform='translate(340,65) scale(0.4,0.4)'>
+        <text x="0" y="0" fill="black">-3</text>
+    </g><g transform='translate(355,65) scale(0.4,0.4)'>
+        <text x="0" y="0" fill="black">-2</text>
+    </g><g transform='translate(370,65) scale(0.4,0.4)'>
+        <text x="0" y="0" fill="black">-1</text>
+    </g><g transform='translate(387,65) scale(0.4,0.4)'>
+        <text x="0" y="0" fill="black">1</text>
+    </g><g transform='translate(402,65) scale(0.4,0.4)'>
+        <text x="0" y="0" fill="black">2</text>
+    </g><line x1="385" y1="57" x2="385" y2="69" stroke="#e64b35"/>
+        <text x="10" y="95" fill="#e64b35">t</text>
+        <text x="25" y="95" fill="#4dbbd5">c</text>
+        <text x="40" y="95" fill="#4dbbd5">c</text>
+        <text x="55" y="95" fill="#4dbbd5">c</text>
+        <text x="70" y="95" fill="#e64b35">t</text>
+        <text x="85" y="95" fill="#4dbbd5">c</text>
+        <text x="100" y="95" fill="#e64b35">t</text>
+        <text x="115" y="95" fill="#4dbbd5">c</text>
+        <text x="130" y="95" fill="#e64b35">t</text>
+        <text x="145" y="95" fill="#4dbbd5">c</text>
+        <text x="160" y="95" fill="#4dbbd5">c</text>
+        <text x="175" y="95" fill="#4dbbd5">c</text>
+        <text x="190" y="95" fill="#e64b35">t</text>
+        <text x="205" y="95" fill="#4dbbd5">c</text>
+        <text x="220" y="95" fill="#4dbbd5">c</text>
+        <text x="235" y="95" fill="#4dbbd5">c</text>
+        <text x="250" y="95" fill="#ff9900">g</text>
+        <text x="265" y="95" fill="#ff9900">g</text>
+        <text x="280" y="95" fill="#4dbbd5">c</text>
+        <text x="295" y="95" fill="#4dbbd5">c</text>
+        <text x="310" y="95" fill="#4dbbd5">c</text>
+        <text x="325" y="95" fill="#00A087">a</text>
+        <text x="340" y="95" fill="#4dbbd5">c</text>
+        <text x="355" y="95" fill="#00A087">a</text>
+        <text x="370" y="95" fill="#ff9900">g</text>
+        <text x="385" y="95" fill="#4dbbd5">c</text>
+        <text x="400" y="95" fill="#ff9900">g</text>
+        <text x="250" y="115" fill="#00A087">a</text>
+        <rect x="250.000000" y="75" width="15" height="49" rx="2" fill-opacity="0.1" style="stroke-width:1; stroke:rgb(4, 12, 4);"/><rect x="10" y="150.145732" width="13" height="4.854268"  style="fill:#e64b35" />
+        <rect x="25" y="157.000000" width="13" height="0.174171"  style="fill:#4dbbd5" />
+        <rect x="40" y="157.000000" width="13" height="-0.000000"  style="fill:#4dbbd5" />
+        <rect x="55" y="157.000000" width="13" height="-0.000000"  style="fill:#4dbbd5" />
+        <rect x="70" y="148.921371" width="13" height="6.078629"  style="fill:#e64b35" />
+        <rect x="85" y="154.714308" width="13" height="0.285692"  style="fill:#4dbbd5" />
+        <rect x="100" y="147.898273" width="13" height="7.101727"  style="fill:#e64b35" />
+        <rect x="115" y="153.996951" width="13" height="1.003049"  style="fill:#4dbbd5" />
+        <rect x="130" y="146.713684" width="13" height="8.286316"  style="fill:#e64b35" />
+        <rect x="145" y="153.677522" width="13" height="1.322478"  style="fill:#4dbbd5" />
+        <rect x="160" y="153.313580" width="13" height="1.686420"  style="fill:#4dbbd5" />
+        <rect x="175" y="153.468432" width="13" height="1.531568"  style="fill:#4dbbd5" />
+        <rect x="190" y="144.885044" width="13" height="10.114956"  style="fill:#e64b35" />
+        <rect x="205" y="153.468432" width="13" height="1.531568"  style="fill:#4dbbd5" />
+        <rect x="220" y="154.489760" width="13" height="0.510240"  style="fill:#4dbbd5" />
+        <rect x="235" y="153.313580" width="13" height="1.686420"  style="fill:#4dbbd5" />
+        <rect x="250" y="158.000000" width="13" height="10.328943"  style="stroke:#ff9900;stroke-width:1;fill:#ff9900;fill-opacity:0.15" />
+        <rect x="250" y="157.000000" width="13" height="12.933589"  style="fill:#00A087" />
+        <rect x="265" y="157.000000" width="13" height="12.653446"  style="fill:#ff9900" />
+        <rect x="280" y="150.994621" width="13" height="4.005379"  style="fill:#4dbbd5" />
+        <rect x="295" y="150.606428" width="13" height="4.393572"  style="fill:#4dbbd5" />
+        <rect x="310" y="152.710274" width="13" height="2.289726"  style="fill:#4dbbd5" />
+        <rect x="325" y="157.000000" width="13" height="0.588937"  style="fill:#00A087" />
+        <rect x="340" y="141.348674" width="13" height="13.651326"  style="fill:#4dbbd5" />
+        <rect x="355" y="135.043346" width="13" height="19.956654"  style="fill:#00A087" />
+        <rect x="370" y="135.057824" width="13" height="19.942176"  style="fill:#ff9900" />
+        <rect x="385" y="157.000000" width="13" height="7.661119"  style="fill:#4dbbd5" />
+        <rect x="400" y="157.000000" width="13" height="3.658714"  style="fill:#ff9900" />
+    </g>
+</svg>

@@ -4,58 +4,66 @@
 Result interpretation
 =====================
 
-Interpretability of Squirls scores is derived from the splice features that are being used to make a prediction.
-From all possible features, that were ever for algorithms that evaluate variants' effect on splicing, we deliberately
-chose only the informative features with a biological interpretation (see :ref:`splice-features-ref` section for more details
-regarding the used features).
+When designing Squirls, our motivation was to create an *interpretable* algorithm for identification of splice
+deleterious variants.
+We addressed this goal by limiting ourselves to use a small set of biologically interpretable attributes for learning
+how to separate splice deleterious variants from neutral polymorphisms.
 
-When reporting variants, we sort the variants by Squirls score in descending order (the most deleterious variants
-on top). We put data for each individual variant into a box, and we display the following fields in the header:
+To help with interpretation of a variants that has been marked as splicing deleterious, we developed HTML result format
+that presents all available information in a visually attractive way. When reporting variants, we sort the variants
+by Squirls score in descending order - the most deleterious variants are placed on the top of the list.
 
-* **Variant coordinates:** Summary of variant's location, e.g. ``chrX:107,849,963T>A``
-* **HGVS gene symbol:** e.g. *COL4A5*
-* **Squirls score:** maximum predicted splicing pathogenicity score, e.g. ``0.985``
+The following picture shows an example output for variant *NM_000251.2:c.1915C>T* (*chr2:47702319C>T*), predicted to
+create a novel cryptic donor site (click for a full size image):
 
-Then, content of the box consists of three parts:
+.. figure:: _static/interpretation_figure.png
+  :alt: cryptic donor site example
+  :align: center
+  :width: 1000
 
-* **Variant effects on overlapping transcripts:** we use `Jannovar`_ to perform functional annotation of the variant and
-  to compute variant's effect on transcript using `HGVS Sequence Variant Nomenclature`_, and we list variant effects on
-  all overlapping transcripts. We also report Squirls score calculated wrt. given transcript.
-* **Splicing features:** we show raw values of the splicing features in a table, see :ref:`splice-features-ref` section
-  for more details regarding the features.
-* **Figures:** graphics that show the most important predicted effects (see below).
+Squirls summarizes the information available for the variant in a box. The header of the box contains three fields:
+
+* **Variant coordinates:** Summary of variant's location on used genomic assembly, e.g. *chr2:47,702,319 C>T*
+* **HGVS gene symbol:** e.g. *MSH2*
+* **Squirls score:** maximum predicted splicing pathogenicity score, e.g. *0.698*
+
+The box content consists of three sections:
+
+- **Variant effects on overlapping transcripts:** Squirls uses Jannovar to predict effect of the variant on the transcript,
+  and represents the effect using `HGVS Sequence Variant Nomenclature`_. Then, the effects and Squirls scores calculated
+  for the overlapping transcripts are listed in a table.
+  The transcript accessions corresponding to the maximum Squirls score are emphasized by blue color
+  (all 4 rows in the above example).
+- **Splicing features:** Squirls shows splicing feature values in a table, see :ref:`splice-features-ref` section
+  for explanations.
+- **Figures:** Squirls presents SVG graphics that show the most important predicted effects.
 
 Variant categories
 ^^^^^^^^^^^^^^^^^^
 
-Squirls makes a decision about which figures to make for a given variant. Based on the most likely splice
-altering-pathomechanism, the variant is assigned into one of four categories that dictate which figures will be
-generated:
+When generating the HTML report, Squirls makes a decision about which set of figures to make for a given variant.
+Based on the most likely splice altering-pathomechanism, the variant is assigned into one of four categories that
+dictate which figures will be generated:
 
 
 Canonical donor
 ###############
 
-For a variant that is likely to disrupt a canonical donor site, we create :ref:`sequence-ruler-ref`,
-:ref:`sequence-trekker-ref`, and we plot the position of :math:`\Delta R_i` canonical donor in the distribution of random
-changes to sequences of the same length (see :ref:`delta-ri-ref`).
+Squirls creates a :ref:`sequence-trekker-ref` for variants that are likely to disrupt a canonical donor site and
+to lead to either exon skipping or to utilization of a weaker cryptic site located nearby. In addition, Squirls plots
+the position of :math:`\Delta R_i` canonical donor in the distribution of random changes to sequences of the same length
+(see :ref:`delta-ri-ref`).
 
-*Sequence trekker* summarizes the sequence context and the impact of the variant on the binding site. Let's consider
-a ``G>C`` variant located at -1 position wrt. exon/intron border. The *ref* allele represented by normal ``c`` character
-is substituted by ``g`` (*alt*). The unfavourable contact between spliceosome and the *alt* allele is represented by
-drawing ``g`` upside down (see :ref:`sequence-logo-ref`):
+:ref:`sequence-trekker-ref` summarizes the sequence context and the impact of the variant on the binding site. Let's consider
+a ``A>T`` variant located at position 4 with respect to exon/intron border. The *ref* allele represented by normal ``a`` character
+is substituted by ``t``. The change location is highlighted by a black box. The unfavourable contact between
+spliceosome and the *alt* allele is represented by drawing the red bar corresponding to ``t`` upside down, and by
+drawing box for the ``a`` of the ref allele upwards:
 
-.. figure:: _static/donorRuler.svg
-  :alt: canonical donor ruler
+.. figure:: _static/canonicalDonorLeft.svg
+  :alt: canonical donor trekker
   :align: center
-  :width: 200
-  :height: 100
-
-.. figure:: _static/donorTrekkerMinus1.svg
-  :alt: sequence trekker for variant affecting canonical donor
-  :align: center
-  :width: 200
-  :height: 200
+  :width: 400
 
 
 The *distribution of random changes* shows position of :math:`\Delta R_i` canonical donor of the particular variant
@@ -63,10 +71,10 @@ in the *distribution of random changes* to sequence of the same length.
 When :math:`\Delta R_i` score is positive and close to the distribution edge, then the variant reduces
 the sequence information and the resulting allele is less likely to be recognized as a donor site.
 
-.. figure:: _static/donorDelta.svg
+.. figure:: _static/canonicalDonorRight.svg
   :alt: R_i position in distribution of random changes to sequence of the same length
   :align: center
-  :width: 400
+  :width: 500
   :height: 400
 
 
@@ -74,65 +82,56 @@ the sequence information and the resulting allele is less likely to be recognize
 Cryptic donor
 #############
 
-For a variant predicted to create a cryptic donor site, we generate :ref:`sequence-logo-ref`,
-a single :ref:`sequence-walker-ref` for both *ref* and *alt* alleles, and two sequence walkers that compare the *alt*
-allele with the closest canonical donor site.
+For a variant predicted to create a cryptic donor site, we generate :ref:`sequence-trekker-ref`\s to compare
+the candidate site to the closest canonical donor site.
 
 Let's consider the case of a missense variant ``chr2:47,702,319C>T`` (*NM_000251.2: c.1915C>T*) reported by
 `Liu et al., 1994`_ (Table 2, Kindred JV). The variant is located 91 bases upstream of the canonical donor site and
-introduces a cryptic donor site into gene *MSH2*.
+introduces a cryptic donor site into coding sequence of the *MSH2* gene.
 
-The site consists of these alleles:
+Squirls generates a Sequence trekker for the *Canonical donor site*, the site features :math:`R_i=6.10` bits:
 
-* ``CAGGCATGC`` (*ref*)
-* ``CAGGTATGC`` (*alt*)
-
-where the ``C>T`` change located at position 5 of the *alt* allele increases the information of the allele to
-:math:`R_i = 8.59`. The increase is shown on *sequence walker*, where the upside-down ``c`` from *ref* allele (an unfavorable
-contact), is plotted together with the tall and normally oriented ``t`` from the *alt* allele (a favourable interaction).
-The changed position is emphasized by a black box.
-
-.. figure:: _static/cryptDonorLogoWalker.svg
-  :alt: sequence logo and sequence walker for cryptic donor variant
-  :align: center
-  :width: 300
-  :height: 300
-
-
-Two sequence walkers are drawn to compare *alt* allele with the closest donor site:
-
-.. figure:: _static/donorCanonicalCrypticWalkers.svg
-  :alt: sequence walkers for alt allele and the closest donor site allele
+.. figure:: _static/crypticDonorLeft.svg
+  :alt: sequence walkers for alt allele of the closest donor site allele
   :align: center
   :width: 400
-  :height: 400
 
-The walkers indicate that information of *alt* allele was increased to :math:`R_i=8.59`, while the information of the
-downstream donor site is :math:`R_i=6.10`.
+The candidate cryptic donor site consists of the following alleles, where (again) the change ``C>T`` is located
+91 bases upstream of the canonical donor site:
+
+* ``CAGG``\ **C**\ ``ATGC`` (*ref*)
+* ``CAGG``\ **T**\ ``ATGC`` (*alt*)
+
+Squirls represents alleles of the *Predicted cryptic donor site* by the following sequence trekker:
+
+.. figure:: _static/crypticDonorRight.svg
+  :alt:
+  :align: center
+  :width: 400
+
+The ``T`` base introduced by the variant increases :math:`R_i` of the site by ``2.49`` bits to :math:`R_{i\ alt}=8.59`
+bits.
+The increase is graphically represented by drawing an upside-down blue box for ``c`` (an unfavorable contact),
+and upwards pointing box for ``t`` to represent a favourable interaction between the *alt* allele and
+the spliceosome.
 
 
 
 Canonical acceptor
 ##################
 
-For a variant that is likely to disrupt a canonical acceptor site, we create :ref:`sequence-ruler-ref`,
-:ref:`sequence-trekker-ref`, and we plot position of :math:`\Delta R_i` canonical acceptor in the distribution of random
+For a variant that is likely to disrupt a canonical acceptor site, we create :ref:`sequence-trekker-ref`,
+and we plot position of :math:`\Delta R_i` canonical acceptor in the distribution of random
 changes to sequence of the same length (see :ref:`delta-ri-ref`).
 
 *Sequence trekker* shows relative importance of the individual positions of the acceptor site and the impact of the
 variant on the site.
 
-.. figure:: _static/acceptorRuler.svg
-  :alt: canonical acceptor ruler
-  :align: center
-  :width: 500
-  :height: 100
+.. figure:: _static/canonicalAcceptorLeft.svg
+   :alt: canonical acceptor sequence trekker
+   :width: 800
+   :align: center
 
-.. figure:: _static/acceptorTrekker.svg
-  :alt: sequence trekker for variant affecting canonical acceptor
-  :align: center
-  :width: 500
-  :height: 200
 
 We also show position of :math:`\Delta R_i` canonical acceptor in the *distribution of random changes to sequence of
 the same length*. Here, the :math:`\Delta R_i` score will be positive if the variant reduces
@@ -144,57 +143,61 @@ the sequence information and if the variant is likely to reduce recognition of t
   :width: 400
   :height: 400
 
-Additionally, variants that introduce ``(Y)AG`` sequence into the *AG-exclusion zone* might lead to exon skipping
-or to cryptic splicing (see `Wimmer et al., 2020`_). The info regarding violation of *AG-exclusion zone* is located in
-the splice features table.
+Additionally, the variants that introduce ``(Y)AG`` sequence into the *AG-exclusion zone* might lead to exon skipping
+or to cryptic splicing (see `Wimmer et al., 2020`_). The info regarding violation of the *AG-exclusion zone* is located
+in the splice features table.
 
 
 
 Cryptic acceptor
 ################
 
-For a variant that leads to creation of a cryptic acceptor site, we generate the same graphics as for the cryptic donor
-site above - :ref:`sequence-logo-ref`, a :ref:`sequence-walker-ref` for both *ref* and *alt* alleles, and Sequence
-walkers to compare the *alt* allele with the closest canonical acceptor site.
+For the variant that leads to creation of a cryptic acceptor site, Squirls generates the same graphics as for
+the cryptic donor sites - two :ref:`sequence-trekker-ref`\s to compare the candidate cryptic acceptor site to the closest
+canonical acceptor site.
 
-Let's consider the case of a variant ``chr1:16,451,824C>T`` (*NM_004431.3: c.2826-9G>A*) located 9 bases upstream of
-the canonical acceptor site. The variant was first reported by `Zhang et al., 2009`_ and it introduces a cryptic
-acceptor site into the *EPHA2* gene.
+Let's consider the case of the variant ``chr1:16,451,824C>T`` (*NM_004431.3: c.2826-9G>A*) located 9 bases upstream of
+the canonical acceptor site that introduces a cryptic acceptor site into the *EPHA2* gene (`Zhang et al., 2009`_).
 
-The site consists of these alleles:
+The first sequence walker represents the *Canonical acceptor site*, located 9 bp downstream of the variant site:
 
-* ``ctaactctccctctctccctcccggCC`` (*ref*)
-* ``ctaactctccctctctccctcccagCC`` (*alt*)
-
-where the ``G>A`` change is located at position 24 of the *ref* allele. The change increases the information of the allele to
-:math:`R_i = 11.98`. The increase is displayed on *sequence walker*, where the upside-down ``g`` from *ref* allele
-(an unfavorable contact), is plotted together with the tall and normally oriented ``a`` from the *alt* allele
-(a favourable interaction). Again, the changed position is emphasized by a black box.
-
-.. figure:: _static/crypticAcceptorWalker.svg
+.. figure:: _static/crypticAcceptorLeft.svg
   :alt: cryptic acceptor variant chr1:16,451,824C>T
   :align: center
-  :width: 420
-  :height: 220
+  :width: 800
 
 
-The sequence walkers compare the *alt* allele (:math:`R_i=11.98`) and the *alt* allele of the acceptor located 9bp
-downstream (:math:`R_i=7.26`). Note that *both* walkers use the *alt* allele to display canonical site and cryptic site,
-as we are interested in comparing the sites and not the alleles.
+The *alt* allele of the canonical site has :math:`R_i=7.26` bits.
 
-.. figure:: _static/crypticAcceptorCanCrypt.svg
-  :alt: comparison of canonical acceptor and cryptic acceptor sites for variant chr1:16,451,824C>T
+Then, the *Predicted cryptic acceptor site* consists of these alleles:
+
+* ``ctaactctccctctctccctccc``\ **g**\ ``gCC`` (*ref*)
+* ``ctaactctccctctctccctccc``\ **a**\ ``gCC`` (*alt*)
+
+The corresponding sequence trekker is:
+
+.. figure:: _static/crypticAcceptorRight.svg
+  :alt: comparison of cryptic acceptor sites for variant chr1:16,451,824C>T
   :align: center
-  :width: 420
-  :height: 220
+  :width: 800
+
+
+The cryptic acceptor site features :math:`R_i = 11.98` bits. Sequence trekker depicts the change by drawing the
+orange box for ``g`` upside down (an unfavorable contact), and by drawing the green box for ``a`` upwards
+(a favourable interaction). The changed position is emphasized by a black box on the sequence ruler.
+
+.. note::
+  Please note that Squirls uses the *alt* allele to generate sequences necessary to draw sequence trekkers for
+  *both* canonical site and cryptic site. This is because we are interested in comparing the sites and not the
+  individual alleles.
 
 
 
 Figure types
 ^^^^^^^^^^^^
 
-This section describes individual figures that we consider to be the most helpful for clinical interpretation of the
-splice variants and which we generate for the variants:
+This section provides detailed explanations of the figures we generate for the variants, as described in the previous
+section. We consider these figures to be the most helpful for clinical interpretation of the splice variants.
 
 .. _sequence-ruler-ref:
 
@@ -202,11 +205,22 @@ Sequence ruler
 ##############
 
 .. figure:: _static/acceptorRuler.svg
+   :alt: sequence ruler
    :width: 800
    :height: 200
 
-Sequence rulers are SVG graphics that show the sequence of the donor or acceptor site, mark the intron-exon boundary,
-and show the position of any alternate bases that diverge from the reference sequence.
+Sequence rulers are SVG graphics that show the sequence of the donor or acceptor site, mark the intron-exon boundary
+(red vertical bar), and show the position of any alternate bases that diverge from the reference sequence
+(black rectangle).
+
+.. note::
+  We intentionally omit the position *zero* in sequence rulers, to make the result interpretation easier for biologists,
+  who are more comfortable with numbering of intronic/exonic bases that starts at *one*.
+
+  However, please note that the correct numbering scheme starts at *zero*.
+  Please visit website of professor Tom Schneider, where among `Pitfalls in Information Theory`_ he also explains
+  the correct numbering scheme for sequences.
+
 
 .. _sequence-logo-ref:
 
@@ -214,8 +228,9 @@ Sequence logo
 #############
 
 .. figure:: _static/acceptorLogo.svg
+   :alt: sequence logo
    :width: 800
-   :height: 400
+   :height: 300
 
 
 In 1990, Tom Schneider introduced Sequence logos as a way of graphically displaying consensus sequences.
@@ -232,35 +247,46 @@ Sequence walker
 ###############
 
 .. figure:: _static/acceptorWalker.svg
+   :alt: sequence walker
    :width: 800
-   :height: 400
 
-Tom Schneider introduced Sequence Walkers in 1995 as a way of graphically displaying how binding proteins and other
+Tom Schneider introduced *Sequence walkers* in 1995 as a way of graphically displaying how binding proteins and other
 macromolecules interact with individual bases of nucleotide sequences. Characters representing the sequence are
 either oriented normally and placed above a line indicating favorable contact, or upside-down and placed below the
 line indicating unfavorable contact. The positive or negative height of each letter shows the contribution of that
 base to the average sequence conservation of the binding site, as represented by a sequence logo
 (`Nucleic Acids Res 1997;25:4408-15`_).
 
-In 1998, Peter Rogan introduced the application of individual information content and Sequence Walkers to splicing
+In 1998, Peter Rogan introduced the application of individual information content and *Sequence walkers* to splicing
 variants (`Hum Mutat 1998;12:153-71`_).
 
-Our version of the sequence walker combines the reference and the alternate sequence. The positions in which the
-alternate differs from the reference are indicated by a grey box and both nucleotides are shown. In many
-disease-associated variants, the reference base will be position upright and the alternate base will be positioned
-beneath the line.
+.. note::
+  Squirls does *not* generate *Sequence walker* graphics for sequences. Instead, Squirls uses *Sequence trekker*,
+  a graphics based on *Sequence walker* that is explained in the next section.
 
 .. _sequence-trekker-ref:
 
 Sequence trekker
 ################
 
-.. figure:: _static/acceptorTrekker.svg
+.. figure:: _static/acceptorLogoRulerBar.svg
+   :alt: sequence trekker
    :width: 800
-   :height: 400
 
-We combine the sequence logo (see Sequence Logos) and walker (see Sequence walkers) in a new figure that we call
-*sequence trekker* (because a trek goes further than a walk).
+Squirls combines the sequence ruler, sequence logo, and sequence walker into a new figure that we call
+*Sequence trekker* (because a trek goes further than a walk).
+
+On top of that, sequence trekker integrates the information regarding the reference and the alternate alleles into
+a single graphics.
+
+Sequence trekker replaces the letters used in Sequence walker by bars. The bars are colored using the standard
+*"Sanger"* color conventions. Similarly to Sequence walker, the bar orientation indicates favorable (up) or unfavorable
+(down) contacts. The bar height shows the contribution of that base to the average sequence contribution of the binding
+site. To present data for reference and alternate alleles in the same time, the bar corresponding to
+the reference allele at the variant position is drawn with a semi-transparent fill.
+
+In many disease-associated variants, the bar corresponding to the reference base will be positioned upright and
+the alternate base will be facing down.
 
 .. _delta-ri-ref:
 
@@ -268,13 +294,14 @@ We combine the sequence logo (see Sequence Logos) and walker (see Sequence walke
 #####################################
 
 .. figure:: _static/donorDelta.svg
+   :alt: delta R_i score distribution
    :width: 800
    :height: 600
 
 The individual sequence information of a sequence :math:`R_{i\ ref}` and an alternate sequence :math:`R_{i\ alt}` are
-presented using the *Sequence walker*. This graphic shows the value of the difference between the reference sequence
+presented using the *Sequence trekker*. This graphic shows the value of the difference between the reference sequence
 and an alternate sequence as well as the distribution of random changes to sequences of the same length. A variant that
-reduces the sequence information is associated with a positive :math:`\Delta R_i` score (:math:`\Delta R_i = 8.96` in
+reduces the sequence information is associated with a positive :math:`\Delta R_i` score (:math:`\Delta R_i = 8.96` bits in
 this case).
 
 
@@ -286,3 +313,4 @@ this case).
 .. _Wimmer et al., 2020: https://pubmed.ncbi.nlm.nih.gov/32126153
 .. _Liu et al., 1994: https://pubmed.ncbi.nlm.nih.gov/8062247
 .. _Zhang et al., 2009: https://pubmed.ncbi.nlm.nih.gov/19306328
+.. _Pitfalls in Information Theory: http://users.fred.net/tds/lab/pitfalls.html#ignoring_zero

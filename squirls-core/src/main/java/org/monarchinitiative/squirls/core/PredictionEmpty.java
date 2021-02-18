@@ -81,6 +81,7 @@ import java.util.Collections;
 
 /**
  * Class representing N/A prediction.
+ * @author Daniel Danis
  */
 public class PredictionEmpty implements Prediction {
 

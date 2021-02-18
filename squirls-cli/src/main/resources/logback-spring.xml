@@ -2,4 +2,6 @@
 
 <configuration>
     <include resource="org/springframework/boot/logging/logback/base.xml"/>
+    <logger name="com.zaxxer.hikari" level="WARN"/>
+    <logger name="de.charite.compbio.jannovar" level="WARN"/>
 </configuration>

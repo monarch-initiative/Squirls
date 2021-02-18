@@ -78,6 +78,7 @@ package org.monarchinitiative.squirls.cli.visualization;
 
 import de.charite.compbio.jannovar.annotation.VariantAnnotations;
 import org.monarchinitiative.squirls.core.SquirlsResult;
+import org.monarchinitiative.svart.Variant;
 
 import java.util.Objects;
 
@@ -86,11 +87,14 @@ import java.util.Objects;
  */
 class SimpleVisualizableVariantAllele implements VisualizableVariantAllele {
 
+    private final Variant variant;
+
     private final VariantAnnotations annotations;
 
     private final SquirlsResult squirlsResult;
 
-    SimpleVisualizableVariantAllele(VariantAnnotations annotations, SquirlsResult squirlsResult) {
+    SimpleVisualizableVariantAllele(Variant variant, VariantAnnotations annotations, SquirlsResult squirlsResult) {
+        this.variant = variant;
         this.annotations = annotations;
         this.squirlsResult = squirlsResult;
     }
@@ -106,23 +110,28 @@ class SimpleVisualizableVariantAllele implements VisualizableVariantAllele {
     }
 
     @Override
+    public Variant variant() {
+        return variant;
+    }
+
+    @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         SimpleVisualizableVariantAllele that = (SimpleVisualizableVariantAllele) o;
-        return Objects.equals(annotations, that.annotations) &&
-                Objects.equals(squirlsResult, that.squirlsResult);
+        return Objects.equals(variant, that.variant) && Objects.equals(annotations, that.annotations) && Objects.equals(squirlsResult, that.squirlsResult);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(annotations, squirlsResult);
+        return Objects.hash(variant, annotations, squirlsResult);
     }
 
     @Override
     public String toString() {
         return "SimpleVisualizableVariantAllele{" +
-                "annotations=" + annotations +
+                "variant=" + variant +
+                ", annotations=" + annotations +
                 ", squirlsResult=" + squirlsResult +
                 '}';
     }
