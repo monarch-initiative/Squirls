@@ -76,15 +76,17 @@
 
 package org.monarchinitiative.squirls.ingest.transcripts;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.monarchinitiative.squirls.core.reference.TranscriptModel;
 import org.monarchinitiative.svart.GenomicAssembly;
 import org.monarchinitiative.svart.parsers.GenomicAssemblyParser;
 
+import java.io.BufferedWriter;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.hamcrest.CoreMatchers.hasItems;
