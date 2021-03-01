@@ -1,8 +1,11 @@
 # Changelog
 
 ## ✈ the latest
-- `Squirls`
-  - nothing yet
+- `squirls-cli`
+  - allow to block-compress (`bgzip`) the annotated VCF on the fly by using `-f vcfgz` option
+  - do not fail due to an exception being thrown by Jannovar when annotating a VCF
+- `squirls-ingest`
+  - prevent ingesting transcripts with duplicate *ENST* id 
 
 ## ✈ v1.0.0-RC4
 
