@@ -98,7 +98,7 @@ Options
 ~~~~~~~
 In addition to parameters, Squirls allows to fine tune the annotation using the following *options* (optional):
 
-* ``-f, --output-format`` - comma separated list of output format descriptors (see below). Use ``html,vcf,csv,tsv`` to store results
+* ``-f, --output-format`` - comma separated list of output format descriptors (see below). Use ``html,vcf,vcfgz,csv,tsv`` to store results
   in all output formats. Default: ``html``
 * ``-n, --n-variants-to-report`` - number of most pathogenic variants to include in *HTML* report. Default: ``100``
 * ``-t, --n-threads`` - number of threads to use for variant processing. Default: ``4``
@@ -108,7 +108,7 @@ In addition to parameters, Squirls allows to fine tune the annotation using the 
 
 Output formats
 ##############
-The ``annotate-vcf`` command writes results in 4 output formats: *HTML*, *VCF*, *CSV*, and *TSV*. Use the ``-f`` option
+The ``annotate-vcf`` command writes results in 4 output formats: *HTML*, *VCF* (compressed and uncompressed), *CSV*, and *TSV*. Use the ``-f`` option
 to select one or more of the desired output formats (e.g. ``-f html,vcf``).
 
 HTML output format
@@ -135,6 +135,8 @@ Multiallelic variants are broken down into separate records and processed indivi
 the overlapping transcripts are separated by a pipe (``|``) symbol.
 
 The ``-n`` option has no effect for the *VCF* output format.
+
+Use ``vcfgz`` instead of ``vcf`` to **compress** the VCF output (``bgzip``) on the fly.
 
 CSV/TSV output format
 ~~~~~~~~~~~~~~~~~~~~~
