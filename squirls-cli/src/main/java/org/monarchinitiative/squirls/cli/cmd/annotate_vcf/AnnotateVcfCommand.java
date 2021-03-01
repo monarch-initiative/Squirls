@@ -200,8 +200,8 @@ public class AnnotateVcfCommand extends SquirlsCommand {
                 VariantAnnotations variantAnnotations;
                 try {
                     variantAnnotations = annotator.buildAnnotations(genomeVariant);
-                } catch (AnnotationException e) {
-                    LOGGER.warn("Unable to annotate variant {}: {}", genomeVariant, e.getMessage());
+                } catch (Exception e) {
+                    LOGGER.warn("Unable to perform functional annotation for variant {}: {}", genomeVariant, e.getMessage());
                     continue;
                 }
 
