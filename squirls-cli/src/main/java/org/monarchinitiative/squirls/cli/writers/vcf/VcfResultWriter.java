@@ -79,6 +79,7 @@ package org.monarchinitiative.squirls.cli.writers.vcf;
 import htsjdk.samtools.util.BlockCompressedOutputStream;
 import htsjdk.variant.variantcontext.VariantContext;
 import htsjdk.variant.variantcontext.VariantContextBuilder;
+import htsjdk.variant.variantcontext.VariantContextComparator;
 import htsjdk.variant.variantcontext.writer.Options;
 import htsjdk.variant.variantcontext.writer.VariantContextWriter;
 import htsjdk.variant.variantcontext.writer.VariantContextWriterBuilder;
@@ -96,6 +97,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * @author Daniel Danis
@@ -176,16 +178,25 @@ public class VcfResultWriter implements ResultWriter {
             header = extendHeaderWithSquirlsFields(reader.getFileHeader());
         }
 
+        VariantContextComparator comparator = null;
+        try {
+            comparator = header.getVCFRecordComparator();
+        } catch (IllegalArgumentException e) {
+            if (LOGGER.isInfoEnabled()) LOGGER.info("Cannot sort the annotated variants - the contig lines are missing in the VCF header");
+        }
+
         try (VariantContextWriter writer = new VariantContextWriterBuilder()
                      .setOutputVCFStream(openOutputStream(outputPath))
                      .setReferenceDictionary(header.getSequenceDictionary())
                      .unsetOption(Options.INDEX_ON_THE_FLY).build()) {
             writer.writeHeader(header);
 
-            results.getVariants().stream()
-                    .map(addInfoFields())
-                    .sorted(header.getVCFRecordComparator())
-                    .forEach(writer::add);
+            Stream<VariantContext> variants = results.getVariants().stream()
+                    .map(addInfoFields());
+
+            variants = comparator != null ? variants.sorted(comparator) : variants;
+
+            variants.forEach(writer::add);
         }
     }
 
