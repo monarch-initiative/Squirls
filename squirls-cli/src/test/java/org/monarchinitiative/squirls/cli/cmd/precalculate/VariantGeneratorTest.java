@@ -109,7 +109,6 @@ public class VariantGeneratorTest {
         VariantGenerator generator = new VariantGenerator(depth);
         List<Variant> variants = generator.generate(sequence);
 
-        variants.forEach(System.err::println);
         assertThat(variants, hasSize(size));
     }
 
