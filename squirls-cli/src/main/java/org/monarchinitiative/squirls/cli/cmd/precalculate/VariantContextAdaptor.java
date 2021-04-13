@@ -129,10 +129,11 @@ class VariantContextAdaptor {
 
         if (variant.alt().isEmpty()) {
             // Variant notation where the common base is omitted. We must provide the previous base
-            Position previous = variant.startPosition().shift(-1);
-            GenomicRegion region = GenomicRegion.of(variant.contig(), variant.strand(), variant.coordinateSystem(), previous, variant.startPosition());
+            int start = variant.startWithCoordinateSystem(CoordinateSystem.zeroBased()) -1;
+            GenomicRegion region = GenomicRegion.of(variant.contig(), variant.strand(), CoordinateSystem.zeroBased(), start, start + 1);
             StrandedSequence seq = sequenceService.sequenceForRegion(region);
-            variant = Variant.of(variant.contig(), variant.id(), variant.strand(), variant.coordinateSystem(), previous, seq.sequence(), variant.ref());
+            int st = start + CoordinateSystem.zeroBased().startDelta(variant.coordinateSystem());
+            variant = Variant.of(variant.contig(), variant.id(), variant.strand(), variant.coordinateSystem(), Position.of(st), seq.sequence() + variant.ref(), seq.sequence());
         }
 
         List<Allele> alleles = List.of(Allele.create(variant.ref(), true), Allele.create(variant.alt(), false));
@@ -154,7 +155,6 @@ class VariantContextAdaptor {
                     .collect(Collectors.joining("|"));
             builder.attribute(INDIVIDUAL_SQUIRLS_SCORE.getID(), individualPredictions);
         }
-
         return Optional.of(builder.make());
     }
 
