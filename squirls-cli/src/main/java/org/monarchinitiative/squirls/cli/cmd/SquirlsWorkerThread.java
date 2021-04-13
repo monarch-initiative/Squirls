@@ -74,7 +74,7 @@
  * Daniel Danis, Peter N Robinson, 2020
  */
 
-package org.monarchinitiative.squirls.cli.cmd.annotate_vcf;
+package org.monarchinitiative.squirls.cli.cmd;
 
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.ForkJoinWorkerThread;
@@ -83,7 +83,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 /**
  * @author Daniel Danis
  */
-class SquirlsWorkerThread extends ForkJoinWorkerThread {
+public final class SquirlsWorkerThread extends ForkJoinWorkerThread {
 
     private static final AtomicInteger THREAD_COUNTER = new AtomicInteger(1);
 
@@ -93,7 +93,7 @@ class SquirlsWorkerThread extends ForkJoinWorkerThread {
      * @param pool the pool this thread works in
      * @throws NullPointerException if pool is null
      */
-    protected SquirlsWorkerThread(ForkJoinPool pool) {
+    public SquirlsWorkerThread(ForkJoinPool pool) {
         super(pool);
         setName("splice-worker-" + THREAD_COUNTER.getAndIncrement());
     }

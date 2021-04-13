@@ -71,111 +71,58 @@
  *
  * version:6-8-18
  *
- * Daniel Danis, Peter N Robinson, 2020
+ * Daniel Danis, Peter N Robinson, 2021
  */
 
-package org.monarchinitiative.squirls.io.db;
+package org.monarchinitiative.squirls.cli.cmd.precalculate;
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.monarchinitiative.squirls.io.SquirlsClassifierVersion;
-import org.monarchinitiative.squirls.io.TestDataSourceConfig;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.jdbc.Sql;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.monarchinitiative.svart.*;
 
-import javax.sql.DataSource;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.util.Collection;
-import java.util.Map;
+import java.util.List;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.hamcrest.Matchers.*;
 
-@SpringBootTest(classes = {TestDataSourceConfig.class})
-public class DbClassifierDataManagerTest {
+public class RegionUtilsTest {
 
-    private static final double TOLERANCE = 5E-12;
+    private static final Contig contig = Contig.of(1, "1", SequenceRole.ASSEMBLED_MOLECULE, "1", AssignedMoleculeType.CHROMOSOME, 100, "", "", "");
 
-    @Autowired
-    public DataSource dataSource;
+    @ParameterizedTest
+    @CsvSource({
+            "10, 20,  20, 31,  30, 40,    1",
+            "20, 31,  30, 40,  10, 20,    1",
+            "10, 19,  20, 30,  30, 40,    2",
+            "10, 20,  20, 29,  30, 40,    2",
+            "10, 19,  20, 29,  30, 39,    3",
+    })
+    public void mergeOverlapping(int aStart, int aEnd, int bStart, int bEnd, int cStart, int cEnd,
+                                 int count) {
+        List<GenomicRegion> regions = List.of(
+                GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(), aStart, aEnd),
+                GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(), bStart, bEnd),
+                GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(), cStart, cEnd));
 
-    private DbClassifierDataManager manager;
+        List<GenomicRegion> merged = RegionUtils.mergeOverlapping(regions);
 
-    @BeforeEach
-    public void setUp() {
-        manager = new DbClassifierDataManager(dataSource);
+        assertThat(merged, hasSize(count));
     }
 
-    @Test
-    @Sql(scripts = {"create_classifier_table.sql"})
-    public void storeClassifier() throws Exception {
-        byte[] payload = new byte[]{-128, 6, 0, 88, 127};
-        SquirlsClassifierVersion version = SquirlsClassifierVersion.v0_4_1;
-        int updated = manager.storeClassifier(version, payload);
 
-        byte[] actual = null;
-        SquirlsClassifierVersion actualVersion = null;
-        int i = 0;
-        try (Connection connection = dataSource.getConnection();
-             PreparedStatement ps = connection.prepareStatement("select version, data from SQUIRLS.CLASSIFIER where version = ?")) {
-            ps.setString(1, version.toString());
-            ResultSet rs = ps.executeQuery();
+    @ParameterizedTest
+    @CsvSource({
+            "10, 100, 20, 5",
+            " 0, 100, 20, 5",
+            " 0,  85, 20, 5",
+            " 0,  85, 10, 9"
+    })
+    public void split(int start, int end, int maxLength, int count) {
+        GenomicRegion query = GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(), start, end);
 
+        List<GenomicRegion> split = RegionUtils.splitIntoMaxLength(query, maxLength);
 
-            while (rs.next()) {
-                if (i == 0) {
-                    actualVersion = SquirlsClassifierVersion.valueOf(rs.getString("version"));
-                    actual = rs.getBytes("data");
-                }
-                i++;
-            }
-        }
-
-        assertThat(i, is(1));
-        assertThat(updated, is(1));
-        assertThat(actualVersion, is(SquirlsClassifierVersion.v0_4_1));
-        assertThat(payload, is(actual));
-    }
-
-    @Test
-    @Sql(scripts = "create_classifier_table.sql",
-            statements = "insert into SQUIRLS.CLASSIFIER(version, data) values ('v0_4_1', '000F10FF')")
-    public void readClassifier() throws Exception {
-        byte[] bytes = manager.readClassifierBytes(SquirlsClassifierVersion.v0_4_1);
-        assertThat(bytes, equalTo(new byte[]{0, 15, 16, -1}));
-
-        byte[] na = manager.readClassifierBytes(SquirlsClassifierVersion.v0_4_6);
-        assertThat(na, equalTo(null));
-    }
-
-    @Test
-    @Sql(scripts = "create_classifier_table.sql",
-            statements = "insert into SQUIRLS.CLASSIFIER(version, data) " +
-                    " values ('v0_4_1', 'BEEFBEEF'), ('v0_4_6', 'BEEFBEEFBEEFBEEF')")
-    public void getAllClassifiers() {
-        Collection<SquirlsClassifierVersion> clfs = manager.getAvailableClassifiers();
-        assertThat(clfs, hasSize(2));
-        assertThat(clfs, hasItems(SquirlsClassifierVersion.v0_4_1, SquirlsClassifierVersion.v0_4_6));
-    }
-
-    @Test
-    public void jsonify() {
-        Map<String, Double> parameters = Map.of("bla", 0.123456789012, "kva", 11.998877665544);
-        String payload = DbClassifierDataManager.jsonify(parameters);
-        assertThat(payload, is("{\"bla\": 0.123456789012, \"kva\": 11.998877665544}"));
-    }
-
-    @Test
-    public void deJsonify() {
-        String payload = "{\"bla\": 0.123456789012, \"kva\": 11.998877665544}";
-        Map<String, Double> params = DbClassifierDataManager.deJsonify(payload);
-
-        assertThat(params.size(), is(2));
-        assertThat(params.keySet(), hasItems("bla", "kva"));
-        assertThat(params.get("bla"), is(closeTo(0.123456789012, TOLERANCE)));
-        assertThat(params.get("kva"), is(closeTo(11.998877665544, TOLERANCE)));
+        assertThat(split, hasSize(count));
     }
 }

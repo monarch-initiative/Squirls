@@ -71,65 +71,51 @@
  *
  * version:6-8-18
  *
- * Daniel Danis, Peter N Robinson, 2020
+ * Daniel Danis, Peter N Robinson, 2021
  */
 
-package org.monarchinitiative.squirls.cli;
+package org.monarchinitiative.squirls.cli.cmd.precalculate;
 
-import org.monarchinitiative.squirls.cli.cmd.GenerateConfigCommand;
-import org.monarchinitiative.squirls.cli.cmd.annotate_csv.AnnotateCsvCommand;
-import org.monarchinitiative.squirls.cli.cmd.annotate_pos.AnnotatePosCommand;
-import org.monarchinitiative.squirls.cli.cmd.annotate_vcf.AnnotateVcfCommand;
-import org.monarchinitiative.squirls.cli.cmd.precalculate.PrecalculateCommand;
-import picocli.CommandLine;
-import picocli.CommandLine.Help.ColorScheme.Builder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.monarchinitiative.squirls.core.reference.StrandedSequence;
+import org.monarchinitiative.svart.*;
 
-import java.util.Locale;
-import java.util.concurrent.Callable;
+import java.util.List;
 
-import static picocli.CommandLine.Help.Ansi.Style.*;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasSize;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
+public class VariantGeneratorTest {
 
-/**
- * @author Daniel Danis
- */
-@CommandLine.Command(name = "squirls-cli.jar",
-        header = "Super-quick Information Content and Random Forest Learning for Splice Variants\n",
-        mixinStandardHelpOptions = true,
-        version = Main.VERSION,
-        usageHelpWidth = Main.WIDTH,
-        footer = Main.FOOTER)
-public class Main implements Callable<Integer> {
+    private final Contig contig = Contig.of(1, "1", SequenceRole.ASSEMBLED_MOLECULE, "1", AssignedMoleculeType.CHROMOSOME, 100, "", "", "");
 
-    public static final String VERSION = "squirls v1.0.0-RC4";
+    @ParameterizedTest
+    @CsvSource({
+            "1,    32",
+            "2,   135",
+            "3,   525",
+            "4,  2066",
+            "5,  8214",
+            "6, 32793",
+    })
+    public void generate(int depth, int size) {
+        GenomicRegion region = GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(), 10, 18);
+        StrandedSequence sequence = StrandedSequence.of(region, "ACGTACGT");
 
-    public static final int WIDTH = 120;
+        VariantGenerator generator = new VariantGenerator(depth);
+        List<Variant> variants = generator.generate(sequence);
 
-    public static final String FOOTER = "See the full documentation at https://squirls.readthedocs.io/en/latest/";
-
-    private static final CommandLine.Help.ColorScheme COLOR_SCHEME = new Builder()
-            .commands(bold, fg_blue, underline)
-            .options(fg_yellow)
-            .parameters(fg_yellow)
-            .optionParams(italic)
-            .build();
-
-    public static void main(String[] args) {
-        Locale.setDefault(Locale.US);
-        CommandLine cline = new CommandLine(new Main())
-                .setColorScheme(COLOR_SCHEME)
-                .addSubcommand("generate-config", new GenerateConfigCommand())
-                .addSubcommand("annotate-pos", new AnnotatePosCommand())
-                .addSubcommand("annotate-csv", new AnnotateCsvCommand())
-                .addSubcommand("annotate-vcf", new AnnotateVcfCommand())
-                .addSubcommand("precalculate", new PrecalculateCommand());
-        System.exit(cline.execute(args));
+        variants.forEach(System.err::println);
+        assertThat(variants, hasSize(size));
     }
 
-
-    @Override
-    public Integer call() {
-        // work done in subcommands
-        return 0;
+    @Test
+    public void generate_illegalInput() {
+        IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> new VariantGenerator(0));
+        assertThat(e.getMessage(), equalTo("Maximum length must be a positive integer, was 0"));
     }
 }

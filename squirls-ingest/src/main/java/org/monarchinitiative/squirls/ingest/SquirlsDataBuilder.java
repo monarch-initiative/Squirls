@@ -92,7 +92,7 @@ import org.monarchinitiative.squirls.ingest.transcripts.TranscriptsIngestRunner;
 import org.monarchinitiative.squirls.io.SplicingPositionalWeightMatrixParser;
 import org.monarchinitiative.squirls.io.SquirlsClassifierVersion;
 import org.monarchinitiative.squirls.io.SquirlsResourceException;
-import org.monarchinitiative.squirls.io.db.DbClassifierDataManager;
+import org.monarchinitiative.squirls.io.db.DbClassifierFactory;
 import org.monarchinitiative.squirls.io.db.DbKMerDao;
 import org.monarchinitiative.squirls.io.db.PwmIngestDao;
 import org.monarchinitiative.squirls.io.db.TranscriptModelServiceDb;
@@ -214,11 +214,11 @@ public class SquirlsDataBuilder {
      * @param clfBytes   all data required to construct {@link org.monarchinitiative.squirls.core.VariantSplicingEvaluator}
      */
     private static void processClassifier(DataSource dataSource, SquirlsClassifierVersion clfVersion, byte[] clfBytes) {
-        DbClassifierDataManager manager = new DbClassifierDataManager(dataSource);
+        DbClassifierFactory factory = new DbClassifierFactory(dataSource);
 
         // squirls classifier
         LOGGER.info("Inserting classifier `{}`", clfVersion);
-        int updated = manager.storeClassifier(clfVersion, clfBytes);
+        int updated = factory.storeClassifier(clfVersion, clfBytes);
 
         LOGGER.info("Updated {} rows", updated);
     }

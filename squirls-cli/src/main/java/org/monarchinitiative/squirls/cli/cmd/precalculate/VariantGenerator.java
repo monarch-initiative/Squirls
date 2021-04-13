@@ -71,65 +71,93 @@
  *
  * version:6-8-18
  *
- * Daniel Danis, Peter N Robinson, 2020
+ * Daniel Danis, Peter N Robinson, 2021
  */
 
-package org.monarchinitiative.squirls.cli;
+package org.monarchinitiative.squirls.cli.cmd.precalculate;
 
-import org.monarchinitiative.squirls.cli.cmd.GenerateConfigCommand;
-import org.monarchinitiative.squirls.cli.cmd.annotate_csv.AnnotateCsvCommand;
-import org.monarchinitiative.squirls.cli.cmd.annotate_pos.AnnotatePosCommand;
-import org.monarchinitiative.squirls.cli.cmd.annotate_vcf.AnnotateVcfCommand;
-import org.monarchinitiative.squirls.cli.cmd.precalculate.PrecalculateCommand;
-import picocli.CommandLine;
-import picocli.CommandLine.Help.ColorScheme.Builder;
+import org.monarchinitiative.squirls.core.reference.StrandedSequence;
+import org.monarchinitiative.svart.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.util.Locale;
-import java.util.concurrent.Callable;
-
-import static picocli.CommandLine.Help.Ansi.Style.*;
-
+import java.util.LinkedList;
+import java.util.List;
 
 /**
- * @author Daniel Danis
+ * Class for generating all possible variants out of a nucleotide sequence.
  */
-@CommandLine.Command(name = "squirls-cli.jar",
-        header = "Super-quick Information Content and Random Forest Learning for Splice Variants\n",
-        mixinStandardHelpOptions = true,
-        version = Main.VERSION,
-        usageHelpWidth = Main.WIDTH,
-        footer = Main.FOOTER)
-public class Main implements Callable<Integer> {
+public class VariantGenerator {
 
-    public static final String VERSION = "squirls v1.0.0-RC4";
+    private static final Logger LOGGER = LoggerFactory.getLogger(VariantGenerator.class);
 
-    public static final int WIDTH = 120;
+    private static final int MAX_SANE_LENGTH = 10;
 
-    public static final String FOOTER = "See the full documentation at https://squirls.readthedocs.io/en/latest/";
+    private static final String ID = ".";
 
-    private static final CommandLine.Help.ColorScheme COLOR_SCHEME = new Builder()
-            .commands(bold, fg_blue, underline)
-            .options(fg_yellow)
-            .parameters(fg_yellow)
-            .optionParams(italic)
-            .build();
+    private static final List<String> BASES = List.of("A", "C", "G", "T");
 
-    public static void main(String[] args) {
-        Locale.setDefault(Locale.US);
-        CommandLine cline = new CommandLine(new Main())
-                .setColorScheme(COLOR_SCHEME)
-                .addSubcommand("generate-config", new GenerateConfigCommand())
-                .addSubcommand("annotate-pos", new AnnotatePosCommand())
-                .addSubcommand("annotate-csv", new AnnotateCsvCommand())
-                .addSubcommand("annotate-vcf", new AnnotateVcfCommand())
-                .addSubcommand("precalculate", new PrecalculateCommand());
-        System.exit(cline.execute(args));
+    private final int maxLength;
+
+    public VariantGenerator(int maxLength) {
+        if (maxLength < 1)
+            throw new IllegalArgumentException("Maximum length must be a positive integer, was " + maxLength);
+        if (maxLength > MAX_SANE_LENGTH)
+            LOGGER.warn("Using depth more than 10 will generate large amount of variants and you'll likely to wait a long time to get the results");
+
+        this.maxLength = maxLength;
     }
 
+    public List<Variant> generate(StrandedSequence sequence) {
+        List<Variant> variants = new LinkedList<>();
 
-    @Override
-    public Integer call() {
-        // work done in subcommands
-        return 0;
+        String seq = sequence.sequence();
+        Contig contig = sequence.contig();
+
+        for (int i = 0, pos = sequence.startWithCoordinateSystem(CoordinateSystem.oneBased());
+             i < seq.length();
+             i++, pos++) {
+            Position position = Position.of(pos);
+            String refBase = seq.substring(i, i + 1);
+            if (refBase.equalsIgnoreCase("N"))
+                continue;
+            for (String altBase : BASES) {
+                if (altBase.equalsIgnoreCase(refBase))
+                    continue;
+                // SNV
+                variants.add(Variant.of(contig, ID, sequence.strand(), CoordinateSystem.oneBased(), position, refBase, altBase));
+                // INSERTIONS up to given length
+                variants.addAll(generateInsertions(contig, sequence.strand(), CoordinateSystem.oneBased(), position, refBase, altBase, maxLength));
+            }
+
+            // DELETIONS
+            int j = i + 1;
+            int max = Math.min(i + maxLength, seq.length());
+            while (j <= max) {
+                String refBases = seq.substring(i, j);
+                variants.add(Variant.of(contig, ID, sequence.strand(), CoordinateSystem.oneBased(), position, refBases, ""));
+                j++;
+            }
+        }
+
+        return variants;
     }
+
+    private static List<Variant> generateInsertions(Contig contig, Strand strand, CoordinateSystem coordinateSystem,
+                                                    Position pos, String ref, String alt, int level) {
+        if (alt.length() == level)
+            return List.of();
+
+        List<Variant> variants = new LinkedList<>();
+
+        for (String base : BASES) {
+            String a = alt + base;
+            Variant variant = Variant.of(contig, ID, strand, coordinateSystem, pos, ref, a);
+            variants.add(variant);
+            variants.addAll(generateInsertions(contig, strand, coordinateSystem, pos, ref, a, level));
+        }
+
+        return variants;
+    }
+
 }

@@ -92,11 +92,11 @@ import org.monarchinitiative.squirls.core.scoring.AGEZSplicingAnnotator;
 import org.monarchinitiative.squirls.core.scoring.DenseSplicingAnnotator;
 import org.monarchinitiative.squirls.core.scoring.SplicingAnnotator;
 import org.monarchinitiative.squirls.core.scoring.calculators.conservation.BigWigAccessor;
-import org.monarchinitiative.squirls.io.ClassifierDataManager;
+import org.monarchinitiative.squirls.io.ClassifierFactory;
 import org.monarchinitiative.squirls.io.CorruptedPwmException;
 import org.monarchinitiative.squirls.io.SquirlsClassifierVersion;
 import org.monarchinitiative.squirls.io.SquirlsResourceException;
-import org.monarchinitiative.squirls.io.db.DbClassifierDataManager;
+import org.monarchinitiative.squirls.io.db.DbClassifierFactory;
 import org.monarchinitiative.squirls.io.db.DbKMerDao;
 import org.monarchinitiative.squirls.io.db.DbSplicingPositionalWeightMatrixParser;
 import org.monarchinitiative.squirls.io.db.TranscriptModelServiceDb;
@@ -225,10 +225,16 @@ public class SquirlsAutoConfiguration {
     }
 
     @Bean
-    public VariantSplicingEvaluator variantSplicingEvaluator(SquirlsProperties properties,
-                                                             SquirlsDataService squirlsDataService,
+    public VariantSplicingEvaluator variantSplicingEvaluator(SquirlsDataService squirlsDataService,
                                                              SplicingAnnotator splicingAnnotator,
-                                                             ClassifierDataManager classifierDataManager) throws InvalidSquirlsResourceException, UndefinedSquirlsResourceException {
+                                                             SquirlsClassifier squirlsClassifier) {
+        return VariantSplicingEvaluator.of(squirlsDataService, splicingAnnotator, squirlsClassifier);
+    }
+
+    @Bean
+    public SquirlsClassifier squirlsClassifier(ClassifierFactory classifierFactory,
+                                               SquirlsProperties properties) throws UndefinedSquirlsResourceException, InvalidSquirlsResourceException {
+        // TODO - all of this belongs to the classifier factory
         SquirlsProperties.ClassifierProperties classifierProperties = properties.getClassifier();
 
         SquirlsClassifierVersion clfVersion;
@@ -237,7 +243,7 @@ public class SquirlsAutoConfiguration {
         } catch (IllegalArgumentException e) {
             throw new UndefinedSquirlsResourceException(e.getMessage(), e);
         }
-        Collection<SquirlsClassifierVersion> avail = classifierDataManager.getAvailableClassifiers();
+        Collection<SquirlsClassifierVersion> avail = classifierFactory.getAvailableClassifiers();
         if (!avail.contains(clfVersion)) {
             String msg = String.format("Classifier version `%s` is not available, choose one from %s",
                     clfVersion,
@@ -247,23 +253,19 @@ public class SquirlsAutoConfiguration {
         }
 
         // get classifier
-        final Optional<SquirlsClassifier> clfOpt = classifierDataManager.readClassifier(clfVersion);
-        final SquirlsClassifier clf;
+        Optional<SquirlsClassifier> clfOpt = classifierFactory.readClassifier(clfVersion);
         if (clfOpt.isPresent()) {
             LOGGER.debug("Using classifier `{}`", clfVersion);
-            clf = clfOpt.get();
+            return clfOpt.get();
         } else {
             String msg = String.format("Error when deserializing classifier `%s` from the database", clfVersion);
             throw new InvalidSquirlsResourceException(msg);
         }
-
-        // make variant evaluator
-        return VariantSplicingEvaluator.of(squirlsDataService, splicingAnnotator, clf);
     }
 
     @Bean
-    public ClassifierDataManager classifierDataProvider(@Qualifier("squirlsDatasource") DataSource squirlsDatasource) {
-        return new DbClassifierDataManager(squirlsDatasource);
+    public ClassifierFactory classifierDataManager(@Qualifier("squirlsDatasource") DataSource squirlsDatasource) {
+        return new DbClassifierFactory(squirlsDatasource);
     }
 
     @Bean

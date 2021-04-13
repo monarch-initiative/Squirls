@@ -77,7 +77,7 @@
 package org.monarchinitiative.squirls.io.db;
 
 import org.monarchinitiative.squirls.core.classifier.SquirlsClassifier;
-import org.monarchinitiative.squirls.io.ClassifierDataManager;
+import org.monarchinitiative.squirls.io.ClassifierFactory;
 import org.monarchinitiative.squirls.io.SquirlsClassifierDeserializer;
 import org.monarchinitiative.squirls.io.SquirlsClassifierVersion;
 import org.monarchinitiative.squirls.io.SquirlsSerializationException;
@@ -99,15 +99,15 @@ import java.util.stream.Collectors;
  * This dao handles business regarding classifier and prediction process.
  * @author Daniel Danis
  */
-public class DbClassifierDataManager implements ClassifierDataManager {
+public class DbClassifierFactory implements ClassifierFactory {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(DbClassifierDataManager.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(DbClassifierFactory.class);
 
     private static final Pattern DEJSONIFY_PATTERN = Pattern.compile("\"(?<key>\\w+)\":\\s*(?<value>-?\\d+\\.\\d*)");
 
     private final DataSource dataSource;
 
-    public DbClassifierDataManager(DataSource dataSource) {
+    public DbClassifierFactory(DataSource dataSource) {
         this.dataSource = dataSource;
     }
 

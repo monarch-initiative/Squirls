@@ -71,65 +71,91 @@
  *
  * version:6-8-18
  *
- * Daniel Danis, Peter N Robinson, 2020
+ * Daniel Danis, Peter N Robinson, 2021
  */
 
-package org.monarchinitiative.squirls.cli;
+package org.monarchinitiative.squirls.cli.cmd.precalculate;
 
-import org.monarchinitiative.squirls.cli.cmd.GenerateConfigCommand;
-import org.monarchinitiative.squirls.cli.cmd.annotate_csv.AnnotateCsvCommand;
-import org.monarchinitiative.squirls.cli.cmd.annotate_pos.AnnotatePosCommand;
-import org.monarchinitiative.squirls.cli.cmd.annotate_vcf.AnnotateVcfCommand;
-import org.monarchinitiative.squirls.cli.cmd.precalculate.PrecalculateCommand;
-import picocli.CommandLine;
-import picocli.CommandLine.Help.ColorScheme.Builder;
+import htsjdk.variant.variantcontext.Allele;
+import htsjdk.variant.variantcontext.VariantContext;
+import htsjdk.variant.variantcontext.VariantContextBuilder;
+import htsjdk.variant.vcf.*;
+import org.monarchinitiative.squirls.core.SquirlsResult;
+import org.monarchinitiative.squirls.core.reference.StrandedSequence;
+import org.monarchinitiative.squirls.core.reference.StrandedSequenceService;
+import org.monarchinitiative.svart.CoordinateSystem;
+import org.monarchinitiative.svart.GenomicRegion;
+import org.monarchinitiative.svart.Position;
+import org.monarchinitiative.svart.Variant;
 
-import java.util.Locale;
-import java.util.concurrent.Callable;
-
-import static picocli.CommandLine.Help.Ansi.Style.*;
-
+import java.text.NumberFormat;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
- * @author Daniel Danis
+ * Format {@link Variant} and {@link SquirlsResult} into {@link VariantContext}.
  */
-@CommandLine.Command(name = "squirls-cli.jar",
-        header = "Super-quick Information Content and Random Forest Learning for Splice Variants\n",
-        mixinStandardHelpOptions = true,
-        version = Main.VERSION,
-        usageHelpWidth = Main.WIDTH,
-        footer = Main.FOOTER)
-public class Main implements Callable<Integer> {
+class VariantContextAdaptor {
 
-    public static final String VERSION = "squirls v1.0.0-RC4";
+    private static final NumberFormat NF = NumberFormat.getNumberInstance();
 
-    public static final int WIDTH = 120;
+    static {
+        NF.setMaximumFractionDigits(9);
+    }
 
-    public static final String FOOTER = "See the full documentation at https://squirls.readthedocs.io/en/latest/";
+    static VCFFilterHeaderLine SQUIRLS_DELETERIOUS = new VCFFilterHeaderLine("SQ", "Squirls considers the variant as pathogenic if the filter is present");
+    static VCFInfoHeaderLine MAX_SQUIRLS_SCORE = new VCFInfoHeaderLine("SQ", VCFHeaderLineCount.A, VCFHeaderLineType.Float, "Maximum Squirls score");
+    static VCFInfoHeaderLine INDIVIDUAL_SQUIRLS_SCORE = new VCFInfoHeaderLine("ISQ", VCFHeaderLineCount.A, VCFHeaderLineType.String, "Squirls scores for individual transcripts");
 
-    private static final CommandLine.Help.ColorScheme COLOR_SCHEME = new Builder()
-            .commands(bold, fg_blue, underline)
-            .options(fg_yellow)
-            .parameters(fg_yellow)
-            .optionParams(italic)
-            .build();
+    private final boolean writeIndividualPredictions;
 
-    public static void main(String[] args) {
-        Locale.setDefault(Locale.US);
-        CommandLine cline = new CommandLine(new Main())
-                .setColorScheme(COLOR_SCHEME)
-                .addSubcommand("generate-config", new GenerateConfigCommand())
-                .addSubcommand("annotate-pos", new AnnotatePosCommand())
-                .addSubcommand("annotate-csv", new AnnotateCsvCommand())
-                .addSubcommand("annotate-vcf", new AnnotateVcfCommand())
-                .addSubcommand("precalculate", new PrecalculateCommand());
-        System.exit(cline.execute(args));
+    private final StrandedSequenceService sequenceService;
+
+    VariantContextAdaptor(boolean writeIndividualPredictions, StrandedSequenceService sequenceService) {
+        this.writeIndividualPredictions = writeIndividualPredictions;
+        this.sequenceService = sequenceService;
+    }
+
+    static Set<VCFHeaderLine> headerLines() {
+        return Set.of(MAX_SQUIRLS_SCORE, INDIVIDUAL_SQUIRLS_SCORE, SQUIRLS_DELETERIOUS);
     }
 
 
-    @Override
-    public Integer call() {
-        // work done in subcommands
-        return 0;
+    Optional<VariantContext> mapToVariantContext(Variant variant, SquirlsResult result) {
+        if (result.isEmpty())
+            return Optional.empty();
+
+        if (variant.alt().isEmpty()) {
+            // Variant notation where the common base is omitted. We must provide the previous base
+            Position previous = variant.startPosition().shift(-1);
+            GenomicRegion region = GenomicRegion.of(variant.contig(), variant.strand(), variant.coordinateSystem(), previous, variant.startPosition());
+            StrandedSequence seq = sequenceService.sequenceForRegion(region);
+            variant = Variant.of(variant.contig(), variant.id(), variant.strand(), variant.coordinateSystem(), previous, seq.sequence(), variant.ref());
+        }
+
+        List<Allele> alleles = List.of(Allele.create(variant.ref(), true), Allele.create(variant.alt(), false));
+        int start = variant.startWithCoordinateSystem(CoordinateSystem.oneBased());
+
+        double maxDeleteriousness = result.maxPathogenicity();
+        VariantContextBuilder builder = new VariantContextBuilder()
+                .chr(variant.contig().name())
+                .start(start)
+                .alleles(alleles)
+                .computeEndFromAlleles(alleles, start)
+                .attribute(MAX_SQUIRLS_SCORE.getID(), maxDeleteriousness);
+
+        if (result.isPathogenic())
+            builder.filter(SQUIRLS_DELETERIOUS.getID());
+        if (writeIndividualPredictions) {
+            String individualPredictions = result.results()
+                    .map(r -> r.accessionId() + '=' + String.format("%6.3e", r.prediction().getMaxPathogenicity()))
+                    .collect(Collectors.joining("|"));
+            builder.attribute(INDIVIDUAL_SQUIRLS_SCORE.getID(), individualPredictions);
+        }
+
+        return Optional.of(builder.make());
     }
+
 }

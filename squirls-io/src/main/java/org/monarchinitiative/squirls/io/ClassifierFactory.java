@@ -74,62 +74,33 @@
  * Daniel Danis, Peter N Robinson, 2020
  */
 
-package org.monarchinitiative.squirls.cli;
+package org.monarchinitiative.squirls.io;
 
-import org.monarchinitiative.squirls.cli.cmd.GenerateConfigCommand;
-import org.monarchinitiative.squirls.cli.cmd.annotate_csv.AnnotateCsvCommand;
-import org.monarchinitiative.squirls.cli.cmd.annotate_pos.AnnotatePosCommand;
-import org.monarchinitiative.squirls.cli.cmd.annotate_vcf.AnnotateVcfCommand;
-import org.monarchinitiative.squirls.cli.cmd.precalculate.PrecalculateCommand;
-import picocli.CommandLine;
-import picocli.CommandLine.Help.ColorScheme.Builder;
+import org.monarchinitiative.squirls.core.classifier.SquirlsClassifier;
 
-import java.util.Locale;
-import java.util.concurrent.Callable;
-
-import static picocli.CommandLine.Help.Ansi.Style.*;
-
+import java.util.Optional;
+import java.util.Set;
 
 /**
  * @author Daniel Danis
  */
-@CommandLine.Command(name = "squirls-cli.jar",
-        header = "Super-quick Information Content and Random Forest Learning for Splice Variants\n",
-        mixinStandardHelpOptions = true,
-        version = Main.VERSION,
-        usageHelpWidth = Main.WIDTH,
-        footer = Main.FOOTER)
-public class Main implements Callable<Integer> {
+public interface ClassifierFactory {
 
-    public static final String VERSION = "squirls v1.0.0-RC4";
+    /**
+     * @return collection with versions of available classifiers
+     */
+    Set<SquirlsClassifierVersion> getAvailableClassifiers();
 
-    public static final int WIDTH = 120;
+    /**
+     * Store the classifier under particular version.
+     */
+    int storeClassifier(SquirlsClassifierVersion version, byte[] clfBytes);
 
-    public static final String FOOTER = "See the full documentation at https://squirls.readthedocs.io/en/latest/";
-
-    private static final CommandLine.Help.ColorScheme COLOR_SCHEME = new Builder()
-            .commands(bold, fg_blue, underline)
-            .options(fg_yellow)
-            .parameters(fg_yellow)
-            .optionParams(italic)
-            .build();
-
-    public static void main(String[] args) {
-        Locale.setDefault(Locale.US);
-        CommandLine cline = new CommandLine(new Main())
-                .setColorScheme(COLOR_SCHEME)
-                .addSubcommand("generate-config", new GenerateConfigCommand())
-                .addSubcommand("annotate-pos", new AnnotatePosCommand())
-                .addSubcommand("annotate-csv", new AnnotateCsvCommand())
-                .addSubcommand("annotate-vcf", new AnnotateVcfCommand())
-                .addSubcommand("precalculate", new PrecalculateCommand());
-        System.exit(cline.execute(args));
-    }
-
-
-    @Override
-    public Integer call() {
-        // work done in subcommands
-        return 0;
-    }
+    /**
+     * Read classifier data provided it exists in the underlying resource.
+     *
+     * @param version of classifier to read
+     * @return classifier data or <code>null</code> of the particular version is not available
+     */
+    Optional<SquirlsClassifier> readClassifier(SquirlsClassifierVersion version);
 }

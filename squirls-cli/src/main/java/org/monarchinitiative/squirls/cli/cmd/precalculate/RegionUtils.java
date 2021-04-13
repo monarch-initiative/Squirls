@@ -71,65 +71,72 @@
  *
  * version:6-8-18
  *
- * Daniel Danis, Peter N Robinson, 2020
+ * Daniel Danis, Peter N Robinson, 2021
  */
 
-package org.monarchinitiative.squirls.cli;
+package org.monarchinitiative.squirls.cli.cmd.precalculate;
 
-import org.monarchinitiative.squirls.cli.cmd.GenerateConfigCommand;
-import org.monarchinitiative.squirls.cli.cmd.annotate_csv.AnnotateCsvCommand;
-import org.monarchinitiative.squirls.cli.cmd.annotate_pos.AnnotatePosCommand;
-import org.monarchinitiative.squirls.cli.cmd.annotate_vcf.AnnotateVcfCommand;
-import org.monarchinitiative.squirls.cli.cmd.precalculate.PrecalculateCommand;
-import picocli.CommandLine;
-import picocli.CommandLine.Help.ColorScheme.Builder;
+import org.monarchinitiative.svart.*;
 
-import java.util.Locale;
-import java.util.concurrent.Callable;
+import java.util.*;
+import java.util.stream.Collectors;
 
-import static picocli.CommandLine.Help.Ansi.Style.*;
+class RegionUtils {
 
+    private static final Comparator<GenomicRegion> COMPARATOR = Comparator
+            .<GenomicRegion>comparingInt(gr -> gr.startOnStrandWithCoordinateSystem(Strand.POSITIVE, CoordinateSystem.zeroBased()))
+            .thenComparingInt(gr -> gr.endOnStrandWithCoordinateSystem(Strand.POSITIVE, CoordinateSystem.zeroBased()));
 
-/**
- * @author Daniel Danis
- */
-@CommandLine.Command(name = "squirls-cli.jar",
-        header = "Super-quick Information Content and Random Forest Learning for Splice Variants\n",
-        mixinStandardHelpOptions = true,
-        version = Main.VERSION,
-        usageHelpWidth = Main.WIDTH,
-        footer = Main.FOOTER)
-public class Main implements Callable<Integer> {
+    private RegionUtils() {}
 
-    public static final String VERSION = "squirls v1.0.0-RC4";
+    static List<GenomicRegion> mergeOverlapping(List<GenomicRegion> regions) {
+        // assuming non-empty list of regions on the same contig!
+        if (regions.isEmpty())
+            return List.of();
 
-    public static final int WIDTH = 120;
+        LinkedList<GenomicRegion> sorted = regions.stream()
+                .sorted(COMPARATOR)
+                .collect(Collectors.toCollection(LinkedList::new));
 
-    public static final String FOOTER = "See the full documentation at https://squirls.readthedocs.io/en/latest/";
+        List<GenomicRegion> results = new LinkedList<>();
+        Iterator<GenomicRegion> iterator = sorted.iterator();
+        GenomicRegion first = iterator.next();
+        int previousStart = first.startOnStrandWithCoordinateSystem(Strand.POSITIVE, CoordinateSystem.zeroBased());
+        int previousEnd = first.endOnStrandWithCoordinateSystem(Strand.POSITIVE, CoordinateSystem.zeroBased());
+        while (iterator.hasNext()) {
+            GenomicRegion next = iterator.next();
+            int nextStart = next.startOnStrandWithCoordinateSystem(Strand.POSITIVE, CoordinateSystem.zeroBased());
+            int nextEnd = next.endOnStrandWithCoordinateSystem(Strand.POSITIVE, CoordinateSystem.zeroBased());
 
-    private static final CommandLine.Help.ColorScheme COLOR_SCHEME = new Builder()
-            .commands(bold, fg_blue, underline)
-            .options(fg_yellow)
-            .parameters(fg_yellow)
-            .optionParams(italic)
-            .build();
+            if (previousEnd < nextStart) {
+                GenomicRegion region = GenomicRegion.of(first.contig(), Strand.POSITIVE, CoordinateSystem.zeroBased(), previousStart, previousEnd);
+                results.add(region);
+                previousStart = nextStart;
+            }
+            previousEnd = nextEnd;
 
-    public static void main(String[] args) {
-        Locale.setDefault(Locale.US);
-        CommandLine cline = new CommandLine(new Main())
-                .setColorScheme(COLOR_SCHEME)
-                .addSubcommand("generate-config", new GenerateConfigCommand())
-                .addSubcommand("annotate-pos", new AnnotatePosCommand())
-                .addSubcommand("annotate-csv", new AnnotateCsvCommand())
-                .addSubcommand("annotate-vcf", new AnnotateVcfCommand())
-                .addSubcommand("precalculate", new PrecalculateCommand());
-        System.exit(cline.execute(args));
+        }
+        results.add(GenomicRegion.of(first.contig(), Strand.POSITIVE, CoordinateSystem.zeroBased(), previousStart, previousEnd));
+        return results;
     }
 
+    static List<GenomicRegion> splitIntoMaxLength(GenomicRegion region, int maxLength) {
+        if (maxLength < 1)
+            throw new IllegalArgumentException("Maximum length must be positive integer, got " + maxLength);
 
-    @Override
-    public Integer call() {
-        // work done in subcommands
-        return 0;
+        int size = region.length() / maxLength;
+        List<GenomicRegion> results = new ArrayList<>(size);
+        int previous = region.startWithCoordinateSystem(CoordinateSystem.zeroBased());
+        int end = region.endWithCoordinateSystem(CoordinateSystem.zeroBased());
+
+        while (previous + maxLength < end) {
+            int current = previous + maxLength;
+            results.add(GenomicRegion.of(region.contig(), region.strand(), CoordinateSystem.zeroBased(),
+                    Position.of(previous), Position.of(current)));
+            previous = current;
+        }
+        results.add(GenomicRegion.of(region.contig(), region.strand(), CoordinateSystem.zeroBased(), Position.of(previous), Position.of(end)));
+
+        return results;
     }
 }
