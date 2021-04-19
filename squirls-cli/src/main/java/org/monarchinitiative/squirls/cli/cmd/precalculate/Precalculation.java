@@ -126,8 +126,8 @@ class Precalculation extends RecursiveAction {
                              SplicingAnnotator annotator,
                              SquirlsClassifier classifier,
                              VariantContextWriter writer,
-                             int granularity) {
-        ProgressReporter progressReporter = new ProgressReporter(10_000);
+                             int granularity,
+                             ProgressReporter progressReporter) {
         return new Precalculation(regions, generator, adaptor, dataService, annotator, classifier, writer, progressReporter, granularity, 0, regions.size());
     }
 
@@ -165,7 +165,8 @@ class Precalculation extends RecursiveAction {
             Precalculation left = new Precalculation(regions, generator, adaptor, dataService, annotator, classifier, writer, progressReporter, granularity, start, start + midpoint);
             Precalculation right = new Precalculation(regions, generator, adaptor, dataService, annotator, classifier, writer, progressReporter, granularity, start + midpoint, end);
 
-            invokeAll(left, right);
+            left.fork();
+            right.fork();
         }
     }
 

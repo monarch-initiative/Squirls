@@ -86,6 +86,7 @@ import htsjdk.variant.vcf.VCFHeader;
 import htsjdk.variant.vcf.VCFHeaderLine;
 import htsjdk.variant.vcf.VCFHeaderVersion;
 import org.monarchinitiative.squirls.cli.Main;
+import org.monarchinitiative.squirls.cli.cmd.ProgressReporter;
 import org.monarchinitiative.squirls.cli.cmd.SquirlsCommand;
 import org.monarchinitiative.squirls.cli.cmd.SquirlsWorkerThread;
 import org.monarchinitiative.squirls.core.*;
@@ -103,6 +104,7 @@ import java.nio.file.Path;
 import java.text.NumberFormat;
 import java.util.*;
 import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -124,11 +126,8 @@ public class PrecalculateCommand extends SquirlsCommand {
 
     private static final NumberFormat NF = NumberFormat.getInstance();
 
-    // process regions at most this long
-    private static final int MAX_LENGTH = 1_000;
-
-    // process at most 20 regions within a task
-    private static final int GRANULARITY = 10;
+    // process at most 1 region within a task
+    private static final int GRANULARITY = 1;
 
     private static final Thread.UncaughtExceptionHandler HANDLER = (thread, throwable) ->
             LOGGER.error("Error on thread {}: {}", thread.getName(), throwable.getMessage());
@@ -163,6 +162,17 @@ public class PrecalculateCommand extends SquirlsCommand {
 
     @Override
     public Integer call() {
+        if (nThreads < 1) {
+            LOGGER.error("Thread number must be positive: {}", nThreads);
+            return 1;
+        }
+
+        int processorsAvailable = Runtime.getRuntime().availableProcessors();
+        if (nThreads > processorsAvailable)
+            LOGGER.warn("You asked for more threads ({}) than there are processors ({}) available on the system", nThreads, processorsAvailable);
+
+        LOGGER.info("Processing variants on {} threads", nThreads);
+
         try (ConfigurableApplicationContext context = getContext()) {
             GenomicAssembly assembly = context.getBean(GenomicAssembly.class);
             List<GenomicRegion> regions = prepareGenomicRegions(assembly);
@@ -188,26 +198,27 @@ public class PrecalculateCommand extends SquirlsCommand {
                 VCFHeader header = prepareHeader(assembly);
                 writer.writeHeader(header);
 
+                ProgressReporter progressReporter = new ProgressReporter(10_000);
                 ForkJoinPool pool = new ForkJoinPool(nThreads, SquirlsWorkerThread::new, HANDLER, true);
                 for (int contigId : regionByContig.keySet()) {
                     List<GenomicRegion> contigRegions = regionByContig.get(contigId);
                     if (contigRegions.isEmpty())
                         continue;
 
-                    List<GenomicRegion> preprocessed = RegionUtils.mergeOverlapping(contigRegions).stream()
-                            .map(r -> RegionUtils.splitIntoMaxLength(r, MAX_LENGTH))
-                            .flatMap(Collection::stream)
-                            .collect(Collectors.toUnmodifiableList());
+                    List<GenomicRegion> preprocessed = RegionUtils.mergeOverlapping(contigRegions);
 
                     int baseCount = preprocessed.stream().mapToInt(Region::length).sum();
                     String contigName = assembly.contigById(contigId).name();
                     LOGGER.info("Precalculating scores for {} positions of chromosome {}", NF.format(baseCount), contigName);
 
-                    Precalculation precalculation = Precalculation.of(preprocessed, generator, adaptor, squirlsDataService, annotator, classifier, writer, GRANULARITY);
-                    pool.invoke(precalculation);
+                    Precalculation precalculation = Precalculation.of(preprocessed, generator, adaptor, squirlsDataService, annotator, classifier, writer, GRANULARITY, progressReporter);
+                    pool.submit(precalculation);
                 }
-
                 pool.shutdown();
+
+                //noinspection StatementWithEmptyBody
+                while (!pool.awaitTermination(2, TimeUnit.SECONDS)) {}
+
             }
         } catch (Exception e) {
             LOGGER.error("Error: {}", e.getMessage(), e);

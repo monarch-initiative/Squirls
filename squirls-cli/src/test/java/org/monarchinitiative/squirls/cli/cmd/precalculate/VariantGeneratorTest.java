@@ -96,11 +96,11 @@ public class VariantGeneratorTest {
     @ParameterizedTest
     @CsvSource({
             "1,    32",
-            "2,   135",
-            "3,   525",
-            "4,  2066",
-            "5,  8214",
-            "6, 32793",
+            "2,    71",
+            "3,   205",
+            "4,   722",
+            "5,  2774",
+            "6, 10969"
     })
     public void generate(int depth, int size) {
         GenomicRegion region = GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(), 10, 18);
