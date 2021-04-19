@@ -158,25 +158,22 @@ In result, the tabular files with the following columns are created:
 ``precalculate`` - Precalculate SQUIRLS scores
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Thanks to easy installation of Squirls, most users should be able to annotate the variants of interest by themselves.
-That is why we do not provide tabular files with precalculated scores for each genomic positions. Instead of that,
-we provide an option to precalculate the scores for your regions of interest.
-The command ``precalculate`` for all possible variants (including INDELs up to specified length)
-SQUIRLS scores for all possible SNV and INDEL variants in the provided region(s) and store the scores in
-a compressed VCF file.
+We do not provide a tabular file with precalculated scores for all possible genomic variants. Instead of that, we provide
+a command for precalculating the scores for your genomic regions of interest.
+This command precalculates Squirls scores for all possible variants (including INDELs up to specified length)
+and stores the scores in a compressed VCF file.
 
-The command::
+**Example**::
 
   $ java -jar squirls-cli.jar precalculate squirls-config.yml CM000669.1:44187000-44187600 CM000669.1:44186000-44186500
 
-will precalculate scores for regions two regions, each region encompassing an exons of the *GCK* gene plus some
-neighboring intronic sequence. ``SQUIRLS`` recognizes *GenBank*, *RefSeq*, *UCSC*, and *simple*
+The command computes scores for two regions, each region encompassing an exons of the *GCK* gene plus some neighboring
+intronic sequence. ``SQUIRLS`` recognizes *GenBank*, *RefSeq*, *UCSC*, and *simple*
 (``1``, ``2``, ..., ``X``, ``Y``, ``MT``) contigs accessions.
 
 The region coordinates must be provided using *zero-based* coordinates where the start position is not part of the region.
 
-By default, SQUIRLS generates all possible SNVs for the bases of the region, including deletion of the base
-(``--length 1``).
+By default, SQUIRLS generates all possible SNVs for the bases of the region, including deletion of the base.
 For example, a region :math:`r` spanning ``ctg1:3-5`` of a 10bp-long reference contig ``ctg1``::
 
   >ctg1
@@ -193,19 +190,25 @@ yields the variants:
   ctg1        5       ``A>C``, ``A>G``, ``A>T``     ``A>``    N/A
   ====== =========== ========================== ============ ===================================================
 
-The annotated variants are stored in a compressed VCF file named ``squirls-scores.vcf.gz`` that will be written into the
-current working directory.
+the annotated variants are stored in a compressed VCF file named ``squirls-scores.vcf.gz`` that is by default stored in
+the current working directory.
 
-Please note that the VCF file is *unsorted*. Please sort and index the file before using by running::
+Please note that the VCF file *not* sorted. Please sort and index the VCF file yourself, e.g. by running::
 
   bcftools sort squirls-scores.vcf.gz | bgzip -c > squirls-scores.sorted.vcf.gz
   tabix squirls-scores.sorted.vcf.gz
 
 
+Parameters
+~~~~~~~~~~
+
+There is one required positional parameter that is path to Squirls configuration file. Following that, zero or more region
+definitions, e.g. ``CM000669.1:44187000-44187600``, ``CM000669.1:44186000-44186500`` can be provided.
+
 Options
 ~~~~~~~
 
-There are several options that the user can adjust when precalculating the scores:
+There are several options to adjust:
 
 * ``-i, --input`` - path to a BED file with the target regions. Lines starting with ``#`` are ignored. See example `regions.bed`_
 * ``-o, --output`` - path to VCF file where to write the results. The VCF output is compressed, so we recommend to use ``*.vcf.gz`` suffix. (Default: ``squirls.scores.vcf.gz``)
