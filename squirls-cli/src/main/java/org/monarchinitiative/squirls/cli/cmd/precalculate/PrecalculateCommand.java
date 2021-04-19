@@ -163,7 +163,7 @@ public class PrecalculateCommand extends SquirlsCommand {
     @Override
     public Integer call() {
         if (nThreads < 1) {
-            LOGGER.error("Thread number must be positive: {}", nThreads);
+            LOGGER.error("Thread number must be a positive integer: {}", nThreads);
             return 1;
         }
 
@@ -172,6 +172,12 @@ public class PrecalculateCommand extends SquirlsCommand {
             LOGGER.warn("You asked for more threads ({}) than there are processors ({}) available on the system", nThreads, processorsAvailable);
 
         LOGGER.info("Processing variants on {} threads", nThreads);
+
+        if (length < 1) {
+            LOGGER.error("Maximum length must be a positive integer: {}", length);
+            return 1;
+        }
+        LOGGER.info("Writing variants up to {}bp long", length);
 
         try (ConfigurableApplicationContext context = getContext()) {
             GenomicAssembly assembly = context.getBean(GenomicAssembly.class);

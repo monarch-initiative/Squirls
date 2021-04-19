@@ -128,7 +128,7 @@ public class VariantGenerator {
                 variants.add(Variant.of(contig, ID, sequence.strand(), CoordinateSystem.oneBased(), position, refBase, altBase));
             }
             // INSERTIONS up to given length
-            variants.addAll(generateInsertions(contig, sequence.strand(), CoordinateSystem.oneBased(), position, refBase, refBase.length(), maxLength));
+            variants.addAll(generateInsertions(contig, sequence.strand(), CoordinateSystem.oneBased(), position, refBase, refBase, maxLength));
 
             // DELETIONS
             int j = i + 1;
@@ -144,17 +144,17 @@ public class VariantGenerator {
     }
 
     private static List<Variant> generateInsertions(Contig contig, Strand strand, CoordinateSystem coordinateSystem,
-                                                    Position pos, String ref, int altLength, int level) {
-        if (altLength == level)
+                                                    Position pos, String ref, String alt, int level) {
+        if (alt.length() == level)
             return List.of();
 
         List<Variant> variants = new LinkedList<>();
 
         for (String base : BASES) {
-            String a = ref + base;
-            Variant variant = Variant.of(contig, ID, strand, coordinateSystem, pos, ref, a);
+            String extendedAltAllele = alt + base;
+            Variant variant = Variant.of(contig, ID, strand, coordinateSystem, pos, ref, extendedAltAllele);
             variants.add(variant);
-            variants.addAll(generateInsertions(contig, strand, coordinateSystem, pos, ref, altLength + 1, level));
+            variants.addAll(generateInsertions(contig, strand, coordinateSystem, pos, ref, extendedAltAllele, level));
         }
 
         return variants;
