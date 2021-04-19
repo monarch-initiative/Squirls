@@ -71,111 +71,50 @@
  *
  * version:6-8-18
  *
- * Daniel Danis, Peter N Robinson, 2020
+ * Daniel Danis, Peter N Robinson, 2021
  */
 
-package org.monarchinitiative.squirls.io.db;
+package org.monarchinitiative.squirls.cli.cmd.precalculate;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.monarchinitiative.squirls.io.SquirlsClassifierVersion;
-import org.monarchinitiative.squirls.io.TestDataSourceConfig;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.jdbc.Sql;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.monarchinitiative.squirls.core.reference.StrandedSequence;
+import org.monarchinitiative.svart.*;
 
-import javax.sql.DataSource;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.util.Collection;
-import java.util.Map;
+import java.util.List;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasSize;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
-@SpringBootTest(classes = {TestDataSourceConfig.class})
-public class DbClassifierDataManagerTest {
+public class VariantGeneratorTest {
 
-    private static final double TOLERANCE = 5E-12;
+    private final Contig contig = Contig.of(1, "1", SequenceRole.ASSEMBLED_MOLECULE, "1", AssignedMoleculeType.CHROMOSOME, 100, "", "", "");
 
-    @Autowired
-    public DataSource dataSource;
+    @ParameterizedTest
+    @CsvSource({
+            "1,    32",
+            "2,    71",
+            "3,   205",
+            "4,   722",
+            "5,  2774",
+            "6, 10969"
+    })
+    public void generate(int depth, int size) {
+        GenomicRegion region = GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(), 10, 18);
+        StrandedSequence sequence = StrandedSequence.of(region, "ACGTACGT");
 
-    private DbClassifierDataManager manager;
+        VariantGenerator generator = new VariantGenerator(depth);
+        List<Variant> variants = generator.generate(sequence);
 
-    @BeforeEach
-    public void setUp() {
-        manager = new DbClassifierDataManager(dataSource);
+        assertThat(variants, hasSize(size));
     }
 
     @Test
-    @Sql(scripts = {"create_classifier_table.sql"})
-    public void storeClassifier() throws Exception {
-        byte[] payload = new byte[]{-128, 6, 0, 88, 127};
-        SquirlsClassifierVersion version = SquirlsClassifierVersion.v0_4_1;
-        int updated = manager.storeClassifier(version, payload);
-
-        byte[] actual = null;
-        SquirlsClassifierVersion actualVersion = null;
-        int i = 0;
-        try (Connection connection = dataSource.getConnection();
-             PreparedStatement ps = connection.prepareStatement("select version, data from SQUIRLS.CLASSIFIER where version = ?")) {
-            ps.setString(1, version.toString());
-            ResultSet rs = ps.executeQuery();
-
-
-            while (rs.next()) {
-                if (i == 0) {
-                    actualVersion = SquirlsClassifierVersion.valueOf(rs.getString("version"));
-                    actual = rs.getBytes("data");
-                }
-                i++;
-            }
-        }
-
-        assertThat(i, is(1));
-        assertThat(updated, is(1));
-        assertThat(actualVersion, is(SquirlsClassifierVersion.v0_4_1));
-        assertThat(payload, is(actual));
-    }
-
-    @Test
-    @Sql(scripts = "create_classifier_table.sql",
-            statements = "insert into SQUIRLS.CLASSIFIER(version, data) values ('v0_4_1', '000F10FF')")
-    public void readClassifier() throws Exception {
-        byte[] bytes = manager.readClassifierBytes(SquirlsClassifierVersion.v0_4_1);
-        assertThat(bytes, equalTo(new byte[]{0, 15, 16, -1}));
-
-        byte[] na = manager.readClassifierBytes(SquirlsClassifierVersion.v0_4_6);
-        assertThat(na, equalTo(null));
-    }
-
-    @Test
-    @Sql(scripts = "create_classifier_table.sql",
-            statements = "insert into SQUIRLS.CLASSIFIER(version, data) " +
-                    " values ('v0_4_1', 'BEEFBEEF'), ('v0_4_6', 'BEEFBEEFBEEFBEEF')")
-    public void getAllClassifiers() {
-        Collection<SquirlsClassifierVersion> clfs = manager.getAvailableClassifiers();
-        assertThat(clfs, hasSize(2));
-        assertThat(clfs, hasItems(SquirlsClassifierVersion.v0_4_1, SquirlsClassifierVersion.v0_4_6));
-    }
-
-    @Test
-    public void jsonify() {
-        Map<String, Double> parameters = Map.of("bla", 0.123456789012, "kva", 11.998877665544);
-        String payload = DbClassifierDataManager.jsonify(parameters);
-        assertThat(payload, is("{\"bla\": 0.123456789012, \"kva\": 11.998877665544}"));
-    }
-
-    @Test
-    public void deJsonify() {
-        String payload = "{\"bla\": 0.123456789012, \"kva\": 11.998877665544}";
-        Map<String, Double> params = DbClassifierDataManager.deJsonify(payload);
-
-        assertThat(params.size(), is(2));
-        assertThat(params.keySet(), hasItems("bla", "kva"));
-        assertThat(params.get("bla"), is(closeTo(0.123456789012, TOLERANCE)));
-        assertThat(params.get("kva"), is(closeTo(11.998877665544, TOLERANCE)));
+    public void generate_illegalInput() {
+        IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> new VariantGenerator(0));
+        assertThat(e.getMessage(), equalTo("Maximum length must be a positive integer, was 0"));
     }
 }

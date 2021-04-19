@@ -77,7 +77,6 @@
 package org.monarchinitiative.squirls.cli.cmd.annotate_vcf;
 
 import de.charite.compbio.jannovar.annotation.Annotation;
-import de.charite.compbio.jannovar.annotation.AnnotationException;
 import de.charite.compbio.jannovar.annotation.VariantAnnotations;
 import de.charite.compbio.jannovar.annotation.VariantAnnotator;
 import de.charite.compbio.jannovar.annotation.builders.AnnotationBuilderOptions;
@@ -94,6 +93,7 @@ import htsjdk.variant.variantcontext.VariantContextBuilder;
 import htsjdk.variant.vcf.VCFFileReader;
 import org.monarchinitiative.squirls.cli.Main;
 import org.monarchinitiative.squirls.cli.cmd.SquirlsCommand;
+import org.monarchinitiative.squirls.cli.cmd.SquirlsWorkerThread;
 import org.monarchinitiative.squirls.cli.writers.*;
 import org.monarchinitiative.squirls.core.SquirlsDataService;
 import org.monarchinitiative.squirls.core.SquirlsResult;
@@ -191,7 +191,7 @@ public class AnnotateVcfCommand extends SquirlsCommand {
                 // jannovar annotations
                 Integer contigId = rd.getContigNameToID().get(contigName);
                 if (contigId == null) {
-                    LOGGER.warn("Jannovar does not recognize contig {} for variant {}", contigName, vc);
+                    if (LOGGER.isWarnEnabled()) LOGGER.warn("Jannovar does not recognize contig {} for variant {}", contigName, vc);
                     continue;
                 }
 
@@ -201,7 +201,7 @@ public class AnnotateVcfCommand extends SquirlsCommand {
                 try {
                     variantAnnotations = annotator.buildAnnotations(genomeVariant);
                 } catch (Exception e) {
-                    LOGGER.warn("Unable to perform functional annotation for variant {}: {}", genomeVariant, e.getMessage());
+                    if (LOGGER.isWarnEnabled()) LOGGER.warn("Unable to perform functional annotation for variant {}: {}", genomeVariant, e.getMessage());
                     continue;
                 }
 
@@ -271,36 +271,37 @@ public class AnnotateVcfCommand extends SquirlsCommand {
 
     @Override
     public Integer call() {
+        if (nThreads < 1) {
+            LOGGER.error("Thread number must be positive: {}", nThreads);
+            return 1;
+        }
+
+        if (nVariantsToReport <= 0) {
+            LOGGER.error("Number of variants to report must be positive: {}", nVariantsToReport);
+            return 1;
+        }
+
+        int processorsAvailable = Runtime.getRuntime().availableProcessors();
+        if (nThreads > processorsAvailable) {
+            LOGGER.warn("You asked for more threads ({}) than processors ({}) available on the system", nThreads, processorsAvailable);
+        }
+
+        JannovarData jd;
+        try {
+            LOGGER.info("Loading transcript database from `{}`", jannovarDataPath.toAbsolutePath());
+            jd = new JannovarDataSerializer(jannovarDataPath.toAbsolutePath().toString()).load();
+        } catch (SerializationException e) {
+            LOGGER.error("Unable to deserialize jannovar transcript database: {}", e.getMessage());
+            return 1;
+        }
+
         try (ConfigurableApplicationContext context = getContext()) {
             Collection<OutputFormat> outputFormats = parseOutputFormats(this.outputFormats);
             VariantSplicingEvaluator evaluator = context.getBean(VariantSplicingEvaluator.class);
             SquirlsDataService dataService = context.getBean(SquirlsDataService.class);
             Map<String, Contig> contigMap = prepareContigMap(dataService.genomicAssembly());
 
-            if (nThreads < 1) {
-                LOGGER.error("Thread number must be positive: {}", nThreads);
-                return 1;
-            }
-
-            if (nVariantsToReport <= 0) {
-                LOGGER.error("Number of variants to report must be positive: {}", nVariantsToReport);
-                return 1;
-            }
-
-            JannovarData jd;
-            try {
-                LOGGER.info("Loading transcript database from `{}`", jannovarDataPath.toAbsolutePath());
-                jd = new JannovarDataSerializer(jannovarDataPath.toAbsolutePath().toString()).load();
-            } catch (SerializationException e) {
-                LOGGER.error("Unable to deserialize jannovar transcript database: {}", e.getMessage());
-                return 1;
-            }
             VariantAnnotator annotator = new VariantAnnotator(jd.getRefDict(), jd.getChromosomes(), new AnnotationBuilderOptions());
-
-            int processorsAvailable = Runtime.getRuntime().availableProcessors();
-            if (nThreads > processorsAvailable) {
-                LOGGER.warn("You asked for more threads ({}) than processors ({}) available on the system", nThreads, processorsAvailable);
-            }
 
             // annotate the variants
             // TODO: 29. 5. 2020 improve behavior & logging
@@ -336,7 +337,7 @@ public class AnnotateVcfCommand extends SquirlsCommand {
                     ForkJoinPool pool = makePool(nThreads);
                     annotated = pool.submit(() -> alleleStream.collect(Collectors.toList())).get();
                 } catch (InterruptedException | ExecutionException e) {
-                    LOGGER.warn("Error: ", e);
+                    LOGGER.error("Error: ", e);
                     return 1;
                 }
             }
@@ -359,7 +360,7 @@ public class AnnotateVcfCommand extends SquirlsCommand {
                 try {
                     writer.write(results, outputPrefix);
                 } catch (IOException e) {
-                    if (LOGGER.isWarnEnabled()) LOGGER.warn("Error writing {} results: {}", format, e.getMessage());
+                    LOGGER.error("Error writing {} results: {}", format, e.getMessage());
                 }
             }
         }

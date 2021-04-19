@@ -14,6 +14,7 @@ Squirls provides three commands to annotate variants in different input formats:
 * ``annotate-pos`` - quickly annotate a couple of variants, e.g. ``chr9:136224694A>T``
 * ``annotate-csv`` - annotate variants stored in a CSV file
 * ``annotate-vcf`` - annotate variants in VCF file
+* ``precalculate`` - precalculate SQUIRLS scores for provided regions and store the results in a compressed VCF file
 
 In the examples below, we assume that ``squirls-config.yml`` points to a configuration file with correct locations of
 Squirls resources.
@@ -107,12 +108,13 @@ In addition to parameters, Squirls allows to fine tune the annotation using the 
   Please note that the options must be specified *before* the positional parameters
 
 Output formats
-##############
+~~~~~~~~~~~~~~
 The ``annotate-vcf`` command writes results in 4 output formats: *HTML*, *VCF* (compressed and uncompressed), *CSV*, and *TSV*. Use the ``-f`` option
 to select one or more of the desired output formats (e.g. ``-f html,vcf``).
 
 HTML output format
-~~~~~~~~~~~~~~~~~~
+##################
+
 Without specifying the ``-f`` option, a *HTML* report containing the 100 most deleterious variants is produced.
 The number of the reported variants is adjusted by the ``-n`` option.
 
@@ -120,7 +122,7 @@ See the :ref:`rstinterpretation` section for getting more help.
 
 
 VCF output format
-~~~~~~~~~~~~~~~~~
+#################
 When including ``vcf`` into the ``-f`` option, a VCF file with all input variants is created. The annotation process
 adds a novel *FILTER* and *INFO* field to each variant that overlaps with at least single transcript region:
 
@@ -139,7 +141,7 @@ The ``-n`` option has no effect for the *VCF* output format.
 Use ``vcfgz`` instead of ``vcf`` to **compress** the VCF output (``bgzip``) on the fly.
 
 CSV/TSV output format
-~~~~~~~~~~~~~~~~~~~~~
+#####################
 To write *n* most deleterious variants into a *CSV* (or *TSV*) file, use ``csv`` (``tsv``) in the ``-f`` option.
 
 In result, the tabular files with the following columns are created:
@@ -153,7 +155,102 @@ In result, the tabular files with the following columns are created:
   ...     ...         ...   ...   ...           ...            ...              ...
   ====== =========== ===== ===== ============= ============== ================ ================
 
+``precalculate`` - Precalculate SQUIRLS scores
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+We do not provide a tabular file with precalculated scores for all possible genomic variants. Instead of that, we provide
+a command for precalculating the scores for your genomic regions of interest.
+This command precalculates Squirls scores for all possible variants (including INDELs up to specified length)
+and stores the scores in a compressed VCF file.
+
+**Example**::
+
+  $ java -jar squirls-cli.jar precalculate squirls-config.yml CM000669.1:44187000-44187600 CM000669.1:44186000-44186500
+
+The command computes scores for two regions, each region encompassing an exons of the *GCK* gene plus some neighboring
+intronic sequence. ``SQUIRLS`` recognizes *GenBank*, *RefSeq*, *UCSC*, and *simple*
+(``1``, ``2``, ..., ``X``, ``Y``, ``MT``) contigs accessions.
+
+The region coordinates must be provided using *zero-based* coordinates where the start position is not part of the region.
+
+By default, SQUIRLS generates all possible SNVs for the bases of the region, including deletion of the base.
+For example, a region :math:`r` spanning ``ctg1:3-5`` of a 10bp-long reference contig ``ctg1``::
+
+  >ctg1
+  ACGTACGTAC
+
+yields the variants:
+
+.. table::
+
+  ====== =========== ========================== ============ ===================================================
+  chrom   pos        SNVs                       DELs         INSs
+  ====== =========== ========================== ============ ===================================================
+  ctg1        4       ``T>A``, ``T>C``, ``T>G``     ``T>``    N/A
+  ctg1        5       ``A>C``, ``A>G``, ``A>T``     ``A>``    N/A
+  ====== =========== ========================== ============ ===================================================
+
+the annotated variants are stored in a compressed VCF file named ``squirls-scores.vcf.gz`` that is by default stored in
+the current working directory.
+
+Please note that the VCF file *not* sorted. Please sort and index the VCF file yourself, e.g. by running::
+
+  bcftools sort squirls-scores.vcf.gz | bgzip -c > squirls-scores.sorted.vcf.gz
+  tabix squirls-scores.sorted.vcf.gz
+
+
+Parameters
+~~~~~~~~~~
+
+There is one required positional parameter that is path to Squirls configuration file. Following that, zero or more region
+definitions, e.g. ``CM000669.1:44187000-44187600``, ``CM000669.1:44186000-44186500`` can be provided.
+
+Options
+~~~~~~~
+
+There are several options to adjust:
+
+* ``-i, --input`` - path to a BED file with the target regions. Lines starting with ``#`` are ignored. See example `regions.bed`_
+* ``-o, --output`` - path to VCF file where to write the results. The VCF output is compressed, so we recommend to use ``*.vcf.gz`` suffix. (Default: ``squirls.scores.vcf.gz``)
+* ``-t, --n-threads`` - number of threads to use for calculating the scores. (Default: ``2``)
+* ``--individual`` - if the flag is present, predictions with respect to all overlapping transcripts will be stored within the *INFO* field.
+* ``-l, --length`` - maximum length of the generated variants on the reference genome, see *Variant generation* below (Default: ``1``)
+
+
+Parallel processing
+~~~~~~~~~~~~~~~~~~~
+
+When predicting the scores, each region is handled by a single thread, while at most ``-t`` threads being used for
+prediction at the same time.
+Therefore, to fully leverage the parallelism offered by modern multi-core CPUs, we recommend to split large regions
+into several smaller ones.
+
+
+Variant generation
+~~~~~~~~~~~~~~~~~~
+
+The default value of the ``-l, --length`` parameter is set to ``1``. As explained above, the parameter controls
+the length of the generated variants. However, length can be set to any positive integer, leading to calculation
+of scores for variants of different lengths.
+
+Using the region :math:`r` and the contig ``ctg1`` defined above, setting ``-l`` to ``2`` will calculate scores for
+variants:
+
+.. table:: The variant generation pattern
+
+  ====== =========== ============================== ================= =======================================
+  chrom   pos        SNVs                           DELs              INSs
+  ====== =========== ============================== ================= =======================================
+  ctg1        4       ``T>A``, ``T>C``, ``T>G``     ``T>``, ``TA>T``  ``T>TA``, ``T>TC``, ``T>TG``, ``T>TT``
+  ctg1        5       ``A>C``, ``A>G``, ``A>T``     ``A>``            ``A>AA``, ``A>AC``, ``A>AG``, ``A>AT``
+  ====== =========== ============================== ================= =======================================
+
+.. note::
+  The number of possible variants grows exponentially with increasing of the ``--length`` value. This can lead to
+  substantial run times and to extending your computational budget. Use at your own risk ;)
+
 
 .. _Jannovar: https://pubmed.ncbi.nlm.nih.gov/24677618
 .. _example.vcf: https://github.com/TheJacksonLaboratory/Squirls/blob/development/squirls-cli/src/examples/example.vcf
 .. _example.csv: https://github.com/TheJacksonLaboratory/Squirls/blob/development/squirls-cli/src/examples/example.csv
+.. _regions.bed: https://github.com/TheJacksonLaboratory/Squirls/blob/development/squirls-cli/src/examples/regions.bed

@@ -71,61 +71,72 @@
  *
  * version:6-8-18
  *
- * Daniel Danis, Peter N Robinson, 2020
+ * Daniel Danis, Peter N Robinson, 2021
  */
-package org.monarchinitiative.squirls.core;
 
-import java.util.Collection;
-import java.util.Objects;
-import java.util.Set;
-import java.util.stream.Stream;
+package org.monarchinitiative.squirls.cli.cmd.precalculate;
 
-/**
- * @author Daniel Danis
- */
-class SquirlsResultDefault implements SquirlsResult {
+import org.monarchinitiative.svart.*;
 
-    private final Set<SquirlsTxResult> results;
+import java.util.*;
+import java.util.stream.Collectors;
 
-    private SquirlsResultDefault(Collection<SquirlsTxResult> results) {
-        long nUniqueTxAccessions = results.stream()
-                .map(SquirlsTxResult::accessionId)
-                .distinct()
-                .count();
+class RegionUtils {
 
-        if (nUniqueTxAccessions != results.size()) {
-            throw new IllegalArgumentException("Inconsistent number of transcripts `" + nUniqueTxAccessions + "` and results `" + results.size() + '`');
+    private static final Comparator<GenomicRegion> COMPARATOR = Comparator
+            .<GenomicRegion>comparingInt(gr -> gr.startOnStrandWithCoordinateSystem(Strand.POSITIVE, CoordinateSystem.zeroBased()))
+            .thenComparingInt(gr -> gr.endOnStrandWithCoordinateSystem(Strand.POSITIVE, CoordinateSystem.zeroBased()));
+
+    private RegionUtils() {}
+
+    static List<GenomicRegion> mergeOverlapping(List<GenomicRegion> regions) {
+        // assuming non-empty list of regions on the same contig!
+        if (regions.isEmpty())
+            return List.of();
+
+        LinkedList<GenomicRegion> sorted = regions.stream()
+                .sorted(COMPARATOR)
+                .collect(Collectors.toCollection(LinkedList::new));
+
+        List<GenomicRegion> results = new LinkedList<>();
+        Iterator<GenomicRegion> iterator = sorted.iterator();
+        GenomicRegion first = iterator.next();
+        int previousStart = first.startOnStrandWithCoordinateSystem(Strand.POSITIVE, CoordinateSystem.zeroBased());
+        int previousEnd = first.endOnStrandWithCoordinateSystem(Strand.POSITIVE, CoordinateSystem.zeroBased());
+        while (iterator.hasNext()) {
+            GenomicRegion next = iterator.next();
+            int nextStart = next.startOnStrandWithCoordinateSystem(Strand.POSITIVE, CoordinateSystem.zeroBased());
+            int nextEnd = next.endOnStrandWithCoordinateSystem(Strand.POSITIVE, CoordinateSystem.zeroBased());
+
+            if (previousEnd < nextStart) {
+                GenomicRegion region = GenomicRegion.of(first.contig(), Strand.POSITIVE, CoordinateSystem.zeroBased(), previousStart, previousEnd);
+                results.add(region);
+                previousStart = nextStart;
+            }
+            previousEnd = nextEnd;
+
         }
-
-        this.results = Set.copyOf(results);
+        results.add(GenomicRegion.of(first.contig(), Strand.POSITIVE, CoordinateSystem.zeroBased(), previousStart, previousEnd));
+        return results;
     }
 
-    static SquirlsResultDefault of(Collection<SquirlsTxResult> squirlsTxResults) {
-        return new SquirlsResultDefault(squirlsTxResults);
-    }
+    static List<GenomicRegion> splitIntoMaxLength(GenomicRegion region, int maxLength) {
+        if (maxLength < 1)
+            throw new IllegalArgumentException("Maximum length must be positive integer, got " + maxLength);
 
-    @Override
-    public Stream<SquirlsTxResult> results() {
-        return results.stream();
-    }
+        int size = region.length() / maxLength;
+        List<GenomicRegion> results = new ArrayList<>(size);
+        int previous = region.startWithCoordinateSystem(CoordinateSystem.zeroBased());
+        int end = region.endWithCoordinateSystem(CoordinateSystem.zeroBased());
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        SquirlsResultDefault that = (SquirlsResultDefault) o;
-        return Objects.equals(results, that.results);
-    }
+        while (previous + maxLength < end) {
+            int current = previous + maxLength;
+            results.add(GenomicRegion.of(region.contig(), region.strand(), CoordinateSystem.zeroBased(),
+                    Position.of(previous), Position.of(current)));
+            previous = current;
+        }
+        results.add(GenomicRegion.of(region.contig(), region.strand(), CoordinateSystem.zeroBased(), Position.of(previous), Position.of(end)));
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(results);
-    }
-
-    @Override
-    public String toString() {
-        return "SquirlsResultDefault{" +
-                "results=" + results +
-                '}';
+        return results;
     }
 }

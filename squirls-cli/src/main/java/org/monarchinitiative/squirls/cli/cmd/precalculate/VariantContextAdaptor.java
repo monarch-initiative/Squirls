@@ -71,61 +71,91 @@
  *
  * version:6-8-18
  *
- * Daniel Danis, Peter N Robinson, 2020
+ * Daniel Danis, Peter N Robinson, 2021
  */
-package org.monarchinitiative.squirls.core;
 
-import java.util.Collection;
-import java.util.Objects;
+package org.monarchinitiative.squirls.cli.cmd.precalculate;
+
+import htsjdk.variant.variantcontext.Allele;
+import htsjdk.variant.variantcontext.VariantContext;
+import htsjdk.variant.variantcontext.VariantContextBuilder;
+import htsjdk.variant.vcf.*;
+import org.monarchinitiative.squirls.core.SquirlsResult;
+import org.monarchinitiative.squirls.core.reference.StrandedSequence;
+import org.monarchinitiative.squirls.core.reference.StrandedSequenceService;
+import org.monarchinitiative.svart.CoordinateSystem;
+import org.monarchinitiative.svart.GenomicRegion;
+import org.monarchinitiative.svart.Position;
+import org.monarchinitiative.svart.Variant;
+
+import java.text.NumberFormat;
+import java.util.List;
+import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Stream;
+import java.util.stream.Collectors;
 
 /**
- * @author Daniel Danis
+ * Format {@link Variant} and {@link SquirlsResult} into {@link VariantContext}.
  */
-class SquirlsResultDefault implements SquirlsResult {
+class VariantContextAdaptor {
 
-    private final Set<SquirlsTxResult> results;
+    private static final NumberFormat NF = NumberFormat.getNumberInstance();
 
-    private SquirlsResultDefault(Collection<SquirlsTxResult> results) {
-        long nUniqueTxAccessions = results.stream()
-                .map(SquirlsTxResult::accessionId)
-                .distinct()
-                .count();
+    static {
+        NF.setMaximumFractionDigits(9);
+    }
 
-        if (nUniqueTxAccessions != results.size()) {
-            throw new IllegalArgumentException("Inconsistent number of transcripts `" + nUniqueTxAccessions + "` and results `" + results.size() + '`');
+    static VCFFilterHeaderLine SQUIRLS_DELETERIOUS = new VCFFilterHeaderLine("SQ", "Squirls considers the variant as pathogenic if the filter is present");
+    static VCFInfoHeaderLine MAX_SQUIRLS_SCORE = new VCFInfoHeaderLine("SQ", VCFHeaderLineCount.A, VCFHeaderLineType.Float, "Maximum Squirls score");
+    static VCFInfoHeaderLine INDIVIDUAL_SQUIRLS_SCORE = new VCFInfoHeaderLine("ISQ", VCFHeaderLineCount.A, VCFHeaderLineType.String, "Squirls scores for individual transcripts");
+
+    private final boolean writeIndividualPredictions;
+
+    private final StrandedSequenceService sequenceService;
+
+    VariantContextAdaptor(boolean writeIndividualPredictions, StrandedSequenceService sequenceService) {
+        this.writeIndividualPredictions = writeIndividualPredictions;
+        this.sequenceService = sequenceService;
+    }
+
+    static Set<VCFHeaderLine> headerLines() {
+        return Set.of(MAX_SQUIRLS_SCORE, INDIVIDUAL_SQUIRLS_SCORE, SQUIRLS_DELETERIOUS);
+    }
+
+
+    Optional<VariantContext> mapToVariantContext(Variant variant, SquirlsResult result) {
+        if (result.isEmpty())
+            return Optional.empty();
+
+        if (variant.alt().isEmpty()) {
+            // Variant notation where the common base is omitted. We must provide the previous base
+            int start = variant.startWithCoordinateSystem(CoordinateSystem.zeroBased()) -1;
+            GenomicRegion region = GenomicRegion.of(variant.contig(), variant.strand(), CoordinateSystem.zeroBased(), start, start + 1);
+            StrandedSequence seq = sequenceService.sequenceForRegion(region);
+            int st = start + CoordinateSystem.zeroBased().startDelta(variant.coordinateSystem());
+            variant = Variant.of(variant.contig(), variant.id(), variant.strand(), variant.coordinateSystem(), Position.of(st), seq.sequence() + variant.ref(), seq.sequence());
         }
 
-        this.results = Set.copyOf(results);
+        List<Allele> alleles = List.of(Allele.create(variant.ref(), true), Allele.create(variant.alt(), false));
+        int start = variant.startWithCoordinateSystem(CoordinateSystem.oneBased());
+
+        double maxDeleteriousness = result.maxPathogenicity();
+        VariantContextBuilder builder = new VariantContextBuilder()
+                .chr(variant.contig().name())
+                .start(start)
+                .alleles(alleles)
+                .computeEndFromAlleles(alleles, start)
+                .attribute(MAX_SQUIRLS_SCORE.getID(), maxDeleteriousness);
+
+        if (result.isPathogenic())
+            builder.filter(SQUIRLS_DELETERIOUS.getID());
+        if (writeIndividualPredictions) {
+            String individualPredictions = result.results()
+                    .map(r -> r.accessionId() + '=' + String.format("%6.3e", r.prediction().getMaxPathogenicity()))
+                    .collect(Collectors.joining("|"));
+            builder.attribute(INDIVIDUAL_SQUIRLS_SCORE.getID(), individualPredictions);
+        }
+        return Optional.of(builder.make());
     }
 
-    static SquirlsResultDefault of(Collection<SquirlsTxResult> squirlsTxResults) {
-        return new SquirlsResultDefault(squirlsTxResults);
-    }
-
-    @Override
-    public Stream<SquirlsTxResult> results() {
-        return results.stream();
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        SquirlsResultDefault that = (SquirlsResultDefault) o;
-        return Objects.equals(results, that.results);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(results);
-    }
-
-    @Override
-    public String toString() {
-        return "SquirlsResultDefault{" +
-                "results=" + results +
-                '}';
-    }
 }

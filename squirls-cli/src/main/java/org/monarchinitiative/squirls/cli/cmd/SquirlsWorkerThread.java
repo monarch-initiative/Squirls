@@ -74,33 +74,27 @@
  * Daniel Danis, Peter N Robinson, 2020
  */
 
-package org.monarchinitiative.squirls.io;
+package org.monarchinitiative.squirls.cli.cmd;
 
-import org.monarchinitiative.squirls.core.classifier.SquirlsClassifier;
-
-import java.util.Optional;
-import java.util.Set;
+import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.ForkJoinWorkerThread;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * @author Daniel Danis
  */
-public interface ClassifierDataManager {
+public final class SquirlsWorkerThread extends ForkJoinWorkerThread {
+
+    private static final AtomicInteger THREAD_COUNTER = new AtomicInteger(1);
 
     /**
-     * @return collection with versions of available classifiers
-     */
-    Set<SquirlsClassifierVersion> getAvailableClassifiers();
-
-    /**
-     * Store the classifier under particular version.
-     */
-    int storeClassifier(SquirlsClassifierVersion version, byte[] clfBytes);
-
-    /**
-     * Read classifier data provided it exists in the underlying resource.
+     * Creates a ForkJoinWorkerThread operating in the given pool.
      *
-     * @param version of classifier to read
-     * @return classifier data or <code>null</code> of the particular version is not available
+     * @param pool the pool this thread works in
+     * @throws NullPointerException if pool is null
      */
-    Optional<SquirlsClassifier> readClassifier(SquirlsClassifierVersion version);
+    public SquirlsWorkerThread(ForkJoinPool pool) {
+        super(pool);
+        setName("splice-worker-" + THREAD_COUNTER.getAndIncrement());
+    }
 }

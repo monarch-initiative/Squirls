@@ -73,59 +73,109 @@
  *
  * Daniel Danis, Peter N Robinson, 2020
  */
-package org.monarchinitiative.squirls.core;
 
+package org.monarchinitiative.squirls.io.db;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.monarchinitiative.squirls.io.SquirlsClassifierVersion;
+import org.monarchinitiative.squirls.io.TestDataSourceConfig;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.jdbc.Sql;
+
+import javax.sql.DataSource;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.util.Collection;
-import java.util.Objects;
-import java.util.Set;
-import java.util.stream.Stream;
+import java.util.Map;
 
-/**
- * @author Daniel Danis
- */
-class SquirlsResultDefault implements SquirlsResult {
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.*;
 
-    private final Set<SquirlsTxResult> results;
+@SpringBootTest(classes = {TestDataSourceConfig.class})
+public class DbClassifierFactoryTest {
 
-    private SquirlsResultDefault(Collection<SquirlsTxResult> results) {
-        long nUniqueTxAccessions = results.stream()
-                .map(SquirlsTxResult::accessionId)
-                .distinct()
-                .count();
+    private static final double TOLERANCE = 5E-12;
 
-        if (nUniqueTxAccessions != results.size()) {
-            throw new IllegalArgumentException("Inconsistent number of transcripts `" + nUniqueTxAccessions + "` and results `" + results.size() + '`');
+    @Autowired
+    public DataSource dataSource;
+
+    private DbClassifierFactory factory;
+
+    @BeforeEach
+    public void setUp() {
+        factory = new DbClassifierFactory(dataSource);
+    }
+
+    @Test
+    @Sql(scripts = {"create_classifier_table.sql"})
+    public void storeClassifier() throws Exception {
+        byte[] payload = new byte[]{-128, 6, 0, 88, 127};
+        SquirlsClassifierVersion version = SquirlsClassifierVersion.v0_4_1;
+        int updated = factory.storeClassifier(version, payload);
+
+        byte[] actual = null;
+        SquirlsClassifierVersion actualVersion = null;
+        int i = 0;
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement ps = connection.prepareStatement("select version, data from SQUIRLS.CLASSIFIER where version = ?")) {
+            ps.setString(1, version.toString());
+            ResultSet rs = ps.executeQuery();
+
+
+            while (rs.next()) {
+                if (i == 0) {
+                    actualVersion = SquirlsClassifierVersion.valueOf(rs.getString("version"));
+                    actual = rs.getBytes("data");
+                }
+                i++;
+            }
         }
 
-        this.results = Set.copyOf(results);
+        assertThat(i, is(1));
+        assertThat(updated, is(1));
+        assertThat(actualVersion, is(SquirlsClassifierVersion.v0_4_1));
+        assertThat(payload, is(actual));
     }
 
-    static SquirlsResultDefault of(Collection<SquirlsTxResult> squirlsTxResults) {
-        return new SquirlsResultDefault(squirlsTxResults);
+    @Test
+    @Sql(scripts = "create_classifier_table.sql",
+            statements = "insert into SQUIRLS.CLASSIFIER(version, data) values ('v0_4_1', '000F10FF')")
+    public void readClassifier() throws Exception {
+        byte[] bytes = factory.readClassifierBytes(SquirlsClassifierVersion.v0_4_1);
+        assertThat(bytes, equalTo(new byte[]{0, 15, 16, -1}));
+
+        byte[] na = factory.readClassifierBytes(SquirlsClassifierVersion.v0_4_6);
+        assertThat(na, equalTo(null));
     }
 
-    @Override
-    public Stream<SquirlsTxResult> results() {
-        return results.stream();
+    @Test
+    @Sql(scripts = "create_classifier_table.sql",
+            statements = "insert into SQUIRLS.CLASSIFIER(version, data) " +
+                    " values ('v0_4_1', 'BEEFBEEF'), ('v0_4_6', 'BEEFBEEFBEEFBEEF')")
+    public void getAllClassifiers() {
+        Collection<SquirlsClassifierVersion> clfs = factory.getAvailableClassifiers();
+        assertThat(clfs, hasSize(2));
+        assertThat(clfs, hasItems(SquirlsClassifierVersion.v0_4_1, SquirlsClassifierVersion.v0_4_6));
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        SquirlsResultDefault that = (SquirlsResultDefault) o;
-        return Objects.equals(results, that.results);
+    @Test
+    public void jsonify() {
+        Map<String, Double> parameters = Map.of("bla", 0.123456789012, "kva", 11.998877665544);
+        String payload = DbClassifierFactory.jsonify(parameters);
+        assertThat(payload, is("{\"bla\": 0.123456789012, \"kva\": 11.998877665544}"));
     }
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(results);
-    }
+    @Test
+    public void deJsonify() {
+        String payload = "{\"bla\": 0.123456789012, \"kva\": 11.998877665544}";
+        Map<String, Double> params = DbClassifierFactory.deJsonify(payload);
 
-    @Override
-    public String toString() {
-        return "SquirlsResultDefault{" +
-                "results=" + results +
-                '}';
+        assertThat(params.size(), is(2));
+        assertThat(params.keySet(), hasItems("bla", "kva"));
+        assertThat(params.get("bla"), is(closeTo(0.123456789012, TOLERANCE)));
+        assertThat(params.get("kva"), is(closeTo(11.998877665544, TOLERANCE)));
     }
 }

@@ -73,59 +73,34 @@
  *
  * Daniel Danis, Peter N Robinson, 2020
  */
-package org.monarchinitiative.squirls.core;
 
-import java.util.Collection;
-import java.util.Objects;
+package org.monarchinitiative.squirls.io;
+
+import org.monarchinitiative.squirls.core.classifier.SquirlsClassifier;
+
+import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Stream;
 
 /**
  * @author Daniel Danis
  */
-class SquirlsResultDefault implements SquirlsResult {
+public interface ClassifierFactory {
 
-    private final Set<SquirlsTxResult> results;
+    /**
+     * @return collection with versions of available classifiers
+     */
+    Set<SquirlsClassifierVersion> getAvailableClassifiers();
 
-    private SquirlsResultDefault(Collection<SquirlsTxResult> results) {
-        long nUniqueTxAccessions = results.stream()
-                .map(SquirlsTxResult::accessionId)
-                .distinct()
-                .count();
+    /**
+     * Store the classifier under particular version.
+     */
+    int storeClassifier(SquirlsClassifierVersion version, byte[] clfBytes);
 
-        if (nUniqueTxAccessions != results.size()) {
-            throw new IllegalArgumentException("Inconsistent number of transcripts `" + nUniqueTxAccessions + "` and results `" + results.size() + '`');
-        }
-
-        this.results = Set.copyOf(results);
-    }
-
-    static SquirlsResultDefault of(Collection<SquirlsTxResult> squirlsTxResults) {
-        return new SquirlsResultDefault(squirlsTxResults);
-    }
-
-    @Override
-    public Stream<SquirlsTxResult> results() {
-        return results.stream();
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        SquirlsResultDefault that = (SquirlsResultDefault) o;
-        return Objects.equals(results, that.results);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(results);
-    }
-
-    @Override
-    public String toString() {
-        return "SquirlsResultDefault{" +
-                "results=" + results +
-                '}';
-    }
+    /**
+     * Read classifier data provided it exists in the underlying resource.
+     *
+     * @param version of classifier to read
+     * @return classifier data or <code>null</code> of the particular version is not available
+     */
+    Optional<SquirlsClassifier> readClassifier(SquirlsClassifierVersion version);
 }

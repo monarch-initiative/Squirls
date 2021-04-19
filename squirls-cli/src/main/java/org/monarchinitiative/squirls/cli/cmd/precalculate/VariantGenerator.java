@@ -71,61 +71,93 @@
  *
  * version:6-8-18
  *
- * Daniel Danis, Peter N Robinson, 2020
+ * Daniel Danis, Peter N Robinson, 2021
  */
-package org.monarchinitiative.squirls.core;
 
-import java.util.Collection;
-import java.util.Objects;
-import java.util.Set;
-import java.util.stream.Stream;
+package org.monarchinitiative.squirls.cli.cmd.precalculate;
+
+import org.monarchinitiative.squirls.core.reference.StrandedSequence;
+import org.monarchinitiative.svart.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.LinkedList;
+import java.util.List;
 
 /**
- * @author Daniel Danis
+ * Class for generating all possible variants out of a nucleotide sequence.
  */
-class SquirlsResultDefault implements SquirlsResult {
+public class VariantGenerator {
 
-    private final Set<SquirlsTxResult> results;
+    private static final Logger LOGGER = LoggerFactory.getLogger(VariantGenerator.class);
 
-    private SquirlsResultDefault(Collection<SquirlsTxResult> results) {
-        long nUniqueTxAccessions = results.stream()
-                .map(SquirlsTxResult::accessionId)
-                .distinct()
-                .count();
+    private static final int MAX_SANE_LENGTH = 10;
 
-        if (nUniqueTxAccessions != results.size()) {
-            throw new IllegalArgumentException("Inconsistent number of transcripts `" + nUniqueTxAccessions + "` and results `" + results.size() + '`');
+    private static final String ID = ".";
+
+    private static final List<String> BASES = List.of("A", "C", "G", "T");
+
+    private final int maxLength;
+
+    public VariantGenerator(int maxLength) {
+        if (maxLength < 1)
+            throw new IllegalArgumentException("Maximum length must be a positive integer, was " + maxLength);
+        if (maxLength > MAX_SANE_LENGTH)
+            LOGGER.warn("Using depth more than 10 will generate large amount of variants and you'll likely to wait a long time to get the results");
+
+        this.maxLength = maxLength;
+    }
+
+    public List<Variant> generate(StrandedSequence sequence) {
+        List<Variant> variants = new LinkedList<>();
+
+        String seq = sequence.sequence();
+        Contig contig = sequence.contig();
+
+        for (int i = 0, pos = sequence.startWithCoordinateSystem(CoordinateSystem.oneBased());
+             i < seq.length();
+             i++, pos++) {
+            Position position = Position.of(pos);
+            String refBase = seq.substring(i, i + 1);
+            if (refBase.equalsIgnoreCase("N"))
+                continue;
+            for (String altBase : BASES) {
+                if (altBase.equalsIgnoreCase(refBase))
+                    continue;
+                // SNV
+                variants.add(Variant.of(contig, ID, sequence.strand(), CoordinateSystem.oneBased(), position, refBase, altBase));
+            }
+            // INSERTIONS up to given length
+            variants.addAll(generateInsertions(contig, sequence.strand(), CoordinateSystem.oneBased(), position, refBase, refBase, maxLength));
+
+            // DELETIONS
+            int j = i + 1;
+            int max = Math.min(i + maxLength, seq.length());
+            while (j <= max) {
+                String refBases = seq.substring(i, j);
+                variants.add(Variant.of(contig, ID, sequence.strand(), CoordinateSystem.oneBased(), position, refBases, ""));
+                j++;
+            }
         }
 
-        this.results = Set.copyOf(results);
+        return variants;
     }
 
-    static SquirlsResultDefault of(Collection<SquirlsTxResult> squirlsTxResults) {
-        return new SquirlsResultDefault(squirlsTxResults);
+    private static List<Variant> generateInsertions(Contig contig, Strand strand, CoordinateSystem coordinateSystem,
+                                                    Position pos, String ref, String alt, int level) {
+        if (alt.length() == level)
+            return List.of();
+
+        List<Variant> variants = new LinkedList<>();
+
+        for (String base : BASES) {
+            String extendedAltAllele = alt + base;
+            Variant variant = Variant.of(contig, ID, strand, coordinateSystem, pos, ref, extendedAltAllele);
+            variants.add(variant);
+            variants.addAll(generateInsertions(contig, strand, coordinateSystem, pos, ref, extendedAltAllele, level));
+        }
+
+        return variants;
     }
 
-    @Override
-    public Stream<SquirlsTxResult> results() {
-        return results.stream();
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        SquirlsResultDefault that = (SquirlsResultDefault) o;
-        return Objects.equals(results, that.results);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(results);
-    }
-
-    @Override
-    public String toString() {
-        return "SquirlsResultDefault{" +
-                "results=" + results +
-                '}';
-    }
 }

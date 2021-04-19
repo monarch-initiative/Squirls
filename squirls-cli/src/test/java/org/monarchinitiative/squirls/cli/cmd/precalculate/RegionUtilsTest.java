@@ -71,30 +71,58 @@
  *
  * version:6-8-18
  *
- * Daniel Danis, Peter N Robinson, 2020
+ * Daniel Danis, Peter N Robinson, 2021
  */
 
-package org.monarchinitiative.squirls.cli.cmd.annotate_vcf;
+package org.monarchinitiative.squirls.cli.cmd.precalculate;
 
-import java.util.concurrent.ForkJoinPool;
-import java.util.concurrent.ForkJoinWorkerThread;
-import java.util.concurrent.atomic.AtomicInteger;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.monarchinitiative.svart.*;
 
-/**
- * @author Daniel Danis
- */
-class SquirlsWorkerThread extends ForkJoinWorkerThread {
+import java.util.List;
 
-    private static final AtomicInteger THREAD_COUNTER = new AtomicInteger(1);
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.hamcrest.Matchers.*;
 
-    /**
-     * Creates a ForkJoinWorkerThread operating in the given pool.
-     *
-     * @param pool the pool this thread works in
-     * @throws NullPointerException if pool is null
-     */
-    protected SquirlsWorkerThread(ForkJoinPool pool) {
-        super(pool);
-        setName("splice-worker-" + THREAD_COUNTER.getAndIncrement());
+public class RegionUtilsTest {
+
+    private static final Contig contig = Contig.of(1, "1", SequenceRole.ASSEMBLED_MOLECULE, "1", AssignedMoleculeType.CHROMOSOME, 100, "", "", "");
+
+    @ParameterizedTest
+    @CsvSource({
+            "10, 20,  20, 31,  30, 40,    1",
+            "20, 31,  30, 40,  10, 20,    1",
+            "10, 19,  20, 30,  30, 40,    2",
+            "10, 20,  20, 29,  30, 40,    2",
+            "10, 19,  20, 29,  30, 39,    3",
+    })
+    public void mergeOverlapping(int aStart, int aEnd, int bStart, int bEnd, int cStart, int cEnd,
+                                 int count) {
+        List<GenomicRegion> regions = List.of(
+                GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(), aStart, aEnd),
+                GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(), bStart, bEnd),
+                GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(), cStart, cEnd));
+
+        List<GenomicRegion> merged = RegionUtils.mergeOverlapping(regions);
+
+        assertThat(merged, hasSize(count));
+    }
+
+
+    @ParameterizedTest
+    @CsvSource({
+            "10, 100, 20, 5",
+            " 0, 100, 20, 5",
+            " 0,  85, 20, 5",
+            " 0,  85, 10, 9"
+    })
+    public void split(int start, int end, int maxLength, int count) {
+        GenomicRegion query = GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(), start, end);
+
+        List<GenomicRegion> split = RegionUtils.splitIntoMaxLength(query, maxLength);
+
+        assertThat(split, hasSize(count));
     }
 }
