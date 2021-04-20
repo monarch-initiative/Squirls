@@ -89,6 +89,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @SpringBootTest(classes = TestDataSourceConfig.class)
 public class AlleleGeneratorTest {
@@ -199,7 +200,7 @@ public class AlleleGeneratorTest {
         Variant variant = Variant.of(contig, "", Strand.POSITIVE, CoordinateSystem.zeroBased(), Position.of(73), "gcaaacactgttccttctctctttcagGT", "g");
 
         // reference is atggcaaacactgttccttctctctttcagGTGGCCCTGC
-        assertThat(generator.getAcceptorSiteWithAltAllele(exon, variant, acceptorSequence), is(nullValue()));
+        assertThrows(SpliceSiteDeletedException.class, () -> generator.getAcceptorSiteWithAltAllele(exon, variant, acceptorSequence));
     }
 
     @Test
