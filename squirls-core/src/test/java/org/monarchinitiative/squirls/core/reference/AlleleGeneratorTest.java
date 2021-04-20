@@ -135,7 +135,7 @@ public class AlleleGeneratorTest {
             "105,   gtg,   g,   ATGgtagga",
             " 95, GTGAT,   G,   CGGgtaggt",
     })
-    public void getDonorSiteWithAltAllele(int pos, String ref, String alt, String expected) {
+    public void getDonorSiteWithAltAllele(int pos, String ref, String alt, String expected) throws Exception {
         Contig contig = TestContig.of(1, 200);
 
         Variant variant = Variant.of(contig,"", Strand.POSITIVE, CoordinateSystem.oneBased(), Position.of(pos), ref, alt);
@@ -150,7 +150,7 @@ public class AlleleGeneratorTest {
     }
 
     @Test
-    public void deletionOfWholeSite() {
+    public void deletionOfWholeSite() throws Exception {
         Variant variant = Variant.of(contig,"", Strand.POSITIVE, CoordinateSystem.zeroBased(), Position.of(96), "GATGgtaggt", "G");
 
         // reference is CGTGATGgtaggtgaaa
@@ -160,7 +160,7 @@ public class AlleleGeneratorTest {
     }
 
     @Test
-    public void mismatchInContigsForDonor() {
+    public void mismatchInContigsForDonor() throws Exception {
         Contig other = Contig.of(44, "44", SequenceRole.ASSEMBLED_MOLECULE, "44", AssignedMoleculeType.CHROMOSOME, 100, "", "", "");
         Variant variant = Variant.of(other, "", Strand.POSITIVE, CoordinateSystem.zeroBased(), Position.of(50), "g", "t");
 
@@ -183,7 +183,7 @@ public class AlleleGeneratorTest {
             " 81, GTGG,   G,     aaacactgttccttctctctttcagGC",
             " 54,  gca,   g,     gaacactgttccttctctctttcagGT",
     })
-    public void getAcceptorSiteWithAltAllele(int pos, String ref, String alt, String expected) {
+    public void getAcceptorSiteWithAltAllele(int pos, String ref, String alt, String expected) throws Exception {
         Variant variant = Variant.of(contig, "", Strand.POSITIVE, CoordinateSystem.oneBased(), Position.of(pos), ref, alt);
 
         StrandedSequence sequence = StrandedSequence.of(
@@ -195,7 +195,7 @@ public class AlleleGeneratorTest {
     }
 
     @Test
-    public void deletionOfTheWholeAcceptorSite() {
+    public void deletionOfTheWholeAcceptorSite() throws Exception {
         Variant variant = Variant.of(contig, "", Strand.POSITIVE, CoordinateSystem.zeroBased(), Position.of(73), "gcaaacactgttccttctctctttcagGT", "g");
 
         // reference is atggcaaacactgttccttctctctttcagGTGGCCCTGC
@@ -203,7 +203,7 @@ public class AlleleGeneratorTest {
     }
 
     @Test
-    public void mismatchInContigsForAcceptor() {
+    public void mismatchInContigsForAcceptor() throws Exception {
         Contig other = TestContig.of(22, 100);
         Variant variant = Variant.of(other, "", Strand.POSITIVE, CoordinateSystem.zeroBased(), Position.of(50), "G", "C");
 

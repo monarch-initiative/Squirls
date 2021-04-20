@@ -76,6 +76,7 @@
 
 package org.monarchinitiative.squirls.core.scoring.calculators;
 
+import org.monarchinitiative.squirls.core.Utils;
 import org.monarchinitiative.squirls.core.reference.*;
 import org.monarchinitiative.squirls.core.scoring.calculators.ic.SplicingInformationContentCalculator;
 import org.monarchinitiative.svart.GenomicRegion;
@@ -115,15 +116,26 @@ public class CanonicalAcceptor extends BaseFeatureCalculator {
         }
 
         String acceptorSiteSnippet = sequence.subsequence(acceptor);
-        String acceptorSiteWithAltAllele = generator.getAcceptorSiteWithAltAllele(acceptor, variant, sequence);
-
-        if (acceptorSiteSnippet == null || acceptorSiteWithAltAllele == null) {
+        if (acceptorSiteSnippet == null) {
             if (LOGGER.isDebugEnabled())
-                LOGGER.debug("Unable to create wt/alt snippets for variant `{}` using interval `{}`", variant, sequence);
+                LOGGER.debug("Unable to create wt snippets for variant `{}` using interval `{}`", variant, Utils.formatAsRegion(sequence));
+            return Double.NaN;
+        }
+        double refScore = calculator.getSpliceAcceptorScore(acceptorSiteSnippet);
+        String acceptorSiteWithAltAllele;
+        try {
+            acceptorSiteWithAltAllele = generator.getAcceptorSiteWithAltAllele(acceptor, variant, sequence);
+        } catch (SpliceSiteDeletedException e) {
+            // I consider the alt score to be 0 if the entire site is deleted
+            return refScore;
+        }
+
+        if (acceptorSiteWithAltAllele == null) {
+            if (LOGGER.isDebugEnabled())
+                LOGGER.debug("Unable to create alt snippets for variant `{}` using interval `{}`", variant, Utils.formatAsRegion(sequence));
             return Double.NaN;
         }
 
-        double refScore = calculator.getSpliceAcceptorScore(acceptorSiteSnippet);
         double altScore = calculator.getSpliceAcceptorScore(acceptorSiteWithAltAllele);
 
         return refScore - altScore;

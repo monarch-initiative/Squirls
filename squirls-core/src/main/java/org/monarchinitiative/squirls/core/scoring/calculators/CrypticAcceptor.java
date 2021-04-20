@@ -122,35 +122,39 @@ public class CrypticAcceptor extends BaseFeatureCalculator {
 
 
     private double score(Variant variant, GenomicRegion acceptor, StrandedSequence sequence) {
+        // prepare snippet for sliding window with alt allele
+        String acceptorNeighborSnippet = generator.getAcceptorNeighborSnippet(variant, sequence, variant.alt());
+        if (acceptorNeighborSnippet == null) {
+            if (LOGGER.isWarnEnabled())
+                LOGGER.warn("Unable to create sliding window snippet +- {}bp for variant `{}` using sequence `{}`",
+                        padding, variant, Utils.formatAsRegion(sequence));
+            return Double.NaN;
+        }
+        double crypticMaxScore = Utils.slidingWindow(acceptorNeighborSnippet, calculator.getSplicingParameters().getAcceptorLength())
+                .map(calculator::getSpliceAcceptorScore)
+                .reduce(Double::max)
+                .orElse(0D);
+
         // prepare wt acceptor snippet
         final String acceptorSnippet;
         if (variant.overlapsWith(acceptor)) {
-            acceptorSnippet = generator.getAcceptorSiteWithAltAllele(acceptor, variant, sequence);
+            try {
+                acceptorSnippet = generator.getAcceptorSiteWithAltAllele(acceptor, variant, sequence);
+            } catch (SpliceSiteDeletedException e) {
+                return crypticMaxScore; // should be covered by the `canonical_acceptor` feature
+            }
         } else {
             acceptorSnippet = sequence.subsequence(acceptor);
         }
         if (acceptorSnippet == null) {
             if (LOGGER.isWarnEnabled())
                 LOGGER.warn("Unable to create acceptor snippet at `{}` for variant `{}` using sequence `{}`",
-                        acceptor, variant, sequence);
-            return Double.NaN;
-        }
-
-        // prepare snippet for sliding window with alt allele
-        final String acceptorNeighborSnippet = generator.getAcceptorNeighborSnippet(variant, sequence, variant.alt());
-        if (acceptorNeighborSnippet == null) {
-            if (LOGGER.isWarnEnabled())
-                LOGGER.warn("Unable to create sliding window snippet +- {}bp for variant `{}` using sequence `{}`",
-                        padding, variant, sequence);
+                        acceptor, variant, Utils.formatAsRegion(sequence));
             return Double.NaN;
         }
 
         // calculate scores and return result
-        final double canonicalAcceptorScore = calculator.getSpliceAcceptorScore(acceptorSnippet);
-        final Double crypticMaxScore = Utils.slidingWindow(acceptorNeighborSnippet, calculator.getSplicingParameters().getAcceptorLength())
-                .map(calculator::getSpliceAcceptorScore)
-                .reduce(Double::max)
-                .orElse(0D);
+        double canonicalAcceptorScore = calculator.getSpliceAcceptorScore(acceptorSnippet);
 
         return crypticMaxScore - canonicalAcceptorScore;
     }
