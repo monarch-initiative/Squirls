@@ -129,7 +129,12 @@ public class PyrimidineToPurineAtMinusThree implements FeatureCalculator {
         GenomicRegion acceptorInterval = generator.makeAcceptorInterval(exon);
 
         String refAcceptorSnippet = sequence.subsequence(acceptorInterval);
-        String altAcceptorSnippet = generator.getAcceptorSiteWithAltAllele(acceptorInterval, variant, sequence);
+        String altAcceptorSnippet;
+        try {
+            altAcceptorSnippet = generator.getAcceptorSiteWithAltAllele(acceptorInterval, variant, sequence);
+        } catch (SpliceSiteDeletedException e) {
+            return 0.;
+        }
 
         if (refAcceptorSnippet == null || altAcceptorSnippet == null) {
             // unable to create padded alleles due to insufficient sequence. This should not happen since we fetch

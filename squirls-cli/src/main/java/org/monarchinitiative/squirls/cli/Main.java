@@ -80,6 +80,7 @@ import org.monarchinitiative.squirls.cli.cmd.GenerateConfigCommand;
 import org.monarchinitiative.squirls.cli.cmd.annotate_csv.AnnotateCsvCommand;
 import org.monarchinitiative.squirls.cli.cmd.annotate_pos.AnnotatePosCommand;
 import org.monarchinitiative.squirls.cli.cmd.annotate_vcf.AnnotateVcfCommand;
+import org.monarchinitiative.squirls.cli.cmd.precalculate.PrecalculateCommand;
 import picocli.CommandLine;
 import picocli.CommandLine.Help.ColorScheme.Builder;
 
@@ -100,7 +101,7 @@ import static picocli.CommandLine.Help.Ansi.Style.*;
         footer = Main.FOOTER)
 public class Main implements Callable<Integer> {
 
-    public static final String VERSION = "squirls v1.0.0-RC4";
+    public static final String VERSION = "squirls v1.0.0";
 
     public static final int WIDTH = 120;
 
@@ -120,7 +121,8 @@ public class Main implements Callable<Integer> {
                 .addSubcommand("generate-config", new GenerateConfigCommand())
                 .addSubcommand("annotate-pos", new AnnotatePosCommand())
                 .addSubcommand("annotate-csv", new AnnotateCsvCommand())
-                .addSubcommand("annotate-vcf", new AnnotateVcfCommand());
+                .addSubcommand("annotate-vcf", new AnnotateVcfCommand())
+                .addSubcommand("precalculate", new PrecalculateCommand());
         System.exit(cline.execute(args));
     }
 

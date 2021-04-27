@@ -71,88 +71,93 @@
  *
  * version:6-8-18
  *
- * Daniel Danis, Peter N Robinson, 2020
+ * Daniel Danis, Peter N Robinson, 2021
  */
 
-package org.monarchinitiative.squirls.core.scoring.calculators;
+package org.monarchinitiative.squirls.cli.cmd.precalculate;
 
-import org.monarchinitiative.squirls.core.reference.*;
-import org.monarchinitiative.squirls.core.scoring.calculators.ic.SplicingInformationContentCalculator;
-import org.monarchinitiative.svart.GenomicRegion;
-import org.monarchinitiative.svart.Variant;
+import org.monarchinitiative.squirls.core.reference.StrandedSequence;
+import org.monarchinitiative.svart.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.LinkedList;
+import java.util.List;
+
 /**
- * This calculator computes the feature <code>sstrength_diff_donor</code> denoting the difference between the donor
- * Ri of the current exon and the downstream exon of the transcript.
- * <p>
- * The calculator only works for coding variants and variants overlapping with the canonical donor sites of all exons
- * except for the second last and the last exon.
- *
- * @author Daniel Danis
+ * Class for generating all possible variants out of a nucleotide sequence.
  */
-public class SStrengthDiffDonor implements FeatureCalculator {
+public class VariantGenerator {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(SStrengthDiffDonor.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(VariantGenerator.class);
 
-    private final SplicingInformationContentCalculator calculator;
-    private final AlleleGenerator generator;
-    private final TranscriptModelLocator locator;
+    private static final int MAX_SANE_LENGTH = 10;
 
-    public SStrengthDiffDonor(SplicingInformationContentCalculator calculator,
-                              AlleleGenerator generator,
-                              TranscriptModelLocator locator) {
-        this.calculator = calculator;
-        this.generator = generator;
-        this.locator = locator;
+    private static final String ID = ".";
+
+    private static final List<String> BASES = List.of("A", "C", "G", "T");
+
+    private final int maxLength;
+
+    public VariantGenerator(int maxLength) {
+        if (maxLength < 1)
+            throw new IllegalArgumentException("Maximum length must be a positive integer, was " + maxLength);
+        if (maxLength > MAX_SANE_LENGTH)
+            LOGGER.warn("Using depth more than 10 will generate large amount of variants and you'll likely to wait a long time to get the results");
+
+        this.maxLength = maxLength;
     }
 
-    @Override
-    public double score(Variant variant, TranscriptModel transcript, StrandedSequence sequence) {
-        SplicingLocationData locationData = locator.locate(variant, transcript);
-        switch (locationData.getPosition()) {
-            case EXON:
-            case DONOR:
-                int exonIdx = locationData.getExonIdx();
-                if (transcript.exons().size() - exonIdx > 2) {
-                    // the current exon is NOT the last or the second last exon of the transcript
-                    GenomicRegion thisExon = transcript.exons().get(exonIdx);
-                    GenomicRegion thisDonor = generator.makeDonorInterval(thisExon);
-                    double thisDonorScore;
-                    try {
-                        String thisDonorSiteSnippet = generator.getDonorSiteWithAltAllele(thisDonor, variant, sequence);
-                        thisDonorScore = thisDonorSiteSnippet != null
-                                ? calculator.getSpliceDonorScore(thisDonorSiteSnippet)
-                                : Double.NaN;
-                    } catch (SpliceSiteDeletedException e) {
-                        // I consider the situation where the entire site is deleted as score 0
-                        thisDonorScore = 0;
-                    }
+    public List<Variant> generate(StrandedSequence sequence) {
+        List<Variant> variants = new LinkedList<>();
 
-                    GenomicRegion nextExon = transcript.exons().get(exonIdx + 1);
-                    GenomicRegion nextDonor = generator.makeDonorInterval(nextExon);
-                    double nextDonorScore;
-                    try {
-                        String nextDonorSiteSnippet = generator.getDonorSiteWithAltAllele(nextDonor, variant, sequence);
-                        nextDonorScore = nextDonorSiteSnippet != null
-                                ? calculator.getSpliceDonorScore(nextDonorSiteSnippet)
-                                : Double.NaN;
-                    } catch (SpliceSiteDeletedException e) {
-                        // It shouldn't really happen that the variant deletes this site as well, but let's be on the
-                        // safe side of things.
-                        // I consider the situation where the entire site is deleted as score 0.
-                        if (LOGGER.isWarnEnabled())
-                            LOGGER.warn("Variant deletes the next exon");
-                        nextDonorScore = 0;
-                    }
-                    return thisDonorScore - nextDonorScore;
-                }
-            case INTRON:
-            case ACCEPTOR:
-            case OUTSIDE:
-            default:
-                return 0.;
+        String seq = sequence.sequence();
+        Contig contig = sequence.contig();
+
+        for (int i = 0, pos = sequence.startWithCoordinateSystem(CoordinateSystem.oneBased());
+             i < seq.length();
+             i++, pos++) {
+            Position position = Position.of(pos);
+            String refBase = seq.substring(i, i + 1);
+            if (refBase.equalsIgnoreCase("N"))
+                continue;
+            for (String altBase : BASES) {
+                if (altBase.equalsIgnoreCase(refBase))
+                    continue;
+                // SNV
+                variants.add(Variant.of(contig, ID, sequence.strand(), CoordinateSystem.oneBased(), position, refBase, altBase));
+            }
+            // INSERTIONS up to given length
+            variants.addAll(generateInsertions(contig, sequence.strand(), CoordinateSystem.oneBased(), position, refBase, refBase, maxLength));
+
+            // DELETIONS
+            int j = i + 1;
+            int max = Math.min(i + maxLength, seq.length());
+            while (j <= max) {
+                String refBases = seq.substring(i, j);
+                variants.add(Variant.of(contig, ID, sequence.strand(), CoordinateSystem.oneBased(), position, refBases, ""));
+                j++;
+            }
         }
+
+        return variants;
     }
+
+    private static List<Variant> generateInsertions(Contig contig, Strand strand, CoordinateSystem coordinateSystem,
+                                                    Position pos, String ref, String alt, int level) {
+        if (alt.length() == level)
+            return List.of();
+
+        List<Variant> variants = new LinkedList<>();
+
+        for (String base : BASES) {
+            String extendedAltAllele = alt + base;
+            Variant variant = Variant.of(contig, ID, strand, coordinateSystem, pos, ref, extendedAltAllele);
+            variants.add(variant);
+            variants.addAll(generateInsertions(contig, strand, coordinateSystem, pos, ref, extendedAltAllele, level));
+        }
+
+        return variants;
+    }
+
 }

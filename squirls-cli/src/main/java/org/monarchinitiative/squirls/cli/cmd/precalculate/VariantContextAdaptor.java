@@ -71,88 +71,91 @@
  *
  * version:6-8-18
  *
- * Daniel Danis, Peter N Robinson, 2020
+ * Daniel Danis, Peter N Robinson, 2021
  */
 
-package org.monarchinitiative.squirls.core.scoring.calculators;
+package org.monarchinitiative.squirls.cli.cmd.precalculate;
 
-import org.monarchinitiative.squirls.core.reference.*;
-import org.monarchinitiative.squirls.core.scoring.calculators.ic.SplicingInformationContentCalculator;
+import htsjdk.variant.variantcontext.Allele;
+import htsjdk.variant.variantcontext.VariantContext;
+import htsjdk.variant.variantcontext.VariantContextBuilder;
+import htsjdk.variant.vcf.*;
+import org.monarchinitiative.squirls.core.SquirlsResult;
+import org.monarchinitiative.squirls.core.reference.StrandedSequence;
+import org.monarchinitiative.squirls.core.reference.StrandedSequenceService;
+import org.monarchinitiative.svart.CoordinateSystem;
 import org.monarchinitiative.svart.GenomicRegion;
+import org.monarchinitiative.svart.Position;
 import org.monarchinitiative.svart.Variant;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import java.text.NumberFormat;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
- * This calculator computes the feature <code>sstrength_diff_donor</code> denoting the difference between the donor
- * Ri of the current exon and the downstream exon of the transcript.
- * <p>
- * The calculator only works for coding variants and variants overlapping with the canonical donor sites of all exons
- * except for the second last and the last exon.
- *
- * @author Daniel Danis
+ * Format {@link Variant} and {@link SquirlsResult} into {@link VariantContext}.
  */
-public class SStrengthDiffDonor implements FeatureCalculator {
+class VariantContextAdaptor {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(SStrengthDiffDonor.class);
+    private static final NumberFormat NF = NumberFormat.getNumberInstance();
 
-    private final SplicingInformationContentCalculator calculator;
-    private final AlleleGenerator generator;
-    private final TranscriptModelLocator locator;
-
-    public SStrengthDiffDonor(SplicingInformationContentCalculator calculator,
-                              AlleleGenerator generator,
-                              TranscriptModelLocator locator) {
-        this.calculator = calculator;
-        this.generator = generator;
-        this.locator = locator;
+    static {
+        NF.setMaximumFractionDigits(9);
     }
 
-    @Override
-    public double score(Variant variant, TranscriptModel transcript, StrandedSequence sequence) {
-        SplicingLocationData locationData = locator.locate(variant, transcript);
-        switch (locationData.getPosition()) {
-            case EXON:
-            case DONOR:
-                int exonIdx = locationData.getExonIdx();
-                if (transcript.exons().size() - exonIdx > 2) {
-                    // the current exon is NOT the last or the second last exon of the transcript
-                    GenomicRegion thisExon = transcript.exons().get(exonIdx);
-                    GenomicRegion thisDonor = generator.makeDonorInterval(thisExon);
-                    double thisDonorScore;
-                    try {
-                        String thisDonorSiteSnippet = generator.getDonorSiteWithAltAllele(thisDonor, variant, sequence);
-                        thisDonorScore = thisDonorSiteSnippet != null
-                                ? calculator.getSpliceDonorScore(thisDonorSiteSnippet)
-                                : Double.NaN;
-                    } catch (SpliceSiteDeletedException e) {
-                        // I consider the situation where the entire site is deleted as score 0
-                        thisDonorScore = 0;
-                    }
+    static VCFFilterHeaderLine SQUIRLS_DELETERIOUS = new VCFFilterHeaderLine("SQ", "Squirls considers the variant as pathogenic if the filter is present");
+    static VCFInfoHeaderLine MAX_SQUIRLS_SCORE = new VCFInfoHeaderLine("SQ", VCFHeaderLineCount.A, VCFHeaderLineType.Float, "Maximum Squirls score");
+    static VCFInfoHeaderLine INDIVIDUAL_SQUIRLS_SCORE = new VCFInfoHeaderLine("ISQ", VCFHeaderLineCount.A, VCFHeaderLineType.String, "Squirls scores for individual transcripts");
 
-                    GenomicRegion nextExon = transcript.exons().get(exonIdx + 1);
-                    GenomicRegion nextDonor = generator.makeDonorInterval(nextExon);
-                    double nextDonorScore;
-                    try {
-                        String nextDonorSiteSnippet = generator.getDonorSiteWithAltAllele(nextDonor, variant, sequence);
-                        nextDonorScore = nextDonorSiteSnippet != null
-                                ? calculator.getSpliceDonorScore(nextDonorSiteSnippet)
-                                : Double.NaN;
-                    } catch (SpliceSiteDeletedException e) {
-                        // It shouldn't really happen that the variant deletes this site as well, but let's be on the
-                        // safe side of things.
-                        // I consider the situation where the entire site is deleted as score 0.
-                        if (LOGGER.isWarnEnabled())
-                            LOGGER.warn("Variant deletes the next exon");
-                        nextDonorScore = 0;
-                    }
-                    return thisDonorScore - nextDonorScore;
-                }
-            case INTRON:
-            case ACCEPTOR:
-            case OUTSIDE:
-            default:
-                return 0.;
+    private final boolean writeIndividualPredictions;
+
+    private final StrandedSequenceService sequenceService;
+
+    VariantContextAdaptor(boolean writeIndividualPredictions, StrandedSequenceService sequenceService) {
+        this.writeIndividualPredictions = writeIndividualPredictions;
+        this.sequenceService = sequenceService;
+    }
+
+    static Set<VCFHeaderLine> headerLines() {
+        return Set.of(MAX_SQUIRLS_SCORE, INDIVIDUAL_SQUIRLS_SCORE, SQUIRLS_DELETERIOUS);
+    }
+
+
+    Optional<VariantContext> mapToVariantContext(Variant variant, SquirlsResult result) {
+        if (result.isEmpty())
+            return Optional.empty();
+
+        if (variant.alt().isEmpty()) {
+            // Variant notation where the common base is omitted. We must provide the previous base
+            int start = variant.startWithCoordinateSystem(CoordinateSystem.zeroBased()) -1;
+            GenomicRegion region = GenomicRegion.of(variant.contig(), variant.strand(), CoordinateSystem.zeroBased(), start, start + 1);
+            StrandedSequence seq = sequenceService.sequenceForRegion(region);
+            int st = start + CoordinateSystem.zeroBased().startDelta(variant.coordinateSystem());
+            variant = Variant.of(variant.contig(), variant.id(), variant.strand(), variant.coordinateSystem(), Position.of(st), seq.sequence() + variant.ref(), seq.sequence());
         }
+
+        List<Allele> alleles = List.of(Allele.create(variant.ref(), true), Allele.create(variant.alt(), false));
+        int start = variant.startWithCoordinateSystem(CoordinateSystem.oneBased());
+
+        double maxDeleteriousness = result.maxPathogenicity();
+        VariantContextBuilder builder = new VariantContextBuilder()
+                .chr(variant.contig().name())
+                .start(start)
+                .alleles(alleles)
+                .computeEndFromAlleles(alleles, start)
+                .attribute(MAX_SQUIRLS_SCORE.getID(), maxDeleteriousness);
+
+        if (result.isPathogenic())
+            builder.filter(SQUIRLS_DELETERIOUS.getID());
+        if (writeIndividualPredictions) {
+            String individualPredictions = result.results()
+                    .map(r -> r.accessionId() + '=' + String.format("%6.3e", r.prediction().getMaxPathogenicity()))
+                    .collect(Collectors.joining("|"));
+            builder.attribute(INDIVIDUAL_SQUIRLS_SCORE.getID(), individualPredictions);
+        }
+        return Optional.of(builder.make());
     }
+
 }

@@ -60,6 +60,12 @@ is substituted by ``t``. The change location is highlighted by a black box. The 
 spliceosome and the *alt* allele is represented by drawing the red bar corresponding to ``t`` upside down, and by
 drawing box for the ``a`` of the ref allele upwards:
 
+.. generate the figure by running
+   VmvtGenerator generator = new VmvtGenerator(true);
+   String ref = "AATgtaagt", alt = "AATgtatgt";
+   String svg = generator.getDonorSequenceLogoRulerAndBarChart(ref, alt);
+   System.err.println(svg);
+
 .. figure:: _static/canonicalDonorLeft.svg
   :alt: canonical donor trekker
   :align: center
@@ -160,6 +166,12 @@ Let's consider the case of the variant ``chr1:16,451,824C>T`` (*NM_004431.3: c.2
 the canonical acceptor site that introduces a cryptic acceptor site into the *EPHA2* gene (`Zhang et al., 2009`_).
 
 The first sequence walker represents the *Canonical acceptor site*, located 9 bp downstream of the variant site:
+
+.. Generate the figure by running
+   String ref = "tccctctctccctcccggcccacagCG", alt = "tccctctctccctcccagcccacagCG";
+   VmvtGenerator generator = new VmvtGenerator();
+   String svg = generator.getAcceptorSequenceLogoRulerAndBarChart(ref,alt);
+
 
 .. figure:: _static/crypticAcceptorLeft.svg
   :alt: cryptic acceptor variant chr1:16,451,824C>T
@@ -268,6 +280,11 @@ variants (`Hum Mutat 1998;12:153-71`_).
 
 Sequence trekker
 ################
+
+.. Generate the figure by running
+   String ref = "cctggctggcggcaccgggtgccagGT", alt = "cctggctggcggcaccgggtgccggGT";
+   VmvtGenerator generator = new VmvtGenerator();
+   String svg = generator.getAcceptorSequenceLogoRulerAndBarChart(ref,alt);
 
 .. figure:: _static/acceptorLogoRulerBar.svg
    :alt: sequence trekker

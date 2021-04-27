@@ -71,88 +71,72 @@
  *
  * version:6-8-18
  *
- * Daniel Danis, Peter N Robinson, 2020
+ * Daniel Danis, Peter N Robinson, 2021
  */
 
-package org.monarchinitiative.squirls.core.scoring.calculators;
+package org.monarchinitiative.squirls.cli.cmd.precalculate;
 
-import org.monarchinitiative.squirls.core.reference.*;
-import org.monarchinitiative.squirls.core.scoring.calculators.ic.SplicingInformationContentCalculator;
-import org.monarchinitiative.svart.GenomicRegion;
-import org.monarchinitiative.svart.Variant;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.monarchinitiative.svart.*;
 
-/**
- * This calculator computes the feature <code>sstrength_diff_donor</code> denoting the difference between the donor
- * Ri of the current exon and the downstream exon of the transcript.
- * <p>
- * The calculator only works for coding variants and variants overlapping with the canonical donor sites of all exons
- * except for the second last and the last exon.
- *
- * @author Daniel Danis
- */
-public class SStrengthDiffDonor implements FeatureCalculator {
+import java.util.*;
+import java.util.stream.Collectors;
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(SStrengthDiffDonor.class);
+class RegionUtils {
 
-    private final SplicingInformationContentCalculator calculator;
-    private final AlleleGenerator generator;
-    private final TranscriptModelLocator locator;
+    private static final Comparator<GenomicRegion> COMPARATOR = Comparator
+            .<GenomicRegion>comparingInt(gr -> gr.startOnStrandWithCoordinateSystem(Strand.POSITIVE, CoordinateSystem.zeroBased()))
+            .thenComparingInt(gr -> gr.endOnStrandWithCoordinateSystem(Strand.POSITIVE, CoordinateSystem.zeroBased()));
 
-    public SStrengthDiffDonor(SplicingInformationContentCalculator calculator,
-                              AlleleGenerator generator,
-                              TranscriptModelLocator locator) {
-        this.calculator = calculator;
-        this.generator = generator;
-        this.locator = locator;
+    private RegionUtils() {}
+
+    static List<GenomicRegion> mergeOverlapping(List<GenomicRegion> regions) {
+        // assuming non-empty list of regions on the same contig!
+        if (regions.isEmpty())
+            return List.of();
+
+        LinkedList<GenomicRegion> sorted = regions.stream()
+                .sorted(COMPARATOR)
+                .collect(Collectors.toCollection(LinkedList::new));
+
+        List<GenomicRegion> results = new LinkedList<>();
+        Iterator<GenomicRegion> iterator = sorted.iterator();
+        GenomicRegion first = iterator.next();
+        int previousStart = first.startOnStrandWithCoordinateSystem(Strand.POSITIVE, CoordinateSystem.zeroBased());
+        int previousEnd = first.endOnStrandWithCoordinateSystem(Strand.POSITIVE, CoordinateSystem.zeroBased());
+        while (iterator.hasNext()) {
+            GenomicRegion next = iterator.next();
+            int nextStart = next.startOnStrandWithCoordinateSystem(Strand.POSITIVE, CoordinateSystem.zeroBased());
+            int nextEnd = next.endOnStrandWithCoordinateSystem(Strand.POSITIVE, CoordinateSystem.zeroBased());
+
+            if (previousEnd < nextStart) {
+                GenomicRegion region = GenomicRegion.of(first.contig(), Strand.POSITIVE, CoordinateSystem.zeroBased(), previousStart, previousEnd);
+                results.add(region);
+                previousStart = nextStart;
+            }
+            previousEnd = nextEnd;
+
+        }
+        results.add(GenomicRegion.of(first.contig(), Strand.POSITIVE, CoordinateSystem.zeroBased(), previousStart, previousEnd));
+        return results;
     }
 
-    @Override
-    public double score(Variant variant, TranscriptModel transcript, StrandedSequence sequence) {
-        SplicingLocationData locationData = locator.locate(variant, transcript);
-        switch (locationData.getPosition()) {
-            case EXON:
-            case DONOR:
-                int exonIdx = locationData.getExonIdx();
-                if (transcript.exons().size() - exonIdx > 2) {
-                    // the current exon is NOT the last or the second last exon of the transcript
-                    GenomicRegion thisExon = transcript.exons().get(exonIdx);
-                    GenomicRegion thisDonor = generator.makeDonorInterval(thisExon);
-                    double thisDonorScore;
-                    try {
-                        String thisDonorSiteSnippet = generator.getDonorSiteWithAltAllele(thisDonor, variant, sequence);
-                        thisDonorScore = thisDonorSiteSnippet != null
-                                ? calculator.getSpliceDonorScore(thisDonorSiteSnippet)
-                                : Double.NaN;
-                    } catch (SpliceSiteDeletedException e) {
-                        // I consider the situation where the entire site is deleted as score 0
-                        thisDonorScore = 0;
-                    }
+    static List<GenomicRegion> splitIntoMaxLength(GenomicRegion region, int maxLength) {
+        if (maxLength < 1)
+            throw new IllegalArgumentException("Maximum length must be positive integer, got " + maxLength);
 
-                    GenomicRegion nextExon = transcript.exons().get(exonIdx + 1);
-                    GenomicRegion nextDonor = generator.makeDonorInterval(nextExon);
-                    double nextDonorScore;
-                    try {
-                        String nextDonorSiteSnippet = generator.getDonorSiteWithAltAllele(nextDonor, variant, sequence);
-                        nextDonorScore = nextDonorSiteSnippet != null
-                                ? calculator.getSpliceDonorScore(nextDonorSiteSnippet)
-                                : Double.NaN;
-                    } catch (SpliceSiteDeletedException e) {
-                        // It shouldn't really happen that the variant deletes this site as well, but let's be on the
-                        // safe side of things.
-                        // I consider the situation where the entire site is deleted as score 0.
-                        if (LOGGER.isWarnEnabled())
-                            LOGGER.warn("Variant deletes the next exon");
-                        nextDonorScore = 0;
-                    }
-                    return thisDonorScore - nextDonorScore;
-                }
-            case INTRON:
-            case ACCEPTOR:
-            case OUTSIDE:
-            default:
-                return 0.;
+        int size = region.length() / maxLength;
+        List<GenomicRegion> results = new ArrayList<>(size);
+        int previous = region.startWithCoordinateSystem(CoordinateSystem.zeroBased());
+        int end = region.endWithCoordinateSystem(CoordinateSystem.zeroBased());
+
+        while (previous + maxLength < end) {
+            int current = previous + maxLength;
+            results.add(GenomicRegion.of(region.contig(), region.strand(), CoordinateSystem.zeroBased(),
+                    Position.of(previous), Position.of(current)));
+            previous = current;
         }
+        results.add(GenomicRegion.of(region.contig(), region.strand(), CoordinateSystem.zeroBased(), Position.of(previous), Position.of(end)));
+
+        return results;
     }
 }

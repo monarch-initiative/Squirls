@@ -7,7 +7,7 @@
     <groupId>org.monarchinitiative.squirls</groupId>
     <artifactId>Squirls</artifactId>
     <packaging>pom</packaging>
-    <version>1.0.0-RC4</version>
+    <version>1.0.0</version>
     <modules>
         <module>squirls-core</module>
         <module>squirls-io</module>
@@ -26,7 +26,7 @@
         <java.version>11</java.version>
 
         <svart.version>1.0.0</svart.version>
-        <vmvt.version>0.9.3</vmvt.version>
+        <vmvt.version>0.9.4</vmvt.version>
         <htsjdk.version>2.23.0</htsjdk.version>
         <jannovar.version>0.35</jannovar.version>
         <apiguardian.version>1.1.0</apiguardian.version>

@@ -29,11 +29,12 @@ class SquirlsClassifierV046 implements SquirlsClassifier {
 
     private final BinaryClassifier<SquirlsFeatures> donorClf, acceptorClf;
 
-    private final List<Double> means;
-    private final List<Double> stds;
-
-    private final List<Double> coef;
-
+    // RF prediction means, as observed during training, for centering the RF prediction
+    private final double[] means;
+    // RF prediction standard deviations, as observed during training, for centering the RF prediction
+    private final double[] stds;
+    // LR coefficients and thresholds
+    private final double[] coef;
     private final double threshold;
 
     private final Set<String> usedFeatures;
@@ -56,9 +57,17 @@ class SquirlsClassifierV046 implements SquirlsClassifier {
         LOGGER.debug("Initialized classifier with the following features: {}",
                 usedFeatures.stream().sorted().collect(Collectors.joining(", ", "[", "]")));
 
-        this.means = Objects.requireNonNull(means, "Means cannot be null");
-        this.stds = mapVarianceToStd(Objects.requireNonNull(variances, "Variances cannot be null"));
+        Objects.requireNonNull(means, "Means cannot be null");
+        Objects.requireNonNull(variances, "Variances cannot be null");
+        Objects.requireNonNull(coef, "Coefficients cannot be null");
 
+        this.means = new double[means.size()];
+        for (int i = 0; i < means.size(); i++)
+            this.means[i] = means.get(i);
+
+        this.stds = new double[variances.size()];
+        for (int i = 0; i < variances.size(); i++)
+            this.stds[i] = this.stds[i] = Math.sqrt(variances.get(i));
 
         if (means.size() != EXPECTED_NUMBER_OF_FEATURES || coef.size() != EXPECTED_NUMBER_OF_FEATURES) {
             throw new IllegalArgumentException("Number of elements in means (" + means.size() +
@@ -67,9 +76,10 @@ class SquirlsClassifierV046 implements SquirlsClassifier {
                     EXPECTED_NUMBER_OF_FEATURES);
         }
 
-        this.coef = new ArrayList<>(EXPECTED_NUMBER_OF_FEATURES + 1); // +1 for the bias
-        this.coef.add(intercept);
-        this.coef.addAll(coef);
+        this.coef = new double[EXPECTED_NUMBER_OF_FEATURES + 1]; // +1 for the intercept
+        this.coef[0] = intercept;
+        for (int i = 0; i < coef.size(); i++) this.coef[i + 1] = coef.get(i);
+
         this.threshold = threshold;
     }
 
@@ -98,13 +108,13 @@ class SquirlsClassifierV046 implements SquirlsClassifier {
                 double[] centered = new double[siteSpecificProbas.size() + 1]; // +1 for bias
                 centered[0] = 1;
                 for (int i = 0; i < siteSpecificProbas.size(); i++) {
-                    centered[i + 1] = (siteSpecificProbas.get(i) - means.get(i)) / stds.get(i);
+                    centered[i + 1] = (siteSpecificProbas.get(i) - means[i]) / stds[i];
                 }
 
                 // logistic regression
                 double dotSum = 0.;
                 for (int i = 0; i < centered.length; i++) {
-                    dotSum += centered[i] * coef.get(i);
+                    dotSum += centered[i] * coef[i];
                 }
 
                 double pathogenicity = 1 / (1 + Math.exp(-dotSum));

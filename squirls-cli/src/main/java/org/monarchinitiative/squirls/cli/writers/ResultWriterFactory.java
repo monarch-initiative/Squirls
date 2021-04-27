@@ -97,7 +97,9 @@ public class ResultWriterFactory {
             case HTML:
                 return new HtmlResultWriter(graphicsGenerator);
             case VCF:
-                return new VcfResultWriter();
+                return new VcfResultWriter(false);
+            case VCFGZ:
+                return new VcfResultWriter(true);
             case TSV:
                 return new TabularResultWriter(OutputFormat.TSV.getFileExtension(), '\t');
             case CSV:

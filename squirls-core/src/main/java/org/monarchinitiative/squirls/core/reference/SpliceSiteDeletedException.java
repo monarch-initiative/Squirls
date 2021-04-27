@@ -71,88 +71,31 @@
  *
  * version:6-8-18
  *
- * Daniel Danis, Peter N Robinson, 2020
+ * Daniel Danis, Peter N Robinson, 2021
  */
 
-package org.monarchinitiative.squirls.core.scoring.calculators;
+package org.monarchinitiative.squirls.core.reference;
 
-import org.monarchinitiative.squirls.core.reference.*;
-import org.monarchinitiative.squirls.core.scoring.calculators.ic.SplicingInformationContentCalculator;
-import org.monarchinitiative.svart.GenomicRegion;
-import org.monarchinitiative.svart.Variant;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.monarchinitiative.squirls.core.SquirlsException;
 
-/**
- * This calculator computes the feature <code>sstrength_diff_donor</code> denoting the difference between the donor
- * Ri of the current exon and the downstream exon of the transcript.
- * <p>
- * The calculator only works for coding variants and variants overlapping with the canonical donor sites of all exons
- * except for the second last and the last exon.
- *
- * @author Daniel Danis
- */
-public class SStrengthDiffDonor implements FeatureCalculator {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(SStrengthDiffDonor.class);
-
-    private final SplicingInformationContentCalculator calculator;
-    private final AlleleGenerator generator;
-    private final TranscriptModelLocator locator;
-
-    public SStrengthDiffDonor(SplicingInformationContentCalculator calculator,
-                              AlleleGenerator generator,
-                              TranscriptModelLocator locator) {
-        this.calculator = calculator;
-        this.generator = generator;
-        this.locator = locator;
+public class SpliceSiteDeletedException extends SquirlsException {
+    public SpliceSiteDeletedException() {
+        super();
     }
 
-    @Override
-    public double score(Variant variant, TranscriptModel transcript, StrandedSequence sequence) {
-        SplicingLocationData locationData = locator.locate(variant, transcript);
-        switch (locationData.getPosition()) {
-            case EXON:
-            case DONOR:
-                int exonIdx = locationData.getExonIdx();
-                if (transcript.exons().size() - exonIdx > 2) {
-                    // the current exon is NOT the last or the second last exon of the transcript
-                    GenomicRegion thisExon = transcript.exons().get(exonIdx);
-                    GenomicRegion thisDonor = generator.makeDonorInterval(thisExon);
-                    double thisDonorScore;
-                    try {
-                        String thisDonorSiteSnippet = generator.getDonorSiteWithAltAllele(thisDonor, variant, sequence);
-                        thisDonorScore = thisDonorSiteSnippet != null
-                                ? calculator.getSpliceDonorScore(thisDonorSiteSnippet)
-                                : Double.NaN;
-                    } catch (SpliceSiteDeletedException e) {
-                        // I consider the situation where the entire site is deleted as score 0
-                        thisDonorScore = 0;
-                    }
+    public SpliceSiteDeletedException(String message) {
+        super(message);
+    }
 
-                    GenomicRegion nextExon = transcript.exons().get(exonIdx + 1);
-                    GenomicRegion nextDonor = generator.makeDonorInterval(nextExon);
-                    double nextDonorScore;
-                    try {
-                        String nextDonorSiteSnippet = generator.getDonorSiteWithAltAllele(nextDonor, variant, sequence);
-                        nextDonorScore = nextDonorSiteSnippet != null
-                                ? calculator.getSpliceDonorScore(nextDonorSiteSnippet)
-                                : Double.NaN;
-                    } catch (SpliceSiteDeletedException e) {
-                        // It shouldn't really happen that the variant deletes this site as well, but let's be on the
-                        // safe side of things.
-                        // I consider the situation where the entire site is deleted as score 0.
-                        if (LOGGER.isWarnEnabled())
-                            LOGGER.warn("Variant deletes the next exon");
-                        nextDonorScore = 0;
-                    }
-                    return thisDonorScore - nextDonorScore;
-                }
-            case INTRON:
-            case ACCEPTOR:
-            case OUTSIDE:
-            default:
-                return 0.;
-        }
+    public SpliceSiteDeletedException(String message, Throwable cause) {
+        super(message, cause);
+    }
+
+    public SpliceSiteDeletedException(Throwable cause) {
+        super(cause);
+    }
+
+    protected SpliceSiteDeletedException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
+        super(message, cause, enableSuppression, writableStackTrace);
     }
 }

@@ -82,10 +82,7 @@ import org.monarchinitiative.squirls.io.db.TranscriptModelServiceDb;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
+import java.util.*;
 
 /**
  * @author Daniel Danis
@@ -107,18 +104,23 @@ public class TranscriptsIngestRunner implements Runnable {
     public void run() {
         LOGGER.info("Processing {} transcripts", transcripts.size());
 
-        ProgressLogger progress = new ProgressLogger();
         int inserted = 0;
-        Map<String, List<TranscriptModel>> txByChromosome = transcripts.stream()
-                .collect(Collectors.groupingBy(TranscriptModel::contigName));
-        for (String chrom : txByChromosome.keySet()) {
-            if (LOGGER.isInfoEnabled()) LOGGER.info("Processing chromosome `{}`", chrom);
-            inserted += txByChromosome.get(chrom).parallelStream()
-                    .peek(progress.logTotal("Processed {} transcripts"))
-                    .map(dao::insertTranscript)
-                    .reduce(Integer::sum)
-                    .orElse(0);
+        Set<String> insertedTxAccessionIds = new HashSet<>();
+        int duplicateTxIds = 0;
+        ProgressLogger progress = new ProgressLogger();
+        for (TranscriptModel tx : transcripts) {
+            progress.logTotal("Processed {} transcripts").accept(tx);
+            if (insertedTxAccessionIds.contains(tx.accessionId())) {
+                duplicateTxIds++;
+                continue;
+            }
+            insertedTxAccessionIds.add(tx.accessionId());
+            inserted += dao.insertTranscript(tx);
         }
+
+        if (duplicateTxIds > 0)
+            LOGGER.info("Skipped entering {} transcript due to duplicate IDs", duplicateTxIds);
+
         LOGGER.info("Transcript ingest updated {} rows", inserted);
     }
 }

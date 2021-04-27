@@ -80,6 +80,8 @@ import org.monarchinitiative.squirls.core.reference.*;
 import org.monarchinitiative.squirls.core.scoring.calculators.ic.SplicingInformationContentCalculator;
 import org.monarchinitiative.svart.GenomicRegion;
 import org.monarchinitiative.svart.Variant;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This calculator computes the feature <code>sstrength_diff_acceptor</code> denoting difference between the acceptor
@@ -90,6 +92,8 @@ import org.monarchinitiative.svart.Variant;
  * @author Daniel Danis
  */
 public class SStrengthDiffAcceptor implements FeatureCalculator {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(SStrengthDiffAcceptor.class);
 
     private final SplicingInformationContentCalculator calculator;
     private final AlleleGenerator generator;
@@ -112,15 +116,34 @@ public class SStrengthDiffAcceptor implements FeatureCalculator {
                     // the current exon is NOT the last exon of the transcript
                     GenomicRegion thisExon = transcript.exons().get(exonIdx);
                     GenomicRegion thisAcceptor = generator.makeAcceptorInterval(thisExon);
-                    String thisAcceptorSiteSnippet = generator.getAcceptorSiteWithAltAllele(thisAcceptor, variant, sequence);
+                    double thisAcceptorScore;
+                    try {
+                        String thisAcceptorSiteSnippet = generator.getAcceptorSiteWithAltAllele(thisAcceptor, variant, sequence);
+                        thisAcceptorScore = thisAcceptorSiteSnippet != null
+                                ? calculator.getSpliceAcceptorScore(thisAcceptorSiteSnippet)
+                                : Double.NaN;
+                    } catch (SpliceSiteDeletedException e) {
+                        // I consider the situation where the entire site is deleted as score 0
+                        thisAcceptorScore = 0;
+                    }
 
                     GenomicRegion nextExon = transcript.exons().get(exonIdx + 1);
                     GenomicRegion nextAcceptor = generator.makeAcceptorInterval(nextExon);
-                    String nextAcceptorSiteSnippet = generator.getAcceptorSiteWithAltAllele(nextAcceptor, variant, sequence);
-
-                    if (thisAcceptorSiteSnippet != null && nextAcceptorSiteSnippet != null) {
-                        return calculator.getSpliceAcceptorScore(thisAcceptorSiteSnippet) - calculator.getSpliceAcceptorScore(nextAcceptorSiteSnippet);
+                    double nextAcceptorScore;
+                    try {
+                        String nextAcceptorSiteSnippet = generator.getAcceptorSiteWithAltAllele(nextAcceptor, variant, sequence);
+                        nextAcceptorScore = nextAcceptorSiteSnippet != null
+                                ? calculator.getSpliceAcceptorScore(nextAcceptorSiteSnippet)
+                                : Double.NaN;
+                    } catch (SpliceSiteDeletedException e) {
+                        // It shouldn't really happen that the variant deletes this site as well, but let's be on the
+                        // safe side of things.
+                        // I consider the situation where the entire site is deleted as score 0.
+                        if (LOGGER.isWarnEnabled())
+                            LOGGER.warn("Variant deletes the next exon");
+                        nextAcceptorScore = 0;
                     }
+                    return thisAcceptorScore - nextAcceptorScore;
                 }
             case INTRON:
             case DONOR:

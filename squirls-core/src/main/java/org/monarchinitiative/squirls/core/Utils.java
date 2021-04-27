@@ -152,6 +152,9 @@
 
 package org.monarchinitiative.squirls.core;
 
+import org.monarchinitiative.svart.CoordinateSystem;
+import org.monarchinitiative.svart.GenomicRegion;
+
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.IntStream;
@@ -224,5 +227,10 @@ public class Utils {
             }
         }
         return max;
+    }
+
+    public static String formatAsRegion(GenomicRegion region) {
+        return String.format("%s:%d-%d(%s)", region.contigName(),
+                region.startWithCoordinateSystem(CoordinateSystem.zeroBased()), region.endWithCoordinateSystem(CoordinateSystem.zeroBased()), region.strand());
     }
 }

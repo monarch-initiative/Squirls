@@ -78,7 +78,6 @@ package org.monarchinitiative.squirls.core;
 import java.util.Collection;
 import java.util.Objects;
 import java.util.Set;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -89,9 +88,10 @@ class SquirlsResultDefault implements SquirlsResult {
     private final Set<SquirlsTxResult> results;
 
     private SquirlsResultDefault(Collection<SquirlsTxResult> results) {
-        int nUniqueTxAccessions = results.stream()
+        long nUniqueTxAccessions = results.stream()
                 .map(SquirlsTxResult::accessionId)
-                .collect(Collectors.toSet()).size();
+                .distinct()
+                .count();
 
         if (nUniqueTxAccessions != results.size()) {
             throw new IllegalArgumentException("Inconsistent number of transcripts `" + nUniqueTxAccessions + "` and results `" + results.size() + '`');

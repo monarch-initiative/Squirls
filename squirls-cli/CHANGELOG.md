@@ -1,8 +1,14 @@
 # Changelog
 
-## ✈ the latest
-- `Squirls`
-  - nothing yet
+## ✈ v1.0.0
+- `squirls-cli`
+  - allow to block-compress (`bgzip`) the annotated VCF on the fly by using `-f vcfgz` option
+  - do not fail due to an exception being thrown by Jannovar when annotating a VCF
+  - do not sort variants in the VCF output if the required header lines are missing
+  - allow precalculating scores for regions of interest with `precalculate` command
+  - use `vmvt v0.9.4`
+- `squirls-ingest`
+  - prevent ingesting transcripts with duplicate *ENST* id
 
 ## ✈ v1.0.0-RC4
 
@@ -11,13 +17,13 @@
   - break into smaller modules
 - `squirls-cli`
   - finalize the HTML report and SVG graphics layout
-  - allow writing results in multiple result formats, including VCF, TSV/CSV 
+  - allow writing results in multiple result formats, including VCF, TSV/CSV
   - report positions of candidate cryptic variants
   - add distribution zip
 - `squirls-core`
   - use `apiguardian-api` to label the API elements
   - use `svart v1.0.0` to represent variants, genomic regions, and the other genomic coordinates
-  - remove external dependencies such as `JBlas`, 
+  - remove external dependencies such as `JBlas`,
 - `squirls-ingest`
   - download genomic assembly report
   - calculate SHA256 checksums

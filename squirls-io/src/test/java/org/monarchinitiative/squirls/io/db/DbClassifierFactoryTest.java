@@ -74,85 +74,108 @@
  * Daniel Danis, Peter N Robinson, 2020
  */
 
-package org.monarchinitiative.squirls.core.scoring.calculators;
+package org.monarchinitiative.squirls.io.db;
 
-import org.monarchinitiative.squirls.core.reference.*;
-import org.monarchinitiative.squirls.core.scoring.calculators.ic.SplicingInformationContentCalculator;
-import org.monarchinitiative.svart.GenomicRegion;
-import org.monarchinitiative.svart.Variant;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.monarchinitiative.squirls.io.SquirlsClassifierVersion;
+import org.monarchinitiative.squirls.io.TestDataSourceConfig;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.jdbc.Sql;
 
-/**
- * This calculator computes the feature <code>sstrength_diff_donor</code> denoting the difference between the donor
- * Ri of the current exon and the downstream exon of the transcript.
- * <p>
- * The calculator only works for coding variants and variants overlapping with the canonical donor sites of all exons
- * except for the second last and the last exon.
- *
- * @author Daniel Danis
- */
-public class SStrengthDiffDonor implements FeatureCalculator {
+import javax.sql.DataSource;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.util.Collection;
+import java.util.Map;
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(SStrengthDiffDonor.class);
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.*;
 
-    private final SplicingInformationContentCalculator calculator;
-    private final AlleleGenerator generator;
-    private final TranscriptModelLocator locator;
+@SpringBootTest(classes = {TestDataSourceConfig.class})
+public class DbClassifierFactoryTest {
 
-    public SStrengthDiffDonor(SplicingInformationContentCalculator calculator,
-                              AlleleGenerator generator,
-                              TranscriptModelLocator locator) {
-        this.calculator = calculator;
-        this.generator = generator;
-        this.locator = locator;
+    private static final double TOLERANCE = 5E-12;
+
+    @Autowired
+    public DataSource dataSource;
+
+    private DbClassifierFactory factory;
+
+    @BeforeEach
+    public void setUp() {
+        factory = new DbClassifierFactory(dataSource);
     }
 
-    @Override
-    public double score(Variant variant, TranscriptModel transcript, StrandedSequence sequence) {
-        SplicingLocationData locationData = locator.locate(variant, transcript);
-        switch (locationData.getPosition()) {
-            case EXON:
-            case DONOR:
-                int exonIdx = locationData.getExonIdx();
-                if (transcript.exons().size() - exonIdx > 2) {
-                    // the current exon is NOT the last or the second last exon of the transcript
-                    GenomicRegion thisExon = transcript.exons().get(exonIdx);
-                    GenomicRegion thisDonor = generator.makeDonorInterval(thisExon);
-                    double thisDonorScore;
-                    try {
-                        String thisDonorSiteSnippet = generator.getDonorSiteWithAltAllele(thisDonor, variant, sequence);
-                        thisDonorScore = thisDonorSiteSnippet != null
-                                ? calculator.getSpliceDonorScore(thisDonorSiteSnippet)
-                                : Double.NaN;
-                    } catch (SpliceSiteDeletedException e) {
-                        // I consider the situation where the entire site is deleted as score 0
-                        thisDonorScore = 0;
-                    }
+    @Test
+    @Sql(scripts = {"create_classifier_table.sql"})
+    public void storeClassifier() throws Exception {
+        byte[] payload = new byte[]{-128, 6, 0, 88, 127};
+        SquirlsClassifierVersion version = SquirlsClassifierVersion.v0_4_1;
+        int updated = factory.storeClassifier(version, payload);
 
-                    GenomicRegion nextExon = transcript.exons().get(exonIdx + 1);
-                    GenomicRegion nextDonor = generator.makeDonorInterval(nextExon);
-                    double nextDonorScore;
-                    try {
-                        String nextDonorSiteSnippet = generator.getDonorSiteWithAltAllele(nextDonor, variant, sequence);
-                        nextDonorScore = nextDonorSiteSnippet != null
-                                ? calculator.getSpliceDonorScore(nextDonorSiteSnippet)
-                                : Double.NaN;
-                    } catch (SpliceSiteDeletedException e) {
-                        // It shouldn't really happen that the variant deletes this site as well, but let's be on the
-                        // safe side of things.
-                        // I consider the situation where the entire site is deleted as score 0.
-                        if (LOGGER.isWarnEnabled())
-                            LOGGER.warn("Variant deletes the next exon");
-                        nextDonorScore = 0;
-                    }
-                    return thisDonorScore - nextDonorScore;
+        byte[] actual = null;
+        SquirlsClassifierVersion actualVersion = null;
+        int i = 0;
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement ps = connection.prepareStatement("select version, data from SQUIRLS.CLASSIFIER where version = ?")) {
+            ps.setString(1, version.toString());
+            ResultSet rs = ps.executeQuery();
+
+
+            while (rs.next()) {
+                if (i == 0) {
+                    actualVersion = SquirlsClassifierVersion.valueOf(rs.getString("version"));
+                    actual = rs.getBytes("data");
                 }
-            case INTRON:
-            case ACCEPTOR:
-            case OUTSIDE:
-            default:
-                return 0.;
+                i++;
+            }
         }
+
+        assertThat(i, is(1));
+        assertThat(updated, is(1));
+        assertThat(actualVersion, is(SquirlsClassifierVersion.v0_4_1));
+        assertThat(payload, is(actual));
+    }
+
+    @Test
+    @Sql(scripts = "create_classifier_table.sql",
+            statements = "insert into SQUIRLS.CLASSIFIER(version, data) values ('v0_4_1', '000F10FF')")
+    public void readClassifier() throws Exception {
+        byte[] bytes = factory.readClassifierBytes(SquirlsClassifierVersion.v0_4_1);
+        assertThat(bytes, equalTo(new byte[]{0, 15, 16, -1}));
+
+        byte[] na = factory.readClassifierBytes(SquirlsClassifierVersion.v0_4_6);
+        assertThat(na, equalTo(null));
+    }
+
+    @Test
+    @Sql(scripts = "create_classifier_table.sql",
+            statements = "insert into SQUIRLS.CLASSIFIER(version, data) " +
+                    " values ('v0_4_1', 'BEEFBEEF'), ('v0_4_6', 'BEEFBEEFBEEFBEEF')")
+    public void getAllClassifiers() {
+        Collection<SquirlsClassifierVersion> clfs = factory.getAvailableClassifiers();
+        assertThat(clfs, hasSize(2));
+        assertThat(clfs, hasItems(SquirlsClassifierVersion.v0_4_1, SquirlsClassifierVersion.v0_4_6));
+    }
+
+    @Test
+    public void jsonify() {
+        Map<String, Double> parameters = Map.of("bla", 0.123456789012, "kva", 11.998877665544);
+        String payload = DbClassifierFactory.jsonify(parameters);
+        assertThat(payload, is("{\"bla\": 0.123456789012, \"kva\": 11.998877665544}"));
+    }
+
+    @Test
+    public void deJsonify() {
+        String payload = "{\"bla\": 0.123456789012, \"kva\": 11.998877665544}";
+        Map<String, Double> params = DbClassifierFactory.deJsonify(payload);
+
+        assertThat(params.size(), is(2));
+        assertThat(params.keySet(), hasItems("bla", "kva"));
+        assertThat(params.get("bla"), is(closeTo(0.123456789012, TOLERANCE)));
+        assertThat(params.get("kva"), is(closeTo(11.998877665544, TOLERANCE)));
     }
 }

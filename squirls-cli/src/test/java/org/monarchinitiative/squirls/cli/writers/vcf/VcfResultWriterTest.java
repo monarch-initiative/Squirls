@@ -71,138 +71,144 @@
  *
  * version:6-8-18
  *
- * Daniel Danis, Peter N Robinson, 2020
+ * Daniel Danis, Peter N Robinson, 2021
  */
 
 package org.monarchinitiative.squirls.cli.writers.vcf;
 
-import htsjdk.samtools.util.BlockCompressedOutputStream;
-import htsjdk.variant.variantcontext.VariantContext;
-import htsjdk.variant.variantcontext.VariantContextBuilder;
-import htsjdk.variant.variantcontext.VariantContextComparator;
+import htsjdk.samtools.util.BlockCompressedInputStream;
 import htsjdk.variant.variantcontext.writer.Options;
 import htsjdk.variant.variantcontext.writer.VariantContextWriter;
 import htsjdk.variant.variantcontext.writer.VariantContextWriterBuilder;
-import htsjdk.variant.vcf.*;
+import htsjdk.variant.vcf.VCFContigHeaderLine;
+import htsjdk.variant.vcf.VCFHeader;
+import htsjdk.variant.vcf.VCFHeaderVersion;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.monarchinitiative.squirls.cli.TestDataSourceConfig;
+import org.monarchinitiative.squirls.cli.data.VariantsForTesting;
 import org.monarchinitiative.squirls.cli.writers.AnalysisResults;
-import org.monarchinitiative.squirls.cli.writers.OutputFormat;
-import org.monarchinitiative.squirls.cli.writers.ResultWriter;
+import org.monarchinitiative.squirls.cli.writers.AnalysisStats;
+import org.monarchinitiative.squirls.cli.writers.SettingsData;
 import org.monarchinitiative.squirls.cli.writers.WritableSplicingAllele;
-import org.monarchinitiative.squirls.core.SquirlsResult;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 
-import java.io.BufferedOutputStream;
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.function.Function;
+import java.util.List;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
-/**
- * @author Daniel Danis
- */
-public class VcfResultWriter implements ResultWriter {
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.hamcrest.Matchers.*;
 
-    private static final String SQUIRLS_FLAG_FIELD_NAME = "SQUIRLS";
+@SpringBootTest(classes = TestDataSourceConfig.class)
+public class VcfResultWriterTest {
 
-    private static final VCFFilterHeaderLine FLAG_LINE = new VCFFilterHeaderLine(SQUIRLS_FLAG_FIELD_NAME,
-            "Squirls considers the variant as pathogenic if the filter is present");
+    private static final Path OUTPUT = Path.of("target/test-classes").toAbsolutePath();
 
-    private static final String SQUIRLS_SCORE_FIELD_NAME = "SQUIRLS_SCORE";
+    @Autowired
+    private VariantsForTesting variantsForTesting;
 
-    private static final VCFInfoHeaderLine SCORE_LINE = new VCFInfoHeaderLine(
-            SQUIRLS_SCORE_FIELD_NAME,
-            VCFHeaderLineCount.A,
-            VCFHeaderLineType.String,
-            "Squirls pathogenicity score");
+    private Path inputPath;
 
-    private final boolean compressOutput;
-
-    public VcfResultWriter(boolean compressOutput) {
-        this.compressOutput = compressOutput;
-    }
-
-    /**
-     * Extend the <code>header</code> with INFO fields that are being added in this command.
-     *
-     * @param header to extend
-     * @return the extended header
-     */
-    private static VCFHeader extendHeaderWithSquirlsFields(VCFHeader header) {
-        // SQUIRLS - flag
-        header.addMetaDataLine(FLAG_LINE);
-        // SQUIRLS_SCORE - float
-        header.addMetaDataLine(SCORE_LINE);
-        return header;
-    }
-
-    /**
-     * Store Squirls predictions into VCF INFO fields.
-     *
-     * @return variant context with populated INFO fields
-     */
-    private static Function<WritableSplicingAllele, VariantContext> addInfoFields() {
-        return ve -> {
-            VariantContextBuilder builder = new VariantContextBuilder(ve.variantContext());
-            SquirlsResult squirlsScores = ve.squirlsResult();
-
-            if (squirlsScores.isEmpty()) {
-                return builder.make();
-            }
-
-            // is the ALT allele pathogenic wrt any overlapping transcript?
-            builder = squirlsScores.isPathogenic()
-                    ? builder.filter(SQUIRLS_FLAG_FIELD_NAME)
-                    : builder;
-
-            // prediction string wrt all overlapping transcripts
-            String txPredictions = squirlsScores.results()
-                    // tx_accession=score
-                    .map(sq -> String.format("%s=%f", sq.accessionId(), sq.prediction().getMaxPathogenicity()))
-                    .collect(Collectors.joining("|", String.format("%s|", ve.allele().getBaseString()), ""));
-
-            return builder.attribute(SQUIRLS_SCORE_FIELD_NAME, txPredictions).make();
-        };
-    }
-
-    @Override
-    public void write(AnalysisResults results, String prefix) throws IOException {
-        Path inputVcfPath = Paths.get(results.getSettingsData().getInputPath());
-        String extension = compressOutput ? OutputFormat.VCFGZ.getFileExtension() : OutputFormat.VCF.getFileExtension();
-        Path outputPath = Paths.get(prefix + '.' + extension);
-        LOGGER.info("Writing VCF output to `{}`", outputPath);
-
-        VCFHeader header;
-        try (VCFFileReader reader = new VCFFileReader(inputVcfPath, false)) {
-            header = extendHeaderWithSquirlsFields(reader.getFileHeader());
-        }
-
-        VariantContextComparator comparator = null;
-        try {
-            comparator = header.getVCFRecordComparator();
-        } catch (IllegalArgumentException e) {
-            if (LOGGER.isInfoEnabled()) LOGGER.info("Cannot sort the annotated variants - the contig lines are missing in the VCF header");
-        }
-
+    @BeforeEach
+    public void setUp() {
+        inputPath = OUTPUT.resolve("toy-input.vcf");
         try (VariantContextWriter writer = new VariantContextWriterBuilder()
-                     .setOutputVCFStream(openOutputStream(outputPath))
-                     .setReferenceDictionary(header.getSequenceDictionary())
-                     .unsetOption(Options.INDEX_ON_THE_FLY).build()) {
+                .setOutputPath(inputPath)
+                .unsetOption(Options.INDEX_ON_THE_FLY)
+                .build()) {
+            VCFHeader header = new VCFHeader();
+            header.setVCFHeaderVersion(VCFHeaderVersion.VCF4_2);
+
+            header.addMetaDataLine(new VCFContigHeaderLine("##contig=<ID=1,assembly=b37,length=249250621>", header.getVCFHeaderVersion(), "contig", 1));
+            header.addMetaDataLine(new VCFContigHeaderLine("##contig=<ID=12,assembly=b37,length=133851895>", header.getVCFHeaderVersion(), "contig", 12));
             writer.writeHeader(header);
-
-            Stream<VariantContext> variants = results.getVariants().stream()
-                    .map(addInfoFields());
-
-            variants = comparator != null ? variants.sorted(comparator) : variants;
-
-            variants.forEach(writer::add);
         }
     }
 
-    private BufferedOutputStream openOutputStream(Path outputPath) throws IOException {
-        return compressOutput
-                ? new BufferedOutputStream(new BlockCompressedOutputStream(outputPath.toFile()))
-                : new BufferedOutputStream(Files.newOutputStream(outputPath));
+    @AfterEach
+    public void tearDown() throws IOException {
+        Files.deleteIfExists(inputPath);
+    }
+
+    @Test
+    public void writeCompressed() throws Exception {
+        List<? extends WritableSplicingAllele> variants = List.of(
+                variantsForTesting.VWFAcceptorExon26minus2QUID(),
+                variantsForTesting.ALPLDonorExon7Minus2()
+        );
+        AnalysisResults results = AnalysisResults.builder()
+                .addAllVariants(variants)
+                .analysisStats(new AnalysisStats(10, 8, 7))
+                .settingsData(SettingsData.builder()
+                        .inputPath(inputPath.toString())
+                        .nReported(2)
+                        .build())
+                .build();
+
+        Path output = OUTPUT.resolve("output");
+
+        VcfResultWriter writer = new VcfResultWriter(true);
+        writer.write(results, output.toString());
+
+        Path realOutputFile = Path.of(output.toString() + ".vcf.gz");
+        assertThat(realOutputFile.toFile().isFile(), equalTo(true));
+
+        List<String> lines;
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(new BlockCompressedInputStream(Files.newInputStream(realOutputFile))))) {
+            lines = reader.lines().collect(Collectors.toList());
+        }
+
+        assertExpectedOutput(lines);
+    }
+
+    @Test
+    public void writeUncompressed() throws Exception {
+        List<? extends WritableSplicingAllele> variants = List.of(
+                variantsForTesting.VWFAcceptorExon26minus2QUID(),
+                variantsForTesting.ALPLDonorExon7Minus2()
+        );
+        AnalysisResults results = AnalysisResults.builder()
+                .addAllVariants(variants)
+                .analysisStats(new AnalysisStats(10, 8, 7))
+                .settingsData(SettingsData.builder()
+                        .inputPath(inputPath.toString())
+                        .nReported(2)
+                        .build())
+                .build();
+
+        Path output = OUTPUT.resolve("output");
+
+        VcfResultWriter writer = new VcfResultWriter(false);
+        writer.write(results, output.toString());
+
+        Path realOutputFile = Path.of(output.toString() + ".vcf");
+        assertThat(realOutputFile.toFile().isFile(), equalTo(true));
+
+        List<String> lines;
+        try (BufferedReader reader = Files.newBufferedReader(realOutputFile)) {
+            lines = reader.lines().collect(Collectors.toList());
+        }
+
+        assertExpectedOutput(lines);
+    }
+
+    private void assertExpectedOutput(List<String> lines) {
+        assertThat(lines, hasSize(8));
+        assertThat(lines.get(0), equalTo("##fileformat=VCFv4.2"));
+        assertThat(lines.get(1), equalTo("##FILTER=<ID=SQUIRLS,Description=\"Squirls considers the variant as pathogenic if the filter is present\">"));
+        assertThat(lines.get(2), equalTo("##INFO=<ID=SQUIRLS_SCORE,Number=A,Type=String,Description=\"Squirls pathogenicity score\">"));
+        assertThat(lines.get(3), equalTo("##contig=<ID=1,assembly=b37,length=249250621>"));
+        assertThat(lines.get(4), equalTo("##contig=<ID=12,assembly=b37,length=133851895>"));
+        assertThat(lines.get(5), equalTo("#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO"));
+        assertThat(lines.get(6), equalTo("1\t21894739\tALPL_donor_exon7_minus2\tA\tG\t.\tSQUIRLS\tSQUIRLS_SCORE=G|NM_000478.4=0.940000"));
+        assertThat(lines.get(7), equalTo("12\t6132066\tVWF_acceptor_2bp_upstream_exon26_quid\tT\tC\t.\tSQUIRLS\tSQUIRLS_SCORE=C|NM_000552.3=0.910000"));
     }
 }
