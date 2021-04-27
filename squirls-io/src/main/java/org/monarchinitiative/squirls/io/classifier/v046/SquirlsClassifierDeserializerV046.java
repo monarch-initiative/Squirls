@@ -134,7 +134,7 @@ public class SquirlsClassifierDeserializerV046 implements SquirlsClassifierDeser
             throw new SquirlsSerializationException("Unexpected number of threshold values (" + data.getThreshold().size()
                     + ") that is not equal to 1");
         }
-        Double threshold = data.getThreshold().get(0);
+        double threshold = data.getThreshold().get(0);
 
         return new SquirlsClassifierV046(
                 deserializeDonorPipeline(data.getDonorClf()),
