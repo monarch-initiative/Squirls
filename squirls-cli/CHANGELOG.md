@@ -1,6 +1,6 @@
 # Changelog
 
-## ✈ v1.0.0-RC5-SNAPSHOT
+## ✈ v1.0.0
 - `squirls-cli`
   - allow to block-compress (`bgzip`) the annotated VCF on the fly by using `-f vcfgz` option
   - do not fail due to an exception being thrown by Jannovar when annotating a VCF
