@@ -7,7 +7,7 @@
     <groupId>org.monarchinitiative.squirls</groupId>
     <artifactId>Squirls</artifactId>
     <packaging>pom</packaging>
-    <version>1.0.0</version>
+    <version>1.0.1-SNAPSHOT</version>
     <modules>
         <module>squirls-core</module>
         <module>squirls-io</module>
