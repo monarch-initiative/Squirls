@@ -27,10 +27,10 @@ Squirls database files
 Squirls database files are available for download from:
 
 **hg19/GRCh37**
-  `Download 2102_hg19 <https://squirls.s3.amazonaws.com/2102_hg19.zip>`_ (~10.5 GB for download, ~15 GB unpacked)
+  `Download 2103_hg19 <https://squirls.s3.amazonaws.com/2103_hg19.zip>`_ (~10.5 GB for download, ~15 GB unpacked)
 
 **hg38/GRCh38**
-  `Download 2102_hg38 <https://squirls.s3.amazonaws.com/2102_hg38.zip>`_ (~11.1 GB for download, ~16.5 GB unpacked)
+  `Download 2103_hg38 <https://squirls.s3.amazonaws.com/2103_hg38.zip>`_ (~11.1 GB for download, ~16.5 GB unpacked)
 
 After the download, unzip the archive(s) content into a folder and note the folder path.
 
