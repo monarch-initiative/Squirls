@@ -8,7 +8,7 @@ Squirls is a command-line Java tool that runs with Java version 11 or higher.
 
 Before using Squirls, you must setup Squirls as describe in the :ref:`rstsetup` section.
 
-Squirls provides three commands to annotate variants in different input formats:
+Squirls provides four commands to annotate variants in different input formats:
 
 
 * ``annotate-pos`` - quickly annotate a couple of variants, e.g. ``chr9:136224694A>T``
@@ -75,7 +75,7 @@ The aim of this command is to annotate variants in a VCF file and to store the r
 
 .. note::
   Squirls uses `Jannovar`_ library under the hood to perform functional variant annotation. Therefore, you must provide
-  a location of the Jannovar transcript database in your system
+  a location of the Jannovar transcript database in your system. 
   As a convenience, we prepared the databases for *UCSC*, *ENSEMBL*, and *RefSeq* transcripts for download, see
   :ref:`download-jannovar-ref`.
 
