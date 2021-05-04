@@ -109,29 +109,71 @@ Mandatory parameters
 
 Open the file in your favorite text editor and provide the following three bits of information:
 
-- ``squirls.data-directory`` - location the the folder with Squirls data. The directory is expected to have a structure like::
+1. ``squirls.data-directory`` - location the the folder with Squirls data. The directory is expected to have a structure like::
 
     squirls_folder
        |- 1902_hg19:
+       |   |- 1902_hg19.assembly_report.txt
        |   |- 1902_hg19.fa
        |   |- 1902_hg19.fa.dict
        |   |- 1902_hg19.fa.fai
        |   |- 1902_hg19.phylop.bw
+       |   |- 1902_hg19.sha256
        |   \- 1902_hg19_splicing.mv.db
        \- 1902_hg38
+           |- 1902_hg38.assembly_report.txt
            |- 1902_hg38.fa
            ...
 
-  where ``1902_hg19``, ``1902_hg38`` correspond to content of the ZIP files downloaded in the previous section
+  where ``1902_hg19`` and ``1902_hg38`` correspond to content of the ZIP files downloaded in the previous section
 
-- ``squirls.genome-assembly`` - which genome assembly to use, choose from ``{hg19, hg38}``
+2. ``squirls.genome-assembly`` - which genome assembly to use, choose from ``{hg19, hg38}``
 
-- ``squirls.data-version`` - which data version to use, the data version corresponds to ``1902`` in the example above
-
+3. ``squirls.data-version`` - which data version to use, the data version corresponds to ``1902`` in the example above
 
 Optional parameters
 ~~~~~~~~~~~~~~~~~~~
 
 - ``squirls.max-variant-length`` - set the maximal length of the variant to be analyzed (``100 bp`` by default)
+
+Example
+~~~~~~~
+
+After extracting contents of the ``1902_hg38`` ZIP file into the folder ``/project/joe/squirls_resources``, the folder has
+the following structure::
+
+  squirls_resources
+       \- 1902_hg38
+           |- 1902_hg38.assembly_report.txt
+           |- 1902_hg38.fa
+           |- 1902_hg38.fa.dict
+           |- 1902_hg38.fa.fai
+           |- 1902_hg38.phylop.bw
+           |- 1902_hg38.sha256
+           \- 1902_hg38_splicing.mv.db
+
+Then, the configuration file should have the following content::
+
+  # Required properties template, the file follows YAML syntax.
+  squirls:
+    # path to directory with Squirls files
+    data-directory: /project/joe/squirls_resources
+    # Genome assembly - choose from {hg19, hg38}
+    genome-assembly: hg38
+    # Exomiser-like data version (1902 in examples above)
+    data-version: 1902
+
+    # Variant with longer REF allele will not be evaluated
+    #max-variant-length: 100
+
+    #classifier:
+    # Which classifier to use
+    #version: v0.4.6
+    #annotator:
+    # Which splicing annotator to use
+    #  version: agez
+
+.. note::
+  The YAML syntax requires to include a white space between key, value pairs (e.g. ``data-directory: /project/joe/squirls_resources``.
 
 .. _Jannovar: https://pubmed.ncbi.nlm.nih.gov/24677618
