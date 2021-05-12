@@ -76,13 +76,29 @@
 
 package org.monarchinitiative.squirls.cli.cmd.annotate_csv;
 
+import de.charite.compbio.jannovar.annotation.Annotation;
+import de.charite.compbio.jannovar.annotation.AnnotationException;
+import de.charite.compbio.jannovar.annotation.VariantAnnotations;
+import de.charite.compbio.jannovar.annotation.VariantAnnotator;
+import de.charite.compbio.jannovar.annotation.builders.AnnotationBuilderOptions;
+import de.charite.compbio.jannovar.data.JannovarData;
+import de.charite.compbio.jannovar.data.JannovarDataSerializer;
+import de.charite.compbio.jannovar.data.ReferenceDictionary;
+import de.charite.compbio.jannovar.data.SerializationException;
+import de.charite.compbio.jannovar.reference.GenomePosition;
+import de.charite.compbio.jannovar.reference.GenomeVariant;
+import de.charite.compbio.jannovar.reference.PositionType;
+import de.charite.compbio.jannovar.reference.TranscriptModel;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
-import org.apache.commons.csv.CSVPrinter;
 import org.apache.commons.csv.CSVRecord;
 import org.monarchinitiative.squirls.cli.Main;
-import org.monarchinitiative.squirls.cli.cmd.SquirlsCommand;
-import org.monarchinitiative.squirls.core.*;
+import org.monarchinitiative.squirls.cli.cmd.AnnotatingSquirlsCommand;
+import org.monarchinitiative.squirls.cli.writers.*;
+import org.monarchinitiative.squirls.core.SquirlsDataService;
+import org.monarchinitiative.squirls.core.SquirlsException;
+import org.monarchinitiative.squirls.core.SquirlsResult;
+import org.monarchinitiative.squirls.core.VariantSplicingEvaluator;
 import org.monarchinitiative.svart.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -92,10 +108,7 @@ import picocli.CommandLine;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -108,43 +121,82 @@ import java.util.stream.Collectors;
         version = Main.VERSION,
         usageHelpWidth = Main.WIDTH,
         footer = Main.FOOTER)
-public class AnnotateCsvCommand extends SquirlsCommand {
+public class AnnotateCsvCommand extends AnnotatingSquirlsCommand {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AnnotateCsvCommand.class);
 
     private static final List<String> EXPECTED_HEADER = List.of("CHROM", "POS", "REF", "ALT");
 
     @CommandLine.Parameters(index = "1",
+            paramLabel = "hg38_refseq.ser",
+            description = "Path to Jannovar transcript database")
+    public Path jannovarDataPath;
+
+    @CommandLine.Parameters(index = "2",
             paramLabel = "input.csv",
             description = "Path to the input tabular file")
     public Path inputPath;
 
-    @CommandLine.Parameters(index = "2",
-            paramLabel = "output.csv",
-            description = "Where to write the output")
-    public Path outputPath;
+    @CommandLine.Parameters(index = "3",
+            paramLabel = "path/to/output",
+            description = "Prefix for the output files")
+    public String outputPrefix;
 
+    private static Variant parseCsvRecord(GenomicAssembly assembly, CSVRecord record) throws SquirlsException {
+        String chrom = record.get("CHROM");
+        Contig contig = assembly.contigByName(chrom);
+        if (contig.isUnknown())
+            throw new SquirlsException("Unknown contig `" + chrom + "` in record `" + record + "`");
+
+        int pos;
+        try {
+            pos = Integer.parseInt(record.get("POS"));
+        } catch (NumberFormatException e) {
+            throw new SquirlsException("Invalid pos `" + record.get("POS") + " in record `" + record + "`", e);
+        }
+
+        String ref = record.get("REF");
+        String alt = record.get("ALT");
+        return Variant.of(contig, "", Strand.POSITIVE, CoordinateSystem.oneBased(), Position.of(pos), ref, alt);
+    }
+
+    private static VariantAnnotations annotateWithJannovar(VariantAnnotator annotator, ReferenceDictionary rd, Variant variant) throws AnnotationException, RuntimeException {
+        Integer contigId = rd.getContigNameToID().get(variant.contigName());
+        if (contigId == null)
+            throw new AnnotationException("Unknown contig " + variant.contigName());
+
+        GenomePosition gp = new GenomePosition(rd, de.charite.compbio.jannovar.reference.Strand.FWD, contigId, variant.startWithCoordinateSystem(CoordinateSystem.oneBased()), PositionType.ONE_BASED);
+        GenomeVariant gv = new GenomeVariant(gp, variant.ref(), variant.alt());
+
+        return annotator.buildAnnotations(gv);
+    }
 
     @Override
     public Integer call() {
-        try (ConfigurableApplicationContext context = getContext()) {
-            LOGGER.info("Reading variants from `{}`", inputPath.toAbsolutePath());
-            LOGGER.info("Writing annotated variants to `{}`", outputPath.toAbsolutePath());
+        LOGGER.info("Reading variants from `{}`", inputPath.toAbsolutePath());
 
+        JannovarData jd;
+        try {
+            LOGGER.info("Loading transcript database from `{}`", jannovarDataPath.toAbsolutePath());
+            jd = new JannovarDataSerializer(jannovarDataPath.toAbsolutePath().toString()).load();
+        } catch (SerializationException e) {
+            LOGGER.error("Unable to deserialize jannovar transcript database: {}", e.getMessage());
+            return 1;
+        }
+
+        try (ConfigurableApplicationContext context = getContext()) {
+            VariantAnnotator annotator = new VariantAnnotator(jd.getRefDict(), jd.getChromosomes(), new AnnotationBuilderOptions());
             VariantSplicingEvaluator evaluator = context.getBean(VariantSplicingEvaluator.class);
             SquirlsDataService dataService = context.getBean(SquirlsDataService.class);
             GenomicAssembly assembly = dataService.genomicAssembly();
-            Set<String> contigNames = dataService.knownContigNames();
-            // make header
-            List<String> header = new ArrayList<>();
-            header.addAll(EXPECTED_HEADER);
-            header.addAll(List.of("INTERPRETATION", "MAX_SCORE", "SCORES"));
+            // ensure the fail-fast behavior at the cost of being retrieved far from the usage
+            AnalysisResultsWriter analysisResultsWriter = context.getBean(AnalysisResultsWriter.class);
 
+            int allVariants = 0;
+            int annotatedAlleleCount = 0;
+            List<WritableSplicingAllele> annotated = new LinkedList<>();
             try (CSVParser parser = CSVFormat.DEFAULT.withFirstRecordAsHeader()
-                    .parse(Files.newBufferedReader(inputPath));
-                 CSVPrinter printer = CSVFormat.DEFAULT
-                         .withHeader(header.toArray(String[]::new))
-                         .print(Files.newBufferedWriter(outputPath))) {
+                    .parse(Files.newBufferedReader(inputPath))) {
 
                 // check
                 if (!parser.getHeaderNames().containsAll(EXPECTED_HEADER)) {
@@ -154,52 +206,56 @@ public class AnnotateCsvCommand extends SquirlsCommand {
 
                 // iterate through rows of the tabular file
                 for (CSVRecord record : parser) {
-                    String chrom = record.get("CHROM");
-                    if (!contigNames.contains(chrom)) {
-                        LOGGER.warn("Unknown contig `{}` observed on line #{}: `{}`", chrom, record.getRecordNumber(), record);
-                        continue;
-                    }
+                    allVariants++;
 
-                    int pos;
-                    String ref = record.get("REF");
-                    String alt = record.get("ALT");
-
+                    Variant variant;
                     try {
-                        pos = Integer.parseInt(record.get("POS"));
-                    } catch (NumberFormatException e) {
-                        LOGGER.warn("Invalid pos `{}` observed on line #{}: `{}`", record.get("POS"), record.getRecordNumber(), record);
+                        variant = parseCsvRecord(assembly, record);
+                    } catch (SquirlsException e) {
+                        if (LOGGER.isWarnEnabled())
+                            LOGGER.warn("line #{}: {}", record.getRecordNumber(), e.getMessage());
                         continue;
                     }
 
-                    Contig contig = assembly.contigByName(chrom);
-                    Variant variant = Variant.of(contig, "", Strand.POSITIVE, CoordinateSystem.oneBased(), Position.of(pos), ref, alt);
-                    SquirlsResult squirlsResult = evaluator.evaluate(variant);
-
-                    // figure out max pathogenicity and whether the variant is a splice variant
-                    boolean isSpliceVariant = false;
-                    double maxScore = Double.NaN;
-                    Map<String, Prediction> predictionMap = squirlsResult.results()
-                            .collect(Collectors.toMap(SquirlsTxResult::accessionId, SquirlsTxResult::prediction));
-                    for (Prediction prediction : predictionMap.values()) {
-                        double current = prediction.getMaxPathogenicity();
-                        if (Double.isNaN(maxScore)) {
-                            maxScore = current;
-                        } else {
-                            if (maxScore < current) {
-                                maxScore = current;
-                            }
-                        }
-                        isSpliceVariant = isSpliceVariant || prediction.isPositive();
+                    VariantAnnotations annotations;
+                    try {
+                        annotations = annotateWithJannovar(annotator, jd.getRefDict(), variant);
+                    } catch (AnnotationException | RuntimeException e) {
+                        if (LOGGER.isWarnEnabled())
+                            LOGGER.warn("line #{}: {}", record.getRecordNumber(), e.getMessage());
+                        continue;
                     }
-                    String isSpliceVariantColumn = isSpliceVariant ? "pathogenic" : "neutral";
-                    printer.printRecord(chrom, pos, ref, alt, isSpliceVariantColumn, maxScore, processScores(predictionMap));
-                }
 
+                    Set<String> txAccessionIds = annotations.getAnnotations().stream()
+                            .map(Annotation::getTranscript)
+                            .map(TranscriptModel::getAccession)
+                            .collect(Collectors.toUnmodifiableSet());
+
+                    SquirlsResult squirlsResult = evaluator.evaluate(variant, txAccessionIds);
+
+                    WritableSplicingAllele allele = WritableSplicingAlleleDefault.of(variant, annotations, squirlsResult);
+                    annotated.add(allele);
+                    annotatedAlleleCount++;
+                }
             } catch (IOException e) {
                 LOGGER.warn("Error reading input", e);
                 return 1;
             }
+
+            // write out the results
+            AnalysisResults results = AnalysisResults.builder()
+                    .analysisStats(AnalysisStats.of(allVariants, allVariants, annotatedAlleleCount))
+                    .settingsData(SettingsData.builder()
+                            .inputPath(inputPath.toAbsolutePath().toString())
+                            .transcriptDb(jannovarDataPath.toAbsolutePath().toString())
+                            .nReported(nVariantsToReport)
+                            .build())
+                    .addAllVariants(annotated)
+                    .build();
+
+            analysisResultsWriter.writeResults(results, prepareOutputOptions(outputPrefix));
         }
+
         return 0;
     }
 }

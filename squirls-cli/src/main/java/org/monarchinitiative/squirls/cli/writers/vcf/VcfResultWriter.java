@@ -77,6 +77,8 @@
 package org.monarchinitiative.squirls.cli.writers.vcf;
 
 import htsjdk.samtools.util.BlockCompressedOutputStream;
+import htsjdk.tribble.TribbleException;
+import htsjdk.variant.variantcontext.Allele;
 import htsjdk.variant.variantcontext.VariantContext;
 import htsjdk.variant.variantcontext.VariantContextBuilder;
 import htsjdk.variant.variantcontext.VariantContextComparator;
@@ -89,12 +91,17 @@ import org.monarchinitiative.squirls.cli.writers.OutputFormat;
 import org.monarchinitiative.squirls.cli.writers.ResultWriter;
 import org.monarchinitiative.squirls.cli.writers.WritableSplicingAllele;
 import org.monarchinitiative.squirls.core.SquirlsResult;
+import org.monarchinitiative.squirls.core.SquirlsTxResult;
+import org.monarchinitiative.svart.CoordinateSystem;
+import org.monarchinitiative.svart.Variant;
 
 import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Comparator;
+import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -105,35 +112,57 @@ import java.util.stream.Stream;
 public class VcfResultWriter implements ResultWriter {
 
     private static final String SQUIRLS_FLAG_FIELD_NAME = "SQUIRLS";
-
-    private static final VCFFilterHeaderLine FLAG_LINE = new VCFFilterHeaderLine(SQUIRLS_FLAG_FIELD_NAME,
+    private static final VCFFilterHeaderLine SQUIRLS_FLAG_LINE = new VCFFilterHeaderLine(SQUIRLS_FLAG_FIELD_NAME,
             "Squirls considers the variant as pathogenic if the filter is present");
 
-    private static final String SQUIRLS_SCORE_FIELD_NAME = "SQUIRLS_SCORE";
-
-    private static final VCFInfoHeaderLine SCORE_LINE = new VCFInfoHeaderLine(
-            SQUIRLS_SCORE_FIELD_NAME,
+    private static final String MAX_SQUIRLS_SCORE_FIELD_NAME = "SQUIRLS_SCORE";
+    private static final VCFInfoHeaderLine MAX_SQUIRLS_SCORE_LINE = new VCFInfoHeaderLine(
+            MAX_SQUIRLS_SCORE_FIELD_NAME,
             VCFHeaderLineCount.A,
             VCFHeaderLineType.String,
             "Squirls pathogenicity score");
 
-    private final boolean compressOutput;
+    private static final String TX_SCORE_FIELD_NAME = "SQUIRLS_TXS";
+    private static final VCFInfoHeaderLine TX_SCORE_LINE = new VCFInfoHeaderLine(
+            TX_SCORE_FIELD_NAME,
+            VCFHeaderLineCount.A,
+            VCFHeaderLineType.String,
+            "Squirls scores for the overlapping transcripts");
 
-    public VcfResultWriter(boolean compressOutput) {
-        this.compressOutput = compressOutput;
+    private final boolean compress;
+
+    private final boolean reportTranscripts;
+
+    public VcfResultWriter(boolean compress,
+                           boolean reportTranscripts) {
+        this.compress = compress;
+        this.reportTranscripts = reportTranscripts;
     }
 
     /**
      * Extend the <code>header</code> with INFO fields that are being added in this command.
      *
-     * @param header to extend
      * @return the extended header
      */
-    private static VCFHeader extendHeaderWithSquirlsFields(VCFHeader header) {
+    private VCFHeader prepareVcfHeader(Path inputVcfPath) {
+        VCFHeader header;
+        try (VCFFileReader reader = new VCFFileReader(inputVcfPath, false)) {
+            header = reader.getFileHeader();
+        } catch (TribbleException.MalformedFeatureFile e) {
+            // happens when the input variants were not read from a VCF file but from e.g. a CSV file
+            LOGGER.info("Creating a stub VCF header");
+            header = new VCFHeader();
+            header.setVCFHeaderVersion(VCFHeaderVersion.VCF4_2);
+        }
+
         // SQUIRLS - flag
-        header.addMetaDataLine(FLAG_LINE);
+        header.addMetaDataLine(SQUIRLS_FLAG_LINE);
         // SQUIRLS_SCORE - float
-        header.addMetaDataLine(SCORE_LINE);
+        header.addMetaDataLine(MAX_SQUIRLS_SCORE_LINE);
+        if (reportTranscripts)
+            // SQUIRLS_TXS - string
+            header.addMetaDataLine(TX_SCORE_LINE);
+
         return header;
     }
 
@@ -142,9 +171,23 @@ public class VcfResultWriter implements ResultWriter {
      *
      * @return variant context with populated INFO fields
      */
-    private static Function<WritableSplicingAllele, VariantContext> addInfoFields() {
+    private Function<WritableSplicingAllele, VariantContext> addInfoFields() {
         return ve -> {
-            VariantContextBuilder builder = new VariantContextBuilder(ve.variantContext());
+            Variant variant = ve.variant();
+            VariantContextBuilder builder;
+            if (ve.variantContext() == null) {
+                List<Allele> alleles = List.of(Allele.create(variant.ref(), true), Allele.create(variant.alt()));
+                int pos = variant.startWithCoordinateSystem(CoordinateSystem.oneBased());
+                 builder = new VariantContextBuilder()
+                        .chr(variant.contigName())
+                        .start(pos)
+                        .id(variant.id().isBlank() ? "." : variant.id())
+                        .alleles(alleles)
+                        .computeEndFromAlleles(alleles, pos);
+            } else {
+                builder = new VariantContextBuilder(ve.variantContext());
+            }
+
             SquirlsResult squirlsScores = ve.squirlsResult();
 
             if (squirlsScores.isEmpty()) {
@@ -156,28 +199,29 @@ public class VcfResultWriter implements ResultWriter {
                     ? builder.filter(SQUIRLS_FLAG_FIELD_NAME)
                     : builder;
 
-            // prediction string wrt all overlapping transcripts
-            String txPredictions = squirlsScores.results()
-                    // tx_accession=score
-                    .map(sq -> String.format("%s=%f", sq.accessionId(), sq.prediction().getMaxPathogenicity()))
-                    .collect(Collectors.joining("|", String.format("%s|", ve.allele().getBaseString()), ""));
+            if (reportTranscripts) {
+                // prediction string wrt all overlapping transcripts
+                String txPredictions = squirlsScores.results()
+                        .sorted(Comparator.comparing(SquirlsTxResult::accessionId))
+                        // tx_accession=score
+                        .map(sq -> String.format("%s=%f", sq.accessionId(), sq.prediction().getMaxPathogenicity()))
+                        .collect(Collectors.joining("|", String.format("%s|", variant.alt()), ""));
+                builder.attribute(TX_SCORE_FIELD_NAME, txPredictions);
+            }
 
-            return builder.attribute(SQUIRLS_SCORE_FIELD_NAME, txPredictions).make();
+            return builder.attribute(MAX_SQUIRLS_SCORE_FIELD_NAME, squirlsScores.maxPathogenicity())
+                    .make();
         };
     }
 
     @Override
     public void write(AnalysisResults results, String prefix) throws IOException {
         Path inputVcfPath = Paths.get(results.getSettingsData().getInputPath());
-        String extension = compressOutput ? OutputFormat.VCFGZ.getFileExtension() : OutputFormat.VCF.getFileExtension();
+        String extension = compress ? OutputFormat.VCF.getFileExtension() + ".gz" : OutputFormat.VCF.getFileExtension();
         Path outputPath = Paths.get(prefix + '.' + extension);
         LOGGER.info("Writing VCF output to `{}`", outputPath);
 
-        VCFHeader header;
-        try (VCFFileReader reader = new VCFFileReader(inputVcfPath, false)) {
-            header = extendHeaderWithSquirlsFields(reader.getFileHeader());
-        }
-
+        VCFHeader header = prepareVcfHeader(inputVcfPath);
         VariantContextComparator comparator = null;
         try {
             comparator = header.getVCFRecordComparator();
@@ -201,7 +245,7 @@ public class VcfResultWriter implements ResultWriter {
     }
 
     private BufferedOutputStream openOutputStream(Path outputPath) throws IOException {
-        return compressOutput
+        return compress
                 ? new BufferedOutputStream(new BlockCompressedOutputStream(outputPath.toFile()))
                 : new BufferedOutputStream(Files.newOutputStream(outputPath));
     }

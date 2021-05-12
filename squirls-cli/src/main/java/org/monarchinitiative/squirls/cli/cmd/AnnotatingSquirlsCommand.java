@@ -71,97 +71,70 @@
  *
  * version:6-8-18
  *
- * Daniel Danis, Peter N Robinson, 2020
+ * Daniel Danis, Peter N Robinson, 2021
  */
 
-package org.monarchinitiative.squirls.cli.cmd.annotate_pos;
+package org.monarchinitiative.squirls.cli.cmd;
 
-
-import org.monarchinitiative.squirls.cli.Main;
-import org.monarchinitiative.squirls.cli.cmd.AnnotatingSquirlsCommand;
-import org.monarchinitiative.squirls.core.*;
-import org.monarchinitiative.svart.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.context.ConfigurableApplicationContext;
+import org.monarchinitiative.squirls.cli.writers.*;
 import picocli.CommandLine;
 
-import java.util.*;
-import java.util.stream.Collectors;
-
-import static picocli.CommandLine.Parameters;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * @author Daniel Danis
  */
-@CommandLine.Command(name = "annotate-pos",
-        aliases = {"P"},
-        header = "Annotate several variant positions",
-        mixinStandardHelpOptions = true,
-        version = Main.VERSION,
-        usageHelpWidth = Main.WIDTH,
-        footer = Main.FOOTER)
-public class AnnotatePosCommand extends AnnotatingSquirlsCommand {
+public abstract class AnnotatingSquirlsCommand extends SquirlsCommand {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(AnnotatePosCommand.class);
+    @CommandLine.Option(names = {"-f", "--output-format"},
+            paramLabel = "html",
+            description = "Comma separated list of output formats to use for writing the results (default: ${DEFAULT-VALUE})")
+    public String outputFormats = "html";
 
-    private static final String DELIMITER = "\t";
+    @CommandLine.Option(names = {"-n", "--n-variants-to-report"},
+            paramLabel = "100",
+            description = "N most pathogenic variants to include into HTML report (default: ${DEFAULT-VALUE})")
+    public int nVariantsToReport = 100;
 
-    @Parameters(arity = "1..*",
-            paramLabel = "chr3:165504107A>C",
-            description = "Nucleotide change(s) to annotate")
-    public List<String> rawChanges;
+    @CommandLine.Option(names = {"--compress"},
+            description = "Compress the output (default: ${DEFAULT-VALUE})")
+    public boolean compress = false;
 
-    @Override
-    public Integer call() {
-        try (ConfigurableApplicationContext context = getContext()) {
-            rawChanges.remove(0); // path to the config file
-            LOGGER.info("Changes: {}", rawChanges);
-            SquirlsDataService squirlsDataService = context.getBean(SquirlsDataService.class);
-            GenomicAssembly assembly = squirlsDataService.genomicAssembly();
-            VariantSplicingEvaluator splicingEvaluator = context.getBean(VariantSplicingEvaluator.class);
+    @CommandLine.Option(names = {"--all-transcripts"},
+            description = "Report Squirls predictions for all overlapping transcripts (default: ${DEFAULT-VALUE})")
+    public boolean reportAllTranscripts = false;
 
-            // parse changes (input)
-            List<VariantChange> changes = rawChanges.stream()
-                    .map(VariantChange::fromString)
-                    .filter(Optional::isPresent)
-                    .map(Optional::get)
-                    .collect(Collectors.toUnmodifiableList());
+    @CommandLine.Option(names = {"--report-features"},
+            description = "Report Squirls feature values (default: ${DEFAULT-VALUE})")
+    public boolean reportFeatures = false;
 
-
-            System.out.println();
-            for (VariantChange change : changes) {
-                Contig contig = assembly.contigByName(change.getContig());
-                if (contig.isUnknown()) {
-                    if (LOGGER.isWarnEnabled())
-                        LOGGER.warn("Unknown contig {} in `{}`", change.getContig(), change.getVariantChange());
-                    continue;
-                }
-
-                Variant variant = Variant.of(contig, "", Strand.POSITIVE, CoordinateSystem.oneBased(), Position.of(change.getPos()), change.getRef(), change.getAlt());
-                SquirlsResult squirlsResult = splicingEvaluator.evaluate(variant);
-                List<String> columns = new ArrayList<>();
-
-                // variant
-                columns.add(change.getVariantChange());
-
-                // is pathogenic
-                columns.add(squirlsResult.isPathogenic() ? "pathogenic" : "neutral");
-
-                // max pathogenicity
-                columns.add(String.format("%.3f", squirlsResult.maxPathogenicity()));
-
-                // predictions per transcript
-                Map<String, Prediction> predictionMap = squirlsResult.results()
-                        .collect(Collectors.toMap(SquirlsTxResult::accessionId, SquirlsTxResult::prediction));
-                String scores = processScores(predictionMap);
-                columns.add(scores);
-
-                System.out.println(String.join(DELIMITER, columns));
+    /**
+     * Parse input argument that specifies the desired output formats into a collection of {@link OutputFormat}s.
+     *
+     * @return a collection of output formats
+     */
+    protected static Collection<OutputFormat> parseOutputFormats(String outputFormats) {
+        Set<OutputFormat> formats = new HashSet<>(2);
+        for (String format : outputFormats.split(",")) {
+            try {
+                formats.add(OutputFormat.valueOf(format.toUpperCase()));
+            } catch (IllegalArgumentException e) {
+                LOGGER.warn("Ignoring invalid output format `{}`", format);
             }
-            System.out.println();
         }
-
-        return 0;
+        return formats;
     }
+
+    protected OutputOptions prepareOutputOptions(String outputPrefix) {
+        return OutputOptions.builder()
+                .setOutputPrefix(outputPrefix)
+                .addOutputFormats(parseOutputFormats(outputFormats))
+                .setCompress(compress)
+                .setReportFeatures(reportFeatures)
+                .setReportAllTranscripts(reportAllTranscripts)
+                .build();
+    }
+
 }

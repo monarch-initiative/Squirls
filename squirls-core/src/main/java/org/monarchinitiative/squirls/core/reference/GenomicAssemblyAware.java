@@ -78,10 +78,6 @@ package org.monarchinitiative.squirls.core.reference;
 
 import org.monarchinitiative.svart.GenomicAssembly;
 
-import java.util.Collection;
-import java.util.Set;
-import java.util.stream.Collectors;
-
 /**
  * @author Daniel Danis
  */
@@ -89,10 +85,4 @@ public interface GenomicAssemblyAware {
 
     GenomicAssembly genomicAssembly();
 
-    default Set<String> knownContigNames() {
-        return genomicAssembly().contigs().stream()
-                .map(ctg -> Set.of(ctg.name(), ctg.refSeqAccession(), ctg.genBankAccession(), ctg.ucscName()))
-                .flatMap(Collection::stream)
-                .collect(Collectors.toUnmodifiableSet());
-    }
 }

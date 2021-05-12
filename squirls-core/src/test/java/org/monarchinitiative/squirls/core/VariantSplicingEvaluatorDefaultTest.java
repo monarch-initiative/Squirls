@@ -89,7 +89,6 @@ import org.monarchinitiative.svart.*;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
@@ -135,7 +134,6 @@ public class VariantSplicingEvaluatorDefaultTest {
     @BeforeEach
     public void setUp() {
         when(squirlsDataService.genomicAssembly()).thenReturn(assembly);
-        when(squirlsDataService.knownContigNames()).thenReturn(assembly.contigs().stream().map(Contig::name).collect(Collectors.toSet()));
         evaluator = VariantSplicingEvaluatorDefault.of(squirlsDataService, annotator, classifier);
     }
 
@@ -178,7 +176,7 @@ public class VariantSplicingEvaluatorDefaultTest {
         assertThat(actual.featureValue("acceptor_offset").orElseThrow(), is(1234.));
         assertThat(actual.prediction(), is(prediction));
 
-        verify(squirlsDataService).knownContigNames();
+        verify(squirlsDataService).genomicAssembly();
         verify(squirlsDataService).sequenceForRegion(GenomicRegion.of(chr9, Strand.POSITIVE, CoordinateSystem.zeroBased(), 136_223_275, 136_228_184));
         verify(squirlsDataService).transcriptByAccession("NM_017503.5");
         verify(annotator).annotate(vot);
@@ -269,7 +267,7 @@ public class VariantSplicingEvaluatorDefaultTest {
         assertThat(actual.featureValue("acceptor_offset").orElseThrow(), is(1234.));
         assertThat(actual.prediction(), is(prediction));
 
-        verify(squirlsDataService).knownContigNames();
+        verify(squirlsDataService).genomicAssembly();
         verify(squirlsDataService).sequenceForRegion(GenomicRegion.of(chr9, Strand.POSITIVE, CoordinateSystem.zeroBased(), 136_223_275, 136_228_184));
         verify(squirlsDataService).overlappingTranscripts(variant.toZeroBased());
         verify(annotator).annotate(vot);

@@ -71,43 +71,91 @@
  *
  * version:6-8-18
  *
- * Daniel Danis, Peter N Robinson, 2020
+ * Daniel Danis, Peter N Robinson, 2021
  */
 
 package org.monarchinitiative.squirls.cli.writers;
 
-import org.monarchinitiative.squirls.cli.visualization.SplicingVariantGraphicsGenerator;
-import org.monarchinitiative.squirls.cli.writers.html.HtmlResultWriter;
-import org.monarchinitiative.squirls.cli.writers.tabular.TabularResultWriter;
-import org.monarchinitiative.squirls.cli.writers.vcf.VcfResultWriter;
+import de.charite.compbio.jannovar.annotation.VariantAnnotations;
+import htsjdk.variant.variantcontext.VariantContext;
+import org.monarchinitiative.squirls.core.SquirlsResult;
+import org.monarchinitiative.svart.Variant;
+
+import java.util.Objects;
 
 /**
  * @author Daniel Danis
  */
-public class ResultWriterFactory {
+public class WritableSplicingAlleleDefault implements WritableSplicingAllele {
 
-    private final SplicingVariantGraphicsGenerator graphicsGenerator;
+    private final Variant variant;
+    private final VariantAnnotations annotations;
+    private final SquirlsResult squirlsResult;
+    private final VariantContext variantContext;
 
-    public ResultWriterFactory(SplicingVariantGraphicsGenerator graphicsGenerator) {
-        this.graphicsGenerator = graphicsGenerator;
+    public static WritableSplicingAlleleDefault of(Variant variant,
+                                                   VariantAnnotations annotations,
+                                                   SquirlsResult squirlsResult) {
+        return of(variant, annotations, squirlsResult, null);
     }
 
-    public ResultWriter resultWriterForFormat(OutputFormat outputFormat) {
-        switch (outputFormat) {
-            case HTML:
-                return new HtmlResultWriter(graphicsGenerator);
-            case VCF:
-                return new VcfResultWriter(false);
-            case VCFGZ:
-                return new VcfResultWriter(true);
-            case TSV:
-                return new TabularResultWriter(OutputFormat.TSV.getFileExtension(), '\t');
-            case CSV:
-                return new TabularResultWriter(OutputFormat.CSV.getFileExtension(), ',');
-            default:
-                // should not happen
-                throw new RuntimeException("Unknown output format `" + outputFormat + "`");
-        }
+    public static WritableSplicingAlleleDefault of(Variant variant,
+                                                   VariantAnnotations annotations,
+                                                   SquirlsResult squirlsResult,
+                                                   VariantContext variantContext) {
+        return new WritableSplicingAlleleDefault(variant, annotations, squirlsResult, variantContext);
     }
 
+    private WritableSplicingAlleleDefault(Variant variant,
+                                          VariantAnnotations annotations,
+                                          SquirlsResult squirlsResult,
+                                          VariantContext variantContext) {
+        this.variant = Objects.requireNonNull(variant);
+        this.annotations = Objects.requireNonNull(annotations);
+        this.squirlsResult = Objects.requireNonNull(squirlsResult);
+        this.variantContext = variantContext;
+    }
+
+    @Override
+    public VariantContext variantContext() {
+        return variantContext;
+    }
+
+    @Override
+    public VariantAnnotations variantAnnotations() {
+        return annotations;
+    }
+
+    @Override
+    public Variant variant() {
+        return variant;
+    }
+
+    @Override
+    public SquirlsResult squirlsResult() {
+        return squirlsResult;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        WritableSplicingAlleleDefault that = (WritableSplicingAlleleDefault) o;
+        return Objects.equals(variantContext, that.variantContext) && Objects.equals(annotations, that.annotations) && Objects.equals(variant, that.variant) && Objects.equals(squirlsResult, that.squirlsResult) ;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(variantContext, annotations, variant, squirlsResult);
+    }
+
+    @Override
+    public String toString() {
+        return "WritableSplicingAlleleDefault{" +
+                "variantContext=" + variantContext +
+                ", annotations=" + annotations +
+                ", variant=" + variant +
+                ", squirlsResult=" + squirlsResult +
+                '}';
+    }
 }

@@ -95,15 +95,10 @@ import org.monarchinitiative.svart.Variant;
 public interface WritableSplicingAllele {
 
     /**
-     * @return alt allele
-     */
-    Allele allele();
-
-    /**
-     * @return variant context representing the input variant
+     * @return variant context representing the input variant. If the variant is <code>null</code>, then the client
+     * should compute the variant coordinates from data stored in {@link #variant()}.
      */
     VariantContext variantContext();
-
 
     VariantAnnotations variantAnnotations();
 

@@ -76,6 +76,8 @@
 
 package org.monarchinitiative.squirls.cli.writers;
 
+import java.util.Objects;
+
 /**
  * Container for storing statistics of the analysis.
  * @author Daniel Danis
@@ -86,12 +88,15 @@ public class AnalysisStats {
     private final int alleleCount;
     private final int annotatedAlleleCount;
 
-    public AnalysisStats(int allVariants, int alleleCount, int annotatedAlleleCount) {
+    public static AnalysisStats of(int allVariants, int alleleCount, int annotatedAlleleCount) {
+        return new AnalysisStats(allVariants, alleleCount, annotatedAlleleCount);
+    }
+
+    private AnalysisStats(int allVariants, int alleleCount, int annotatedAlleleCount) {
         this.allVariants = allVariants;
         this.alleleCount = alleleCount;
         this.annotatedAlleleCount = annotatedAlleleCount;
     }
-
 
     public int allVariants() {
         return allVariants;
@@ -103,5 +108,27 @@ public class AnalysisStats {
 
     public int annotatedAlleleCount() {
         return annotatedAlleleCount;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        AnalysisStats that = (AnalysisStats) o;
+        return allVariants == that.allVariants && alleleCount == that.alleleCount && annotatedAlleleCount == that.annotatedAlleleCount;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(allVariants, alleleCount, annotatedAlleleCount);
+    }
+
+    @Override
+    public String toString() {
+        return "AnalysisStats{" +
+                "allVariants=" + allVariants +
+                ", alleleCount=" + alleleCount +
+                ", annotatedAlleleCount=" + annotatedAlleleCount +
+                '}';
     }
 }

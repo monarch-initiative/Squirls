@@ -71,97 +71,123 @@
  *
  * version:6-8-18
  *
- * Daniel Danis, Peter N Robinson, 2020
+ * Daniel Danis, Peter N Robinson, 2021
  */
 
-package org.monarchinitiative.squirls.cli.cmd.annotate_pos;
-
-
-import org.monarchinitiative.squirls.cli.Main;
-import org.monarchinitiative.squirls.cli.cmd.AnnotatingSquirlsCommand;
-import org.monarchinitiative.squirls.core.*;
-import org.monarchinitiative.svart.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.context.ConfigurableApplicationContext;
-import picocli.CommandLine;
+package org.monarchinitiative.squirls.cli.writers;
 
 import java.util.*;
-import java.util.stream.Collectors;
-
-import static picocli.CommandLine.Parameters;
 
 /**
  * @author Daniel Danis
  */
-@CommandLine.Command(name = "annotate-pos",
-        aliases = {"P"},
-        header = "Annotate several variant positions",
-        mixinStandardHelpOptions = true,
-        version = Main.VERSION,
-        usageHelpWidth = Main.WIDTH,
-        footer = Main.FOOTER)
-public class AnnotatePosCommand extends AnnotatingSquirlsCommand {
+public class OutputOptions {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(AnnotatePosCommand.class);
+    private final boolean compress;
+    private final boolean reportFeatures;
+    private final boolean reportAllTranscripts;
+    private final Set<OutputFormat> outputFormats;
+    private final String outputPrefix;
 
-    private static final String DELIMITER = "\t";
+    private OutputOptions(Builder builder) {
+        this.compress = builder.compress;
+        this.reportFeatures = builder.reportFeatures;
+        this.reportAllTranscripts = builder.reportAllTranscripts;
+        this.outputFormats = Set.copyOf(builder.outputFormats);
+        this.outputPrefix = Objects.requireNonNull(builder.outputPrefix);
+    }
 
-    @Parameters(arity = "1..*",
-            paramLabel = "chr3:165504107A>C",
-            description = "Nucleotide change(s) to annotate")
-    public List<String> rawChanges;
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    public boolean compress() {
+        return compress;
+    }
+
+    public boolean reportFeatures() {
+        return reportFeatures;
+    }
+
+    public boolean reportAllTranscripts() {
+        return reportAllTranscripts;
+    }
+
+    public Set<OutputFormat> outputFormats() {
+        return outputFormats;
+    }
+
+    public String outputPrefix() {
+        return outputPrefix;
+    }
 
     @Override
-    public Integer call() {
-        try (ConfigurableApplicationContext context = getContext()) {
-            rawChanges.remove(0); // path to the config file
-            LOGGER.info("Changes: {}", rawChanges);
-            SquirlsDataService squirlsDataService = context.getBean(SquirlsDataService.class);
-            GenomicAssembly assembly = squirlsDataService.genomicAssembly();
-            VariantSplicingEvaluator splicingEvaluator = context.getBean(VariantSplicingEvaluator.class);
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        OutputOptions that = (OutputOptions) o;
+        return compress == that.compress && reportFeatures == that.reportFeatures && reportAllTranscripts == that.reportAllTranscripts && Objects.equals(outputFormats, that.outputFormats) && Objects.equals(outputPrefix, that.outputPrefix);
+    }
 
-            // parse changes (input)
-            List<VariantChange> changes = rawChanges.stream()
-                    .map(VariantChange::fromString)
-                    .filter(Optional::isPresent)
-                    .map(Optional::get)
-                    .collect(Collectors.toUnmodifiableList());
+    @Override
+    public int hashCode() {
+        return Objects.hash(compress, reportFeatures, reportAllTranscripts, outputFormats, outputPrefix);
+    }
 
+    @Override
+    public String toString() {
+        return "OutputOptions{" +
+                "compress=" + compress +
+                ", reportFeatures=" + reportFeatures +
+                ", reportAllTranscripts=" + reportAllTranscripts +
+                ", outputFormats=" + outputFormats +
+                ", outputPrefix='" + outputPrefix + '\'' +
+                '}';
+    }
 
-            System.out.println();
-            for (VariantChange change : changes) {
-                Contig contig = assembly.contigByName(change.getContig());
-                if (contig.isUnknown()) {
-                    if (LOGGER.isWarnEnabled())
-                        LOGGER.warn("Unknown contig {} in `{}`", change.getContig(), change.getVariantChange());
-                    continue;
-                }
+    public static class Builder {
 
-                Variant variant = Variant.of(contig, "", Strand.POSITIVE, CoordinateSystem.oneBased(), Position.of(change.getPos()), change.getRef(), change.getAlt());
-                SquirlsResult squirlsResult = splicingEvaluator.evaluate(variant);
-                List<String> columns = new ArrayList<>();
+        private final Set<OutputFormat> outputFormats = new HashSet<>();
+        private boolean compress = false;
+        private boolean reportFeatures = false;
+        private boolean reportAllTranscripts = false;
+        private String outputPrefix = "output";
 
-                // variant
-                columns.add(change.getVariantChange());
-
-                // is pathogenic
-                columns.add(squirlsResult.isPathogenic() ? "pathogenic" : "neutral");
-
-                // max pathogenicity
-                columns.add(String.format("%.3f", squirlsResult.maxPathogenicity()));
-
-                // predictions per transcript
-                Map<String, Prediction> predictionMap = squirlsResult.results()
-                        .collect(Collectors.toMap(SquirlsTxResult::accessionId, SquirlsTxResult::prediction));
-                String scores = processScores(predictionMap);
-                columns.add(scores);
-
-                System.out.println(String.join(DELIMITER, columns));
-            }
-            System.out.println();
+        private Builder() {
         }
 
-        return 0;
+        public Builder setCompress(boolean compress) {
+            this.compress = compress;
+            return this;
+        }
+
+        public Builder setReportFeatures(boolean reportFeatures) {
+            this.reportFeatures = reportFeatures;
+            return this;
+        }
+
+        public Builder setReportAllTranscripts(boolean reportAllTranscripts) {
+            this.reportAllTranscripts = reportAllTranscripts;
+            return this;
+        }
+
+        public Builder setOutputPrefix(String outputPrefix) {
+            this.outputPrefix = outputPrefix;
+            return this;
+        }
+
+        public Builder addOutputFormat(OutputFormat... outputFormats) {
+            return addOutputFormats(Arrays.asList(outputFormats));
+        }
+
+        public Builder addOutputFormats(Collection<OutputFormat> outputFormats) {
+            this.outputFormats.addAll(outputFormats);
+            return this;
+        }
+
+        public OutputOptions build() {
+            return new OutputOptions(this);
+        }
     }
 }
+

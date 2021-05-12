@@ -77,8 +77,6 @@
 package org.monarchinitiative.squirls.cli.writers.html;
 
 import de.charite.compbio.jannovar.annotation.VariantAnnotations;
-import htsjdk.variant.variantcontext.Allele;
-import htsjdk.variant.variantcontext.VariantContext;
 import org.monarchinitiative.squirls.cli.visualization.SplicingVariantGraphicsGenerator;
 import org.monarchinitiative.squirls.cli.visualization.VisualizableVariantAllele;
 import org.monarchinitiative.squirls.cli.writers.AnalysisResults;
@@ -86,6 +84,7 @@ import org.monarchinitiative.squirls.cli.writers.OutputFormat;
 import org.monarchinitiative.squirls.cli.writers.ResultWriter;
 import org.monarchinitiative.squirls.cli.writers.WritableSplicingAllele;
 import org.monarchinitiative.squirls.core.SquirlsResult;
+import org.monarchinitiative.svart.CoordinateSystem;
 import org.monarchinitiative.svart.Variant;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
@@ -133,13 +132,12 @@ public class HtmlResultWriter implements ResultWriter {
     }
 
     private static String getRepresentation(WritableSplicingAllele writableSplicingAllele) {
-        VariantContext base = writableSplicingAllele.variantContext();
-        Allele allele = writableSplicingAllele.allele();
+        Variant variant = writableSplicingAllele.variant();
         return String.format("%s:%s %s>%s",
-                base.getContig(),
-                NUMBER_FORMAT.format(base.getStart()),
-                base.getReference().getBaseString(),
-                allele.getBaseString());
+                variant.contigName(),
+                NUMBER_FORMAT.format(variant.startWithCoordinateSystem(CoordinateSystem.oneBased())),
+                variant.ref(),
+                variant.alt());
     }
 
     @Override

@@ -80,7 +80,8 @@ import org.monarchinitiative.squirls.cli.visualization.SplicingVariantGraphicsGe
 import org.monarchinitiative.squirls.cli.visualization.panel.PanelGraphicsGenerator;
 import org.monarchinitiative.squirls.cli.visualization.selector.SimpleVisualizationContextSelector;
 import org.monarchinitiative.squirls.cli.visualization.selector.VisualizationContextSelector;
-import org.monarchinitiative.squirls.cli.writers.ResultWriterFactory;
+import org.monarchinitiative.squirls.cli.writers.AnalysisResultsWriter;
+import org.monarchinitiative.squirls.cli.writers.AnalysisResultsWriterDefault;
 import org.monarchinitiative.squirls.core.Prediction;
 import org.monarchinitiative.squirls.core.SquirlsDataService;
 import org.monarchinitiative.squirls.core.reference.SplicingPwmData;
@@ -106,7 +107,7 @@ import java.util.stream.Collectors;
 @EnableAutoConfiguration
 public abstract class SquirlsCommand implements Callable<Integer> {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(SquirlsCommand.class);
+    protected static final Logger LOGGER = LoggerFactory.getLogger(SquirlsCommand.class);
     
     @CommandLine.Parameters(index = "0",
             paramLabel = "squirls-config.yml",
@@ -143,8 +144,8 @@ public abstract class SquirlsCommand implements Callable<Integer> {
     }
 
     @Bean
-    public ResultWriterFactory resultWriterFactory(SplicingVariantGraphicsGenerator splicingVariantGraphicsGenerator) {
-        return new ResultWriterFactory(splicingVariantGraphicsGenerator);
+    public AnalysisResultsWriter analysisResultsWriter(SplicingVariantGraphicsGenerator splicingVariantGraphicsGenerator) {
+        return new AnalysisResultsWriterDefault(splicingVariantGraphicsGenerator);
     }
 
     @Bean

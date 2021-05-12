@@ -104,7 +104,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
 import static org.hamcrest.Matchers.*;
 
 @SpringBootTest(classes = TestDataSourceConfig.class)
@@ -146,7 +145,7 @@ public class VcfResultWriterTest {
         );
         AnalysisResults results = AnalysisResults.builder()
                 .addAllVariants(variants)
-                .analysisStats(new AnalysisStats(10, 8, 7))
+                .analysisStats(AnalysisStats.of(10, 8, 7))
                 .settingsData(SettingsData.builder()
                         .inputPath(inputPath.toString())
                         .nReported(2)
@@ -155,10 +154,10 @@ public class VcfResultWriterTest {
 
         Path output = OUTPUT.resolve("output");
 
-        VcfResultWriter writer = new VcfResultWriter(true);
+        VcfResultWriter writer = new VcfResultWriter(true, true);
         writer.write(results, output.toString());
 
-        Path realOutputFile = Path.of(output.toString() + ".vcf.gz");
+        Path realOutputFile = Path.of(output + ".vcf.gz");
         assertThat(realOutputFile.toFile().isFile(), equalTo(true));
 
         List<String> lines;
@@ -177,7 +176,7 @@ public class VcfResultWriterTest {
         );
         AnalysisResults results = AnalysisResults.builder()
                 .addAllVariants(variants)
-                .analysisStats(new AnalysisStats(10, 8, 7))
+                .analysisStats(AnalysisStats.of(10, 8, 7))
                 .settingsData(SettingsData.builder()
                         .inputPath(inputPath.toString())
                         .nReported(2)
@@ -186,10 +185,10 @@ public class VcfResultWriterTest {
 
         Path output = OUTPUT.resolve("output");
 
-        VcfResultWriter writer = new VcfResultWriter(false);
+        VcfResultWriter writer = new VcfResultWriter(false, true);
         writer.write(results, output.toString());
 
-        Path realOutputFile = Path.of(output.toString() + ".vcf");
+        Path realOutputFile = Path.of(output + ".vcf");
         assertThat(realOutputFile.toFile().isFile(), equalTo(true));
 
         List<String> lines;
@@ -201,14 +200,15 @@ public class VcfResultWriterTest {
     }
 
     private void assertExpectedOutput(List<String> lines) {
-        assertThat(lines, hasSize(8));
+        assertThat(lines, hasSize(9));
         assertThat(lines.get(0), equalTo("##fileformat=VCFv4.2"));
         assertThat(lines.get(1), equalTo("##FILTER=<ID=SQUIRLS,Description=\"Squirls considers the variant as pathogenic if the filter is present\">"));
         assertThat(lines.get(2), equalTo("##INFO=<ID=SQUIRLS_SCORE,Number=A,Type=String,Description=\"Squirls pathogenicity score\">"));
-        assertThat(lines.get(3), equalTo("##contig=<ID=1,assembly=b37,length=249250621>"));
-        assertThat(lines.get(4), equalTo("##contig=<ID=12,assembly=b37,length=133851895>"));
-        assertThat(lines.get(5), equalTo("#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO"));
-        assertThat(lines.get(6), equalTo("1\t21894739\tALPL_donor_exon7_minus2\tA\tG\t.\tSQUIRLS\tSQUIRLS_SCORE=G|NM_000478.4=0.940000"));
-        assertThat(lines.get(7), equalTo("12\t6132066\tVWF_acceptor_2bp_upstream_exon26_quid\tT\tC\t.\tSQUIRLS\tSQUIRLS_SCORE=C|NM_000552.3=0.910000"));
+        assertThat(lines.get(3), equalTo("##INFO=<ID=SQUIRLS_TXS,Number=A,Type=String,Description=\"Squirls scores for the overlapping transcripts\">"));
+        assertThat(lines.get(4), equalTo("##contig=<ID=1,assembly=b37,length=249250621>"));
+        assertThat(lines.get(5), equalTo("##contig=<ID=12,assembly=b37,length=133851895>"));
+        assertThat(lines.get(6), equalTo("#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO"));
+        assertThat(lines.get(7), equalTo("1\t21894739\tALPL_donor_exon7_minus2\tA\tG\t.\tSQUIRLS\tSQUIRLS_SCORE=0.940;SQUIRLS_TXS=G|NM_000478.4=0.940000"));
+        assertThat(lines.get(8), equalTo("12\t6132066\tVWF_acceptor_2bp_upstream_exon26_quid\tT\tC\t.\tSQUIRLS\tSQUIRLS_SCORE=0.910;SQUIRLS_TXS=C|NM_000552.3=0.910000"));
     }
 }

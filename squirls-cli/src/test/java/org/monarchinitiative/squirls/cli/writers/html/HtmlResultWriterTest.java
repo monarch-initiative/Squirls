@@ -151,7 +151,7 @@ public class HtmlResultWriterTest {
     public void writeResults() throws Exception {
         AnalysisResults results = AnalysisResults.builder()
                 .addAllSampleNames(List.of("Sample_192"))
-                .analysisStats(new AnalysisStats(100, 120, 110))
+                .analysisStats(AnalysisStats.of(100, 120, 110))
                 .settingsData(SettingsData.builder()
                         .inputPath("path/to/Sample_192.vcf")
                         .transcriptDb("refseq")

@@ -76,6 +76,7 @@
 
 package org.monarchinitiative.squirls.cli.writers.tabular;
 
+import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -89,6 +90,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -106,24 +109,30 @@ public class TabularResultWriterTest {
     @Autowired
     public VariantsForTesting variantsForTesting;
 
-    private TabularResultWriter writer;
-
     @BeforeEach
-    public void setUp() {
-        writer = new TabularResultWriter("tsv", '\t');
+    public void setUp() throws Exception {
+        if (!Files.isDirectory(OUTPUT)) {
+            Files.createDirectories(OUTPUT);
+        }
     }
 
+    @SuppressWarnings("ResultOfMethodCallIgnored")
     @AfterEach
     public void tearDown() {
-        if (OUTPUT.toFile().isFile()) {
-            if (!OUTPUT.toFile().delete()) {
-                throw new IllegalStateException("Unable to delete the temporary output file at " + OUTPUT);
+        if (OUTPUT.toFile().isDirectory()) {
+            File[] files = OUTPUT.toFile().listFiles();
+            if (files == null) return;
+            for (File file : files) {
+                file.delete();
             }
+            OUTPUT.toFile().delete();
         }
     }
 
     @Test
-    public void write() throws Exception {
+    public void write_uncompressedNoFeatures() throws Exception {
+        TabularResultWriter writer = new TabularResultWriter("tsv", '\t', false, false, false);
+
         int nVariantsToReport = 2;
         List<? extends WritableSplicingAllele> variants = List.of(
                 variantsForTesting.BRCA2DonorExon15plus2QUID(),
@@ -132,15 +141,15 @@ public class TabularResultWriterTest {
                 variantsForTesting.TSC2AcceptorExon11Minus3());
         AnalysisResults results = AnalysisResults.builder()
                 .addAllVariants(variants)
-                .analysisStats(new AnalysisStats(10, 8, 7))
+                .analysisStats(AnalysisStats.of(10, 8, 7))
                 .settingsData(SettingsData.builder()
                         .nReported(nVariantsToReport)
                         .build())
                 .build();
-        writer.write(results, OUTPUT.toString());
+        writer.write(results, OUTPUT.resolve("output").toString());
 
         // the file must exist
-        Path expectedOutputFilePath = Paths.get("target/test-classes/tabular_output.tsv");
+        Path expectedOutputFilePath = Paths.get("target/test-classes/tabular_output/output.tsv");
         assertThat(expectedOutputFilePath.toFile().isFile(), equalTo(true));
 
         // the file content must match the expectations
@@ -153,5 +162,75 @@ public class TabularResultWriterTest {
         assertThat(lines, hasItem("chrom\tpos\tref\talt\tgene_symbol\ttx_accession\tinterpretation\tsquirls_score"));
         assertThat(lines, hasItem("13\t32930748\tT\tG\tBRCA2\tNM_000059.3\tpathogenic\t0.95"));
         assertThat(lines, hasItem("1\t21894739\tA\tG\tALPL\tNM_000478.4\tpathogenic\t0.94"));
+    }
+
+    @Test
+    public void write_compressedWithSpliceFeatures() throws Exception {
+        TabularResultWriter writer = new TabularResultWriter("tsv", '\t', true, false, true);
+
+        int nVariantsToReport = 2;
+        List<? extends WritableSplicingAllele> variants = List.of(
+                variantsForTesting.BRCA2DonorExon15plus2QUID(),
+                variantsForTesting.ALPLDonorExon7Minus2(),
+                variantsForTesting.VWFAcceptorExon26minus2QUID(),
+                variantsForTesting.TSC2AcceptorExon11Minus3());
+        AnalysisResults results = AnalysisResults.builder()
+                .addAllVariants(variants)
+                .analysisStats(AnalysisStats.of(10, 8, 7))
+                .settingsData(SettingsData.builder()
+                        .nReported(nVariantsToReport)
+                        .build())
+                .build();
+        writer.write(results, OUTPUT.resolve("output").toString());
+
+        // the file must exist
+        Path expectedOutputFilePath = Paths.get("target/test-classes/tabular_output/output.tsv.gz");
+        assertThat(expectedOutputFilePath.toFile().isFile(), equalTo(true));
+
+        // the file content must match the expectations
+        List<String> lines;
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(new GzipCompressorInputStream(Files.newInputStream(expectedOutputFilePath))))) {
+            lines = reader.lines().collect(Collectors.toList());
+        }
+
+        assertThat(lines, hasSize(nVariantsToReport + 1)); // + header line
+        assertThat(lines, hasItem("chrom\tpos\tref\talt\tgene_symbol\ttx_accession\tinterpretation\tsquirls_score\tsquirls_features"));
+        assertThat(lines, hasItem("13\t32930748\tT\tG\tBRCA2\tNM_000059.3\tpathogenic\t0.95\tNM_000059.3[exon_length=182.0|wt_ri_donor=10.244297856891256|creates_yag_in_agez=0.0|septamer=2.1036|s_strength_diff_acceptor=0.0|ppt_is_truncated=0.0|canonical_donor=9.945443836377912|cryptic_acceptor=-2.5219544938459935|intron_length=41552.0|s_strength_diff_donor=0.0|yag_at_acceptor_minus_three=0.0|alt_ri_best_window_acceptor=6.24199227902568|cryptic_donor=1.3473990820467006|creates_ag_in_agez=0.0|canonical_acceptor=0.0|donor_offset=2.0|phylop=4.010000228881836|alt_ri_best_window_donor=1.6462531025600458|hexamer=1.8216685|acceptor_offset=184.0|wt_ri_acceptor=8.763946772871673]"));
+        assertThat(lines, hasItem("1\t21894739\tA\tG\tALPL\tNM_000478.4\tpathogenic\t0.94\tNM_000478.4[exon_length=144.0|wt_ri_donor=4.867617848006766|creates_yag_in_agez=0.0|septamer=-0.8844000000000001|s_strength_diff_acceptor=0.0|ppt_is_truncated=0.0|canonical_donor=2.447047894181465|cryptic_acceptor=-12.4905210874462|intron_length=2057.0|s_strength_diff_donor=0.0|yag_at_acceptor_minus_three=0.0|alt_ri_best_window_acceptor=-3.06184416990555|cryptic_donor=0.0|creates_ag_in_agez=0.0|canonical_acceptor=0.0|donor_offset=-2.0|phylop=3.5|alt_ri_best_window_donor=2.4205699538253014|hexamer=-1.4957907|acceptor_offset=143.0|wt_ri_acceptor=9.42867691754065]"));
+    }
+
+    @Test
+    public void write_compressedWithTranscripts() throws Exception {
+        TabularResultWriter writer = new TabularResultWriter("tsv", '\t', false, true, false);
+
+        int nVariantsToReport = 2;
+        List<? extends WritableSplicingAllele> variants = List.of(
+                variantsForTesting.BRCA2DonorExon15plus2QUID(),
+                variantsForTesting.ALPLDonorExon7Minus2(),
+                variantsForTesting.VWFAcceptorExon26minus2QUID(),
+                variantsForTesting.TSC2AcceptorExon11Minus3());
+        AnalysisResults results = AnalysisResults.builder()
+                .addAllVariants(variants)
+                .analysisStats(AnalysisStats.of(10, 8, 7))
+                .settingsData(SettingsData.builder()
+                        .nReported(nVariantsToReport)
+                        .build())
+                .build();
+        writer.write(results, OUTPUT.resolve("output").toString());
+
+        // the file must exist
+        Path expectedOutputFilePath = Paths.get("target/test-classes/tabular_output/output.tsv");
+        assertThat(expectedOutputFilePath.toFile().isFile(), equalTo(true));
+
+        // the file content must match the expectations
+        List<String> lines;
+        try (BufferedReader reader = Files.newBufferedReader(expectedOutputFilePath)) {
+            lines = reader.lines().collect(Collectors.toList());
+        }
+
+        assertThat(lines, hasSize(nVariantsToReport + 1)); // + header line
+        assertThat(lines, hasItem("chrom\tpos\tref\talt\tgene_symbol\ttx_accession\tinterpretation\tsquirls_score\ttranscripts"));
+        assertThat(lines, hasItem("13\t32930748\tT\tG\tBRCA2\tNM_000059.3\tpathogenic\t0.95\tNM_000059.3=0.95"));
+        assertThat(lines, hasItem("1\t21894739\tA\tG\tALPL\tNM_000478.4\tpathogenic\t0.94\tNM_000478.4=0.94"));
     }
 }

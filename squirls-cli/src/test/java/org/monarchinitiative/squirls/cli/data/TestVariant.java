@@ -77,7 +77,6 @@
 package org.monarchinitiative.squirls.cli.data;
 
 import de.charite.compbio.jannovar.annotation.VariantAnnotations;
-import htsjdk.variant.variantcontext.Allele;
 import htsjdk.variant.variantcontext.VariantContext;
 import org.monarchinitiative.squirls.cli.writers.WritableSplicingAllele;
 import org.monarchinitiative.squirls.core.SquirlsResult;
@@ -110,11 +109,6 @@ public class TestVariant implements WritableSplicingAllele, SquirlsFeatures, Var
      */
     private final VariantContext base;
 
-    /**
-     * The ALT allele of the variant context that is being analyzed.
-     */
-    private final Allele altAllele;
-
     private final Variant variant;
 
     private final TranscriptModel tx;
@@ -135,9 +129,8 @@ public class TestVariant implements WritableSplicingAllele, SquirlsFeatures, Var
      */
     private String graphics;
 
-    TestVariant(VariantContext base, Allele altAllele, Variant variant, TranscriptModel tx, StrandedSequence si, Map<String, Double> features) {
+    TestVariant(VariantContext base, Variant variant, TranscriptModel tx, StrandedSequence si, Map<String, Double> features) {
         this.base = base;
-        this.altAllele = altAllele;
         this.variant = variant;
         this.tx = tx;
         this.si = si;
@@ -154,11 +147,6 @@ public class TestVariant implements WritableSplicingAllele, SquirlsFeatures, Var
 
     public void setSquirlsResult(SquirlsResult squirlsResult) {
         this.squirlsResult = squirlsResult;
-    }
-
-    @Override
-    public Allele allele() {
-        return altAllele;
     }
 
     @Override
@@ -211,21 +199,19 @@ public class TestVariant implements WritableSplicingAllele, SquirlsFeatures, Var
         if (o == null || getClass() != o.getClass()) return false;
         TestVariant that = (TestVariant) o;
         return Objects.equals(base, that.base) &&
-                Objects.equals(altAllele, that.altAllele) &&
                 Objects.equals(squirlsResult, that.squirlsResult) &&
                 Objects.equals(annotations, that.annotations);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(base, altAllele, squirlsResult, annotations);
+        return Objects.hash(base, squirlsResult, annotations);
     }
 
     @Override
     public String toString() {
         return "TestVariant{" +
                 "base=" + base +
-                ", altAllele=" + altAllele +
                 ", squirlsResult=" + squirlsResult +
                 ", annotations=" + annotations +
                 '}';

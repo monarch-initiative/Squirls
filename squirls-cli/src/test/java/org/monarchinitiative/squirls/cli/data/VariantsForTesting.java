@@ -182,7 +182,7 @@ public class VariantsForTesting {
         /*
         Prepare test object
          */
-        TestVariant evaluation = new TestVariant(vc, altAlleleOne, variant, st, si, featureMap);
+        TestVariant evaluation = new TestVariant(vc, variant, st, si, featureMap);
 
 
         Set<SquirlsTxResult> txResults = new HashSet<>();

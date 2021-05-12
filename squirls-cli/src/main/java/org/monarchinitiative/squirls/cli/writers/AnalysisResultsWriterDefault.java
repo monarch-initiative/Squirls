@@ -71,89 +71,60 @@
  *
  * version:6-8-18
  *
- * Daniel Danis, Peter N Robinson, 2020
+ * Daniel Danis, Peter N Robinson, 2021
  */
 
-package org.monarchinitiative.squirls.cli.cmd.annotate_vcf;
+package org.monarchinitiative.squirls.cli.writers;
 
-import de.charite.compbio.jannovar.annotation.VariantAnnotations;
-import htsjdk.variant.variantcontext.Allele;
-import htsjdk.variant.variantcontext.VariantContext;
-import org.monarchinitiative.squirls.cli.writers.WritableSplicingAllele;
-import org.monarchinitiative.squirls.core.SquirlsResult;
-import org.monarchinitiative.svart.Variant;
+import org.monarchinitiative.squirls.cli.visualization.SplicingVariantGraphicsGenerator;
+import org.monarchinitiative.squirls.cli.writers.html.HtmlResultWriter;
+import org.monarchinitiative.squirls.cli.writers.tabular.TabularResultWriter;
+import org.monarchinitiative.squirls.cli.writers.vcf.VcfResultWriter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.util.Objects;
+import java.io.IOException;
 
-/**
- * @author Daniel Danis
- */
-class WritableSplicingAlleleDefault implements WritableSplicingAllele {
+public class AnalysisResultsWriterDefault implements AnalysisResultsWriter {
 
-    private final VariantContext variantContext;
-    private final Allele allele;
-    private final VariantAnnotations annotations;
-    private final SquirlsResult squirlsResult;
-    private final Variant variant;
+    private static final Logger LOGGER = LoggerFactory.getLogger(AnalysisResultsWriterDefault.class);
 
-    WritableSplicingAlleleDefault(VariantContext variantContext,
-                                  Allele allele,
-                                  VariantAnnotations annotations,
-                                  SquirlsResult squirlsResult,
-                                  Variant variant) {
-        this.variantContext = variantContext;
-        this.allele = allele;
-        this.annotations = annotations;
-        this.squirlsResult = squirlsResult;
-        this.variant = variant;
+    private final SplicingVariantGraphicsGenerator graphicsGenerator;
+
+    public AnalysisResultsWriterDefault(SplicingVariantGraphicsGenerator graphicsGenerator) {
+        this.graphicsGenerator = graphicsGenerator;
     }
 
     @Override
-    public Allele allele() {
-        return allele;
+    public void writeResults(AnalysisResults results, OutputOptions options) {
+        for (OutputFormat format : options.outputFormats()) {
+            ResultWriter writer = resultWriterForFormat(format, options.compress(), options.reportFeatures(), options.reportAllTranscripts());
+            try {
+                writer.write(results, options.outputPrefix());
+            } catch (IOException e) {
+                LOGGER.error("Error writing {} results: {}", format, e.getMessage());
+            }
+        }
     }
 
-    @Override
-    public VariantContext variantContext() {
-        return variantContext;
+    private ResultWriter resultWriterForFormat(OutputFormat outputFormat, boolean compress, boolean reportFeatures, boolean reportTranscripts) {
+        switch (outputFormat) {
+            case HTML:
+                return new HtmlResultWriter(graphicsGenerator);
+            case VCFGZ:
+                // TODO - remove in the next release
+                LOGGER.warn("The `vcfgz` output format has been deprecated. Use `--compress -f vcf` to get the results in VCF format");
+                return new VcfResultWriter(true, reportTranscripts);
+            case VCF:
+                return new VcfResultWriter(compress, reportTranscripts);
+            case TSV:
+                return new TabularResultWriter(OutputFormat.TSV.getFileExtension(), '\t', compress, reportTranscripts, reportFeatures);
+            case CSV:
+                return new TabularResultWriter(OutputFormat.CSV.getFileExtension(), ',', compress, reportTranscripts, reportFeatures);
+            default:
+                // can happen if new OutputFormat enum member is added without updating the factory here
+                throw new RuntimeException("Unknown output format `" + outputFormat + "`");
+        }
     }
 
-    @Override
-    public VariantAnnotations variantAnnotations() {
-        return annotations;
-    }
-
-    @Override
-    public Variant variant() {
-        return variant;
-    }
-
-    @Override
-    public SquirlsResult squirlsResult() {
-        return squirlsResult;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        WritableSplicingAlleleDefault that = (WritableSplicingAlleleDefault) o;
-        return Objects.equals(variantContext, that.variantContext) && Objects.equals(allele, that.allele) && Objects.equals(annotations, that.annotations) && Objects.equals(squirlsResult, that.squirlsResult) && Objects.equals(variant, that.variant);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(variantContext, allele, annotations, squirlsResult, variant);
-    }
-
-    @Override
-    public String toString() {
-        return "WritableSplicingAlleleDefault{" +
-                "variantContext=" + variantContext +
-                ", allele=" + allele +
-                ", annotations=" + annotations +
-                ", squirlsResult=" + squirlsResult +
-                ", variant=" + variant +
-                '}';
-    }
 }

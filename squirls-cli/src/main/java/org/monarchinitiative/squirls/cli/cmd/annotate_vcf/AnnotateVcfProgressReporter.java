@@ -106,6 +106,6 @@ class AnnotateVcfProgressReporter extends ProgressReporter {
     }
 
     public AnalysisStats getAnalysisStats() {
-        return new AnalysisStats(variantCount.get(), alleleCount.get(), annotatedAllele.get());
+        return AnalysisStats.of(variantCount.get(), alleleCount.get(), annotatedAllele.get());
     }
 }

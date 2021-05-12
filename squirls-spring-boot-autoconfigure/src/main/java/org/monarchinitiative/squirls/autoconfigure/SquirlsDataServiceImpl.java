@@ -87,7 +87,6 @@ import org.monarchinitiative.svart.GenomicRegion;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Set;
 
 /**
  * @author Daniel Danis
@@ -96,12 +95,10 @@ public class SquirlsDataServiceImpl implements SquirlsDataService {
 
     private final StrandedSequenceService sequenceService;
     private final TranscriptModelService transcriptModelService;
-    private final Set<String> knownContigNames;
 
     public SquirlsDataServiceImpl(StrandedSequenceService sequenceService, TranscriptModelService transcriptModelService) {
         this.sequenceService = sequenceService;
         this.transcriptModelService = transcriptModelService;
-        this.knownContigNames = Set.copyOf(sequenceService.knownContigNames());
     }
 
     @Override
@@ -127,11 +124,6 @@ public class SquirlsDataServiceImpl implements SquirlsDataService {
     @Override
     public Optional<TranscriptModel> transcriptByAccession(String txAccession) {
         return transcriptModelService.transcriptByAccession(txAccession);
-    }
-
-    @Override
-    public Set<String> knownContigNames() {
-        return knownContigNames;
     }
 
     @Override

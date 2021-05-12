@@ -76,88 +76,141 @@
 
 package org.monarchinitiative.squirls.cli.writers.tabular;
 
-import de.charite.compbio.jannovar.annotation.Annotation;
-import htsjdk.variant.variantcontext.VariantContext;
+import org.apache.commons.compress.compressors.gzip.GzipCompressorOutputStream;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
 import org.monarchinitiative.squirls.cli.writers.AnalysisResults;
 import org.monarchinitiative.squirls.cli.writers.ResultWriter;
 import org.monarchinitiative.squirls.cli.writers.WritableSplicingAllele;
+import org.monarchinitiative.squirls.core.SquirlsResult;
+import org.monarchinitiative.squirls.core.SquirlsTxResult;
+import org.monarchinitiative.svart.CoordinateSystem;
+import org.monarchinitiative.svart.Variant;
 
+import java.io.BufferedWriter;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
  * Writer for storing <em>n</em> most pathogenic variants in a tabular format.
+ *
  * @author Daniel Danis
  */
 public class TabularResultWriter implements ResultWriter {
-
-    private static final List<String> HEADER = List.of("chrom", "pos", "ref", "alt",
-            "gene_symbol", "tx_accession", "interpretation", "squirls_score");
 
     private final String fileExtension;
 
     private final char columnSeparator;
 
-    public TabularResultWriter(String fileExtension, char columnSeparator) {
+    private final boolean compress;
+
+    private final boolean reportTranscripts;
+
+    private final boolean reportFeatures;
+
+    public TabularResultWriter(String fileExtension,
+                               char columnSeparator,
+                               boolean compress,
+                               boolean reportTranscripts,
+                               boolean reportFeatures) {
         this.fileExtension = fileExtension;
         this.columnSeparator = columnSeparator;
+        this.compress = compress;
+        this.reportTranscripts = reportTranscripts;
+        this.reportFeatures = reportFeatures;
     }
 
-    private static Consumer<WritableSplicingAllele> writeAlleleInto(CSVPrinter printer) {
-        return allele -> {
-            VariantContext vc = allele.variantContext();
-            if (vc.getAlternateAlleles().size() != 1) {
-                LOGGER.warn("Unable to write allele with >1 alt alleles: `{}`", vc);
-                return;
-            }
+    private static String summarizeSquirlsFeatures(SquirlsResult squirlsResult) {
+        return squirlsResult.results()
+                .sorted(Comparator.comparing(SquirlsTxResult::accessionId))
+                .map(summarizeTranscriptFeatures())
+                .collect(Collectors.joining(";"));
+    }
 
-            // we write the following fields
-            // "chrom", "pos", "ref", "alt", "gene_symbol", "tx_accession", "interpretation", "squirls_score"
-            String contig = vc.getContig();
-            int pos = vc.getStart();
-            String ref = vc.getReference().getDisplayString();
-            String alt = vc.getAlternateAllele(0).getDisplayString();
+    private static Function<SquirlsTxResult, String> summarizeTranscriptFeatures() {
+        return tx -> tx.features().entrySet().stream()
+                .map(e -> e.getKey() + '=' + e.getValue())
+                .collect(Collectors.joining("|", tx.accessionId() + '[', "]"));
+    }
 
-            Map<String, String> accessionToGene = allele.variantAnnotations().getAnnotations().stream()
-                    .collect(Collectors.toMap(ann -> ann.getTranscript().getAccession(), Annotation::getGeneSymbol));
-
-            allele.squirlsResult().results()
-                    .forEachOrdered(result -> {
-                        String txAccession = result.accessionId();
-                        String geneSymbol = accessionToGene.getOrDefault(txAccession, "N/A");
-                        String interpretation = result.prediction().isPositive() ? "pathogenic" : "neutral";
-                        double squirlsScore = result.prediction().getMaxPathogenicity();
-                        try {
-                            printer.printRecord(contig, pos, ref, alt, geneSymbol, txAccession, interpretation, squirlsScore);
-                        } catch (IOException e) {
-                            LOGGER.warn("Error writing variant {}: {}", vc, e.getMessage());
-                        }
-                    });
-        };
+    private static String summarizeTranscriptsScores(SquirlsResult result) {
+        return result.results()
+                .sorted(Comparator.comparing(SquirlsTxResult::accessionId))
+                .map(tx -> tx.accessionId() + "=" + tx.prediction().getMaxPathogenicity())
+                .collect(Collectors.joining("|"));
     }
 
     @Override
     public void write(AnalysisResults results, String prefix) throws IOException {
-        Path outputPath = Paths.get(prefix + '.' + fileExtension);
+        String output = prefix + '.' + fileExtension + (compress ? ".gz" : "");
+        Path outputPath = Paths.get(output);
         LOGGER.info("Writing tabular output to `{}`", outputPath);
+
+        List<String> header = new ArrayList<>(
+                List.of("chrom", "pos", "ref", "alt", "gene_symbol", "tx_accession", "interpretation", "squirls_score"));
+        if (reportTranscripts)
+            header.add("transcripts");
+
+        if (reportFeatures)
+            header.add("squirls_features");
 
         try (CSVPrinter printer = CSVFormat.newFormat(columnSeparator)
                 .withRecordSeparator('\n')
-                .withHeader(HEADER.toArray(String[]::new))
-                .print(Files.newBufferedWriter(outputPath))) {
+                .withHeader(header.toArray(String[]::new))
+                .print(openWriter(outputPath))) {
             results.getVariants().stream()
                     .sorted(Comparator.comparing(WritableSplicingAllele::maxSquirlsScore).reversed())
                     .limit(results.getSettingsData().getNReported())
-                    .forEachOrdered(writeAlleleInto(printer));
+                    .forEachOrdered(writeAllele(printer));
         }
+    }
+
+    private BufferedWriter openWriter(Path outputPath) throws IOException {
+        return compress
+                ? new BufferedWriter(new OutputStreamWriter(new GzipCompressorOutputStream(Files.newOutputStream(outputPath))))
+                : Files.newBufferedWriter(outputPath);
+    }
+
+    private Consumer<WritableSplicingAllele> writeAllele(CSVPrinter printer) {
+        return allele -> {
+            // we write the following fields
+            // "chrom", "pos", "ref", "alt", "gene_symbol", "tx_accession", "interpretation", "squirls_score", "squirls_features" (optional)
+
+            Variant variant = allele.variant();
+            List<Object> columns = new LinkedList<>();
+            columns.add(variant.contigName());
+            columns.add(variant.startWithCoordinateSystem(CoordinateSystem.oneBased()));
+            columns.add(variant.ref());
+            columns.add(variant.alt());
+            columns.add(allele.variantAnnotations().getHighestImpactAnnotation().getGeneSymbol());
+            columns.add(allele.squirlsResult().maxPathogenicityTranscriptAccession().orElse("N/A"));
+            columns.add(allele.squirlsResult().isPathogenic() ? "pathogenic" : "neutral");
+            columns.add(allele.squirlsResult().maxPathogenicity());
+
+            if (reportTranscripts)
+                columns.add(summarizeTranscriptsScores(allele.squirlsResult()));
+
+            if (reportFeatures)
+                columns.add(summarizeSquirlsFeatures(allele.squirlsResult()));
+
+            try {
+                printer.printRecord(columns);
+            } catch (IOException e) {
+                LOGGER.warn("Error writing variant {}:{}{}>{}: {}",
+                        variant.contigName(), variant.startWithCoordinateSystem(CoordinateSystem.oneBased()),
+                        variant.ref(), variant.alt(),
+                        e.getMessage());
+            }
+        };
     }
 }

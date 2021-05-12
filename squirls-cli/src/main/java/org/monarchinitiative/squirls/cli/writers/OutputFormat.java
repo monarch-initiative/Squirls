@@ -84,6 +84,7 @@ public enum OutputFormat {
 
     HTML("html"),
     VCF("vcf"),
+    @Deprecated
     VCFGZ("vcf.gz"),
     CSV("csv"),
     TSV("tsv");
