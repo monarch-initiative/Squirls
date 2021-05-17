@@ -109,7 +109,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
- * This class prepares {@link SquirlsConfiguration} for given {@link SquirlsResourceVersion}.
+ * This class prepares {@link Squirls} for given {@link SquirlsResourceVersion}.
  * <p>
  * To create the factory, you must provide path to the Squirls data directory. The data directory must have
  * the following structure:
@@ -128,13 +128,13 @@ import java.util.stream.Collectors;
  * </pre>
  * <p>
  * In the example above, <code>path/to/squirls/data_directory</code> should be provided as the path to
- * the Squirls data directory. Then, the factory provides {@link SquirlsConfiguration} for
+ * the Squirls data directory. Then, the factory provides {@link Squirls} for
  * genomes {@link GenomicAssemblyVersion#GRCH37} and {@link GenomicAssemblyVersion#GRCH38}, version <code>1902</code>
  * (February 2019).
  *
  * <p>
  * Use {@link #supportedResourceVersions()} to get all supported resource versions, and
- * {@link #getConfiguration(SquirlsResourceVersion)} to get {@link SquirlsConfiguration} for the particular
+ * {@link #getSquirls(SquirlsResourceVersion)} to get {@link Squirls} for the particular
  * {@link SquirlsResourceVersion}.
  *
  * @author Daniel Danis
@@ -179,7 +179,7 @@ public class SquirlsConfigurationFactory {
         return resolverMap;
     }
 
-    private static SquirlsConfiguration configure(SquirlsDataResolver dataResolver, SquirlsProperties properties) throws IOException, SquirlsResourceException {
+    private static Squirls configure(SquirlsDataResolver dataResolver, SquirlsProperties properties) throws IOException, SquirlsResourceException {
         DataSource squirlsDatasource = squirlsDatasource(dataResolver);
 
         SquirlsDataService squirlsDataService = configureSquirlsDataService(dataResolver, squirlsDatasource);
@@ -190,7 +190,7 @@ public class SquirlsConfigurationFactory {
         SquirlsClassifier squirlsClassifier = configureSquirlsClassifier(squirlsDatasource, properties);
         VariantSplicingEvaluator variantSplicingEvaluator = VariantSplicingEvaluator.of(squirlsDataService, splicingAnnotator, squirlsClassifier);
 
-        return new SquirlsConfigurationImpl(dataResolver.resourceVersion(), squirlsDataService, splicingAnnotator, squirlsClassifier, variantSplicingEvaluator);
+        return new SquirlsImpl(dataResolver.resourceVersion(), squirlsDataService, splicingAnnotator, squirlsClassifier, variantSplicingEvaluator);
     }
 
     private static DataSource squirlsDatasource(SquirlsDataResolver squirlsDataResolver) {
@@ -276,7 +276,7 @@ public class SquirlsConfigurationFactory {
      * @return configuration with
      * @throws SquirlsResourceException in case there are any issues with initialization (e.g. missing files)
      */
-    public SquirlsConfiguration getConfiguration(SquirlsResourceVersion resourceVersion) throws SquirlsResourceException {
+    public Squirls getSquirls(SquirlsResourceVersion resourceVersion) throws SquirlsResourceException {
         if (!resolverMap.containsKey(resourceVersion)) {
             throw new SquirlsResourceException("Resource " +
                     resourceVersion.version() + '_' + resourceVersion.assembly().version() +

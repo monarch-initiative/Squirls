@@ -89,7 +89,7 @@ import org.monarchinitiative.squirls.initialize.*;
  *
  * @author Daniel Danis
  */
-class SquirlsConfigurationImpl implements SquirlsConfiguration {
+class SquirlsImpl implements Squirls {
 
     private final SquirlsResourceVersion resourceVersion;
 
@@ -101,11 +101,11 @@ class SquirlsConfigurationImpl implements SquirlsConfiguration {
 
     private final VariantSplicingEvaluator variantSplicingEvaluator;
 
-    public SquirlsConfigurationImpl(SquirlsResourceVersion resourceVersion,
-                                    SquirlsDataService squirlsDataService,
-                                    SplicingAnnotator splicingAnnotator,
-                                    SquirlsClassifier squirlsClassifier,
-                                    VariantSplicingEvaluator variantSplicingEvaluator) {
+    public SquirlsImpl(SquirlsResourceVersion resourceVersion,
+                       SquirlsDataService squirlsDataService,
+                       SplicingAnnotator splicingAnnotator,
+                       SquirlsClassifier squirlsClassifier,
+                       VariantSplicingEvaluator variantSplicingEvaluator) {
         this.resourceVersion = resourceVersion;
         this.squirlsDataService = squirlsDataService;
         this.splicingAnnotator = splicingAnnotator;
