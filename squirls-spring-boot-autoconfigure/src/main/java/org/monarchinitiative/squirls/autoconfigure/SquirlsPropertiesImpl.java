@@ -74,21 +74,87 @@
  * Daniel Danis, Peter N Robinson, 2020
  */
 
-package org.monarchinitiative.squirls.autoconfigure.exception;
+package org.monarchinitiative.squirls.autoconfigure;
 
-import org.monarchinitiative.squirls.initialize.MissingSquirlsResourceException;
-import org.springframework.boot.diagnostics.AbstractFailureAnalyzer;
-import org.springframework.boot.diagnostics.FailureAnalysis;
+import org.monarchinitiative.squirls.initialize.AnnotatorProperties;
+import org.monarchinitiative.squirls.initialize.ClassifierProperties;
+import org.monarchinitiative.squirls.initialize.SquirlsProperties;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.boot.context.properties.NestedConfigurationProperty;
 
 /**
  * @author Daniel Danis
  */
-public class MissingSquirlsResourceFailureAnalyzer extends AbstractFailureAnalyzer<MissingSquirlsResourceException> {
+@ConfigurationProperties(prefix = "squirls")
+public class SquirlsPropertiesImpl implements SquirlsProperties {
+
+    /**
+     * Path to directory with reference genome files and splicing database.
+     */
+    private String dataDirectory;
+
+    /**
+     * Genome assembly version, choose from {hg19, hg38}.
+     */
+    private String genomeAssembly;
+
+    /**
+     * Exomiser-like data version, e.g. `1902`.
+     */
+    private String dataVersion;
+
+    /**
+     * Version of the classifier to use.
+     */
+    @NestedConfigurationProperty // squirls.classifier
+    private ClassifierProperties classifier = new ClassifierPropertiesImpl();
+
+    @NestedConfigurationProperty // squirls.annotator
+    private AnnotatorProperties annotator = new AnnotatorPropertiesImpl();
 
     @Override
-    protected FailureAnalysis analyze(Throwable rootFailure, MissingSquirlsResourceException cause) {
-        return new FailureAnalysis(String.format("Squirls could not be auto-configured properly: '%s'", cause.getMessage()),
-                "This issue would likely be solved by re-downloading and re-creating the SQUIRLS data directory",
-                cause);
+    public String getDataDirectory() {
+        return dataDirectory;
     }
+
+    public void setDataDirectory(String dataDirectory) {
+        this.dataDirectory = dataDirectory;
+    }
+
+    @Override
+    public String getGenomeAssembly() {
+        return genomeAssembly;
+    }
+
+    public void setGenomeAssembly(String genomeAssembly) {
+        this.genomeAssembly = genomeAssembly;
+    }
+
+    @Override
+    public String getDataVersion() {
+        return dataVersion;
+    }
+
+    public void setDataVersion(String dataVersion) {
+        this.dataVersion = dataVersion;
+    }
+
+    @Override
+    public ClassifierProperties getClassifier() {
+        return classifier;
+    }
+
+    public void setClassifier(ClassifierProperties classifier) {
+        this.classifier = classifier;
+    }
+
+    @Override
+    public AnnotatorProperties getAnnotator() {
+        return annotator;
+    }
+
+    public void setAnnotator(AnnotatorProperties annotator) {
+        this.annotator = annotator;
+    }
+
 }

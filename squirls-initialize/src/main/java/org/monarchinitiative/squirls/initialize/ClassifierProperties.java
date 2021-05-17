@@ -71,24 +71,20 @@
  *
  * version:6-8-18
  *
- * Daniel Danis, Peter N Robinson, 2020
+ * Daniel Danis, Peter N Robinson, 2021
  */
 
-package org.monarchinitiative.squirls.autoconfigure.exception;
-
-import org.monarchinitiative.squirls.initialize.MissingSquirlsResourceException;
-import org.springframework.boot.diagnostics.AbstractFailureAnalyzer;
-import org.springframework.boot.diagnostics.FailureAnalysis;
+package org.monarchinitiative.squirls.initialize;
 
 /**
  * @author Daniel Danis
  */
-public class MissingSquirlsResourceFailureAnalyzer extends AbstractFailureAnalyzer<MissingSquirlsResourceException> {
+public interface ClassifierProperties {
 
-    @Override
-    protected FailureAnalysis analyze(Throwable rootFailure, MissingSquirlsResourceException cause) {
-        return new FailureAnalysis(String.format("Squirls could not be auto-configured properly: '%s'", cause.getMessage()),
-                "This issue would likely be solved by re-downloading and re-creating the SQUIRLS data directory",
-                cause);
-    }
+    /**
+     * @return classifier version
+     */
+    String getVersion();
+
+    int getMaxVariantLength();
 }

@@ -71,34 +71,56 @@
  *
  * version:6-8-18
  *
- * Daniel Danis, Peter N Robinson, 2020
+ * Daniel Danis, Peter N Robinson, 2021
  */
 
-package org.monarchinitiative.squirls.core.scoring.calculators.conservation;
+package org.monarchinitiative.squirls.initialize;
 
-import org.monarchinitiative.squirls.core.SquirlsException;
+import java.util.Objects;
 
 /**
  * @author Daniel Danis
  */
-public class SquirlsWigException extends SquirlsException {
-    public SquirlsWigException() {
-        super();
+public class SquirlsResourceVersion {
+
+    private final String version;
+    private final GenomicAssemblyVersion assembly;
+
+    private SquirlsResourceVersion(String version, GenomicAssemblyVersion assembly) {
+        this.version = version;
+        this.assembly = assembly;
     }
 
-    public SquirlsWigException(String message) {
-        super(message);
+    public static SquirlsResourceVersion of(String version, GenomicAssemblyVersion assembly) {
+        return new SquirlsResourceVersion(version, assembly);
     }
 
-    public SquirlsWigException(String message, Throwable cause) {
-        super(message, cause);
+    public String version() {
+        return version;
     }
 
-    public SquirlsWigException(Throwable cause) {
-        super(cause);
+    public GenomicAssemblyVersion assembly() {
+        return assembly;
     }
 
-    public SquirlsWigException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
-        super(message, cause, enableSuppression, writableStackTrace);
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        SquirlsResourceVersion that = (SquirlsResourceVersion) o;
+        return Objects.equals(version, that.version) && assembly == that.assembly;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(version, assembly);
+    }
+
+    @Override
+    public String toString() {
+        return "SquirlsResourceVersion{" +
+                "version='" + version + '\'' +
+                ", assembly=" + assembly +
+                '}';
     }
 }

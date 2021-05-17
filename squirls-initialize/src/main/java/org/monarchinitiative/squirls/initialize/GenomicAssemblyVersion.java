@@ -71,24 +71,38 @@
  *
  * version:6-8-18
  *
- * Daniel Danis, Peter N Robinson, 2020
+ * Daniel Danis, Peter N Robinson, 2021
  */
 
-package org.monarchinitiative.squirls.autoconfigure.exception;
-
-import org.monarchinitiative.squirls.initialize.MissingSquirlsResourceException;
-import org.springframework.boot.diagnostics.AbstractFailureAnalyzer;
-import org.springframework.boot.diagnostics.FailureAnalysis;
+package org.monarchinitiative.squirls.initialize;
 
 /**
  * @author Daniel Danis
  */
-public class MissingSquirlsResourceFailureAnalyzer extends AbstractFailureAnalyzer<MissingSquirlsResourceException> {
+public enum GenomicAssemblyVersion {
+    GRCH37("hg19"),
+    GRCH38("hg38");
 
-    @Override
-    protected FailureAnalysis analyze(Throwable rootFailure, MissingSquirlsResourceException cause) {
-        return new FailureAnalysis(String.format("Squirls could not be auto-configured properly: '%s'", cause.getMessage()),
-                "This issue would likely be solved by re-downloading and re-creating the SQUIRLS data directory",
-                cause);
+    public static GenomicAssemblyVersion parseValue(String value) {
+        switch (value.toLowerCase()) {
+            case "hg19":
+            case "grch37":
+                return GRCH37;
+            case "hg38":
+            case "grch38":
+                return GRCH38;
+            default:
+                throw new IllegalArgumentException("Unknown assembly version `" + value + '`');
+        }
+    }
+
+    private final String version;
+
+    GenomicAssemblyVersion(String version) {
+        this.version = version;
+    }
+
+    public String version() {
+        return version;
     }
 }

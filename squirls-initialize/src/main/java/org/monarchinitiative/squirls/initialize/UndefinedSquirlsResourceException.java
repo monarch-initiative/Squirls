@@ -74,7 +74,9 @@
  * Daniel Danis, Peter N Robinson, 2020
  */
 
-package org.monarchinitiative.squirls.autoconfigure.exception;
+package org.monarchinitiative.squirls.initialize;
+
+import org.monarchinitiative.squirls.io.SquirlsResourceException;
 
 /**
  * This exception is thrown during auto-configuration, if an information that should have been provided by the user
@@ -82,7 +84,7 @@ package org.monarchinitiative.squirls.autoconfigure.exception;
  *
  * @author Daniel Danis
  */
-public class UndefinedSquirlsResourceException extends Exception {
+public class UndefinedSquirlsResourceException extends SquirlsResourceException {
 
     public UndefinedSquirlsResourceException() {
         super();

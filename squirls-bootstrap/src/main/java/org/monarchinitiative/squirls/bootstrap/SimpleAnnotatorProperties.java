@@ -74,68 +74,45 @@
  * Daniel Danis, Peter N Robinson, 2021
  */
 
-package org.monarchinitiative.squirls.autoconfigure;
+package org.monarchinitiative.squirls.bootstrap;
 
-import org.monarchinitiative.squirls.core.SquirlsDataService;
-import org.monarchinitiative.squirls.core.reference.StrandedSequence;
-import org.monarchinitiative.squirls.core.reference.StrandedSequenceService;
-import org.monarchinitiative.squirls.core.reference.TranscriptModel;
-import org.monarchinitiative.squirls.core.reference.TranscriptModelService;
-import org.monarchinitiative.svart.GenomicAssembly;
-import org.monarchinitiative.svart.GenomicRegion;
+import org.monarchinitiative.squirls.initialize.AnnotatorProperties;
 
-import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 
 /**
  * @author Daniel Danis
  */
-public class SquirlsDataServiceImpl implements SquirlsDataService {
+public class SimpleAnnotatorProperties implements AnnotatorProperties {
 
-    private final StrandedSequenceService sequenceService;
-    private final TranscriptModelService transcriptModelService;
-
-    public SquirlsDataServiceImpl(StrandedSequenceService sequenceService, TranscriptModelService transcriptModelService) {
-        this.sequenceService = sequenceService;
-        this.transcriptModelService = transcriptModelService;
-    }
+    private String version = "agez";
 
     @Override
-    public GenomicAssembly genomicAssembly() {
-        return sequenceService.genomicAssembly();
+    public String getVersion() {
+        return version;
     }
 
-    @Override
-    public StrandedSequence sequenceForRegion(GenomicRegion region) {
-        return sequenceService.sequenceForRegion(region);
-    }
-
-    @Override
-    public List<String> getTranscriptAccessionIds() {
-        return transcriptModelService.getTranscriptAccessionIds();
-    }
-
-    @Override
-    public List<TranscriptModel> overlappingTranscripts(GenomicRegion query) {
-        return transcriptModelService.overlappingTranscripts(query);
-    }
-
-    @Override
-    public Optional<TranscriptModel> transcriptByAccession(String txAccession) {
-        return transcriptModelService.transcriptByAccession(txAccession);
+    public void setVersion(String version) {
+        this.version = version;
     }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        SquirlsDataServiceImpl that = (SquirlsDataServiceImpl) o;
-        return Objects.equals(sequenceService, that.sequenceService) && Objects.equals(transcriptModelService, that.transcriptModelService);
+        SimpleAnnotatorProperties that = (SimpleAnnotatorProperties) o;
+        return Objects.equals(version, that.version);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(sequenceService, transcriptModelService);
+        return Objects.hash(version);
+    }
+
+    @Override
+    public String toString() {
+        return "SimpleAnnotatorProperties{" +
+                "version='" + version + '\'' +
+                '}';
     }
 }

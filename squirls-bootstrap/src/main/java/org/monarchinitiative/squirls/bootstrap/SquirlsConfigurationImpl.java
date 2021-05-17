@@ -71,75 +71,71 @@
  *
  * version:6-8-18
  *
- * Daniel Danis, Peter N Robinson, 2020
+ * Daniel Danis, Peter N Robinson, 2021
  */
 
-package org.monarchinitiative.squirls.autoconfigure;
+package org.monarchinitiative.squirls.bootstrap;
 
-import org.monarchinitiative.squirls.autoconfigure.exception.MissingSquirlsResourceException;
+import org.monarchinitiative.squirls.core.SquirlsDataService;
+import org.monarchinitiative.squirls.core.VariantSplicingEvaluator;
+import org.monarchinitiative.squirls.core.classifier.SquirlsClassifier;
+import org.monarchinitiative.squirls.core.scoring.SplicingAnnotator;
+import org.monarchinitiative.squirls.initialize.*;
 
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.List;
 
 /**
- * This class provides paths to resources, such as path to FASTA file, or splicing transcript database.
- * <p>
- * The paths are provided based on {@code squirlsDataDirectory}, {@code dataVersion}, and {@code genomeAssembly}.
+ * Class for bootstrapping Squirls without using Spring framework. Just provide the {@link SquirlsDataResolver} and
+ * this class will configure Squirls API objects for you.
+ *
  * @author Daniel Danis
  */
-public class SquirlsDataResolver {
+class SquirlsConfigurationImpl implements SquirlsConfiguration {
 
-    private final Path squirlsDataDirectory;
+    private final SquirlsResourceVersion resourceVersion;
 
-    private final String dataVersion;
+    private final SquirlsDataService squirlsDataService;
 
-    private final String genomeAssembly;
+    private final SplicingAnnotator splicingAnnotator;
 
-    public SquirlsDataResolver(Path squirlsDataDirectory, String dataVersion, String genomeAssembly) throws MissingSquirlsResourceException {
-        this.squirlsDataDirectory = squirlsDataDirectory.resolve(String.format("%s_%s", dataVersion, genomeAssembly));
-        this.dataVersion = dataVersion;
-        this.genomeAssembly = genomeAssembly;
+    private final SquirlsClassifier squirlsClassifier;
 
-        // now check that we have all files present
-        List<Path> paths = List.of(genomeAssemblyReportPath(), genomeFastaPath(), genomeFastaFaiPath(), genomeFastaDictPath(), dataSourceFullPath(), phylopPath());
-        for (Path path : paths) {
-            if (!(Files.isRegularFile(path) && Files.isReadable(path))) {
-                throw new MissingSquirlsResourceException(String.format("The file `%s` is missing in SQUIRLS directory", path.toFile().getName()));
-            }
-        }
+    private final VariantSplicingEvaluator variantSplicingEvaluator;
+
+    public SquirlsConfigurationImpl(SquirlsResourceVersion resourceVersion,
+                                    SquirlsDataService squirlsDataService,
+                                    SplicingAnnotator splicingAnnotator,
+                                    SquirlsClassifier squirlsClassifier,
+                                    VariantSplicingEvaluator variantSplicingEvaluator) {
+        this.resourceVersion = resourceVersion;
+        this.squirlsDataService = squirlsDataService;
+        this.splicingAnnotator = splicingAnnotator;
+        this.squirlsClassifier = squirlsClassifier;
+        this.variantSplicingEvaluator = variantSplicingEvaluator;
     }
 
-    public Path genomeAssemblyReportPath() {
-        return squirlsDataDirectory.resolve(String.format("%s_%s.assembly_report.txt", dataVersion, genomeAssembly));
+
+    @Override
+    public SquirlsResourceVersion resourceVersion() {
+        return resourceVersion;
     }
 
-    public Path genomeFastaPath() {
-        return squirlsDataDirectory.resolve(String.format("%s_%s.fa", dataVersion, genomeAssembly));
+    @Override
+    public SquirlsDataService squirlsDataService() {
+        return squirlsDataService;
     }
 
-    public Path genomeFastaFaiPath() {
-        return squirlsDataDirectory.resolve(String.format("%s_%s.fa.fai", dataVersion, genomeAssembly));
+    @Override
+    public SplicingAnnotator splicingAnnotator() {
+        return splicingAnnotator;
     }
 
-    public Path genomeFastaDictPath() {
-        return squirlsDataDirectory.resolve(String.format("%s_%s.fa.dict", dataVersion, genomeAssembly));
+    @Override
+    public SquirlsClassifier squirlsClassifier() {
+        return squirlsClassifier;
     }
 
-    public Path dataSourcePath() {
-        // the actual suffix *.mv.db is not being added
-        return squirlsDataDirectory.resolve(String.format("%s_%s.splicing", dataVersion, genomeAssembly))
-                .toAbsolutePath();
+    @Override
+    public VariantSplicingEvaluator variantSplicingEvaluator() {
+        return variantSplicingEvaluator;
     }
-
-    public Path dataSourceFullPath() {
-        return squirlsDataDirectory.resolve(String.format("%s_%s.splicing.mv.db", dataVersion, genomeAssembly))
-                .toAbsolutePath();
-    }
-
-    public Path phylopPath() {
-        return squirlsDataDirectory.resolve(String.format("%s_%s.phylop.bw", dataVersion, genomeAssembly))
-                .toAbsolutePath();
-    }
-
 }

@@ -71,36 +71,56 @@
  *
  * version:6-8-18
  *
- * Daniel Danis, Peter N Robinson, 2020
+ * Daniel Danis, Peter N Robinson, 2021
  */
 
-package org.monarchinitiative.squirls.autoconfigure.exception;
+package org.monarchinitiative.squirls.bootstrap;
 
-/**
- * An exception thrown when a resource file (e.g. FASTA file) is missing from SQUIRLS data directory.
- *
- * @author Daniel Danis
- */
-public class MissingSquirlsResourceException extends Exception {
+import org.junit.jupiter.api.Test;
+import org.monarchinitiative.squirls.initialize.GenomicAssemblyVersion;
+import org.monarchinitiative.squirls.initialize.SquirlsResourceVersion;
+import org.monarchinitiative.squirls.io.SquirlsResourceException;
 
+import static org.hamcrest.Matchers.*;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
-    public MissingSquirlsResourceException() {
-        super();
+public class SquirlsConfigurationFactoryTest {
+
+    private static final SimpleSquirlsProperties PROPERTIES = SimpleSquirlsProperties.builder("src/test/resources/data")
+            .annotatorProperties(new SimpleAnnotatorProperties())
+            .classifierProperties(new SimpleClassifierProperties())
+            .build();
+
+    @Test
+    public void constructor() throws Exception {
+        SquirlsConfigurationFactory factory = new SquirlsConfigurationFactory(PROPERTIES);
+
+        assertThat(factory.supportedResourceVersions(), hasSize(1));
+        assertThat(factory.supportedResourceVersions(), hasItem(SquirlsResourceVersion.of("1710", GenomicAssemblyVersion.GRCH37)));
     }
 
-    public MissingSquirlsResourceException(String message) {
-        super(message);
+    @Test
+    public void getConfiguration() throws Exception {
+        SquirlsConfigurationFactory factory = new SquirlsConfigurationFactory(PROPERTIES);
+        SquirlsResourceVersion resourceVersion = SquirlsResourceVersion.of("1710", GenomicAssemblyVersion.GRCH37);
+
+        SquirlsConfiguration configuration = factory.getConfiguration(resourceVersion);
+
+        assertThat(configuration.resourceVersion(), is(equalTo(resourceVersion)));
+        assertThat(configuration.squirlsDataService(), is(notNullValue()));
+        assertThat(configuration.splicingAnnotator(), is(notNullValue()));
+        assertThat(configuration.squirlsClassifier(), is(notNullValue()));
+        assertThat(configuration.variantSplicingEvaluator(), is(notNullValue()));
     }
 
-    public MissingSquirlsResourceException(String message, Throwable cause) {
-        super(message, cause);
-    }
+    @Test
+    public void getConfiguration_throwsWhenMissing() throws Exception {
+        SquirlsConfigurationFactory factory = new SquirlsConfigurationFactory(PROPERTIES);
+        SquirlsResourceVersion resourceVersion = SquirlsResourceVersion.of("1710", GenomicAssemblyVersion.GRCH38);
 
-    public MissingSquirlsResourceException(Throwable cause) {
-        super(cause);
-    }
-
-    protected MissingSquirlsResourceException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
-        super(message, cause, enableSuppression, writableStackTrace);
+        assertThat(factory.supportedResourceVersions(), not(hasItem(resourceVersion)));
+        SquirlsResourceException e = assertThrows(SquirlsResourceException.class, () -> factory.getConfiguration(resourceVersion));
+        assertThat(e.getMessage(), equalTo("Resource 1710_hg38` is not present in `src/test/resources/data`"));
     }
 }

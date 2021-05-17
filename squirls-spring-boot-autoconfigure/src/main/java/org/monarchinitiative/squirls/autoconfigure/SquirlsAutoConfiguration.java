@@ -80,8 +80,6 @@ package org.monarchinitiative.squirls.autoconfigure;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import org.monarchinitiative.squirls.autoconfigure.exception.InvalidSquirlsResourceException;
-import org.monarchinitiative.squirls.autoconfigure.exception.MissingSquirlsResourceException;
-import org.monarchinitiative.squirls.autoconfigure.exception.UndefinedSquirlsResourceException;
 import org.monarchinitiative.squirls.core.SquirlsDataService;
 import org.monarchinitiative.squirls.core.VariantSplicingEvaluator;
 import org.monarchinitiative.squirls.core.classifier.SquirlsClassifier;
@@ -92,6 +90,8 @@ import org.monarchinitiative.squirls.core.scoring.AGEZSplicingAnnotator;
 import org.monarchinitiative.squirls.core.scoring.DenseSplicingAnnotator;
 import org.monarchinitiative.squirls.core.scoring.SplicingAnnotator;
 import org.monarchinitiative.squirls.core.scoring.calculators.conservation.BigWigAccessor;
+import org.monarchinitiative.squirls.initialize.*;
+import org.monarchinitiative.squirls.initialize.UndefinedSquirlsResourceException;
 import org.monarchinitiative.squirls.io.ClassifierFactory;
 import org.monarchinitiative.squirls.io.CorruptedPwmException;
 import org.monarchinitiative.squirls.io.SquirlsClassifierVersion;
@@ -140,9 +140,9 @@ import java.util.stream.Collectors;
  */
 @Configuration
 @EnableConfigurationProperties({
-        SquirlsProperties.class,
-        SquirlsProperties.ClassifierProperties.class,
-        SquirlsProperties.AnnotatorProperties.class})
+        SquirlsPropertiesImpl.class,
+        ClassifierPropertiesImpl.class,
+        AnnotatorPropertiesImpl.class})
 public class SquirlsAutoConfiguration {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SquirlsAutoConfiguration.class);
@@ -197,7 +197,8 @@ public class SquirlsAutoConfiguration {
     public SquirlsDataResolver squirlsDataResolver(Path squirlsDataDirectory,
                                                    String squirlsGenomeAssembly,
                                                    String squirlsDataVersion) throws MissingSquirlsResourceException {
-        return new SquirlsDataResolver(squirlsDataDirectory, squirlsDataVersion, squirlsGenomeAssembly);
+        SquirlsResourceVersion resourceVersion = SquirlsResourceVersion.of(squirlsDataVersion, GenomicAssemblyVersion.parseValue(squirlsGenomeAssembly));
+        return new SquirlsDataResolver(squirlsDataDirectory, resourceVersion);
     }
 
 
@@ -235,7 +236,7 @@ public class SquirlsAutoConfiguration {
     public SquirlsClassifier squirlsClassifier(ClassifierFactory classifierFactory,
                                                SquirlsProperties properties) throws UndefinedSquirlsResourceException, InvalidSquirlsResourceException {
         // TODO - all of this belongs to the classifier factory
-        SquirlsProperties.ClassifierProperties classifierProperties = properties.getClassifier();
+        ClassifierProperties classifierProperties = properties.getClassifier();
 
         SquirlsClassifierVersion clfVersion;
         try {
@@ -269,10 +270,12 @@ public class SquirlsAutoConfiguration {
     }
 
     @Bean
-    public SplicingAnnotator splicingAnnotator(SquirlsProperties properties, SplicingPwmData splicingPwmData,
-                                               DbKMerDao dbKMerDao, BigWigAccessor phylopBigwigAccessor) throws UndefinedSquirlsResourceException {
-        final SquirlsProperties.AnnotatorProperties annotatorProperties = properties.getAnnotator();
-        final String version = annotatorProperties.getVersion();
+    public SplicingAnnotator splicingAnnotator(SquirlsProperties properties,
+                                               SplicingPwmData splicingPwmData,
+                                               DbKMerDao dbKMerDao,
+                                               BigWigAccessor phylopBigwigAccessor) throws UndefinedSquirlsResourceException {
+        AnnotatorProperties annotatorProperties = properties.getAnnotator();
+        String version = annotatorProperties.getVersion();
         if (LOGGER.isDebugEnabled()) LOGGER.debug("Using `{}` splicing annotator", version);
         switch (version) {
             case "dense":

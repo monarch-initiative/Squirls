@@ -71,24 +71,71 @@
  *
  * version:6-8-18
  *
- * Daniel Danis, Peter N Robinson, 2020
+ * Daniel Danis, Peter N Robinson, 2021
  */
 
-package org.monarchinitiative.squirls.autoconfigure.exception;
+package org.monarchinitiative.squirls.initialize;
 
-import org.monarchinitiative.squirls.initialize.MissingSquirlsResourceException;
-import org.springframework.boot.diagnostics.AbstractFailureAnalyzer;
-import org.springframework.boot.diagnostics.FailureAnalysis;
+import org.monarchinitiative.squirls.core.SquirlsDataService;
+import org.monarchinitiative.squirls.core.reference.StrandedSequence;
+import org.monarchinitiative.squirls.core.reference.StrandedSequenceService;
+import org.monarchinitiative.squirls.core.reference.TranscriptModel;
+import org.monarchinitiative.squirls.core.reference.TranscriptModelService;
+import org.monarchinitiative.svart.GenomicAssembly;
+import org.monarchinitiative.svart.GenomicRegion;
+
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 
 /**
  * @author Daniel Danis
  */
-public class MissingSquirlsResourceFailureAnalyzer extends AbstractFailureAnalyzer<MissingSquirlsResourceException> {
+public class SquirlsDataServiceImpl implements SquirlsDataService {
+
+    private final StrandedSequenceService sequenceService;
+    private final TranscriptModelService transcriptModelService;
+
+    public SquirlsDataServiceImpl(StrandedSequenceService sequenceService, TranscriptModelService transcriptModelService) {
+        this.sequenceService = sequenceService;
+        this.transcriptModelService = transcriptModelService;
+    }
 
     @Override
-    protected FailureAnalysis analyze(Throwable rootFailure, MissingSquirlsResourceException cause) {
-        return new FailureAnalysis(String.format("Squirls could not be auto-configured properly: '%s'", cause.getMessage()),
-                "This issue would likely be solved by re-downloading and re-creating the SQUIRLS data directory",
-                cause);
+    public GenomicAssembly genomicAssembly() {
+        return sequenceService.genomicAssembly();
+    }
+
+    @Override
+    public StrandedSequence sequenceForRegion(GenomicRegion region) {
+        return sequenceService.sequenceForRegion(region);
+    }
+
+    @Override
+    public List<String> getTranscriptAccessionIds() {
+        return transcriptModelService.getTranscriptAccessionIds();
+    }
+
+    @Override
+    public List<TranscriptModel> overlappingTranscripts(GenomicRegion query) {
+        return transcriptModelService.overlappingTranscripts(query);
+    }
+
+    @Override
+    public Optional<TranscriptModel> transcriptByAccession(String txAccession) {
+        return transcriptModelService.transcriptByAccession(txAccession);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        SquirlsDataServiceImpl that = (SquirlsDataServiceImpl) o;
+        return Objects.equals(sequenceService, that.sequenceService) && Objects.equals(transcriptModelService, that.transcriptModelService);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(sequenceService, transcriptModelService);
     }
 }

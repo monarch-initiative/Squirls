@@ -78,7 +78,10 @@ package org.monarchinitiative.squirls.autoconfigure;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.monarchinitiative.squirls.autoconfigure.exception.MissingSquirlsResourceException;
+import org.monarchinitiative.squirls.initialize.GenomicAssemblyVersion;
+import org.monarchinitiative.squirls.initialize.MissingSquirlsResourceException;
+import org.monarchinitiative.squirls.initialize.SquirlsDataResolver;
+import org.monarchinitiative.squirls.initialize.SquirlsResourceVersion;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -95,7 +98,7 @@ class SquirlsDataResolverTest {
 
     @BeforeEach
     void setUp() throws Exception {
-        resolver = new SquirlsDataResolver(TEST_DATA, "1710", "hg19");
+        resolver = new SquirlsDataResolver(TEST_DATA, SquirlsResourceVersion.of("1710", GenomicAssemblyVersion.GRCH37));
     }
 
     @Test
@@ -120,7 +123,7 @@ class SquirlsDataResolverTest {
     @Test
     public void throwsAnExceptionWhenResourceIsMissing() {
         MissingSquirlsResourceException thrown = assertThrows(MissingSquirlsResourceException.class,
-                () -> new SquirlsDataResolver(Paths.get("src/test/resources"), "1710", "hg19"));
+                () -> new SquirlsDataResolver(Paths.get("src/test/resources"), SquirlsResourceVersion.of("1710", GenomicAssemblyVersion.GRCH37)));
         assertThat(thrown.getMessage(), containsString("The file `1710_hg19.assembly_report.txt` is missing in SQUIRLS directory"));
     }
 }

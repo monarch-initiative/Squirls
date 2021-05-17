@@ -82,6 +82,7 @@ import org.monarchinitiative.squirls.core.VariantSplicingEvaluator;
 import org.monarchinitiative.squirls.core.reference.StrandedSequenceService;
 import org.monarchinitiative.squirls.core.reference.TranscriptModelService;
 import org.monarchinitiative.squirls.core.scoring.SplicingAnnotator;
+import org.monarchinitiative.squirls.initialize.SquirlsProperties;
 import org.monarchinitiative.svart.GenomicAssembly;
 import org.springframework.beans.factory.BeanCreationException;
 

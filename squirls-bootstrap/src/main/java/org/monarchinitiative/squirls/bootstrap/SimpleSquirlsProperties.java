@@ -71,24 +71,87 @@
  *
  * version:6-8-18
  *
- * Daniel Danis, Peter N Robinson, 2020
+ * Daniel Danis, Peter N Robinson, 2021
  */
 
-package org.monarchinitiative.squirls.autoconfigure.exception;
+package org.monarchinitiative.squirls.bootstrap;
 
-import org.monarchinitiative.squirls.initialize.MissingSquirlsResourceException;
-import org.springframework.boot.diagnostics.AbstractFailureAnalyzer;
-import org.springframework.boot.diagnostics.FailureAnalysis;
+import org.monarchinitiative.squirls.initialize.AnnotatorProperties;
+import org.monarchinitiative.squirls.initialize.ClassifierProperties;
+import org.monarchinitiative.squirls.initialize.SquirlsProperties;
 
 /**
  * @author Daniel Danis
  */
-public class MissingSquirlsResourceFailureAnalyzer extends AbstractFailureAnalyzer<MissingSquirlsResourceException> {
+public class SimpleSquirlsProperties implements SquirlsProperties {
+
+    private final String dataDirectory;
+
+    private final ClassifierProperties classifierProperties;
+
+    private final AnnotatorProperties annotatorProperties;
+
+    private SimpleSquirlsProperties(Builder builder) {
+        dataDirectory = builder.dataDirectory;
+        classifierProperties = builder.classifierProperties;
+        annotatorProperties = builder.annotatorProperties;
+    }
 
     @Override
-    protected FailureAnalysis analyze(Throwable rootFailure, MissingSquirlsResourceException cause) {
-        return new FailureAnalysis(String.format("Squirls could not be auto-configured properly: '%s'", cause.getMessage()),
-                "This issue would likely be solved by re-downloading and re-creating the SQUIRLS data directory",
-                cause);
+    public String getDataDirectory() {
+        return dataDirectory;
+    }
+
+    @Override
+    @Deprecated
+    public String getGenomeAssembly() {
+        return "";
+    }
+
+    @Override
+    @Deprecated
+    public String getDataVersion() {
+        return "";
+    }
+
+    @Override
+    public ClassifierProperties getClassifier() {
+        return classifierProperties;
+    }
+
+    @Override
+    public AnnotatorProperties getAnnotator() {
+        return annotatorProperties;
+    }
+
+    public static Builder builder(String dataDirectory) {
+        return new Builder(dataDirectory);
+    }
+
+    public static class Builder {
+
+        private final String dataDirectory;
+
+        private ClassifierProperties classifierProperties;
+
+        private AnnotatorProperties annotatorProperties;
+
+        private Builder(String dataDirectory) {
+            this.dataDirectory = dataDirectory;
+        }
+
+        public Builder classifierProperties(ClassifierProperties classifierProperties) {
+            this.classifierProperties = classifierProperties;
+            return this;
+        }
+
+        public Builder annotatorProperties(AnnotatorProperties annotatorProperties) {
+            this.annotatorProperties = annotatorProperties;
+            return this;
+        }
+
+        public SimpleSquirlsProperties build() {
+            return new SimpleSquirlsProperties(this);
+        }
     }
 }

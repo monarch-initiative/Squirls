@@ -71,24 +71,39 @@
  *
  * version:6-8-18
  *
- * Daniel Danis, Peter N Robinson, 2020
+ * Daniel Danis, Peter N Robinson, 2021
  */
 
-package org.monarchinitiative.squirls.autoconfigure.exception;
+package org.monarchinitiative.squirls.autoconfigure;
 
-import org.monarchinitiative.squirls.initialize.MissingSquirlsResourceException;
-import org.springframework.boot.diagnostics.AbstractFailureAnalyzer;
-import org.springframework.boot.diagnostics.FailureAnalysis;
+import org.monarchinitiative.squirls.initialize.ClassifierProperties;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
- * @author Daniel Danis
+ * Properties for specifying which classifier to use.
  */
-public class MissingSquirlsResourceFailureAnalyzer extends AbstractFailureAnalyzer<MissingSquirlsResourceException> {
+@ConfigurationProperties(prefix = "squirls.classifier")
+public class ClassifierPropertiesImpl implements ClassifierProperties {
+
+    private String version = "v0.4.6";
+
+    private int maxVariantLength = 100;
 
     @Override
-    protected FailureAnalysis analyze(Throwable rootFailure, MissingSquirlsResourceException cause) {
-        return new FailureAnalysis(String.format("Squirls could not be auto-configured properly: '%s'", cause.getMessage()),
-                "This issue would likely be solved by re-downloading and re-creating the SQUIRLS data directory",
-                cause);
+    public String getVersion() {
+        return version;
+    }
+
+    public void setVersion(String version) {
+        this.version = version;
+    }
+
+    @Override
+    public int getMaxVariantLength() {
+        return maxVariantLength;
+    }
+
+    public void setMaxVariantLength(int maxVariantLength) {
+        this.maxVariantLength = maxVariantLength;
     }
 }
