@@ -24,13 +24,22 @@ on the Squirls GitHub page and download the latest precompiled version of Squirl
 Squirls database files
 ~~~~~~~~~~~~~~~~~~~~~~
 
-Squirls database files are available for download from:
+Squirls database files are available for download from our FTP server:
 
-**hg19/GRCh37**
-  `Download 2103_hg19 <https://squirls.s3.amazonaws.com/2103_hg19.zip>`_ (~10.5 GB for download, ~15 GB unpacked)
+==============  ======================================= ==========================================
+ Genome build                     URL                                      Size
+==============  ======================================= ==========================================
+ hg19/GRCh37     ftp://squirls.ielis.xyz/2103_hg19.zip   ~10.5 GB for download, ~15 GB unpacked
+ hg38/GRCh38     ftp://squirls.ielis.xyz/2103_hg38.zip   ~11.1 GB for download, ~16.5 GB unpacked
+==============  ======================================= ==========================================
 
-**hg38/GRCh38**
-  `Download 2103_hg38 <https://squirls.s3.amazonaws.com/2103_hg38.zip>`_ (~11.1 GB for download, ~16.5 GB unpacked)
+Use ``curl`` or ``wget`` utilities to download the files from command line::
+
+  $ wget ftp://squirls.ielis.xyz/2103_hg38.zip
+  or
+  $ curl --output 2103_hg38.zip ftp://squirls.ielis.xyz/2103_hg38.zip
+
+Alternatively, use a GUI FTP client such as `FileZilla <https://filezilla-project.org/>`_.
 
 After the download, unzip the archive(s) content into a folder and note the folder path.
 
@@ -46,8 +55,11 @@ tested to work with Squirls.
 For your convenience, the files containing *UCSC*, *RefSeq*, or *ENSEMBL* transcripts
 for *hg19* or *hg38* genome assemblies are available for download (~330 MB for download, ~330 MB unpacked).
 
-`Download Jannovar files from here <https://squirls.s3.amazonaws.com/jannovar_v0.35.zip>`_.
+Download Jannovar files from ftp://squirls.ielis.xyz/jannovar_v0.35.zip::
 
+  $ wget ftp://squirls.ielis.xyz/jannovar_v0.35.zip
+  or
+  $ curl --output jannovar_v0.35.zip ftp://squirls.ielis.xyz/jannovar_v0.35.zip
 
 Build Squirls from source
 ^^^^^^^^^^^^^^^^^^^^^^^^^
