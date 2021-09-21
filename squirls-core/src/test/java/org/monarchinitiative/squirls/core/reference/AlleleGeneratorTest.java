@@ -108,7 +108,7 @@ public class AlleleGeneratorTest {
 
     @BeforeEach
     public void setUp() {
-        exon = GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(), Position.of(80), Position.of(100));
+        exon = GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(), 80, 100);
         sequence = StrandedSequence.of(
                 GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(), 0, 60),
                 "aaaaaCCCCCgggggTTTTTaaaaaCCCCCgggggTTTTTaaaaaCCCCCgggggTTTTT");
@@ -139,7 +139,7 @@ public class AlleleGeneratorTest {
     public void getDonorSiteWithAltAllele(int pos, String ref, String alt, String expected) throws Exception {
         Contig contig = TestContig.of(1, 200);
 
-        Variant variant = Variant.of(contig,"", Strand.POSITIVE, CoordinateSystem.oneBased(), Position.of(pos), ref, alt);
+        Variant variant = Variant.of(contig,"", Strand.POSITIVE, CoordinateSystem.oneBased(), pos, ref, alt);
         StrandedSequence sequence = StrandedSequence.of(
                 GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(), 93, 110),
                 "CGTG" + "ATGgtaggt" + "gaaa");
@@ -152,7 +152,7 @@ public class AlleleGeneratorTest {
 
     @Test
     public void deletionOfWholeSite() throws Exception {
-        Variant variant = Variant.of(contig,"", Strand.POSITIVE, CoordinateSystem.zeroBased(), Position.of(96), "GATGgtaggt", "G");
+        Variant variant = Variant.of(contig,"", Strand.POSITIVE, CoordinateSystem.zeroBased(), 96, "GATGgtaggt", "G");
 
         // reference is CGTGATGgtaggtgaaa
         String allele = generator.getDonorSiteWithAltAllele(exon, variant, donorSequence);
@@ -163,7 +163,7 @@ public class AlleleGeneratorTest {
     @Test
     public void mismatchInContigsForDonor() throws Exception {
         Contig other = Contig.of(44, "44", SequenceRole.ASSEMBLED_MOLECULE, "44", AssignedMoleculeType.CHROMOSOME, 100, "", "", "");
-        Variant variant = Variant.of(other, "", Strand.POSITIVE, CoordinateSystem.zeroBased(), Position.of(50), "g", "t");
+        Variant variant = Variant.of(other, "", Strand.POSITIVE, CoordinateSystem.zeroBased(), 50, "g", "t");
 
         // reference is CGTGATGgtaggtgaaa
         String allele = generator.getDonorSiteWithAltAllele(exon, variant, donorSequence);
@@ -185,7 +185,7 @@ public class AlleleGeneratorTest {
             " 54,  gca,   g,     gaacactgttccttctctctttcagGT",
     })
     public void getAcceptorSiteWithAltAllele(int pos, String ref, String alt, String expected) throws Exception {
-        Variant variant = Variant.of(contig, "", Strand.POSITIVE, CoordinateSystem.oneBased(), Position.of(pos), ref, alt);
+        Variant variant = Variant.of(contig, "", Strand.POSITIVE, CoordinateSystem.oneBased(), pos, ref, alt);
 
         StrandedSequence sequence = StrandedSequence.of(
                 GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(), 50, 90),
@@ -196,8 +196,8 @@ public class AlleleGeneratorTest {
     }
 
     @Test
-    public void deletionOfTheWholeAcceptorSite() throws Exception {
-        Variant variant = Variant.of(contig, "", Strand.POSITIVE, CoordinateSystem.zeroBased(), Position.of(73), "gcaaacactgttccttctctctttcagGT", "g");
+    public void deletionOfTheWholeAcceptorSite() {
+        Variant variant = Variant.of(contig, "", Strand.POSITIVE, CoordinateSystem.zeroBased(), 73, "gcaaacactgttccttctctctttcagGT", "g");
 
         // reference is atggcaaacactgttccttctctctttcagGTGGCCCTGC
         assertThrows(SpliceSiteDeletedException.class, () -> generator.getAcceptorSiteWithAltAllele(exon, variant, acceptorSequence));
@@ -206,7 +206,7 @@ public class AlleleGeneratorTest {
     @Test
     public void mismatchInContigsForAcceptor() throws Exception {
         Contig other = TestContig.of(22, 100);
-        Variant variant = Variant.of(other, "", Strand.POSITIVE, CoordinateSystem.zeroBased(), Position.of(50), "G", "C");
+        Variant variant = Variant.of(other, "", Strand.POSITIVE, CoordinateSystem.zeroBased(), 50, "G", "C");
 
         // reference is atggcaaacactgttccttctctctttcagGTGGCCCTGC
         assertThat(generator.getAcceptorSiteWithAltAllele(exon, variant, acceptorSequence), is(nullValue()));
@@ -223,7 +223,7 @@ public class AlleleGeneratorTest {
     public void makeDonorInterval(Strand strand, int exonStart, int exonEnd,
                                   int start, int end) {
         Contig contig = TestContig.of(1, 20);
-        GenomicRegion exon = GenomicRegion.of(contig, strand, CoordinateSystem.zeroBased(), Position.of(exonStart), Position.of(exonEnd));
+        GenomicRegion exon = GenomicRegion.of(contig, strand, CoordinateSystem.zeroBased(), exonStart, exonEnd);
 
         GenomicRegion donor = generator.makeDonorInterval(exon);
 
@@ -244,7 +244,7 @@ public class AlleleGeneratorTest {
     public void makeAcceptorInterval(Strand strand, int exonStart, int exonEnd,
                                      int start, int end) {
         Contig contig = TestContig.of(1, 50);
-        GenomicRegion exon = GenomicRegion.of(contig, strand, CoordinateSystem.zeroBased(), Position.of(exonStart), Position.of(exonEnd));
+        GenomicRegion exon = GenomicRegion.of(contig, strand, CoordinateSystem.zeroBased(), exonStart, exonEnd);
 
         GenomicRegion acceptor = generator.makeAcceptorInterval(exon);
 
@@ -263,7 +263,7 @@ public class AlleleGeneratorTest {
             "10, Cgg,   C, POSITIVE,     aaaaCCCCCgggTTTTT",
     })
     public void getDonorNeighborSnippet(int pos, String ref, String alt, Strand strand, String expected) {
-        Variant variant = Variant.of(contig, "", Strand.POSITIVE, CoordinateSystem.oneBased(), Position.of(pos), ref, alt).withStrand(strand);
+        Variant variant = Variant.of(contig, "", Strand.POSITIVE, CoordinateSystem.oneBased(), pos, ref, alt).withStrand(strand);
         assertThat(generator.getDonorNeighborSnippet(variant, sequence, variant.alt()), equalTo(expected));
     }
 
@@ -275,7 +275,7 @@ public class AlleleGeneratorTest {
             "30, Cgg,   C, POSITIVE,      aaCCCCCgggggTTTTTaaaaaCCCCCgggTTTTTaaaaaCCCCCgggggTTT",
     })
     public void getAcceptorNeighborSnippet(int pos, String ref, String alt, Strand strand, String expected) {
-        Variant variant = Variant.of(contig,"", Strand.POSITIVE, CoordinateSystem.oneBased(), Position.of(pos), ref, alt).withStrand(strand);
+        Variant variant = Variant.of(contig,"", Strand.POSITIVE, CoordinateSystem.oneBased(), pos, ref, alt).withStrand(strand);
         assertThat(generator.getAcceptorNeighborSnippet(variant, sequence, variant.alt()), equalTo(expected));
     }
 
@@ -292,7 +292,7 @@ public class AlleleGeneratorTest {
     public void getKmerRefSnippet(int pos, Strand strand, String ref, String alt, int padding, String refAllele, String altAllele) {
         Contig contig = TestContig.of(1, 10);
         StrandedSequence seq = StrandedSequence.of(GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(), 0, 10), "acgtACGTac");
-        Variant variant = Variant.of(contig,"", strand, CoordinateSystem.oneBased(), Position.of(pos), ref, alt);
+        Variant variant = Variant.of(contig,"", strand, CoordinateSystem.oneBased(), pos, ref, alt);
 
         assertThat(AlleleGenerator.getPaddedAllele(variant, seq, variant.ref(), padding), equalTo(refAllele));
         assertThat(AlleleGenerator.getPaddedAllele(variant, seq, variant.alt(), padding), equalTo(altAllele));
@@ -300,7 +300,7 @@ public class AlleleGeneratorTest {
 
     @Test
     public void getKmerRefSnippet_invalidInput() {
-        Variant variant = Variant.of(contig,"", Strand.POSITIVE, CoordinateSystem.oneBased(), Position.of(10), "C", "A");
+        Variant variant = Variant.of(contig,"", Strand.POSITIVE, CoordinateSystem.oneBased(), 10, "C", "A");
 
         // k=-1 should return null
         String snippet = AlleleGenerator.getPaddedAllele(variant, sequence, variant.ref(), -1);
@@ -308,7 +308,7 @@ public class AlleleGeneratorTest {
 
         // not enough sequence returns null
         StrandedSequence small = StrandedSequence.of(
-                GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(), Position.of(0), Position.of(1)),
+                GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(), 0, 1),
                 "C");
         snippet = AlleleGenerator.getPaddedAllele(variant, small, variant.ref(), 1);
         assertThat(snippet, is(nullValue()));

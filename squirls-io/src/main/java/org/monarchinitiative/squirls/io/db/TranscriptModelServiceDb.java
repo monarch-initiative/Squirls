@@ -164,7 +164,8 @@ public class TranscriptModelServiceDb implements TranscriptModelService {
                 txPs.setString(7, transcript.accessionId());
                 txPs.setString(8, transcript.hgvsSymbol());
                 if (transcript.isCoding()) {
-                    GenomicRegion cds = transcript.cdsRegion().toZeroBased();
+                    // not an issue since cdsRegion is non-null if the transcript is coding
+                    @SuppressWarnings("OptionalGetWithoutIsPresent") GenomicRegion cds = transcript.cdsRegion().get().toZeroBased();
                     txPs.setInt(9, cds.startWithCoordinateSystem(CoordinateSystem.zeroBased()));
                     txPs.setInt(10, cds.endWithCoordinateSystem(CoordinateSystem.zeroBased()));
                 } else {

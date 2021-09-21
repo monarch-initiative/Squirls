@@ -177,7 +177,7 @@ public class VariantsForTesting {
                 .collect(Collectors.toMap(v -> v[0], v -> Double.parseDouble(v[1])));
 
         TranscriptModel st = transcripts.stream().min(Comparator.comparing(TranscriptModel::accessionId)).orElseThrow();
-        Variant variant = Variant.of(contig, "", org.monarchinitiative.svart.Strand.POSITIVE, CoordinateSystem.oneBased(), Position.of(pos), ref, alt);
+        Variant variant = Variant.of(contig, "", org.monarchinitiative.svart.Strand.POSITIVE, CoordinateSystem.oneBased(), pos, ref, alt);
 
         /*
         Prepare test object
@@ -230,7 +230,6 @@ public class VariantsForTesting {
          */
         String chrom = "13";
         Contig contig = genomicAssembly.contigByName(chrom);
-        int chr = 13;
         int pos = 32_930_748;
         String variantId = "BRCA2_donor_2bp_downstream_exon15_quid";
         String ref = "T", alt = "G";
@@ -294,7 +293,6 @@ public class VariantsForTesting {
          */
         String chrom = "1";
         Contig contig = genomicAssembly.contigByName(chrom);
-        int chr = 1;
         int pos = 21_894_739;
         String variantId = "ALPL_donor_exon7_minus2";
         String ref = "A", alt = "G";
@@ -351,7 +349,6 @@ public class VariantsForTesting {
          */
         String chrom = "11";
         Contig contig = genomicAssembly.contigByName(chrom);
-        int chr = 11;
         int pos = 5_248_162;
         String variantId = "HBB_donor_3bp_upstream_exon1";
         String ref = "G", alt = "A";
@@ -415,7 +412,6 @@ public class VariantsForTesting {
          */
         String chrom = "11";
         Contig contig = genomicAssembly.contigByName(chrom);
-        int chr = 11;
         int pos = 5_248_173;
         String variantId = "HBB_donor_14bp_upstream_exon1";
         String ref = "C", alt = "T";
@@ -479,7 +475,6 @@ public class VariantsForTesting {
          */
         String chrom = "12";
         Contig contig = genomicAssembly.contigByName(chrom);
-        int chr = 12;
         int pos = 6_132_066;
         String variantId = "VWF_acceptor_2bp_upstream_exon26_quid";
         String ref = "T", alt = "C";
@@ -543,7 +538,6 @@ public class VariantsForTesting {
          */
         String chrom = "16";
         Contig contig = genomicAssembly.contigByName(chrom);
-        int chr = 16;
         int pos = 2_110_668;
         String variantId = "TSC2_acceptor-3_exon11";
         String ref = "C", alt = "G";
@@ -601,7 +595,6 @@ public class VariantsForTesting {
          */
         String chrom = "X";
         Contig contig = genomicAssembly.contigByName(chrom);
-        int chr = 23;
         int pos = 107_849_964;
         String variantId = "COL4A5_acceptor-8_exon29";
         String ref = "T", alt = "A";
@@ -666,7 +659,6 @@ public class VariantsForTesting {
          */
         String chrom = "19";
         Contig contig = genomicAssembly.contigByName(chrom);
-        int chr = 19;
         int pos = 39_075_603;
         String variantId = "RYR1_coding_21bp_downstream_exon102";
         String ref = "C", alt = "G";
@@ -732,7 +724,6 @@ public class VariantsForTesting {
          */
         String chrom = "17";
         Contig contig = genomicAssembly.contigByName(chrom);
-        int chr = 17;
         int pos = 29_527_461;
         String variantId = "NF1_coding_22bp_downstream_from_acceptor_exon9";
         String ref = "C", alt = "T";

@@ -153,7 +153,10 @@
 package org.monarchinitiative.squirls.core;
 
 import org.monarchinitiative.svart.CoordinateSystem;
+import org.monarchinitiative.svart.Coordinates;
 import org.monarchinitiative.svart.GenomicRegion;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Comparator;
 import java.util.List;
@@ -164,6 +167,8 @@ import java.util.stream.Stream;
  * @author Daniel Danis
  */
 public class Utils {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(Utils.class);
 
     /**
      * Create subsequences/windows of size <code>'ws'</code> from nucleotide <code>sequence</code>.
@@ -232,5 +237,52 @@ public class Utils {
     public static String formatAsRegion(GenomicRegion region) {
         return String.format("%s:%d-%d(%s)", region.contigName(),
                 region.startWithCoordinateSystem(CoordinateSystem.zeroBased()), region.endWithCoordinateSystem(CoordinateSystem.zeroBased()), region.strand());
+    }
+
+    public static int distanceToRegion(int position, Coordinates coordinates, CoordinateSystem coordinateSystem) {
+        return distanceToRegion(position,
+                coordinates.startWithCoordinateSystem(coordinateSystem),
+                coordinates.endWithCoordinateSystem(coordinateSystem));
+    }
+
+    public static int distanceToRegion(int position, int start, int end) {
+        if (start <= position && position <= end)
+            return 0;
+
+        int s = start - position;
+        int e = end - position;
+        return Math.abs(s) < Math.abs(e) ? s : e;
+    }
+
+    public static int getDiff(GenomicRegion variant, int closestSite) {
+        int diff = distanceToRegion(closestSite, variant.coordinates(), CoordinateSystem.oneBased());
+        if (diff < 0) {
+            // variant is upstream from the border position
+            return diff - 1;
+        } else if (diff > 0) {
+            // variant is downstream from the border position
+            return diff;
+        } else {
+            /*
+            Due to representation of exon|Intron / intron|Exon boundary as a GenomePosition that represents position of
+            the capital E/I character above, we need to distinguish when variant interval denotes
+              - a deletion of the boundary, or
+              - SNP at +-1 position.
+
+            The code below handles these situations.
+            */
+            Coordinates variantCoordinates = variant.coordinates().withCoordinateSystem(CoordinateSystem.oneBased());
+            if (variantCoordinates.contains(closestSite) && variantCoordinates.length() > 1) {
+                // deletion of the boundary
+                return 0;
+            } else if (variantCoordinates.start() == closestSite) {
+                // SNP at -1 position
+                return -1;
+            } else {
+                if (LOGGER.isWarnEnabled())
+                    LOGGER.warn("Inconsistency of position for variant {}:{}-{} and closest site at {}", variant.contigName(), variant.start(), variant.end(), closestSite);
+                return 0;
+            }
+        }
     }
 }

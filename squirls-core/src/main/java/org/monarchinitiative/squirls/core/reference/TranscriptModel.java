@@ -80,12 +80,14 @@ import org.monarchinitiative.svart.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * @author Daniel Danis
  */
 public interface TranscriptModel extends GenomicRegion {
 
+    @Deprecated
     static TranscriptModel coding(Contig contig,
                                   Strand strand,
                                   CoordinateSystem coordinateSystem,
@@ -97,33 +99,45 @@ public interface TranscriptModel extends GenomicRegion {
                                   String accessionId,
                                   String hgvsSymbol,
                                   List<GenomicRegion> exons) {
-        GenomicRegion cdsRegion = GenomicRegion.of(contig, strand, coordinateSystem, Position.of(cdsStart), Position.of(cdsEnd));
-        return of(contig, strand, coordinateSystem, Position.of(start), Position.of(end), accessionId, hgvsSymbol, true, cdsRegion, exons);
+        Coordinates txCoordinates = Coordinates.of(coordinateSystem, start, end);
+
+        GenomicRegion cdsRegion = GenomicRegion.of(contig, strand, Coordinates.of(coordinateSystem, cdsStart, cdsEnd));
+        return of(contig, strand, txCoordinates, accessionId, hgvsSymbol, true, cdsRegion, exons);
+    }
+
+    static TranscriptModel coding(Contig contig,
+                                  Strand strand,
+                                  Coordinates coordinates,
+                                  int cdsStart,
+                                  int cdsEnd,
+
+                                  String accessionId,
+                                  String hgvsSymbol,
+                                  List<GenomicRegion> exons) {
+
+        GenomicRegion cdsRegion = GenomicRegion.of(contig, strand, Coordinates.of(coordinates.coordinateSystem(), cdsStart, cdsEnd));
+        return of(contig, strand, coordinates, accessionId, hgvsSymbol, true, cdsRegion, exons);
     }
 
     static TranscriptModel noncoding(Contig contig,
                                      Strand strand,
-                                     CoordinateSystem coordinateSystem,
-                                     int start,
-                                     int end,
+                                     Coordinates coordinates,
                                      String accessionId,
                                      String hgvsSymbol,
                                      List<GenomicRegion> exons) {
-        return of(contig, strand, coordinateSystem, Position.of(start), Position.of(end), accessionId, hgvsSymbol, false, null, exons);
+        return of(contig, strand, coordinates, accessionId, hgvsSymbol, false, null, exons);
     }
 
     static TranscriptModel of(Contig contig,
                               Strand strand,
-                              CoordinateSystem coordinateSystem,
-                              Position start,
-                              Position end,
+                              Coordinates coordinates,
 
                               String accessionId,
                               String hgvsSymbol,
                               boolean isCoding,
                               GenomicRegion cdsRegion,
                               List<GenomicRegion> exons) {
-        return TranscriptModelDefault.of(contig, strand, coordinateSystem, start, end, accessionId, hgvsSymbol, isCoding, cdsRegion, exons);
+        return TranscriptModelDefault.of(contig, strand, coordinates, accessionId, hgvsSymbol, isCoding, cdsRegion, exons);
     }
 
     static List<GenomicRegion> computeIntronLocations(List<GenomicRegion> exons) {
@@ -132,13 +146,12 @@ public interface TranscriptModel extends GenomicRegion {
         }
 
         ArrayList<GenomicRegion> introns = new ArrayList<>(exons.size() - 1);
-        Position intronStart = exons.get(0).endPositionWithCoordinateSystem(CoordinateSystem.zeroBased());
+        int intronStart = exons.get(0).endWithCoordinateSystem(CoordinateSystem.zeroBased());
         for (int i = 1; i < exons.size(); i++) { // start from the 2nd exon
             GenomicRegion exon = exons.get(i);
-            Position intronEnd = exon.startPositionWithCoordinateSystem(CoordinateSystem.zeroBased());
-            // TODO - can we do this without creating the temporary object?
+            int intronEnd = exon.startWithCoordinateSystem(CoordinateSystem.zeroBased());
             introns.add(GenomicRegion.of(exon.contig(), exon.strand(), exon.coordinateSystem(), intronStart, intronEnd).withCoordinateSystem(exon.coordinateSystem()));
-            intronStart = exon.endPositionWithCoordinateSystem(CoordinateSystem.zeroBased());
+            intronStart = exon.endWithCoordinateSystem(CoordinateSystem.zeroBased());
         }
         return List.copyOf(introns);
     }
@@ -149,20 +162,14 @@ public interface TranscriptModel extends GenomicRegion {
 
     boolean isCoding();
 
-    GenomicRegion cdsRegion();
+    Optional<GenomicRegion> cdsRegion();
 
-    /**
-     * @return start position of the coding region or <code>null</code> if the transcript is non-coding
-     */
-    default Position cdsStartPosition() {
-        return isCoding() ? cdsRegion().startPosition() : null;
+    default Optional<Integer> cdsStart() {
+        return cdsRegion().map(GenomicRegion::start);
     }
 
-    /**
-     * @return end position of the coding region or <code>null</code> if the transcript is non-coding
-     */
-    default Position cdsEndPosition() {
-        return isCoding() ? cdsRegion().endPosition() : null;
+    default Optional<Integer> cdsEnd() {
+        return cdsRegion().map(GenomicRegion::end);
     }
 
     @Override

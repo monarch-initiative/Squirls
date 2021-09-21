@@ -80,7 +80,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.monarchinitiative.svart.CoordinateSystem;
-import org.monarchinitiative.svart.Position;
 import org.monarchinitiative.svart.Strand;
 import org.monarchinitiative.svart.Variant;
 
@@ -104,16 +103,36 @@ public class ClosestAcceptorDistanceTest extends CalculatorTestBase {
             "1400,    -1",
             "1401,     1",
             "1402,     2",
+            "1599,   199",
             "1600,   200",
             "1601,  -200",
     })
-    public void score(int pos, double expected) {
+    public void score_positiveTx(int pos, double expected) {
         // ref and alt do not matter
-        Variant oneBased = Variant.of(contig, "", Strand.POSITIVE, CoordinateSystem.oneBased(), Position.of(pos), "g", "a");
-        assertThat(scorer.score(oneBased, tx, sequence), is(closeTo(expected, EPSILON)));
+        Variant oneBased = Variant.of(contig, "", Strand.POSITIVE, CoordinateSystem.oneBased(), pos, "g", "a");
+        assertThat(scorer.score(oneBased, txOnPositiveStrand, sequence), is(closeTo(expected, EPSILON)));
 
-        Variant zeroBased = Variant.of(contig, "", Strand.POSITIVE, CoordinateSystem.zeroBased(), Position.of(pos - 1), "g", "a");
-        assertThat(scorer.score(zeroBased, tx, sequence), is(closeTo(expected, EPSILON)));
+        Variant zeroBased = Variant.of(contig, "", Strand.POSITIVE, CoordinateSystem.zeroBased(), pos - 1, "g", "a");
+        assertThat(scorer.score(zeroBased, txOnPositiveStrand, sequence), is(closeTo(expected, EPSILON)));
     }
 
+
+
+    @ParameterizedTest
+    @CsvSource({
+            "1599,     2",
+            "1600,     1",
+            "1601,    -1",
+            "1602,    -2",
+            "1400,  -200",
+            "1401,   200",
+    })
+    public void score_negativeTx(int pos, double expected) {
+        // ref and alt do not matter
+        Variant oneBased = Variant.of(contig, "", Strand.POSITIVE, CoordinateSystem.oneBased(), pos, "g", "a").withStrand(txOnNegativeStrand.strand());
+        assertThat(scorer.score(oneBased, txOnNegativeStrand, sequence), is(closeTo(expected, EPSILON)));
+
+        Variant zeroBased = Variant.of(contig, "", Strand.POSITIVE, CoordinateSystem.zeroBased(), pos - 1, "g", "a").withStrand(txOnNegativeStrand.strand());
+        assertThat(scorer.score(zeroBased, txOnNegativeStrand, sequence), is(closeTo(expected, EPSILON)));
+    }
 }

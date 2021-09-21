@@ -166,14 +166,15 @@ public class JannovarDataManager {
 
 
                 org.monarchinitiative.squirls.core.reference.TranscriptModel sqtx;
+                Coordinates txCoordinates = Coordinates.of(coordinateSystem, txRegion.getBeginPos(), txRegion.getEndPos());
                 if (tx.isCoding()) {
                     sqtx = org.monarchinitiative.squirls.core.reference.TranscriptModel.coding(
-                            contig, strand, coordinateSystem, txRegion.getBeginPos(), txRegion.getEndPos(),
+                            contig, strand, txCoordinates,
                             cds.getBeginPos(), cds.getEndPos(),
                             accession, tx.getGeneSymbol(), remapExons(tx.getExonRegions(), contig, strand));
                 } else {
                     sqtx = org.monarchinitiative.squirls.core.reference.TranscriptModel.noncoding(
-                            contig, strand, coordinateSystem, txRegion.getBeginPos(), txRegion.getEndPos(),
+                            contig, strand, txCoordinates,
                             accession, tx.getGeneSymbol(), remapExons(tx.getExonRegions(), contig, strand));
                 }
 
@@ -191,7 +192,7 @@ public class JannovarDataManager {
         List<GenomicRegion> remapped = new ArrayList<>(exons.size());
 
         for (GenomeInterval exon : exons) {
-            remapped.add(GenomicRegion.of(contig, strand, CoordinateSystem.zeroBased(), Position.of(exon.getBeginPos()), Position.of(exon.getEndPos())));
+            remapped.add(GenomicRegion.of(contig, strand, CoordinateSystem.zeroBased(), exon.getBeginPos(), exon.getEndPos()));
         }
 
         return remapped;

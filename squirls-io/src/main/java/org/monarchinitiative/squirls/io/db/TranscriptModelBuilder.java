@@ -141,7 +141,7 @@ class TranscriptModelBuilder {
     }
 
     TranscriptModelBuilder setExon(int n, Strand strand, int start, int end) {
-        exons.put(n, GenomicRegion.of(contig, strand, CoordinateSystem.zeroBased(), Position.of(start), Position.of(end)));
+        exons.put(n, GenomicRegion.of(contig, strand, CoordinateSystem.zeroBased(), start, end));
         return this;
     }
 
@@ -159,10 +159,10 @@ class TranscriptModelBuilder {
         boolean isCoding = cdsStart >= 0 && cdsEnd >= 0;
 
         List<GenomicRegion> sorted = exons.keySet().stream().sorted().map(exons::get).collect(Collectors.toUnmodifiableList());
-
+        Coordinates txCoordinates = Coordinates.of(COORDINATE_SYSTEM, start, end);
         return (isCoding)
-                ? TranscriptModel.coding(contig, strand, COORDINATE_SYSTEM, start, end, cdsStart, cdsEnd, accessionId, hgvsSymbol, sorted)
-                : TranscriptModel.noncoding(contig, strand, COORDINATE_SYSTEM, start, end, accessionId, hgvsSymbol, sorted);
+                ? TranscriptModel.coding(contig, strand, txCoordinates, cdsStart, cdsEnd, accessionId, hgvsSymbol, sorted)
+                : TranscriptModel.noncoding(contig, strand, txCoordinates, accessionId, hgvsSymbol, sorted);
     }
 
     @Override

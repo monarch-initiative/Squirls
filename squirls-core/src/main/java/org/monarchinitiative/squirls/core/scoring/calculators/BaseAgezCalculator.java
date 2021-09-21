@@ -80,7 +80,6 @@ import org.monarchinitiative.squirls.core.reference.SplicingLocationData;
 import org.monarchinitiative.squirls.core.reference.TranscriptModel;
 import org.monarchinitiative.squirls.core.reference.TranscriptModelLocator;
 import org.monarchinitiative.svart.GenomicRegion;
-import org.monarchinitiative.svart.Position;
 import org.monarchinitiative.svart.Variant;
 
 /**
@@ -106,14 +105,14 @@ abstract class BaseAgezCalculator implements FeatureCalculator {
         switch (locationData.getPosition()) {
             case ACCEPTOR:
                 GenomicRegion exon = transcript.exons().get(locationData.getExonIdx());
-                Position exonStart = exon.startPosition();
-                agezInterval = GenomicRegion.of(exon.contig(), exon.strand(), exon.coordinateSystem(), exonStart.shift(agezBegin), exonStart.shift(agezEnd));
+                int exonStart = exon.start();
+                agezInterval = GenomicRegion.of(exon.contig(), exon.strand(), exon.coordinateSystem(), exonStart + agezBegin, exonStart + agezEnd);
                 break;
             case INTRON:
                 GenomicRegion intron = transcript.introns().get(locationData.getIntronIdx());
-                Position intronEnd = intron.endPosition();
+                int intronEnd = intron.end();
                 agezInterval = GenomicRegion.of(intron.contig(), intron.strand(), intron.coordinateSystem(),
-                        intronEnd.shift(agezBegin), intronEnd.shift(agezEnd));
+                        intronEnd + agezBegin, intronEnd + agezEnd);
                 break;
             default:
                 break;

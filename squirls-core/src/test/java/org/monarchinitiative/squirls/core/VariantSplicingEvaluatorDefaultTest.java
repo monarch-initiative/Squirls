@@ -127,8 +127,8 @@ public class VariantSplicingEvaluatorDefaultTest {
                 List.of(chr9));
         char[] chars = new char[136_230_000 - 136_210_000 + 1];
         Arrays.fill(chars, 'A'); // the sequence does not really matter since we use mocks
-        sequence = StrandedSequence.of(chr9, Strand.POSITIVE, CoordinateSystem.oneBased(),
-                Position.of(136_210_000), Position.of(136_230_000), new String(chars));
+        sequence = StrandedSequence.of(chr9, Strand.POSITIVE, Coordinates.of(CoordinateSystem.oneBased(),
+                136_210_000, 136_230_000), new String(chars));
     }
 
     @BeforeEach
@@ -140,7 +140,7 @@ public class VariantSplicingEvaluatorDefaultTest {
     @Test
     public void evaluateWrtTx() {
         Contig chr9 = assembly.contigByName("9");
-        Variant variant = Variant.of(chr9, "", Strand.POSITIVE, CoordinateSystem.oneBased(), Position.of(136_223_949), "G", "C");
+        Variant variant = Variant.of(chr9, "", Strand.POSITIVE, CoordinateSystem.oneBased(), 136_223_949, "G", "C");
 
         // 0 - squirls data service
         TranscriptModel stx = PojosForTesting.surf2_NM_017503_5(chr9);
@@ -186,7 +186,7 @@ public class VariantSplicingEvaluatorDefaultTest {
     @Test
     public void evaluateWrtTx_unknownContig() {
         Contig unknown = Contig.of(1_000, "Unknown", SequenceRole.ASSEMBLED_MOLECULE, "Unknown", AssignedMoleculeType.CHROMOSOME, 1_000_000_000, "", "", "");
-        Variant variant = Variant.of(unknown,"", Strand.POSITIVE, CoordinateSystem.oneBased(), Position.of(136_223_949), "G", "C");
+        Variant variant = Variant.of(unknown,"", Strand.POSITIVE, CoordinateSystem.oneBased(), 136_223_949, "G", "C");
         SquirlsResult squirlsResult = evaluator.evaluate(variant);
 
         assertThat(squirlsResult.isEmpty(), is(true));
@@ -197,7 +197,7 @@ public class VariantSplicingEvaluatorDefaultTest {
         when(squirlsDataService.transcriptByAccession("BLABLA")).thenReturn(Optional.empty());
         Contig chr9 = assembly.contigByName("9");
 
-        Variant variant = Variant.of(chr9, "", Strand.POSITIVE, CoordinateSystem.oneBased(), Position.of(136_223_949), "G", "C");
+        Variant variant = Variant.of(chr9, "", Strand.POSITIVE, CoordinateSystem.oneBased(), 136_223_949, "G", "C");
 
         // -------------------------------------------------------------------------------------------------------------
         SquirlsResult squirlsResult = evaluator.evaluate(variant, Set.of("BLABLA"));
@@ -213,7 +213,7 @@ public class VariantSplicingEvaluatorDefaultTest {
         when(squirlsDataService.transcriptByAccession("NM_017503.5")).thenReturn(Optional.of(stx));
         when(squirlsDataService.sequenceForRegion(any(GenomicRegion.class))).thenReturn(null);
 
-        Variant variant = Variant.of(chr9, "", Strand.POSITIVE, CoordinateSystem.oneBased(), Position.of(136_223_949), "G", "C");
+        Variant variant = Variant.of(chr9, "", Strand.POSITIVE, CoordinateSystem.oneBased(), 136_223_949, "G", "C");
 
         // -------------------------------------------------------------------------------------------------------------
         SquirlsResult squirlsResult = evaluator.evaluate(variant, Set.of("NM_017503.5"));
@@ -229,7 +229,7 @@ public class VariantSplicingEvaluatorDefaultTest {
     @Test
     public void evaluateWrtCoordinates() {
         Contig chr9 = assembly.contigByName("9");
-        Variant variant = Variant.of(chr9, "", Strand.POSITIVE, CoordinateSystem.oneBased(), Position.of(136_223_949), "G", "C");
+        Variant variant = Variant.of(chr9, "", Strand.POSITIVE, CoordinateSystem.oneBased(), 136_223_949, "G", "C");
 
         TranscriptModel stx = PojosForTesting.surf2_NM_017503_5(chr9);
 

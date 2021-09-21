@@ -83,10 +83,10 @@ import org.monarchinitiative.squirls.cli.visualization.selector.VisualizationCon
 import org.monarchinitiative.squirls.cli.visualization.selector.VisualizationContextSelector;
 import org.monarchinitiative.squirls.core.SquirlsDataService;
 import org.monarchinitiative.squirls.core.SquirlsTxResult;
+import org.monarchinitiative.squirls.core.Utils;
 import org.monarchinitiative.squirls.core.reference.*;
 import org.monarchinitiative.squirls.core.scoring.calculators.ic.SplicingInformationContentCalculator;
 import org.monarchinitiative.svart.GenomicRegion;
-import org.monarchinitiative.svart.Position;
 import org.monarchinitiative.svart.Variant;
 import org.monarchinitiative.vmvt.core.VmvtGenerator;
 import org.slf4j.Logger;
@@ -149,38 +149,6 @@ public class PanelGraphicsGenerator implements SplicingVariantGraphicsGenerator 
 
         templateEngine = new TemplateEngine();
         templateEngine.setTemplateResolver(templateResolver);
-    }
-
-    static int getDiff(GenomicRegion variant, Position closestSite) {
-        variant = variant.toOneBased();
-        int diff = closestSite.distanceToRegion(variant);
-        if (diff < 0) {
-            // variant is upstream from the border position
-            return diff - 1;
-        } else if (diff > 0) {
-            // variant is downstream from the border position
-            return diff;
-        } else {
-            /*
-            Due to representation of exon|Intron / intron|Exon boundary as a GenomePosition that represents position of
-            the capital E/I character above, we need to distinguish when variant interval denotes
-              - a deletion of the boundary, or
-              - SNP at +-1 position.
-
-            The code below handles these situations.
-            */
-            if (variant.contains(closestSite) && variant.length() > 1) {
-                // deletion of the boundary
-                return 0;
-            } else if (variant.start() == closestSite.pos()) {
-                // SNP at -1 position
-                return -1;
-            } else {
-                if (LOGGER.isWarnEnabled())
-                    LOGGER.warn("Inconsistency of position for variant {}:{}-{} and closest site at {}", variant.contigName(), variant.start(), variant.end(), closestSite.pos());
-                return 0;
-            }
-        }
     }
 
     private StrandedSequence fetchSequenceForTranscript(TranscriptModel transcript) {
@@ -325,7 +293,7 @@ public class PanelGraphicsGenerator implements SplicingVariantGraphicsGenerator 
 
                     // which position of the cryptic site the variant is located at? (-1 to transform to 0-based)
                     int variantCrypticDonorSiteIdx = splicingParameters.getDonorLength() - altMaxIdx - 1;
-                    int donorDiff = getDiff(variant, donorRegion.startPosition().shift(splicingParameters.getDonorExonic())) - variantCrypticDonorSiteIdx;
+                    int donorDiff = Utils.getDiff(variant, donorRegion.start() + splicingParameters.getDonorExonic()) - variantCrypticDonorSiteIdx;
                     basesChanged = donorDiff + splicingParameters.getDonorExonic();
 
                     secondaryLabel = "Predicted cryptic donor site";
@@ -361,7 +329,7 @@ public class PanelGraphicsGenerator implements SplicingVariantGraphicsGenerator 
 
                     // which position of the cryptic site the variant is located at? (-1 to transform to 0-based)
                     int variantCrypticAcceptorSiteIdx = splicingParameters.getAcceptorLength() - altMaxIdx - 1;
-                    int acceptorDiff = getDiff(variant, acceptorRegion.endPosition().shift(-splicingParameters.getAcceptorExonic())) - variantCrypticAcceptorSiteIdx;
+                    int acceptorDiff = Utils.getDiff(variant, acceptorRegion.end() - splicingParameters.getAcceptorExonic()) - variantCrypticAcceptorSiteIdx;
                     basesChanged = acceptorDiff + splicingParameters.getAcceptorIntronic();
 
                     secondary = vmvtGenerator.getAcceptorSequenceRulerAndBarChartWithOffset(refCorrespondingWindow, altBestWindow, basesChanged);

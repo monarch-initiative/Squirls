@@ -157,7 +157,7 @@ public class AnnotateCsvCommand extends AnnotatingSquirlsCommand {
 
         String ref = record.get("REF");
         String alt = record.get("ALT");
-        return Variant.of(contig, "", Strand.POSITIVE, CoordinateSystem.oneBased(), Position.of(pos), ref, alt);
+        return Variant.of(contig, "", Strand.POSITIVE, CoordinateSystem.oneBased(), pos, ref, alt);
     }
 
     private static VariantAnnotations annotateWithJannovar(VariantAnnotator annotator, ReferenceDictionary rd, Variant variant) throws AnnotationException, RuntimeException {

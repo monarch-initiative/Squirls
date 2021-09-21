@@ -117,7 +117,6 @@ public class VariantGenerator {
         for (int i = 0, pos = sequence.startWithCoordinateSystem(CoordinateSystem.oneBased());
              i < seq.length();
              i++, pos++) {
-            Position position = Position.of(pos);
             String refBase = seq.substring(i, i + 1);
             if (refBase.equalsIgnoreCase("N"))
                 continue;
@@ -125,17 +124,17 @@ public class VariantGenerator {
                 if (altBase.equalsIgnoreCase(refBase))
                     continue;
                 // SNV
-                variants.add(Variant.of(contig, ID, sequence.strand(), CoordinateSystem.oneBased(), position, refBase, altBase));
+                variants.add(Variant.of(contig, ID, sequence.strand(), CoordinateSystem.oneBased(), pos, refBase, altBase));
             }
             // INSERTIONS up to given length
-            variants.addAll(generateInsertions(contig, sequence.strand(), CoordinateSystem.oneBased(), position, refBase, refBase, maxLength));
+            variants.addAll(generateInsertions(contig, sequence.strand(), CoordinateSystem.oneBased(), pos, refBase, refBase, maxLength));
 
             // DELETIONS
             int j = i + 1;
             int max = Math.min(i + maxLength, seq.length());
             while (j <= max) {
                 String refBases = seq.substring(i, j);
-                variants.add(Variant.of(contig, ID, sequence.strand(), CoordinateSystem.oneBased(), position, refBases, ""));
+                variants.add(Variant.of(contig, ID, sequence.strand(), CoordinateSystem.oneBased(), pos, refBases, ""));
                 j++;
             }
         }
@@ -144,7 +143,7 @@ public class VariantGenerator {
     }
 
     private static List<Variant> generateInsertions(Contig contig, Strand strand, CoordinateSystem coordinateSystem,
-                                                    Position pos, String ref, String alt, int level) {
+                                                    int pos, String ref, String alt, int level) {
         if (alt.length() == level)
             return List.of();
 

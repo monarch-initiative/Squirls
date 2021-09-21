@@ -205,7 +205,7 @@ public class AnnotateVcfCommand extends AnnotatingSquirlsCommand {
                     squirlsResult = SquirlsResult.empty();
                 } else {
                     variant = Variant.of(contig, vc.getID(), org.monarchinitiative.svart.Strand.POSITIVE, CoordinateSystem.oneBased(),
-                            Position.of(vc.getStart()), vc.getReference().getDisplayString(), allele.getDisplayString());
+                            vc.getStart(), vc.getReference().getDisplayString(), allele.getDisplayString());
                     Set<String> txAccessions = variantAnnotations.getAnnotations().stream()
                             .map(Annotation::getTranscript)
                             .map(TranscriptModel::getAccession)

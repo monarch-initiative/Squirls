@@ -103,7 +103,7 @@ public class TranscriptModelLocatorNaiveTest {
     }
 
     private static GenomicRegion makeRegion(int begin, int end) {
-        return GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.oneBased(), Position.of(begin), Position.of(end));
+        return GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.oneBased(), begin, end);
     }
 
     @BeforeEach
@@ -114,7 +114,7 @@ public class TranscriptModelLocatorNaiveTest {
     @Test
     public void onDifferentContig() {
         Contig contig = Contig.of(33, "12", SequenceRole.ASSEMBLED_MOLECULE, "12", AssignedMoleculeType.CHROMOSOME, 10_000, "", "", "");
-        GenomicRegion variant = GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(), Position.of(999), Position.of(1000));
+        GenomicRegion variant = GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(), 999, 1000);
         TranscriptModel txOnPositiveStrand = PojosForTesting.getTranscriptWithThreeExons(contig);
 
         SplicingLocationData data = locator.locate(variant, txOnPositiveStrand);

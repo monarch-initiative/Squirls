@@ -85,6 +85,10 @@ import org.monarchinitiative.svart.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
+/**
+ * Setup for calculator testing. See <code>src/test/resources/test_transcript_ruler.png</code> for a depiction of the
+ * transcript location with respect to the <em>contig</em>.
+ */
 @SpringBootTest(classes = TestDataSourceConfig.class)
 public class CalculatorTestBase {
 
@@ -104,7 +108,8 @@ public class CalculatorTestBase {
     @Autowired
     public TranscriptModelLocator locator;
 
-    protected TranscriptModel tx;
+    protected TranscriptModel txOnPositiveStrand;
+    protected TranscriptModel txOnNegativeStrand;
 
     protected StrandedSequence sequence;
 
@@ -113,7 +118,8 @@ public class CalculatorTestBase {
 
     @BeforeEach
     public void setUp() throws Exception {
-        tx = PojosForTesting.getTranscriptWithThreeExons(contig);
+        txOnPositiveStrand = PojosForTesting.getTranscriptWithThreeExons(contig);
+        txOnNegativeStrand = PojosForTesting.getTranscriptWithThreeExons(contig).withStrand(Strand.NEGATIVE);
         sequence = PojosForTesting.getSequenceIntervalForTranscriptWithThreeExons(contig);
         Contig other = Contig.of(44, "44", SequenceRole.ASSEMBLED_MOLECULE, "44", AssignedMoleculeType.CHROMOSOME, 100_000, "", "", "");
         sequenceOnOtherChrom = StrandedSequence.of(GenomicRegion.of(other, Strand.POSITIVE, CoordinateSystem.zeroBased(), 0, 4), "ACGT");

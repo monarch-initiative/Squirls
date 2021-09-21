@@ -78,7 +78,6 @@ package org.monarchinitiative.squirls.core.reference;
 
 
 import org.monarchinitiative.svart.GenomicRegion;
-import org.monarchinitiative.svart.Position;
 
 /**
  * Container for tunable parameters for scoring of splicing variants.
@@ -152,8 +151,8 @@ public class SplicingParameters {
      * @return zero-based {@link GenomicRegion} representing splice donor site
      */
     public GenomicRegion makeDonorRegion(GenomicRegion exon) {
-        Position exonEnd = exon.endPosition();
-        return GenomicRegion.of(exon.contig(), exon.strand(), exon.coordinateSystem(), exonEnd.shift(-donorExonic), exonEnd.shift(donorIntronic));
+        int exonEnd = exon.end();
+        return GenomicRegion.of(exon.contig(), exon.strand(), exon.coordinateSystem(), exonEnd - donorExonic, exonEnd + donorIntronic);
     }
 
     /**
@@ -161,8 +160,8 @@ public class SplicingParameters {
      * @return zero-based {@link GenomicRegion} representing splice acceptor site
      */
     public GenomicRegion makeAcceptorRegion(GenomicRegion exon) {
-        Position exonStart = exon.startPosition();
-        return GenomicRegion.of(exon.contig(), exon.strand(), exon.coordinateSystem(), exonStart.shift(-acceptorIntronic), exonStart.shift(acceptorExonic));
+        int exonStart = exon.start();
+        return GenomicRegion.of(exon.contig(), exon.strand(), exon.coordinateSystem(), exonStart - acceptorIntronic, exonStart + acceptorExonic);
     }
 
     @Override

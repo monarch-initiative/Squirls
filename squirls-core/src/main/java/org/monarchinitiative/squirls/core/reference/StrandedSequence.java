@@ -90,8 +90,8 @@ public class StrandedSequence extends BaseGenomicRegion<StrandedSequence> {
 
     private final String sequence;
 
-    protected StrandedSequence(Contig contig, Strand strand, CoordinateSystem coordinateSystem, Position startPosition, Position endPosition, String sequence) {
-        super(contig, strand, coordinateSystem, startPosition, endPosition);
+    protected StrandedSequence(Contig contig, Strand strand, Coordinates coordinates, String sequence) {
+        super(contig, strand, coordinates);
         this.start = startWithCoordinateSystem(CoordinateSystem.zeroBased());
         this.sequence = sequence;
         if (length() != sequence.length()) {
@@ -100,11 +100,11 @@ public class StrandedSequence extends BaseGenomicRegion<StrandedSequence> {
     }
 
     public static StrandedSequence of(GenomicRegion region, String sequence) {
-        return of(region.contig(), region.strand(), region.coordinateSystem(), region.startPosition(), region.endPosition(), sequence);
+        return of(region.contig(), region.strand(), region.coordinates(), sequence);
     }
 
-    public static StrandedSequence of(Contig contig, Strand strand, CoordinateSystem coordinateSystem, Position startPosition, Position endPosition, String sequence) {
-        return new StrandedSequence(contig, strand, coordinateSystem, startPosition, endPosition, sequence);
+    public static StrandedSequence of(Contig contig, Strand strand, Coordinates coordinates, String sequence) {
+        return new StrandedSequence(contig, strand, coordinates, sequence);
     }
 
     public String sequence() {
@@ -130,8 +130,8 @@ public class StrandedSequence extends BaseGenomicRegion<StrandedSequence> {
     }
 
     @Override
-    protected StrandedSequence newRegionInstance(Contig contig, Strand strand, CoordinateSystem coordinateSystem, Position start, Position end) {
-        return new StrandedSequence(contig, strand, coordinateSystem, start, end, strand == strand() ? sequence : Seq.reverseComplement(sequence));
+    protected StrandedSequence newRegionInstance(Contig contig, Strand strand, Coordinates coordinates) {
+        return new StrandedSequence(contig, strand, coordinates, strand == strand() ? sequence : Seq.reverseComplement(sequence));
     }
 
     @Override

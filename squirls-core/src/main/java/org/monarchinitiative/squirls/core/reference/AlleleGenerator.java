@@ -133,7 +133,7 @@ public class AlleleGenerator {
     private static GenomicRegion makeGenomicRegionWithLength(Contig contig, Strand strand, int start, int length) {
         if (length < 0)
             throw new IllegalArgumentException("Cannot make a region with negative length");
-        return GenomicRegion.of(contig, strand, CS, Position.of(start), Position.of(start + length));
+        return GenomicRegion.of(contig, strand, CS, start, start + length);
     }
 
     /**

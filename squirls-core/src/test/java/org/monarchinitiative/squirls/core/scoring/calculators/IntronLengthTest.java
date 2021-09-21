@@ -80,7 +80,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.monarchinitiative.svart.CoordinateSystem;
-import org.monarchinitiative.svart.Position;
 import org.monarchinitiative.svart.Strand;
 import org.monarchinitiative.svart.Variant;
 
@@ -105,7 +104,7 @@ public class IntronLengthTest extends CalculatorTestBase {
             "1775, c, g,     -1.",
     })
     public void scoreCodingVariantInSecondLastExon(int pos, String ref, String alt, double expected) {
-        Variant variant = Variant.of(contig, "", Strand.POSITIVE, CoordinateSystem.zeroBased(), Position.of(pos), ref, alt);
-        assertThat(scorer.score(variant, tx, sequence), is(closeTo(expected, EPSILON)));
+        Variant variant = Variant.of(contig, "", Strand.POSITIVE, CoordinateSystem.zeroBased(), pos, ref, alt);
+        assertThat(scorer.score(variant, txOnPositiveStrand, sequence), is(closeTo(expected, EPSILON)));
     }
 }

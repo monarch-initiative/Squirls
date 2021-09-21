@@ -81,6 +81,7 @@ import org.monarchinitiative.svart.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 /**
  * @author Daniel Danis
@@ -95,16 +96,14 @@ class TranscriptModelDefault extends BaseGenomicRegion<TranscriptModelDefault> i
 
     private TranscriptModelDefault(Contig contig,
                                    Strand strand,
-                                   CoordinateSystem coordinateSystem,
-                                   Position start,
-                                   Position end,
+                                   Coordinates coordinates,
 
                                    String accessionId,
                                    String hgvsSymbol,
                                    boolean isCoding,
                                    GenomicRegion cdsRegion,
                                    List<GenomicRegion> exons) {
-        super(contig, strand, coordinateSystem, start, end);
+        super(contig, strand, coordinates);
 
         this.accessionId = Objects.requireNonNull(accessionId, "Accession ID cannot be null");
         this.hgvsSymbol = Objects.requireNonNull(hgvsSymbol, "HGVS symbol cannot be null");
@@ -124,9 +123,7 @@ class TranscriptModelDefault extends BaseGenomicRegion<TranscriptModelDefault> i
 
     static TranscriptModelDefault of(Contig contig,
                                      Strand strand,
-                                     CoordinateSystem coordinateSystem,
-                                     Position start,
-                                     Position end,
+                                     Coordinates coordinates,
 
                                      String accessionId,
                                      String hgvsSymbol,
@@ -136,10 +133,10 @@ class TranscriptModelDefault extends BaseGenomicRegion<TranscriptModelDefault> i
         // normalize coordinate systems, if necessary
         List<GenomicRegion> exonBuilder = new ArrayList<>(exons.size());
         for (GenomicRegion exon : exons) {
-            exonBuilder.add(exon.withCoordinateSystem(coordinateSystem));
+            exonBuilder.add(exon.withCoordinateSystem(coordinates.coordinateSystem()));
         }
-        GenomicRegion cdsOnCoordinateSystem = cdsRegion == null ? null : cdsRegion.withCoordinateSystem(coordinateSystem);
-        return new TranscriptModelDefault(contig, strand, coordinateSystem, start, end, accessionId, hgvsSymbol, isCoding, cdsOnCoordinateSystem, exonBuilder);
+        GenomicRegion cdsOnCoordinateSystem = cdsRegion == null ? null : cdsRegion.withCoordinateSystem(coordinates.coordinateSystem());
+        return new TranscriptModelDefault(contig, strand, coordinates, accessionId, hgvsSymbol, isCoding, cdsOnCoordinateSystem, exonBuilder);
     }
 
     @Override
@@ -158,11 +155,11 @@ class TranscriptModelDefault extends BaseGenomicRegion<TranscriptModelDefault> i
     }
 
     /**
-     * @return genomic region representing the coding region or <code>null</code> if the transcript is non-coding
+     * @return genomic region representing the coding region or empty optional if the transcript is non-coding
      */
     @Override
-    public GenomicRegion cdsRegion() {
-        return cdsRegion;
+    public Optional<GenomicRegion> cdsRegion() {
+        return Optional.ofNullable(cdsRegion);
     }
 
     @Override
@@ -180,8 +177,6 @@ class TranscriptModelDefault extends BaseGenomicRegion<TranscriptModelDefault> i
         if (strand() == other) {
             return this;
         } else {
-            Position start = endPosition().invert(coordinateSystem(), contig());
-            Position end = startPosition().invert(coordinateSystem(), contig());
 
             GenomicRegion cdsRegionWithStrand = isCoding ? cdsRegion.withStrand(other) : null;
 
@@ -191,7 +186,7 @@ class TranscriptModelDefault extends BaseGenomicRegion<TranscriptModelDefault> i
                 exonsWithStrand.add(exon.withStrand(other));
             }
 
-            return new TranscriptModelDefault(contig(), other, coordinateSystem(), start, end,
+            return new TranscriptModelDefault(contig(), other, coordinates().invert(contig()),
                     accessionId, hgvsSymbol, isCoding, cdsRegionWithStrand, exonsWithStrand);
         }
     }
@@ -208,7 +203,7 @@ class TranscriptModelDefault extends BaseGenomicRegion<TranscriptModelDefault> i
                 builder.add(exon);
             }
 
-            return new TranscriptModelDefault(contig(), strand(), other, startPositionWithCoordinateSystem(other), endPositionWithCoordinateSystem(other),
+            return new TranscriptModelDefault(contig(), strand(), coordinates().withCoordinateSystem(other),
                     accessionId, hgvsSymbol, isCoding, cdsWithCoordinateSystem, builder);
         }
     }
@@ -219,7 +214,7 @@ class TranscriptModelDefault extends BaseGenomicRegion<TranscriptModelDefault> i
     }
 
     @Override
-    protected TranscriptModelDefault newRegionInstance(Contig contig, Strand strand, CoordinateSystem coordinateSystem, Position start, Position end) {
+    protected TranscriptModelDefault newRegionInstance(Contig contig, Strand strand, Coordinates coordinates) {
         // no-op Not required as the newVariantInstance returns the same type and this is only required for
         // the BaseGenomicRegion.withCoordinateSystem and withStrand methods which are overridden in this class
         return null;

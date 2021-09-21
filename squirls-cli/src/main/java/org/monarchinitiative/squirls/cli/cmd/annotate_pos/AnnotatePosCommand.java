@@ -138,7 +138,7 @@ public class AnnotatePosCommand extends AnnotatingSquirlsCommand {
                     continue;
                 }
 
-                Variant variant = Variant.of(contig, "", Strand.POSITIVE, CoordinateSystem.oneBased(), Position.of(change.getPos()), change.getRef(), change.getAlt());
+                Variant variant = Variant.of(contig, "", Strand.POSITIVE, CoordinateSystem.oneBased(), change.getPos(), change.getRef(), change.getAlt());
                 SquirlsResult squirlsResult = splicingEvaluator.evaluate(variant);
                 List<String> columns = new ArrayList<>();
 

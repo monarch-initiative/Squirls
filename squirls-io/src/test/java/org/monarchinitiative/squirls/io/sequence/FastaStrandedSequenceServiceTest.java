@@ -135,7 +135,7 @@ public class FastaStrandedSequenceServiceTest {
     })
     public void sequenceForRegion(String contig, Strand strand, CoordinateSystem coordinateSystem, int start, int end,
                                   String expectedSequence) {
-        GenomicRegion query = GenomicRegion.of(GENOMIC_ASSEMBLY.contigByName(contig), strand, coordinateSystem, Position.of(start), Position.of(end));
+        GenomicRegion query = GenomicRegion.of(GENOMIC_ASSEMBLY.contigByName(contig), strand, coordinateSystem, start, end);
         StrandedSequence sequence = sequenceService.sequenceForRegion(query);
 
         assertThat(sequence.contig(), equalTo(query.contig()));

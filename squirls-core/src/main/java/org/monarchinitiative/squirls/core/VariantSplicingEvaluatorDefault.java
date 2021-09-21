@@ -139,7 +139,7 @@ class VariantSplicingEvaluatorDefault implements VariantSplicingEvaluator {
             // The ‘*’ allele is reserved to indicate that the allele is missing due to a upstream deletion.
             if (LOGGER.isDebugEnabled())
                 LOGGER.debug("Skipping variant where alt allele is missing due to an upstream deletion: {}:{}-{} {}",
-                        variant.contigName(), variant.startPositionWithCoordinateSystem(CoordinateSystem.oneBased()), variant.ref(), variant.alt());
+                        variant.contigName(), variant.startWithCoordinateSystem(CoordinateSystem.oneBased()), variant.ref(), variant.alt());
             return SquirlsResult.empty();
         }
 
@@ -186,7 +186,7 @@ class VariantSplicingEvaluatorDefault implements VariantSplicingEvaluator {
         // PADDING should provide enough sequence in most cases
         bp -= PADDING;
         ep += PADDING;
-        GenomicRegion toFetch = GenomicRegion.of(variant.contig(), strand, coordinateSystem, Position.of(bp), Position.of(ep));
+        GenomicRegion toFetch = GenomicRegion.of(variant.contig(), strand, Coordinates.of(coordinateSystem, bp, ep));
         StrandedSequence seq = squirlsDataService.sequenceForRegion(toFetch);
         if (seq == null) {
             if (LOGGER.isDebugEnabled())

@@ -95,7 +95,7 @@ public class PojosForTesting {
 
     public static StrandedSequence getSequenceIntervalForTranscriptWithThreeExons(Contig contig) {
         return StrandedSequence.of(
-                GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(), Position.of(900), Position.of(2100)),
+                GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(), 900, 2100),
                 // upstream 100bp
                 "AAACAGGTTAATCGCCACGACATAGTAGTATTTAGAGTTACTAGTAAGCCTGATGCCACT" + // 960
                         "ACACAATTCTAGCTTTTCTCAGAGCCCCGCCCCCGGCTCC" + // 1000
@@ -137,7 +137,7 @@ public class PojosForTesting {
 
     public static TranscriptModel getTranscriptWithThreeExons(Contig contig) {
         return TranscriptModel.coding(
-                contig, Strand.POSITIVE, CoordinateSystem.zeroBased(), 1000, 2000, 1100, 1900,
+                contig, Strand.POSITIVE, Coordinates.of(CoordinateSystem.zeroBased(), 1000, 2000), 1100, 1900,
                 "THREE_EXON", "HGVS_SYMBOL",
                 List.of(
                         GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(), 1000, 1200),
@@ -148,14 +148,14 @@ public class PojosForTesting {
 
     public static TranscriptModel getTranscriptWithSingleExon(Contig contig) {
         return TranscriptModel.coding(
-                contig, Strand.POSITIVE, CoordinateSystem.zeroBased(), 1000, 2000, 1100, 1900,
+                contig, Strand.POSITIVE, Coordinates.of(CoordinateSystem.zeroBased(), 1000, 2000), 1100, 1900,
                 "SINGLE_EXON", "HGVS_SYMBOL",
                 List.of(GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(), 1000, 2000)));
     }
 
     public static TranscriptModel getTranscriptWithThreeExonsOnRevStrand(Contig contig) {
         return TranscriptModel.coding(
-                contig, Strand.NEGATIVE, CoordinateSystem.zeroBased(), 1000, 2000, 1100, 1900,
+                contig, Strand.NEGATIVE, Coordinates.of(CoordinateSystem.zeroBased(), 1000, 2000), 1100, 1900,
                 "THREE_EXON", "HGVS_SYMBOL",
                 List.of(
                         GenomicRegion.of(contig, Strand.NEGATIVE, CoordinateSystem.zeroBased(), 1000, 1200),
@@ -171,8 +171,8 @@ public class PojosForTesting {
      * @return transcript
      */
     public static TranscriptModel surf2_NM_017503_5(Contig contig) {
-        return TranscriptModel.coding(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(),
-                136_223_425, 136_228_034, 136_223_425, 136_228_034, "NM_017503.5", "SURF2",
+        return TranscriptModel.coding(contig, Strand.POSITIVE, Coordinates.of(CoordinateSystem.zeroBased(),
+                136_223_425, 136_228_034), 136_223_425, 136_228_034, "NM_017503.5", "SURF2",
                 List.of(
                         GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(), 136_223_425, 136_223_546),
                         GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(), 136_223_789, 136_223_944),

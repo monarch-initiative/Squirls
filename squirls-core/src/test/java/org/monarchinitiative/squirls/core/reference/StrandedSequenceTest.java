@@ -90,7 +90,7 @@ public class StrandedSequenceTest {
 
     @Test
     public void properties() {
-        StrandedSequence sequence = StrandedSequence.of(CONTIG, Strand.POSITIVE, CoordinateSystem.zeroBased(), Position.of(100), Position.of(105), "ACGTA");
+        StrandedSequence sequence = StrandedSequence.of(CONTIG, Strand.POSITIVE, Coordinates.of(CoordinateSystem.zeroBased(), 100, 105), "ACGTA");
 
         assertThat(sequence.contigName(), equalTo("1"));
         assertThat(sequence.start(), equalTo(100));
@@ -121,11 +121,11 @@ public class StrandedSequenceTest {
             "NEGATIVE,  FULLY_CLOSED, 400, 400,      T"})
     public void subsequence(Strand strand, CoordinateSystem coordinateSystem, int start, int end,
                             String expected) {
-        StrandedSequence zeroSeq = StrandedSequence.of(CONTIG, Strand.POSITIVE, CoordinateSystem.zeroBased(), Position.of(100), Position.of(105), "ACGTA");
-        StrandedSequence oneSeq = StrandedSequence.of(CONTIG, Strand.POSITIVE, CoordinateSystem.oneBased(), Position.of(101), Position.of(105), "ACGTA");
-        StrandedSequence fullyOpenSeq = StrandedSequence.of(CONTIG, Strand.POSITIVE, CoordinateSystem.FULLY_OPEN, Position.of(100), Position.of(106), "ACGTA");
-        StrandedSequence rightOpenSeq = StrandedSequence.of(CONTIG, Strand.POSITIVE, CoordinateSystem.RIGHT_OPEN, Position.of(101), Position.of(106), "ACGTA");
-        GenomicRegion query = GenomicRegion.of(CONTIG, strand, coordinateSystem, Position.of(start), Position.of(end));
+        StrandedSequence zeroSeq = StrandedSequence.of(CONTIG, Strand.POSITIVE, Coordinates.of(CoordinateSystem.zeroBased(), 100, 105), "ACGTA");
+        StrandedSequence oneSeq = StrandedSequence.of(CONTIG, Strand.POSITIVE, Coordinates.of(CoordinateSystem.oneBased(), 101, 105), "ACGTA");
+        StrandedSequence fullyOpenSeq = StrandedSequence.of(CONTIG, Strand.POSITIVE, Coordinates.of(CoordinateSystem.FULLY_OPEN, 100, 106), "ACGTA");
+        StrandedSequence rightOpenSeq = StrandedSequence.of(CONTIG, Strand.POSITIVE, Coordinates.of(CoordinateSystem.RIGHT_OPEN, 101, 106), "ACGTA");
+        GenomicRegion query = GenomicRegion.of(CONTIG, strand, Coordinates.of(coordinateSystem, start, end));
 
         assertThat(zeroSeq.subsequence(query), equalTo(expected));
         assertThat(oneSeq.subsequence(query), equalTo(expected));
