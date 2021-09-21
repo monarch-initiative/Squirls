@@ -138,9 +138,9 @@ public class SimpleSquirlsProperties implements SquirlsProperties {
 
         private final String dataDirectory;
 
-        private ClassifierProperties classifierProperties;
+        private ClassifierProperties classifierProperties = new SimpleClassifierProperties();
 
-        private AnnotatorProperties annotatorProperties;
+        private AnnotatorProperties annotatorProperties = new SimpleAnnotatorProperties();
 
         private Builder(String dataDirectory) {
             this.dataDirectory = dataDirectory;
