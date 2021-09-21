@@ -74,21 +74,34 @@
  * Daniel Danis, Peter N Robinson, 2020
  */
 
-package org.monarchinitiative.squirls.autoconfigure.exception;
+package org.monarchinitiative.squirls.initialize;
 
-import org.monarchinitiative.squirls.initialize.MissingSquirlsResourceException;
-import org.springframework.boot.diagnostics.AbstractFailureAnalyzer;
-import org.springframework.boot.diagnostics.FailureAnalysis;
+import org.monarchinitiative.squirls.io.SquirlsResourceException;
 
 /**
+ * An exception thrown when a resource file (e.g. FASTA file) is missing from SQUIRLS data directory.
+ *
  * @author Daniel Danis
  */
-public class MissingSquirlsResourceFailureAnalyzer extends AbstractFailureAnalyzer<MissingSquirlsResourceException> {
+public class MissingSquirlsResourceException extends SquirlsResourceException {
 
-    @Override
-    protected FailureAnalysis analyze(Throwable rootFailure, MissingSquirlsResourceException cause) {
-        return new FailureAnalysis(String.format("Squirls could not be auto-configured properly: '%s'", cause.getMessage()),
-                "This issue would likely be solved by re-downloading and re-creating the SQUIRLS data directory",
-                cause);
+    public MissingSquirlsResourceException() {
+        super();
+    }
+
+    public MissingSquirlsResourceException(String message) {
+        super(message);
+    }
+
+    public MissingSquirlsResourceException(String message, Throwable cause) {
+        super(message, cause);
+    }
+
+    public MissingSquirlsResourceException(Throwable cause) {
+        super(cause);
+    }
+
+    protected MissingSquirlsResourceException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
+        super(message, cause, enableSuppression, writableStackTrace);
     }
 }

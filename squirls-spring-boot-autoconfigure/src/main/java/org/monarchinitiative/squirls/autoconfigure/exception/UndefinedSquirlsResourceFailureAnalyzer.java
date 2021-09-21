@@ -76,6 +76,7 @@
 
 package org.monarchinitiative.squirls.autoconfigure.exception;
 
+import org.monarchinitiative.squirls.initialize.UndefinedSquirlsResourceException;
 import org.springframework.boot.diagnostics.AbstractFailureAnalyzer;
 import org.springframework.boot.diagnostics.FailureAnalysis;
 

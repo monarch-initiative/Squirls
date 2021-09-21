@@ -71,36 +71,56 @@
  *
  * version:6-8-18
  *
- * Daniel Danis, Peter N Robinson, 2020
+ * Daniel Danis, Peter N Robinson, 2021
  */
 
-package org.monarchinitiative.squirls.autoconfigure.exception;
+package org.monarchinitiative.squirls.initialize;
+
+import java.util.Objects;
 
 /**
- * This exception is thrown during auto-configuration, if an information that should have been provided by the user
- * is missing or if the information is not well-formatted.
- *
  * @author Daniel Danis
  */
-public class UndefinedSquirlsResourceException extends Exception {
+public class SquirlsResourceVersion {
 
-    public UndefinedSquirlsResourceException() {
-        super();
+    private final String version;
+    private final GenomicAssemblyVersion assembly;
+
+    private SquirlsResourceVersion(String version, GenomicAssemblyVersion assembly) {
+        this.version = version;
+        this.assembly = assembly;
     }
 
-    public UndefinedSquirlsResourceException(String message) {
-        super(message);
+    public static SquirlsResourceVersion of(String version, GenomicAssemblyVersion assembly) {
+        return new SquirlsResourceVersion(version, assembly);
     }
 
-    public UndefinedSquirlsResourceException(String message, Throwable cause) {
-        super(message, cause);
+    public String version() {
+        return version;
     }
 
-    public UndefinedSquirlsResourceException(Throwable cause) {
-        super(cause);
+    public GenomicAssemblyVersion assembly() {
+        return assembly;
     }
 
-    protected UndefinedSquirlsResourceException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
-        super(message, cause, enableSuppression, writableStackTrace);
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        SquirlsResourceVersion that = (SquirlsResourceVersion) o;
+        return Objects.equals(version, that.version) && assembly == that.assembly;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(version, assembly);
+    }
+
+    @Override
+    public String toString() {
+        return "SquirlsResourceVersion{" +
+                "version='" + version + '\'' +
+                ", assembly=" + assembly +
+                '}';
     }
 }

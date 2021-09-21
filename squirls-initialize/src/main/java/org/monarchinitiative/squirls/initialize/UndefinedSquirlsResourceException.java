@@ -74,33 +74,35 @@
  * Daniel Danis, Peter N Robinson, 2020
  */
 
-package org.monarchinitiative.squirls.autoconfigure.exception;
+package org.monarchinitiative.squirls.initialize;
+
+import org.monarchinitiative.squirls.io.SquirlsResourceException;
 
 /**
- * An exception thrown when a resource file (e.g. FASTA file) is missing from SQUIRLS data directory.
+ * This exception is thrown during auto-configuration, if an information that should have been provided by the user
+ * is missing or if the information is not well-formatted.
  *
  * @author Daniel Danis
  */
-public class MissingSquirlsResourceException extends Exception {
+public class UndefinedSquirlsResourceException extends SquirlsResourceException {
 
-
-    public MissingSquirlsResourceException() {
+    public UndefinedSquirlsResourceException() {
         super();
     }
 
-    public MissingSquirlsResourceException(String message) {
+    public UndefinedSquirlsResourceException(String message) {
         super(message);
     }
 
-    public MissingSquirlsResourceException(String message, Throwable cause) {
+    public UndefinedSquirlsResourceException(String message, Throwable cause) {
         super(message, cause);
     }
 
-    public MissingSquirlsResourceException(Throwable cause) {
+    public UndefinedSquirlsResourceException(Throwable cause) {
         super(cause);
     }
 
-    protected MissingSquirlsResourceException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
+    protected UndefinedSquirlsResourceException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
         super(message, cause, enableSuppression, writableStackTrace);
     }
 }

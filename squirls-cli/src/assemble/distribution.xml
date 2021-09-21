@@ -83,7 +83,7 @@
     </formats>
     <fileSets>
         <fileSet>
-            <directory>${project.basedir}</directory>
+            <directory>${project.parent.basedir}</directory>
             <outputDirectory>./</outputDirectory>
             <filtered>true</filtered>
             <includes>

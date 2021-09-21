@@ -1,12 +1,12 @@
 package org.monarchinitiative.squirls.io.sequence;
 
 
-import org.monarchinitiative.squirls.core.SquirlsException;
+import org.monarchinitiative.squirls.io.SquirlsResourceException;
 
 /**
  * @author Daniel Danis
  */
-public class InvalidFastaFileException extends SquirlsException {
+public class InvalidFastaFileException extends SquirlsResourceException {
 
     public InvalidFastaFileException() {
         super();

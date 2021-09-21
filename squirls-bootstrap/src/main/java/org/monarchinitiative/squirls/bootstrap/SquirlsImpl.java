@@ -71,24 +71,69 @@
  *
  * version:6-8-18
  *
- * Daniel Danis, Peter N Robinson, 2020
+ * Daniel Danis, Peter N Robinson, 2021
  */
 
-package org.monarchinitiative.squirls.autoconfigure.exception;
+package org.monarchinitiative.squirls.bootstrap;
 
-import org.monarchinitiative.squirls.initialize.MissingSquirlsResourceException;
-import org.springframework.boot.diagnostics.AbstractFailureAnalyzer;
-import org.springframework.boot.diagnostics.FailureAnalysis;
+import org.monarchinitiative.squirls.core.SquirlsDataService;
+import org.monarchinitiative.squirls.core.VariantSplicingEvaluator;
+import org.monarchinitiative.squirls.core.classifier.SquirlsClassifier;
+import org.monarchinitiative.squirls.core.scoring.SplicingAnnotator;
+import org.monarchinitiative.squirls.initialize.*;
+
 
 /**
  * @author Daniel Danis
+ * @since 1.0.1
  */
-public class MissingSquirlsResourceFailureAnalyzer extends AbstractFailureAnalyzer<MissingSquirlsResourceException> {
+class SquirlsImpl implements Squirls {
+
+    private final SquirlsResourceVersion resourceVersion;
+
+    private final SquirlsDataService squirlsDataService;
+
+    private final SplicingAnnotator splicingAnnotator;
+
+    private final SquirlsClassifier squirlsClassifier;
+
+    private final VariantSplicingEvaluator variantSplicingEvaluator;
+
+    SquirlsImpl(SquirlsResourceVersion resourceVersion,
+                SquirlsDataService squirlsDataService,
+                SplicingAnnotator splicingAnnotator,
+                SquirlsClassifier squirlsClassifier,
+                VariantSplicingEvaluator variantSplicingEvaluator) {
+        this.resourceVersion = resourceVersion;
+        this.squirlsDataService = squirlsDataService;
+        this.splicingAnnotator = splicingAnnotator;
+        this.squirlsClassifier = squirlsClassifier;
+        this.variantSplicingEvaluator = variantSplicingEvaluator;
+    }
+
 
     @Override
-    protected FailureAnalysis analyze(Throwable rootFailure, MissingSquirlsResourceException cause) {
-        return new FailureAnalysis(String.format("Squirls could not be auto-configured properly: '%s'", cause.getMessage()),
-                "This issue would likely be solved by re-downloading and re-creating the SQUIRLS data directory",
-                cause);
+    public SquirlsResourceVersion resourceVersion() {
+        return resourceVersion;
+    }
+
+    @Override
+    public SquirlsDataService squirlsDataService() {
+        return squirlsDataService;
+    }
+
+    @Override
+    public SplicingAnnotator splicingAnnotator() {
+        return splicingAnnotator;
+    }
+
+    @Override
+    public SquirlsClassifier squirlsClassifier() {
+        return squirlsClassifier;
+    }
+
+    @Override
+    public VariantSplicingEvaluator variantSplicingEvaluator() {
+        return variantSplicingEvaluator;
     }
 }

@@ -74,68 +74,32 @@
  * Daniel Danis, Peter N Robinson, 2021
  */
 
-package org.monarchinitiative.squirls.autoconfigure;
+package org.monarchinitiative.squirls.bootstrap;
 
+import org.apiguardian.api.API;
 import org.monarchinitiative.squirls.core.SquirlsDataService;
-import org.monarchinitiative.squirls.core.reference.StrandedSequence;
-import org.monarchinitiative.squirls.core.reference.StrandedSequenceService;
-import org.monarchinitiative.squirls.core.reference.TranscriptModel;
-import org.monarchinitiative.squirls.core.reference.TranscriptModelService;
-import org.monarchinitiative.svart.GenomicAssembly;
-import org.monarchinitiative.svart.GenomicRegion;
-
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import org.monarchinitiative.squirls.core.VariantSplicingEvaluator;
+import org.monarchinitiative.squirls.core.classifier.SquirlsClassifier;
+import org.monarchinitiative.squirls.core.scoring.SplicingAnnotator;
+import org.monarchinitiative.squirls.initialize.SquirlsResourceVersion;
 
 /**
+ * Components of SQUIRLS application.
+ *
+ * @since 1.0.1
  * @author Daniel Danis
  */
-public class SquirlsDataServiceImpl implements SquirlsDataService {
+@API(status = API.Status.STABLE, since = "1.0.1")
+public interface Squirls {
 
-    private final StrandedSequenceService sequenceService;
-    private final TranscriptModelService transcriptModelService;
+    SquirlsResourceVersion resourceVersion();
 
-    public SquirlsDataServiceImpl(StrandedSequenceService sequenceService, TranscriptModelService transcriptModelService) {
-        this.sequenceService = sequenceService;
-        this.transcriptModelService = transcriptModelService;
-    }
+    SquirlsDataService squirlsDataService();
 
-    @Override
-    public GenomicAssembly genomicAssembly() {
-        return sequenceService.genomicAssembly();
-    }
+    SplicingAnnotator splicingAnnotator();
 
-    @Override
-    public StrandedSequence sequenceForRegion(GenomicRegion region) {
-        return sequenceService.sequenceForRegion(region);
-    }
+    SquirlsClassifier squirlsClassifier();
 
-    @Override
-    public List<String> getTranscriptAccessionIds() {
-        return transcriptModelService.getTranscriptAccessionIds();
-    }
+    VariantSplicingEvaluator variantSplicingEvaluator();
 
-    @Override
-    public List<TranscriptModel> overlappingTranscripts(GenomicRegion query) {
-        return transcriptModelService.overlappingTranscripts(query);
-    }
-
-    @Override
-    public Optional<TranscriptModel> transcriptByAccession(String txAccession) {
-        return transcriptModelService.transcriptByAccession(txAccession);
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        SquirlsDataServiceImpl that = (SquirlsDataServiceImpl) o;
-        return Objects.equals(sequenceService, that.sequenceService) && Objects.equals(transcriptModelService, that.transcriptModelService);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(sequenceService, transcriptModelService);
-    }
 }
