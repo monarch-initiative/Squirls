@@ -76,6 +76,7 @@
 
 package org.monarchinitiative.squirls.bootstrap;
 
+import org.apiguardian.api.API;
 import org.monarchinitiative.squirls.core.SquirlsDataService;
 import org.monarchinitiative.squirls.core.VariantSplicingEvaluator;
 import org.monarchinitiative.squirls.core.classifier.SquirlsClassifier;
@@ -83,8 +84,12 @@ import org.monarchinitiative.squirls.core.scoring.SplicingAnnotator;
 import org.monarchinitiative.squirls.initialize.SquirlsResourceVersion;
 
 /**
+ * Components of SQUIRLS application.
+ *
+ * @since 1.0.1
  * @author Daniel Danis
  */
+@API(status = API.Status.STABLE, since = "1.0.1")
 public interface Squirls {
 
     SquirlsResourceVersion resourceVersion();

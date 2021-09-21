@@ -81,6 +81,7 @@ import org.monarchinitiative.squirls.initialize.AnnotatorProperties;
 import java.util.Objects;
 
 /**
+ * @since 1.0.1
  * @author Daniel Danis
  */
 public class SimpleAnnotatorProperties implements AnnotatorProperties {

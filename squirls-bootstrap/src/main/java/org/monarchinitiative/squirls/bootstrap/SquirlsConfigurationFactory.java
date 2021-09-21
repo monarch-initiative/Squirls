@@ -78,6 +78,7 @@ package org.monarchinitiative.squirls.bootstrap;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
+import org.apiguardian.api.API;
 import org.monarchinitiative.squirls.core.SquirlsDataService;
 import org.monarchinitiative.squirls.core.VariantSplicingEvaluator;
 import org.monarchinitiative.squirls.core.classifier.SquirlsClassifier;
@@ -137,8 +138,10 @@ import java.util.stream.Collectors;
  * {@link #getSquirls(SquirlsResourceVersion)} to get {@link Squirls} for the particular
  * {@link SquirlsResourceVersion}.
  *
+ * @since 1.0.1
  * @author Daniel Danis
  */
+@API(status = API.Status.STABLE, since = "1.0.1")
 public class SquirlsConfigurationFactory {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SquirlsConfigurationFactory.class);
@@ -149,9 +152,13 @@ public class SquirlsConfigurationFactory {
 
     private final SquirlsProperties properties;
 
-    public SquirlsConfigurationFactory(SquirlsProperties properties) throws MissingSquirlsResourceException, UndefinedSquirlsResourceException {
-        File dataDir = new File(Objects.requireNonNull(properties.getDataDirectory(), "Data directory must not be null"));
+    public static SquirlsConfigurationFactory of(SquirlsProperties properties) throws MissingSquirlsResourceException, UndefinedSquirlsResourceException {
+        return new SquirlsConfigurationFactory(properties);
+    }
+
+    private SquirlsConfigurationFactory(SquirlsProperties properties) throws MissingSquirlsResourceException, UndefinedSquirlsResourceException {
         this.properties = Objects.requireNonNull(properties, "Squirls properties must not be null");
+        File dataDir = new File(Objects.requireNonNull(properties.getDataDirectory(), "Data directory must not be null"));
         this.resolverMap = Map.copyOf(exploreDataDirectory(dataDir));
     }
 

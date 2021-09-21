@@ -81,6 +81,7 @@ import org.monarchinitiative.squirls.initialize.ClassifierProperties;
 import java.util.Objects;
 
 /**
+ * @since 1.0.1
  * @author Daniel Danis
  */
 public class SimpleClassifierProperties implements ClassifierProperties {

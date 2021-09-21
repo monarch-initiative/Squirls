@@ -80,6 +80,8 @@ import org.monarchinitiative.squirls.initialize.AnnotatorProperties;
 import org.monarchinitiative.squirls.initialize.ClassifierProperties;
 import org.monarchinitiative.squirls.initialize.SquirlsProperties;
 
+import java.io.File;
+
 /**
  * @author Daniel Danis
  */
@@ -122,6 +124,10 @@ public class SimpleSquirlsProperties implements SquirlsProperties {
     @Override
     public AnnotatorProperties getAnnotator() {
         return annotatorProperties;
+    }
+
+    public static Builder builder(File dataDirectory) {
+        return builder(dataDirectory.getAbsolutePath());
     }
 
     public static Builder builder(String dataDirectory) {

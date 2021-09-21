@@ -84,10 +84,8 @@ import org.monarchinitiative.squirls.initialize.*;
 
 
 /**
- * Class for bootstrapping Squirls without using Spring framework. Just provide the {@link SquirlsDataResolver} and
- * this class will configure Squirls API objects for you.
- *
  * @author Daniel Danis
+ * @since 1.0.1
  */
 class SquirlsImpl implements Squirls {
 
@@ -101,11 +99,11 @@ class SquirlsImpl implements Squirls {
 
     private final VariantSplicingEvaluator variantSplicingEvaluator;
 
-    public SquirlsImpl(SquirlsResourceVersion resourceVersion,
-                       SquirlsDataService squirlsDataService,
-                       SplicingAnnotator splicingAnnotator,
-                       SquirlsClassifier squirlsClassifier,
-                       VariantSplicingEvaluator variantSplicingEvaluator) {
+    SquirlsImpl(SquirlsResourceVersion resourceVersion,
+                SquirlsDataService squirlsDataService,
+                SplicingAnnotator splicingAnnotator,
+                SquirlsClassifier squirlsClassifier,
+                VariantSplicingEvaluator variantSplicingEvaluator) {
         this.resourceVersion = resourceVersion;
         this.squirlsDataService = squirlsDataService;
         this.splicingAnnotator = splicingAnnotator;

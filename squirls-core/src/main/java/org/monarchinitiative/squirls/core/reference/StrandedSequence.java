@@ -86,13 +86,10 @@ import java.util.Objects;
  */
 public class StrandedSequence extends BaseGenomicRegion<StrandedSequence> {
 
-    private final int start;
-
     private final String sequence;
 
     protected StrandedSequence(Contig contig, Strand strand, CoordinateSystem coordinateSystem, Position startPosition, Position endPosition, String sequence) {
         super(contig, strand, coordinateSystem, startPosition, endPosition);
-        this.start = startWithCoordinateSystem(CoordinateSystem.zeroBased());
         this.sequence = sequence;
         if (length() != sequence.length()) {
             throw new IllegalArgumentException("Sequence length " + sequence.length() + " does not match length of the region " + length());
@@ -121,7 +118,9 @@ public class StrandedSequence extends BaseGenomicRegion<StrandedSequence> {
             GenomicRegion queryOnStrand = query.withStrand(strand()).toZeroBased();
             // when slicing a sequence, we always use 0-based coordinates - that's why we pre-calculate `start`
             // field in the constructor
-            String seq = sequence.substring(queryOnStrand.start() - start, queryOnStrand.end() - start);
+            String seq = sequence.substring(
+                    queryOnStrand.start() - startWithCoordinateSystem(CoordinateSystem.zeroBased()),
+                    queryOnStrand.end() - startWithCoordinateSystem(CoordinateSystem.zeroBased()));
             return query.strand() == strand()
                     ? seq
                     : Seq.reverseComplement(seq);
