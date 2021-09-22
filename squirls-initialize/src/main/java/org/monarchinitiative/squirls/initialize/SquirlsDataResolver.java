@@ -74,83 +74,75 @@
  * Daniel Danis, Peter N Robinson, 2020
  */
 
-package org.monarchinitiative.squirls.core.reference;
+package org.monarchinitiative.squirls.initialize;
 
-import org.monarchinitiative.svart.*;
-import org.monarchinitiative.svart.util.Seq;
-
-import java.util.Objects;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.List;
 
 /**
+ * This class provides paths to resources, such as path to FASTA file, or splicing transcript database.
+ * <p>
+ * The paths are provided based on {@code squirlsDataDirectory}, {@code dataVersion}, and {@code genomeAssembly}.
+ *
  * @author Daniel Danis
  */
-public class StrandedSequence extends BaseGenomicRegion<StrandedSequence> {
+public class SquirlsDataResolver {
 
-    private final String sequence;
+    private final Path squirlsDataDirectory;
+    private final SquirlsResourceVersion resourceVersion;
+    private final String dataVersion;
+    private final String genomeAssembly;
 
-    protected StrandedSequence(Contig contig, Strand strand, Coordinates coordinates, String sequence) {
-        super(contig, strand, coordinates);
-        this.sequence = sequence;
-        if (length() != sequence.length()) {
-            throw new IllegalArgumentException("Sequence length " + sequence.length() + " does not match length of the region " + length());
+    public SquirlsDataResolver(Path squirlsDataDirectory, SquirlsResourceVersion resourceVersion) throws MissingSquirlsResourceException {
+        this.resourceVersion = resourceVersion;
+        this.dataVersion = resourceVersion.version();
+        this.genomeAssembly = resourceVersion.assembly().version();
+        this.squirlsDataDirectory = squirlsDataDirectory.resolve(String.format("%s_%s", dataVersion, genomeAssembly));
+
+        // now check that we have all files present
+        List<Path> paths = List.of(genomeAssemblyReportPath(), genomeFastaPath(), genomeFastaFaiPath(), genomeFastaDictPath(), dataSourceFullPath(), phylopPath());
+        for (Path path : paths) {
+            if (!(Files.isRegularFile(path) && Files.isReadable(path))) {
+                throw new MissingSquirlsResourceException(String.format("The file `%s` is missing in SQUIRLS directory", path.toFile().getName()));
+            }
         }
     }
 
-    public static StrandedSequence of(GenomicRegion region, String sequence) {
-        return of(region.contig(), region.strand(), region.coordinates(), sequence);
+    public SquirlsResourceVersion resourceVersion() {
+        return resourceVersion;
     }
 
-    public static StrandedSequence of(Contig contig, Strand strand, Coordinates coordinates, String sequence) {
-        return new StrandedSequence(contig, strand, coordinates, sequence);
+    public Path genomeAssemblyReportPath() {
+        return squirlsDataDirectory.resolve(String.format("%s_%s.assembly_report.txt", dataVersion, genomeAssembly));
     }
 
-    public String sequence() {
-        return sequence;
+    public Path genomeFastaPath() {
+        return squirlsDataDirectory.resolve(String.format("%s_%s.fa", dataVersion, genomeAssembly));
     }
 
-    /**
-     * @param query query region
-     * @return string with sequence that corresponds to <code>query</code> region or <code>null</code> if at least one
-     * base from the <code>region</code> is not available
-     */
-    public String subsequence(final GenomicRegion query) {
-        if (contains(query)) {
-            GenomicRegion queryOnStrand = query.withStrand(strand()).toZeroBased();
-            // when slicing a sequence, we always use 0-based coordinates - that's why we pre-calculate `start`
-            // field in the constructor
-            String seq = sequence.substring(
-                    queryOnStrand.start() - startWithCoordinateSystem(CoordinateSystem.zeroBased()),
-                    queryOnStrand.end() - startWithCoordinateSystem(CoordinateSystem.zeroBased()));
-            return query.strand() == strand()
-                    ? seq
-                    : Seq.reverseComplement(seq);
-        }
-        return null;
+    public Path genomeFastaFaiPath() {
+        return squirlsDataDirectory.resolve(String.format("%s_%s.fa.fai", dataVersion, genomeAssembly));
     }
 
-    @Override
-    protected StrandedSequence newRegionInstance(Contig contig, Strand strand, Coordinates coordinates) {
-        return new StrandedSequence(contig, strand, coordinates, strand == strand() ? sequence : Seq.reverseComplement(sequence));
+    public Path genomeFastaDictPath() {
+        return squirlsDataDirectory.resolve(String.format("%s_%s.fa.dict", dataVersion, genomeAssembly));
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        if (!super.equals(o)) return false;
-        StrandedSequence that = (StrandedSequence) o;
-        return Objects.equals(sequence, that.sequence);
+    public Path dataSourcePath() {
+        // the actual suffix *.mv.db is not being added
+        return squirlsDataDirectory.resolve(String.format("%s_%s.splicing", dataVersion, genomeAssembly))
+                .toAbsolutePath();
     }
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(super.hashCode(), sequence);
+    public Path dataSourceFullPath() {
+        return squirlsDataDirectory.resolve(String.format("%s_%s.splicing.mv.db", dataVersion, genomeAssembly))
+                .toAbsolutePath();
     }
 
-    @Override
-    public String toString() {
-        return "StrandedSequence{" +
-                "sequence='" + sequence + '\'' +
-                "} " + super.toString();
+    public Path phylopPath() {
+        return squirlsDataDirectory.resolve(String.format("%s_%s.phylop.bw", dataVersion, genomeAssembly))
+                .toAbsolutePath();
     }
+
 }

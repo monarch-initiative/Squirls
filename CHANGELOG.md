@@ -2,6 +2,9 @@
 
 ## ✈ latest
 
+- `Squirls`
+  - add `squirls-bootstrap` to quickly bootstrap Squirls even without Spring
+
 ## ✈ v1.0.0
 - `squirls-cli`
   - allow to block-compress (`bgzip`) the annotated VCF on the fly by using `-f vcfgz` option

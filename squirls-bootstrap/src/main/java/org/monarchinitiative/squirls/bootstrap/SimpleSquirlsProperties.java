@@ -71,86 +71,93 @@
  *
  * version:6-8-18
  *
- * Daniel Danis, Peter N Robinson, 2020
+ * Daniel Danis, Peter N Robinson, 2021
  */
 
-package org.monarchinitiative.squirls.core.reference;
+package org.monarchinitiative.squirls.bootstrap;
 
-import org.monarchinitiative.svart.*;
-import org.monarchinitiative.svart.util.Seq;
+import org.monarchinitiative.squirls.initialize.AnnotatorProperties;
+import org.monarchinitiative.squirls.initialize.ClassifierProperties;
+import org.monarchinitiative.squirls.initialize.SquirlsProperties;
 
-import java.util.Objects;
+import java.io.File;
 
 /**
  * @author Daniel Danis
  */
-public class StrandedSequence extends BaseGenomicRegion<StrandedSequence> {
+public class SimpleSquirlsProperties implements SquirlsProperties {
 
-    private final String sequence;
+    private final String dataDirectory;
 
-    protected StrandedSequence(Contig contig, Strand strand, Coordinates coordinates, String sequence) {
-        super(contig, strand, coordinates);
-        this.sequence = sequence;
-        if (length() != sequence.length()) {
-            throw new IllegalArgumentException("Sequence length " + sequence.length() + " does not match length of the region " + length());
+    private final ClassifierProperties classifierProperties;
+
+    private final AnnotatorProperties annotatorProperties;
+
+    private SimpleSquirlsProperties(Builder builder) {
+        dataDirectory = builder.dataDirectory;
+        classifierProperties = builder.classifierProperties;
+        annotatorProperties = builder.annotatorProperties;
+    }
+
+    @Override
+    public String getDataDirectory() {
+        return dataDirectory;
+    }
+
+    @Override
+    @Deprecated
+    public String getGenomeAssembly() {
+        return "";
+    }
+
+    @Override
+    @Deprecated
+    public String getDataVersion() {
+        return "";
+    }
+
+    @Override
+    public ClassifierProperties getClassifier() {
+        return classifierProperties;
+    }
+
+    @Override
+    public AnnotatorProperties getAnnotator() {
+        return annotatorProperties;
+    }
+
+    public static Builder builder(File dataDirectory) {
+        return builder(dataDirectory.getAbsolutePath());
+    }
+
+    public static Builder builder(String dataDirectory) {
+        return new Builder(dataDirectory);
+    }
+
+    public static class Builder {
+
+        private final String dataDirectory;
+
+        private ClassifierProperties classifierProperties = new SimpleClassifierProperties();
+
+        private AnnotatorProperties annotatorProperties = new SimpleAnnotatorProperties();
+
+        private Builder(String dataDirectory) {
+            this.dataDirectory = dataDirectory;
         }
-    }
 
-    public static StrandedSequence of(GenomicRegion region, String sequence) {
-        return of(region.contig(), region.strand(), region.coordinates(), sequence);
-    }
-
-    public static StrandedSequence of(Contig contig, Strand strand, Coordinates coordinates, String sequence) {
-        return new StrandedSequence(contig, strand, coordinates, sequence);
-    }
-
-    public String sequence() {
-        return sequence;
-    }
-
-    /**
-     * @param query query region
-     * @return string with sequence that corresponds to <code>query</code> region or <code>null</code> if at least one
-     * base from the <code>region</code> is not available
-     */
-    public String subsequence(final GenomicRegion query) {
-        if (contains(query)) {
-            GenomicRegion queryOnStrand = query.withStrand(strand()).toZeroBased();
-            // when slicing a sequence, we always use 0-based coordinates - that's why we pre-calculate `start`
-            // field in the constructor
-            String seq = sequence.substring(
-                    queryOnStrand.start() - startWithCoordinateSystem(CoordinateSystem.zeroBased()),
-                    queryOnStrand.end() - startWithCoordinateSystem(CoordinateSystem.zeroBased()));
-            return query.strand() == strand()
-                    ? seq
-                    : Seq.reverseComplement(seq);
+        public Builder classifierProperties(ClassifierProperties classifierProperties) {
+            this.classifierProperties = classifierProperties;
+            return this;
         }
-        return null;
-    }
 
-    @Override
-    protected StrandedSequence newRegionInstance(Contig contig, Strand strand, Coordinates coordinates) {
-        return new StrandedSequence(contig, strand, coordinates, strand == strand() ? sequence : Seq.reverseComplement(sequence));
-    }
+        public Builder annotatorProperties(AnnotatorProperties annotatorProperties) {
+            this.annotatorProperties = annotatorProperties;
+            return this;
+        }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        if (!super.equals(o)) return false;
-        StrandedSequence that = (StrandedSequence) o;
-        return Objects.equals(sequence, that.sequence);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(super.hashCode(), sequence);
-    }
-
-    @Override
-    public String toString() {
-        return "StrandedSequence{" +
-                "sequence='" + sequence + '\'' +
-                "} " + super.toString();
+        public SimpleSquirlsProperties build() {
+            return new SimpleSquirlsProperties(this);
+        }
     }
 }

@@ -71,86 +71,49 @@
  *
  * version:6-8-18
  *
- * Daniel Danis, Peter N Robinson, 2020
+ * Daniel Danis, Peter N Robinson, 2021
  */
 
-package org.monarchinitiative.squirls.core.reference;
+package org.monarchinitiative.squirls.bootstrap;
 
-import org.monarchinitiative.svart.*;
-import org.monarchinitiative.svart.util.Seq;
+import org.monarchinitiative.squirls.initialize.AnnotatorProperties;
 
 import java.util.Objects;
 
 /**
+ * @since 1.0.1
  * @author Daniel Danis
  */
-public class StrandedSequence extends BaseGenomicRegion<StrandedSequence> {
+public class SimpleAnnotatorProperties implements AnnotatorProperties {
 
-    private final String sequence;
-
-    protected StrandedSequence(Contig contig, Strand strand, Coordinates coordinates, String sequence) {
-        super(contig, strand, coordinates);
-        this.sequence = sequence;
-        if (length() != sequence.length()) {
-            throw new IllegalArgumentException("Sequence length " + sequence.length() + " does not match length of the region " + length());
-        }
-    }
-
-    public static StrandedSequence of(GenomicRegion region, String sequence) {
-        return of(region.contig(), region.strand(), region.coordinates(), sequence);
-    }
-
-    public static StrandedSequence of(Contig contig, Strand strand, Coordinates coordinates, String sequence) {
-        return new StrandedSequence(contig, strand, coordinates, sequence);
-    }
-
-    public String sequence() {
-        return sequence;
-    }
-
-    /**
-     * @param query query region
-     * @return string with sequence that corresponds to <code>query</code> region or <code>null</code> if at least one
-     * base from the <code>region</code> is not available
-     */
-    public String subsequence(final GenomicRegion query) {
-        if (contains(query)) {
-            GenomicRegion queryOnStrand = query.withStrand(strand()).toZeroBased();
-            // when slicing a sequence, we always use 0-based coordinates - that's why we pre-calculate `start`
-            // field in the constructor
-            String seq = sequence.substring(
-                    queryOnStrand.start() - startWithCoordinateSystem(CoordinateSystem.zeroBased()),
-                    queryOnStrand.end() - startWithCoordinateSystem(CoordinateSystem.zeroBased()));
-            return query.strand() == strand()
-                    ? seq
-                    : Seq.reverseComplement(seq);
-        }
-        return null;
-    }
+    private String version = "agez";
 
     @Override
-    protected StrandedSequence newRegionInstance(Contig contig, Strand strand, Coordinates coordinates) {
-        return new StrandedSequence(contig, strand, coordinates, strand == strand() ? sequence : Seq.reverseComplement(sequence));
+    public String getVersion() {
+        return version;
+    }
+
+    public void setVersion(String version) {
+        this.version = version;
     }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        if (!super.equals(o)) return false;
-        StrandedSequence that = (StrandedSequence) o;
-        return Objects.equals(sequence, that.sequence);
+        SimpleAnnotatorProperties that = (SimpleAnnotatorProperties) o;
+        return Objects.equals(version, that.version);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), sequence);
+        return Objects.hash(version);
     }
 
     @Override
     public String toString() {
-        return "StrandedSequence{" +
-                "sequence='" + sequence + '\'' +
-                "} " + super.toString();
+        return "SimpleAnnotatorProperties{" +
+                "version='" + version + '\'' +
+                '}';
     }
 }

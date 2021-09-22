@@ -115,6 +115,7 @@ The configuration file has the following content::
     # Which splicing annotator to use
     #  version: agez
 
+.. _mandatory-parameters-ref:
 
 Mandatory parameters
 ~~~~~~~~~~~~~~~~~~~~
