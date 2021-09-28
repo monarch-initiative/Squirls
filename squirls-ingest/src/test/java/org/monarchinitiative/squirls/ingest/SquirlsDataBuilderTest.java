@@ -128,7 +128,7 @@ public class SquirlsDataBuilderTest {
     private static List<TranscriptModel> makeTranscripts() {
         Contig chr2 = CONTIGS.get(1);
         TranscriptModel tx = TranscriptModel.coding(chr2, Strand.POSITIVE, CoordinateSystem.zeroBased(), 10_000, 20_000, 11_000, 19_000,
-                "adam", "ADAM",
+                "adam", "ADAM", 1,
                 List.of(GenomicRegion.of(chr2, Strand.POSITIVE, CoordinateSystem.zeroBased(), 10_000, 12_000),
                         GenomicRegion.of(chr2, Strand.POSITIVE, CoordinateSystem.zeroBased(), 14_000, 16_000),
                         GenomicRegion.of(chr2, Strand.POSITIVE, CoordinateSystem.zeroBased(), 18_000, 20_000)));

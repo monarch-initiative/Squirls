@@ -217,7 +217,7 @@ public class SquirlsAutoConfiguration {
 
     @Bean
     public TranscriptModelService transcriptModelService(DataSource squirlsDatasource, GenomicAssembly genomicAssembly) throws SquirlsResourceException {
-        return new TranscriptModelServiceDb(squirlsDatasource, genomicAssembly);
+        return TranscriptModelServiceDb.of(squirlsDatasource, genomicAssembly);
     }
 
     @Bean

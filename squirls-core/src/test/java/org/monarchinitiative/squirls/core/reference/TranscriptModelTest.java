@@ -93,7 +93,7 @@ public class TranscriptModelTest {
     @Test
     public void properties() {
         TranscriptModel tx = TranscriptModel.coding(CONTIG, Strand.POSITIVE, CoordinateSystem.zeroBased(), 100, 200,
-                110, 190, "NM_123456.3", "GENE",
+                110, 190, "NM_123456.3", "GENE", 1,
                 List.of(GenomicRegion.of(CONTIG, Strand.POSITIVE, CoordinateSystem.zeroBased(), Position.of(100), Position.of(130)),
                         GenomicRegion.of(CONTIG, Strand.POSITIVE, CoordinateSystem.zeroBased(), Position.of(150), Position.of(170)),
                         GenomicRegion.of(CONTIG, Strand.POSITIVE, CoordinateSystem.zeroBased(), Position.of(180), Position.of(200))));
@@ -119,7 +119,7 @@ public class TranscriptModelTest {
             "NEGATIVE, POSITIVE"})
     public void withStrand(Strand strand, Strand oppositeStrand) {
         TranscriptModel instance = TranscriptModel.coding(CONTIG, strand, CoordinateSystem.zeroBased(), 100, 200,
-                110, 190, "NM_123456.3", "GENE",
+                110, 190, "NM_123456.3", "GENE", 1,
                 List.of(GenomicRegion.of(CONTIG, strand, CoordinateSystem.zeroBased(), Position.of(100), Position.of(130)),
                         GenomicRegion.of(CONTIG, strand, CoordinateSystem.zeroBased(), Position.of(150), Position.of(170)),
                         GenomicRegion.of(CONTIG, strand, CoordinateSystem.zeroBased(), Position.of(180), Position.of(200))));
@@ -156,7 +156,7 @@ public class TranscriptModelTest {
             "NEGATIVE, POSITIVE"})
     public void withStrand_noncodingTx(Strand strand, Strand oppositeStrand) {
         TranscriptModel instance = TranscriptModel.noncoding(CONTIG, strand, CoordinateSystem.zeroBased(), 100, 200,
-                "NM_123456.3", "GENE",
+                "NM_123456.3", "GENE", 1,
                 List.of(GenomicRegion.of(CONTIG, strand, CoordinateSystem.zeroBased(), Position.of(100), Position.of(130)),
                         GenomicRegion.of(CONTIG, strand, CoordinateSystem.zeroBased(), Position.of(150), Position.of(170)),
                         GenomicRegion.of(CONTIG, strand, CoordinateSystem.zeroBased(), Position.of(180), Position.of(200))));
@@ -191,7 +191,7 @@ public class TranscriptModelTest {
     @Test
     public void withCoordinateSystem() {
         TranscriptModel instance = TranscriptModel.coding(CONTIG, Strand.POSITIVE, CoordinateSystem.zeroBased(), 100, 200,
-                110, 190, "NM_123456.3", "GENE",
+                110, 190, "NM_123456.3", "GENE", 1,
                 List.of(GenomicRegion.of(CONTIG, Strand.POSITIVE, CoordinateSystem.zeroBased(), Position.of(100), Position.of(130)),
                         GenomicRegion.of(CONTIG, Strand.POSITIVE, CoordinateSystem.zeroBased(), Position.of(150), Position.of(170)),
                         GenomicRegion.of(CONTIG, Strand.POSITIVE, CoordinateSystem.zeroBased(), Position.of(180), Position.of(200))));
@@ -218,7 +218,7 @@ public class TranscriptModelTest {
     @Test
     public void withCoordinateSystem_noncodingTx() {
         TranscriptModel instance = TranscriptModel.noncoding(CONTIG, Strand.POSITIVE, CoordinateSystem.zeroBased(), 100, 200,
-                "NM_123456.3", "GENE",
+                "NM_123456.3", "GENE", 1,
                 List.of(GenomicRegion.of(CONTIG, Strand.POSITIVE, CoordinateSystem.zeroBased(), Position.of(100), Position.of(130)),
                         GenomicRegion.of(CONTIG, Strand.POSITIVE, CoordinateSystem.zeroBased(), Position.of(150), Position.of(170)),
                         GenomicRegion.of(CONTIG, Strand.POSITIVE, CoordinateSystem.zeroBased(), Position.of(180), Position.of(200))));
@@ -246,7 +246,7 @@ public class TranscriptModelTest {
     @Test
     public void introns() {
         TranscriptModel instance = TranscriptModel.coding(CONTIG, Strand.POSITIVE, CoordinateSystem.zeroBased(), 100, 200,
-                110, 190, "NM_123456.3", "GENE",
+                110, 190, "NM_123456.3", "GENE", 1,
                 List.of(GenomicRegion.of(CONTIG, Strand.POSITIVE, CoordinateSystem.zeroBased(), Position.of(100), Position.of(130)),
                         GenomicRegion.of(CONTIG, Strand.POSITIVE, CoordinateSystem.zeroBased(), Position.of(150), Position.of(170)),
                         GenomicRegion.of(CONTIG, Strand.POSITIVE, CoordinateSystem.zeroBased(), Position.of(180), Position.of(200))));

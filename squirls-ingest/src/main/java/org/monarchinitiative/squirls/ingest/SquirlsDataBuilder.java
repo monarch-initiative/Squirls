@@ -186,7 +186,7 @@ public class SquirlsDataBuilder {
     static void ingestTranscripts(DataSource dataSource,
                                   GenomicAssembly genomicAssembly,
                                   Collection<TranscriptModel> transcripts) throws SquirlsResourceException {
-        TranscriptModelServiceDb transcriptIngestDao = new TranscriptModelServiceDb(dataSource, genomicAssembly);
+        TranscriptModelServiceDb transcriptIngestDao = TranscriptModelServiceDb.of(dataSource, genomicAssembly);
         TranscriptsIngestRunner transcriptsIngestRunner = new TranscriptsIngestRunner(transcriptIngestDao, transcripts);
         transcriptsIngestRunner.run();
     }

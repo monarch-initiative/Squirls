@@ -4,6 +4,8 @@
 
 - `Squirls`
   - add `squirls-bootstrap` to quickly bootstrap Squirls even without Spring
+  - use transcript support level to filter transcripts
+  - deprecate `Transcript.of(...)` static constructor, to be removed in the next version
 
 ## ✈ v1.0.0
 - `squirls-cli`

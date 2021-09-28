@@ -96,6 +96,23 @@ public interface TranscriptModel extends GenomicRegion {
 
                                   String accessionId,
                                   String hgvsSymbol,
+                                  int transcriptSupportLevel,
+                                  List<GenomicRegion> exons) {
+        GenomicRegion cdsRegion = GenomicRegion.of(contig, strand, coordinateSystem, Position.of(cdsStart), Position.of(cdsEnd));
+        return TranscriptModelDefault.of(contig, strand, coordinateSystem, Position.of(start), Position.of(end), accessionId, hgvsSymbol, transcriptSupportLevel, true, cdsRegion, exons);
+    }
+
+    @Deprecated(forRemoval = true) // in >1.0.1
+    static TranscriptModel coding(Contig contig,
+                                  Strand strand,
+                                  CoordinateSystem coordinateSystem,
+                                  int start,
+                                  int end,
+                                  int cdsStart,
+                                  int cdsEnd,
+
+                                  String accessionId,
+                                  String hgvsSymbol,
                                   List<GenomicRegion> exons) {
         GenomicRegion cdsRegion = GenomicRegion.of(contig, strand, coordinateSystem, Position.of(cdsStart), Position.of(cdsEnd));
         return of(contig, strand, coordinateSystem, Position.of(start), Position.of(end), accessionId, hgvsSymbol, true, cdsRegion, exons);
@@ -108,10 +125,24 @@ public interface TranscriptModel extends GenomicRegion {
                                      int end,
                                      String accessionId,
                                      String hgvsSymbol,
+                                     int transcriptSupportLevel,
+                                     List<GenomicRegion> exons) {
+        return TranscriptModelDefault.of(contig, strand, coordinateSystem, Position.of(start), Position.of(end), accessionId, hgvsSymbol, transcriptSupportLevel, false, null, exons);
+    }
+
+    @Deprecated(forRemoval = true) // in >1.0.1
+    static TranscriptModel noncoding(Contig contig,
+                                     Strand strand,
+                                     CoordinateSystem coordinateSystem,
+                                     int start,
+                                     int end,
+                                     String accessionId,
+                                     String hgvsSymbol,
                                      List<GenomicRegion> exons) {
         return of(contig, strand, coordinateSystem, Position.of(start), Position.of(end), accessionId, hgvsSymbol, false, null, exons);
     }
 
+    @Deprecated(forRemoval = true) // in >1.0.1
     static TranscriptModel of(Contig contig,
                               Strand strand,
                               CoordinateSystem coordinateSystem,
@@ -123,7 +154,7 @@ public interface TranscriptModel extends GenomicRegion {
                               boolean isCoding,
                               GenomicRegion cdsRegion,
                               List<GenomicRegion> exons) {
-        return TranscriptModelDefault.of(contig, strand, coordinateSystem, start, end, accessionId, hgvsSymbol, isCoding, cdsRegion, exons);
+        return TranscriptModelDefault.of(contig, strand, coordinateSystem, start, end, accessionId, hgvsSymbol, 1, isCoding, cdsRegion, exons);
     }
 
     static List<GenomicRegion> computeIntronLocations(List<GenomicRegion> exons) {
@@ -172,6 +203,12 @@ public interface TranscriptModel extends GenomicRegion {
     TranscriptModel withCoordinateSystem(CoordinateSystem coordinateSystem);
 
     List<GenomicRegion> exons();
+
+    /**
+     * @return numeric transcript support level (TSL) where <code>1</code> indicates the highest TSL,
+     * <code>5</code> represents the lowest TSL, and <code>-1</code> means missing TSL.
+     */
+    int transcriptSupportLevel();
 
     default int exonCount() {
         return exons().size();

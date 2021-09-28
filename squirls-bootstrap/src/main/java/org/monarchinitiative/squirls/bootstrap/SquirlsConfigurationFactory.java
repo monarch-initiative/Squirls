@@ -218,7 +218,7 @@ public class SquirlsConfigurationFactory {
                 dataResolver.genomeFastaPath(),
                 dataResolver.genomeFastaFaiPath(),
                 dataResolver.genomeFastaDictPath());
-        TranscriptModelService transcriptModelService = new TranscriptModelServiceDb(squirlsDatasource, strandedSequenceService.genomicAssembly());
+        TranscriptModelService transcriptModelService = TranscriptModelServiceDb.of(squirlsDatasource, strandedSequenceService.genomicAssembly());
         return new SquirlsDataServiceImpl(strandedSequenceService, transcriptModelService);
     }
 

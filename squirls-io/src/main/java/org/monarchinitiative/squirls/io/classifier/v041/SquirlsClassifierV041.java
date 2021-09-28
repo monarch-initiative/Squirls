@@ -149,8 +149,8 @@ class SquirlsClassifierV041 implements SquirlsClassifier {
             // flood the console
             if (MISSING_FEATURE_REPORTED.compareAndExchange(false, true)) {
                 Set<String> difference = usedFeatures.stream()
-                        .filter(fname -> !data.getFeatureNames()
-                                .contains(fname)).collect(Collectors.toSet());
+                        .filter(fname -> !data.getFeatureNames().contains(fname))
+                        .collect(Collectors.toUnmodifiableSet());
                 // report the error
                 String errorMsg = String.format("Missing one or more required features `[%s]`",
                         String.join(",", difference));

@@ -128,7 +128,7 @@ public class SquirlsClassifierDeserializerV041 implements SquirlsClassifierDeser
                 .classes(ptm.getRf().getClasses())
                 .addTrees(ptm.getRf().getTrees().values().stream()
                         .map(SquirlsClassifierDeserializerV041.<T>toDonorClassifierTree(ptm))
-                        .collect(Collectors.toList()))
+                        .collect(Collectors.toUnmodifiableList()))
                 .build();
     }
 
@@ -161,7 +161,7 @@ public class SquirlsClassifierDeserializerV041 implements SquirlsClassifierDeser
                 .classes(ptm.getRf().getClasses())
                 .addTrees(ptm.getRf().getTrees().values().stream()
                         .map(SquirlsClassifierDeserializerV041.<T>toAcceptorClassifierTree(ptm))
-                        .collect(Collectors.toList()))
+                        .collect(Collectors.toUnmodifiableList()))
                 .build();
     }
 

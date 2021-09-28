@@ -138,7 +138,7 @@ public class PojosForTesting {
     public static TranscriptModel getTranscriptWithThreeExons(Contig contig) {
         return TranscriptModel.coding(
                 contig, Strand.POSITIVE, CoordinateSystem.zeroBased(), 1000, 2000, 1100, 1900,
-                "THREE_EXON", "HGVS_SYMBOL",
+                "THREE_EXON", "HGVS_SYMBOL", 1,
                 List.of(
                         GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(), 1000, 1200),
                         GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(), 1400, 1600),
@@ -149,14 +149,14 @@ public class PojosForTesting {
     public static TranscriptModel getTranscriptWithSingleExon(Contig contig) {
         return TranscriptModel.coding(
                 contig, Strand.POSITIVE, CoordinateSystem.zeroBased(), 1000, 2000, 1100, 1900,
-                "SINGLE_EXON", "HGVS_SYMBOL",
+                "SINGLE_EXON", "HGVS_SYMBOL", 1,
                 List.of(GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(), 1000, 2000)));
     }
 
     public static TranscriptModel getTranscriptWithThreeExonsOnRevStrand(Contig contig) {
         return TranscriptModel.coding(
                 contig, Strand.NEGATIVE, CoordinateSystem.zeroBased(), 1000, 2000, 1100, 1900,
-                "THREE_EXON", "HGVS_SYMBOL",
+                "THREE_EXON", "HGVS_SYMBOL", 1,
                 List.of(
                         GenomicRegion.of(contig, Strand.NEGATIVE, CoordinateSystem.zeroBased(), 1000, 1200),
                         GenomicRegion.of(contig, Strand.NEGATIVE, CoordinateSystem.zeroBased(), 1400, 1600),
@@ -172,7 +172,7 @@ public class PojosForTesting {
      */
     public static TranscriptModel surf2_NM_017503_5(Contig contig) {
         return TranscriptModel.coding(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(),
-                136_223_425, 136_228_034, 136_223_425, 136_228_034, "NM_017503.5", "SURF2",
+                136_223_425, 136_228_034, 136_223_425, 136_228_034, "NM_017503.5", "SURF2", 1,
                 List.of(
                         GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(), 136_223_425, 136_223_546),
                         GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(), 136_223_789, 136_223_944),

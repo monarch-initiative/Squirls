@@ -102,6 +102,7 @@ create table SQUIRLS.TRANSCRIPTS
     STRAND       bool        not null, -- true if POSITIVE, false if NEGATIVE
     TX_ACCESSION char(50)    not null, -- transcript accession, e.g ENST00000123456.1_1, NM_000404.3
     HGVS_SYMBOL  varchar(50) not null,
+    TX_SUPPORT_LEVEL int,
     CDS_START    int,                  -- zero-based start coordinate of CDS start, null if noncoding transcript
     CDS_END      int                   -- one-based end coordinate of CDS end, null if noncoding transcript
 );

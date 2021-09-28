@@ -102,6 +102,7 @@ class TranscriptModelBuilder {
     private int cdsEnd;
     private String accessionId = null;
     private String hgvsSymbol = null;
+    private int transcriptSupportLevel = -1;
 
     private TranscriptModelBuilder() {
     }
@@ -140,6 +141,11 @@ class TranscriptModelBuilder {
         return this;
     }
 
+    TranscriptModelBuilder transcriptSupportLevel(int transcriptSupportLevel) {
+        if (this.transcriptSupportLevel < 0) this.transcriptSupportLevel = transcriptSupportLevel;
+        return this;
+    }
+
     TranscriptModelBuilder setExon(int n, Strand strand, int start, int end) {
         exons.put(n, GenomicRegion.of(contig, strand, CoordinateSystem.zeroBased(), Position.of(start), Position.of(end)));
         return this;
@@ -161,21 +167,20 @@ class TranscriptModelBuilder {
         List<GenomicRegion> sorted = exons.keySet().stream().sorted().map(exons::get).collect(Collectors.toUnmodifiableList());
 
         return (isCoding)
-                ? TranscriptModel.coding(contig, strand, COORDINATE_SYSTEM, start, end, cdsStart, cdsEnd, accessionId, hgvsSymbol, sorted)
-                : TranscriptModel.noncoding(contig, strand, COORDINATE_SYSTEM, start, end, accessionId, hgvsSymbol, sorted);
+                ? TranscriptModel.coding(contig, strand, COORDINATE_SYSTEM, start, end, cdsStart, cdsEnd, accessionId, hgvsSymbol, transcriptSupportLevel, sorted)
+                : TranscriptModel.noncoding(contig, strand, COORDINATE_SYSTEM, start, end, accessionId, hgvsSymbol, transcriptSupportLevel, sorted);
     }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        TranscriptModelBuilder builder = (TranscriptModelBuilder) o;
-        return start == builder.start && end == builder.end && cdsStart == builder.cdsStart && cdsEnd == builder.cdsEnd && Objects.equals(contig, builder.contig) && strand == builder.strand && Objects.equals(accessionId, builder.accessionId) && Objects.equals(hgvsSymbol, builder.hgvsSymbol) && Objects.equals(exons, builder.exons);
+        TranscriptModelBuilder that = (TranscriptModelBuilder) o;
+        return start == that.start && end == that.end && cdsStart == that.cdsStart && cdsEnd == that.cdsEnd && transcriptSupportLevel == that.transcriptSupportLevel && Objects.equals(exons, that.exons) && Objects.equals(contig, that.contig) && strand == that.strand && Objects.equals(accessionId, that.accessionId) && Objects.equals(hgvsSymbol, that.hgvsSymbol);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(contig, strand, start, end, cdsStart, cdsEnd, accessionId, hgvsSymbol, exons);
+        return Objects.hash(exons, contig, strand, start, end, cdsStart, cdsEnd, accessionId, hgvsSymbol, transcriptSupportLevel);
     }
-
 }

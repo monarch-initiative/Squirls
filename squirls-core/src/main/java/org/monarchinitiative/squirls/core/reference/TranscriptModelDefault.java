@@ -88,6 +88,7 @@ import java.util.Objects;
 class TranscriptModelDefault extends BaseGenomicRegion<TranscriptModelDefault> implements TranscriptModel {
     private final String accessionId;
     private final String hgvsSymbol;
+    private final int transcriptSupportLevel;
     private final boolean isCoding;
     private final GenomicRegion cdsRegion;
     private final List<GenomicRegion> exons;
@@ -101,7 +102,7 @@ class TranscriptModelDefault extends BaseGenomicRegion<TranscriptModelDefault> i
 
                                    String accessionId,
                                    String hgvsSymbol,
-                                   boolean isCoding,
+                                   int transcriptSupportLevel, boolean isCoding,
                                    GenomicRegion cdsRegion,
                                    List<GenomicRegion> exons) {
         super(contig, strand, coordinateSystem, start, end);
@@ -110,6 +111,7 @@ class TranscriptModelDefault extends BaseGenomicRegion<TranscriptModelDefault> i
         this.hgvsSymbol = Objects.requireNonNull(hgvsSymbol, "HGVS symbol cannot be null");
         this.cdsRegion = cdsRegion;
         this.isCoding = isCoding;
+        this.transcriptSupportLevel = transcriptSupportLevel;
         if (exons == null) {
             throw new NullPointerException("Exons cannot be null");
         }
@@ -130,6 +132,7 @@ class TranscriptModelDefault extends BaseGenomicRegion<TranscriptModelDefault> i
 
                                      String accessionId,
                                      String hgvsSymbol,
+                                     int transcriptSupportLevel,
                                      boolean isCoding,
                                      GenomicRegion cdsRegion,
                                      List<GenomicRegion> exons) {
@@ -139,7 +142,7 @@ class TranscriptModelDefault extends BaseGenomicRegion<TranscriptModelDefault> i
             exonBuilder.add(exon.withCoordinateSystem(coordinateSystem));
         }
         GenomicRegion cdsOnCoordinateSystem = cdsRegion == null ? null : cdsRegion.withCoordinateSystem(coordinateSystem);
-        return new TranscriptModelDefault(contig, strand, coordinateSystem, start, end, accessionId, hgvsSymbol, isCoding, cdsOnCoordinateSystem, exonBuilder);
+        return new TranscriptModelDefault(contig, strand, coordinateSystem, start, end, accessionId, hgvsSymbol, transcriptSupportLevel, isCoding, cdsOnCoordinateSystem, exonBuilder);
     }
 
     @Override
@@ -171,6 +174,11 @@ class TranscriptModelDefault extends BaseGenomicRegion<TranscriptModelDefault> i
     }
 
     @Override
+    public int transcriptSupportLevel() {
+        return transcriptSupportLevel;
+    }
+
+    @Override
     public List<GenomicRegion> introns() {
         return introns;
     }
@@ -192,7 +200,7 @@ class TranscriptModelDefault extends BaseGenomicRegion<TranscriptModelDefault> i
             }
 
             return new TranscriptModelDefault(contig(), other, coordinateSystem(), start, end,
-                    accessionId, hgvsSymbol, isCoding, cdsRegionWithStrand, exonsWithStrand);
+                    accessionId, hgvsSymbol, transcriptSupportLevel, isCoding, cdsRegionWithStrand, exonsWithStrand);
         }
     }
 
@@ -209,7 +217,7 @@ class TranscriptModelDefault extends BaseGenomicRegion<TranscriptModelDefault> i
             }
 
             return new TranscriptModelDefault(contig(), strand(), other, startPositionWithCoordinateSystem(other), endPositionWithCoordinateSystem(other),
-                    accessionId, hgvsSymbol, isCoding, cdsWithCoordinateSystem, builder);
+                    accessionId, hgvsSymbol, transcriptSupportLevel, isCoding, cdsWithCoordinateSystem, builder);
         }
     }
 

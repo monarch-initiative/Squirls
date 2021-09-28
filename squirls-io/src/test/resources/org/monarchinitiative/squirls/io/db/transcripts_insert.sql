@@ -1,10 +1,10 @@
 insert into SQUIRLS.TRANSCRIPTS(TX_ID, CONTIG, BEGIN, END, BEGIN_ON_POS, END_ON_POS, STRAND,
-                                TX_ACCESSION, HGVS_SYMBOL, CDS_START, CDS_END)
-values (1, 1, 100, 900, 100, 900, true, 'NM_000001.1', 'JOE', 200, 800),
-       (2, 1, 8500, 9500, 500, 1500, false, 'NM_000002.1', 'JAMIE', 8600, 9400),
-       (3, 1, 1100, 1900, 1100, 1900, true, 'NM_000003.1', 'JIM', 1200, 1800),
-       (4, 2, 100, 900, 100, 900, true, 'NM_000004.1', 'JOHNNY', 200, 800),
-       (5, 2, 1000, 2000, 1000, 2000, true, 'NM_000005.1', 'JESSE', null, null);
+                                TX_ACCESSION, HGVS_SYMBOL, CDS_START, CDS_END, TX_SUPPORT_LEVEL)
+values (1, 1, 100, 900, 100, 900, true, 'NM_000001.1', 'JOE', 200, 800, 1),
+       (2, 1, 8500, 9500, 500, 1500, false, 'NM_000002.1', 'JAMIE', 8600, 9400, 1),
+       (3, 1, 1100, 1900, 1100, 1900, true, 'NM_000003.1', 'JIM', 1200, 1800, 1),
+       (4, 2, 100, 900, 100, 900, true, 'NM_000004.1', 'JOHNNY', 200, 800, 1),
+       (5, 2, 1000, 2000, 1000, 2000, true, 'NM_000005.1', 'JESSE', null, null, 1);
 
 insert into SQUIRLS.EXONS(TX_ID, BEGIN, END, EXON_NUMBER)
 values (1, 100, 300, 0),

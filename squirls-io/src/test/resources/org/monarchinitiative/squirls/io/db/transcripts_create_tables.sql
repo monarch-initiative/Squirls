@@ -79,18 +79,19 @@ create schema if not exists SQUIRLS;
 drop table if exists SQUIRLS.TRANSCRIPTS;
 create table SQUIRLS.TRANSCRIPTS
 (
-    TX_ID        int         not null auto_increment,
+    TX_ID            int         not null auto_increment,
 
-    CONTIG       int         not null, -- contig id which maps to `SPLICING.CONTIG.CONTIG_ID`
-    BEGIN        int         not null, -- 0-based (exclusive) begin position of the region
-    END          int         not null, -- 0-based (inclusive) end position of the region
-    BEGIN_ON_POS int         not null, -- 0-based (exclusive) begin position of the region on FWD strand
-    END_ON_POS   int         not null, -- 0-based (inclusive) end position of the region on FWD strand
-    STRAND       bool        not null, -- true if POSITIVE, false if NEGATIVE
-    TX_ACCESSION char(50)    not null, -- transcript accession, e.g ENST00000123456.1_1, NM_000404.3
-    HGVS_SYMBOL  varchar(50) not null,
-    CDS_START    int,                  -- zero-based start coordinate of CDS start, null if noncoding transcript
-    CDS_END      int                   -- one-based end coordinate of CDS end, null if noncoding transcript
+    CONTIG           int         not null, -- contig id which maps to `SPLICING.CONTIG.CONTIG_ID`
+    BEGIN            int         not null, -- 0-based (exclusive) begin position of the region
+    END              int         not null, -- 0-based (inclusive) end position of the region
+    BEGIN_ON_POS     int         not null, -- 0-based (exclusive) begin position of the region on FWD strand
+    END_ON_POS       int         not null, -- 0-based (inclusive) end position of the region on FWD strand
+    STRAND           bool        not null, -- true if POSITIVE, false if NEGATIVE
+    TX_ACCESSION     char(50)    not null, -- transcript accession, e.g ENST00000123456.1_1, NM_000404.3
+    HGVS_SYMBOL      varchar(50) not null,
+    CDS_START        int,                  -- zero-based start coordinate of CDS start, null if noncoding transcript
+    CDS_END          int,                  -- one-based end coordinate of CDS end, null if noncoding transcript
+    TX_SUPPORT_LEVEL int                   -- range from 1 to 5, where 1 is the most confident transcript
 );
 
 create index TRANSCRIPTS__ASSEMBLY_ID_CONTIG_START_ON_POS_END_ON_POS_index

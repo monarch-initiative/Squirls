@@ -166,15 +166,18 @@ public class JannovarDataManager {
 
 
                 org.monarchinitiative.squirls.core.reference.TranscriptModel sqtx;
+                int transcriptSupportLevel = remapTxSupportLevel(tx.getTranscriptSupportLevel());
                 if (tx.isCoding()) {
                     sqtx = org.monarchinitiative.squirls.core.reference.TranscriptModel.coding(
                             contig, strand, coordinateSystem, txRegion.getBeginPos(), txRegion.getEndPos(),
                             cds.getBeginPos(), cds.getEndPos(),
-                            accession, tx.getGeneSymbol(), remapExons(tx.getExonRegions(), contig, strand));
+                            accession, tx.getGeneSymbol(), transcriptSupportLevel,
+                            remapExons(tx.getExonRegions(), contig, strand));
                 } else {
                     sqtx = org.monarchinitiative.squirls.core.reference.TranscriptModel.noncoding(
                             contig, strand, coordinateSystem, txRegion.getBeginPos(), txRegion.getEndPos(),
-                            accession, tx.getGeneSymbol(), remapExons(tx.getExonRegions(), contig, strand));
+                            accession, tx.getGeneSymbol(), transcriptSupportLevel,
+                            remapExons(tx.getExonRegions(), contig, strand));
                 }
 
                 return Optional.of(sqtx);
@@ -185,6 +188,29 @@ public class JannovarDataManager {
                 return Optional.empty();
             }
         };
+    }
+
+    private static int remapTxSupportLevel(int transcriptSupportLevel) {
+        /* From Jannovar's docs:
+        In the case that the transcript support level is not available, 6 is used as a substitute for transcripts
+        that are marked as primary in UCSC, 7 for the longest transcript (in absence of both level and UCSC primary
+        marking), and 8 for transcripts that fall neither into pseudo-level 6 and 7. A value of -1 is used for N/A.
+        */
+        if (transcriptSupportLevel < -1 || transcriptSupportLevel > 8)
+            throw new IllegalArgumentException("Illegal TSL=" + transcriptSupportLevel);
+
+        if (transcriptSupportLevel == 6) {
+            // Annotated as canonical transcript by UCSC (used in absence of TSL).
+            return 1;
+        } else if (transcriptSupportLevel == 7) {
+            // Longest transcript of a gene (used in absence of any TSL annotation and UCSC annotation of this transcript).
+            return 1;
+        } else if (transcriptSupportLevel == 8) {
+            // Lowest available priority (used in absence of any TSL and UCSC annotation of this transcript).
+            return 5;
+        } else {
+            return transcriptSupportLevel;
+        }
     }
 
     private static List<GenomicRegion> remapExons(List<GenomeInterval> exons, Contig contig, Strand strand) {

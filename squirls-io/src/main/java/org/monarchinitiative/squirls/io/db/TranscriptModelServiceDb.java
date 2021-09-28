@@ -78,6 +78,7 @@ package org.monarchinitiative.squirls.io.db;
 
 import org.monarchinitiative.squirls.core.reference.TranscriptModel;
 import org.monarchinitiative.squirls.core.reference.TranscriptModelService;
+import org.monarchinitiative.squirls.core.reference.TranscriptModelServiceOptions;
 import org.monarchinitiative.squirls.io.SquirlsResourceException;
 import org.monarchinitiative.svart.*;
 import org.slf4j.Logger;
@@ -95,8 +96,6 @@ public class TranscriptModelServiceDb implements TranscriptModelService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(TranscriptModelServiceDb.class);
 
-    private static final Set<String> requiredTables = Set.of("TRANSCRIPTS", "EXONS");
-
     private final DataSource dataSource;
 
     private final GenomicAssembly genomicAssembly;
@@ -105,10 +104,14 @@ public class TranscriptModelServiceDb implements TranscriptModelService {
 
     private final int unknownContigId;
 
-    public TranscriptModelServiceDb(DataSource dataSource, GenomicAssembly genomicAssembly) throws SquirlsResourceException {
+    private final int maxTxSupportLevel;
+
+    private final boolean txSupportLevelIsAvailable;
+
+    private TranscriptModelServiceDb(DataSource dataSource, GenomicAssembly genomicAssembly, TranscriptModelServiceOptions options) throws SquirlsResourceException {
         this.dataSource = dataSource;
         this.genomicAssembly = genomicAssembly;
-        sanityCheck(dataSource);
+        sanityCheck();
         contigIdMap = new HashMap<>();
         for (Contig contig : genomicAssembly.contigs()) {
             if (contig.equals(Contig.unknown())) continue;
@@ -119,12 +122,25 @@ public class TranscriptModelServiceDb implements TranscriptModelService {
             contigIdMap.put(contig.ucscName(), contig.id());
         }
         this.unknownContigId = Contig.unknown().id();
+
+        this.txSupportLevelIsAvailable = checkIfTxSupportLevelIsAvailable();
+        if (!txSupportLevelIsAvailable)
+            LOGGER.warn("Filtering transcripts by support level is disabled. Update SQUIRLS database");
+        this.maxTxSupportLevel = options.maxTxSupportLevel();
+    }
+
+    public static TranscriptModelServiceDb of(DataSource dataSource, GenomicAssembly genomicAssembly) throws SquirlsResourceException {
+        return of(dataSource, genomicAssembly, TranscriptModelServiceOptions.defaultOptions());
+    }
+
+    public static TranscriptModelServiceDb of(DataSource dataSource, GenomicAssembly genomicAssembly, TranscriptModelServiceOptions options) throws SquirlsResourceException {
+        return new TranscriptModelServiceDb(dataSource, genomicAssembly, options);
     }
 
     /**
      * This class requires the database to contain the tables <code>TRANSCRIPTS</code> and <code>SQUIRLS</code>
      */
-    private static void sanityCheck(DataSource dataSource) throws SquirlsResourceException {
+    private void sanityCheck() throws SquirlsResourceException {
         Set<String> tableNames = new HashSet<>();
         try (Connection connection = dataSource.getConnection()) {
             DatabaseMetaData meta = connection.getMetaData();
@@ -135,9 +151,24 @@ public class TranscriptModelServiceDb implements TranscriptModelService {
         } catch (SQLException e) {
             throw new SquirlsResourceException(e);
         }
+
+        Set<String> requiredTables = Set.of("TRANSCRIPTS", "EXONS");
         if (!tableNames.containsAll(requiredTables)) {
             throw new SquirlsResourceException("Missing at least one of the required tables `" + requiredTables + '`');
         }
+    }
+
+    private boolean checkIfTxSupportLevelIsAvailable() throws SquirlsResourceException {
+        Set<String> transcriptsColumnNames = new HashSet<>();
+        try (Connection connection = dataSource.getConnection()) {
+            try (ResultSet rs = connection.getMetaData().getColumns(null, "SQUIRLS", "TRANSCRIPTS", null)) {
+                while (rs.next())
+                    transcriptsColumnNames.add(rs.getString("COLUMN_NAME"));
+            }
+        } catch (SQLException e) {
+            throw new SquirlsResourceException(e);
+        }
+        return transcriptsColumnNames.contains("TX_SUPPORT_LEVEL");
     }
 
     public int insertTranscript(TranscriptModel transcript) {
@@ -145,8 +176,8 @@ public class TranscriptModelServiceDb implements TranscriptModelService {
 
         String txSql = "insert into SQUIRLS.TRANSCRIPTS(CONTIG, BEGIN, END, " +
                 "BEGIN_ON_POS, END_ON_POS, STRAND, " +
-                "TX_ACCESSION, HGVS_SYMBOL, CDS_START, CDS_END) " +
-                "values ( ?, ?, ?, ?, ?, ?, ?, ?, ?, ? )";
+                "TX_ACCESSION, HGVS_SYMBOL, CDS_START, CDS_END, TX_SUPPORT_LEVEL) " +
+                "values ( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         String exonSql = "insert into SQUIRLS.EXONS(TX_ID, BEGIN, END, EXON_NUMBER) VALUES ( ?, ?, ?, ?)";
 
         try (Connection connection = dataSource.getConnection()) {
@@ -171,6 +202,7 @@ public class TranscriptModelServiceDb implements TranscriptModelService {
                     txPs.setNull(9, Types.INTEGER);
                     txPs.setNull(10, Types.INTEGER);
                 }
+                txPs.setInt(11, transcript.transcriptSupportLevel());
                 updated += txPs.executeUpdate();
 
                 int txId;
@@ -215,14 +247,7 @@ public class TranscriptModelServiceDb implements TranscriptModelService {
 
     @Override
     public List<TranscriptModel> overlappingTranscripts(GenomicRegion query) {
-        String sql = "select tx.TX_ID, tx.CONTIG, tx.STRAND, tx.BEGIN, tx.END, " +
-                "  tx.TX_ACCESSION, tx.HGVS_SYMBOL, tx.CDS_START, tx.CDS_END, " +
-                "  e.EXON_NUMBER, e.BEGIN exon_begin, e.END exon_end " +
-                "from SQUIRLS.TRANSCRIPTS tx " +
-                " join SQUIRLS.EXONS e on tx.TX_ID = e.TX_ID " +
-                " where tx.CONTIG = ? " +
-                "   and ? < tx.END_ON_POS " +
-                "   and tx.BEGIN_ON_POS < ?";
+        String sql = getQueryForOverlappingTranscripts();
         try (Connection connection = dataSource.getConnection();
              PreparedStatement statement = connection.prepareStatement(sql)) {
 
@@ -240,14 +265,32 @@ public class TranscriptModelServiceDb implements TranscriptModelService {
         }
     }
 
+    private String getQueryForOverlappingTranscripts() {
+        return txSupportLevelIsAvailable
+                ?
+                "select tx.TX_ID, tx.CONTIG, tx.STRAND, tx.BEGIN, tx.END, " +
+                        "  tx.TX_ACCESSION, tx.HGVS_SYMBOL, tx.CDS_START, tx.CDS_END, tx.TX_SUPPORT_LEVEL, " +
+                        "  e.EXON_NUMBER, e.BEGIN exon_begin, e.END exon_end " +
+                        "from SQUIRLS.TRANSCRIPTS tx " +
+                        " join SQUIRLS.EXONS e on tx.TX_ID = e.TX_ID " +
+                        " where tx.CONTIG = ? " +
+                        "   and ? < tx.END_ON_POS " +
+                        "   and tx.BEGIN_ON_POS < ?"
+
+                :
+                "select tx.TX_ID, tx.CONTIG, tx.STRAND, tx.BEGIN, tx.END, " +
+                        "  tx.TX_ACCESSION, tx.HGVS_SYMBOL, tx.CDS_START, tx.CDS_END, " +
+                        "  e.EXON_NUMBER, e.BEGIN exon_begin, e.END exon_end " +
+                        "from SQUIRLS.TRANSCRIPTS tx " +
+                        " join SQUIRLS.EXONS e on tx.TX_ID = e.TX_ID " +
+                        " where tx.CONTIG = ? " +
+                        "   and ? < tx.END_ON_POS " +
+                        "   and tx.BEGIN_ON_POS < ?";
+    }
+
     @Override
     public Optional<TranscriptModel> transcriptByAccession(String txAccession) {
-        String sql = "select tx.TX_ID, tx.CONTIG, tx.STRAND, tx.BEGIN, tx.END, " +
-                " tx.TX_ACCESSION, tx.HGVS_SYMBOL, tx.CDS_START, tx.CDS_END, " +
-                " e.EXON_NUMBER, e.BEGIN exon_begin, e.END exon_end " +
-                " from SQUIRLS.TRANSCRIPTS tx " +
-                "  join SQUIRLS.EXONS e on tx.TX_ID = e.TX_ID " +
-                "  where tx.TX_ACCESSION = ?";
+        String sql = getQueryForTranscriptByAccession();
         try (Connection connection = dataSource.getConnection();
              PreparedStatement statement = connection.prepareStatement(sql)) {
 
@@ -273,9 +316,31 @@ public class TranscriptModelServiceDb implements TranscriptModelService {
         }
     }
 
+    private String getQueryForTranscriptByAccession() {
+        return txSupportLevelIsAvailable
+                ?
+                "select tx.TX_ID, tx.CONTIG, tx.STRAND, tx.BEGIN, tx.END, " +
+                        " tx.TX_ACCESSION, tx.HGVS_SYMBOL, tx.CDS_START, tx.CDS_END, tx.TX_SUPPORT_LEVEL, " +
+                        " e.EXON_NUMBER, e.BEGIN exon_begin, e.END exon_end " +
+                        " from SQUIRLS.TRANSCRIPTS tx " +
+                        "  join SQUIRLS.EXONS e on tx.TX_ID = e.TX_ID " +
+                        "  where tx.TX_ACCESSION = ?"
+
+                :
+                "select tx.TX_ID, tx.CONTIG, tx.STRAND, tx.BEGIN, tx.END, " +
+                        " tx.TX_ACCESSION, tx.HGVS_SYMBOL, tx.CDS_START, tx.CDS_END, " +
+                        " e.EXON_NUMBER, e.BEGIN exon_begin, e.END exon_end " +
+                        " from SQUIRLS.TRANSCRIPTS tx " +
+                        "  join SQUIRLS.EXONS e on tx.TX_ID = e.TX_ID " +
+                        "  where tx.TX_ACCESSION = ?";
+    }
+
     private List<TranscriptModel> processTranscriptResultSet(ResultSet rs) throws SQLException {
         Map<Integer, TranscriptModelBuilder> txMap = new HashMap<>();
         while (rs.next()) {
+            if (txSupportLevelIsAvailable && txAccessionIsNotEligible(rs.getInt("TX_SUPPORT_LEVEL")))
+                continue;
+
             int txId = rs.getInt(1);
             txMap.putIfAbsent(txId, TranscriptModelBuilder.builder());
 
@@ -289,6 +354,7 @@ public class TranscriptModelServiceDb implements TranscriptModelService {
             builder.end(rs.getInt("END"));
             builder.accessionId(rs.getString("TX_ACCESSION"));
             builder.hgvsSymbol(rs.getString("HGVS_SYMBOL"));
+            builder.transcriptSupportLevel(rs.getInt("TX_SUPPORT_LEVEL"));
             int start = rs.getInt("CDS_START");
             builder.cdsStart(rs.wasNull() ? -1 : start);
             int end = rs.getInt("cds_end");
@@ -298,7 +364,12 @@ public class TranscriptModelServiceDb implements TranscriptModelService {
 
         return txMap.values().stream()
                 .map(TranscriptModelBuilder::build)
-                .collect(Collectors.toList());
+                .collect(Collectors.toUnmodifiableList());
+    }
+
+    private boolean txAccessionIsNotEligible(int transcriptSupportLevel) {
+        return maxTxSupportLevel < transcriptSupportLevel
+                || transcriptSupportLevel < 0; // negative value means the transcript support level is N/A
     }
 
 }

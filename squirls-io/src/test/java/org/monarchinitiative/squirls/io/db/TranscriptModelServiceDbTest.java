@@ -111,7 +111,7 @@ public class TranscriptModelServiceDbTest {
 
     @BeforeEach
     public void setUp() throws Exception {
-        instance = new TranscriptModelServiceDb(dataSource, genomicAssembly);
+        instance = TranscriptModelServiceDb.of(dataSource, genomicAssembly);
     }
 
     @Test

@@ -110,7 +110,7 @@ public class Pipeline<T extends SquirlsFeatures> extends AbstractBinaryClassifie
     @Override
     public Set<String> usedFeatureNames() {
         return Stream.concat(transformer.usedFeatureNames().stream(), classifier.usedFeatureNames().stream())
-                .collect(Collectors.toSet());
+                .collect(Collectors.toUnmodifiableSet());
     }
 
     @Override
