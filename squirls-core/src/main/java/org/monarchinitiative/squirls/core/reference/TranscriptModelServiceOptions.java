@@ -83,12 +83,15 @@ import java.util.Objects;
  */
 public class TranscriptModelServiceOptions {
 
-    private static final TranscriptModelServiceOptions DEFAULT = of(5);
+    private static final TranscriptModelServiceOptions DEFAULT = of(5, true);
 
     private final int maxTxSupportLevel;
 
-    private TranscriptModelServiceOptions(int maxTxSupportLevel) {
+    private final boolean useNoncodingTranscripts;
+
+    private TranscriptModelServiceOptions(int maxTxSupportLevel, boolean useNoncodingTranscripts) {
         this.maxTxSupportLevel = maxTxSupportLevel;
+        this.useNoncodingTranscripts = useNoncodingTranscripts;
     }
 
     /**
@@ -98,12 +101,16 @@ public class TranscriptModelServiceOptions {
         return DEFAULT;
     }
 
-    public static TranscriptModelServiceOptions of(int maxTxSupportLevel) {
-        return new TranscriptModelServiceOptions(maxTxSupportLevel);
+    public static TranscriptModelServiceOptions of(int maxTxSupportLevel, boolean useNoncodingTranscripts) {
+        return new TranscriptModelServiceOptions(maxTxSupportLevel, useNoncodingTranscripts);
     }
 
     public int maxTxSupportLevel() {
         return maxTxSupportLevel;
+    }
+
+    public boolean useNoncodingTranscripts() {
+        return useNoncodingTranscripts;
     }
 
     @Override
@@ -111,18 +118,19 @@ public class TranscriptModelServiceOptions {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         TranscriptModelServiceOptions that = (TranscriptModelServiceOptions) o;
-        return maxTxSupportLevel == that.maxTxSupportLevel;
+        return maxTxSupportLevel == that.maxTxSupportLevel && useNoncodingTranscripts == that.useNoncodingTranscripts;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(maxTxSupportLevel);
+        return Objects.hash(maxTxSupportLevel, useNoncodingTranscripts);
     }
 
     @Override
     public String toString() {
         return "TranscriptModelServiceOptions{" +
                 "maxTxSupportLevel=" + maxTxSupportLevel +
+                ", useNoncodingTranscripts=" + useNoncodingTranscripts +
                 '}';
     }
 }

@@ -31,7 +31,10 @@ squirls:
   # Which splicing annotator to use
   #  version: agez
   #datasource:
-  #  Evaluate variant with respect to transcripts with transcript support level (TSL) below or equal to the value.
-  #  Lower TSL is higher support. The allowed range is [1,5], use 5 to disable transcript filtering.
+  #  # Evaluate variant with respect to transcripts with transcript support level (TSL) below or equal to the value.
+  #  # Lower TSL is higher support. The allowed range is [1,5], use 5 to disable transcript filtering.
   #  maxTranscriptSupportLevel: 5
+  #  # Evaluate variant with respect to all (coding and non-coding) transcripts.
+  #  # Choose from {true, false}
+  #  useNoncodingTranscripts: true
 

@@ -226,10 +226,15 @@ public class SquirlsAutoConfiguration {
 
     @Bean
     public TranscriptModelServiceOptions transcriptModelServiceOptions(SquirlsProperties properties) {
-        int maxTxSupportLevel = properties.getDatasource().maxTranscriptSupportLevel();
-        if (LOGGER.isInfoEnabled())
-            LOGGER.info("Using transcripts with transcript support level <={}", maxTxSupportLevel);
-        return TranscriptModelServiceOptions.of(maxTxSupportLevel);
+        DatasourceProperties datasourceProperties = properties.getDatasource();
+        if (LOGGER.isInfoEnabled()) {
+            LOGGER.info("Using transcripts with transcript support level <={}", datasourceProperties.maxTranscriptSupportLevel());
+            if (datasourceProperties.useNoncodingTranscripts())
+                LOGGER.info("Including noncoding transcripts");
+            else
+                LOGGER.info("Excluding noncoding transcripts");
+        }
+        return TranscriptModelServiceOptions.of(datasourceProperties.maxTranscriptSupportLevel(), datasourceProperties.useNoncodingTranscripts());
     }
 
     @Bean

@@ -222,9 +222,14 @@ public class SquirlsConfigurationFactory {
                 dataResolver.genomeFastaFaiPath(),
                 dataResolver.genomeFastaDictPath());
 
-        if (LOGGER.isInfoEnabled())
+        if (LOGGER.isInfoEnabled()) {
             LOGGER.info("Using transcripts with transcript support level <={}", datasourceProperties.maxTranscriptSupportLevel());
-        TranscriptModelServiceOptions transcriptModelServiceOptions = TranscriptModelServiceOptions.of(datasourceProperties.maxTranscriptSupportLevel());
+            if (datasourceProperties.useNoncodingTranscripts())
+                LOGGER.info("Including noncoding transcripts");
+            else
+                LOGGER.info("Excluding noncoding transcripts");
+        }
+        TranscriptModelServiceOptions transcriptModelServiceOptions = TranscriptModelServiceOptions.of(datasourceProperties.maxTranscriptSupportLevel(), datasourceProperties.useNoncodingTranscripts());
         TranscriptModelService transcriptModelService = TranscriptModelServiceDb.of(squirlsDatasource, strandedSequenceService.genomicAssembly(), transcriptModelServiceOptions);
 
         return new SquirlsDataServiceImpl(strandedSequenceService, transcriptModelService);

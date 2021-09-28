@@ -5,6 +5,7 @@
 - `Squirls`
   - add `squirls-bootstrap` to quickly bootstrap Squirls even without Spring
   - use transcript support level to filter transcripts
+  - allow excluding non-coding transcripts from the analysis
   - deprecate `Transcript.of(...)` static constructor, to be removed in the next version
   - TODO - update docs regarding TSL
 

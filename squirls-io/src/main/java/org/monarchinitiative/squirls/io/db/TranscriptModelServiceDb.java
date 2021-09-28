@@ -104,9 +104,9 @@ public class TranscriptModelServiceDb implements TranscriptModelService {
 
     private final int unknownContigId;
 
-    private final int maxTxSupportLevel;
-
     private final boolean txSupportLevelIsAvailable;
+
+    private final TranscriptModelServiceOptions options;
 
     private TranscriptModelServiceDb(DataSource dataSource, GenomicAssembly genomicAssembly, TranscriptModelServiceOptions options) throws SquirlsResourceException {
         this.dataSource = dataSource;
@@ -123,10 +123,12 @@ public class TranscriptModelServiceDb implements TranscriptModelService {
         }
         this.unknownContigId = Contig.unknown().id();
 
+        this.options = options;
+
         this.txSupportLevelIsAvailable = checkIfTxSupportLevelIsAvailable();
-        if (!txSupportLevelIsAvailable)
+        if (!txSupportLevelIsAvailable) {
             LOGGER.warn("Filtering transcripts by support level is disabled. Update SQUIRLS database");
-        this.maxTxSupportLevel = options.maxTxSupportLevel();
+        }
     }
 
     public static TranscriptModelServiceDb of(DataSource dataSource, GenomicAssembly genomicAssembly) throws SquirlsResourceException {
@@ -340,6 +342,10 @@ public class TranscriptModelServiceDb implements TranscriptModelService {
         while (rs.next()) {
             if (txSupportLevelIsAvailable && !transcriptIsEligible(rs.getInt("TX_SUPPORT_LEVEL")))
                 continue;
+            rs.getInt("CDS_START");
+            if (!options.useNoncodingTranscripts() && rs.wasNull())
+                // rs is non-coding if CDS_START was null
+                continue;
 
             int txId = rs.getInt(1);
             txMap.putIfAbsent(txId, TranscriptModelBuilder.builder());
@@ -369,7 +375,7 @@ public class TranscriptModelServiceDb implements TranscriptModelService {
 
     private boolean transcriptIsEligible(int transcriptSupportLevel) {
         // we use transcripts where TSL is missing (TSL = -1)
-        return transcriptSupportLevel <= maxTxSupportLevel;
+        return transcriptSupportLevel <= options.maxTxSupportLevel();
     }
 
 }

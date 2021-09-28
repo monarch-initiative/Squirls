@@ -80,12 +80,13 @@ import org.monarchinitiative.squirls.initialize.DatasourceProperties;
 import java.util.Objects;
 
 /**
- * @since 1.0.1
  * @author Daniel Danis
+ * @since 1.0.1
  */
 public class SimpleDatasourceProperties implements DatasourceProperties {
 
     private int maxTranscriptSupportLevel = 5;
+    public boolean useNoncodingTranscripts = true;
 
     @Override
     public int maxTranscriptSupportLevel() {
@@ -99,22 +100,32 @@ public class SimpleDatasourceProperties implements DatasourceProperties {
     }
 
     @Override
+    public boolean useNoncodingTranscripts() {
+        return useNoncodingTranscripts;
+    }
+
+    public void setUseNoncodingTranscripts(boolean useNoncodingTranscripts) {
+        this.useNoncodingTranscripts = useNoncodingTranscripts;
+    }
+
+    @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         SimpleDatasourceProperties that = (SimpleDatasourceProperties) o;
-        return maxTranscriptSupportLevel == that.maxTranscriptSupportLevel;
+        return useNoncodingTranscripts == that.useNoncodingTranscripts && maxTranscriptSupportLevel == that.maxTranscriptSupportLevel;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(maxTranscriptSupportLevel);
+        return Objects.hash(useNoncodingTranscripts, maxTranscriptSupportLevel);
     }
 
     @Override
     public String toString() {
         return "SimpleDatasourceProperties{" +
-                "maxTranscriptSupportLevel=" + maxTranscriptSupportLevel +
+                "useNoncodingTranscripts=" + useNoncodingTranscripts +
+                ", maxTranscriptSupportLevel=" + maxTranscriptSupportLevel +
                 '}';
     }
 }

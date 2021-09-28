@@ -78,6 +78,8 @@ package org.monarchinitiative.squirls.autoconfigure;
 import org.monarchinitiative.squirls.initialize.DatasourceProperties;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
+import java.util.Objects;
+
 /**
  * @author Daniel Danis
  * @since 1.0.1
@@ -86,6 +88,8 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 public class DatasourcePropertiesImpl implements DatasourceProperties {
 
     private int maxTranscriptSupportLevel = 5;
+
+    private boolean useNoncodingTranscripts = true;
 
     @Override
     public int maxTranscriptSupportLevel() {
@@ -96,5 +100,35 @@ public class DatasourcePropertiesImpl implements DatasourceProperties {
         if (maxTranscriptSupportLevel > 5 || maxTranscriptSupportLevel <= 0)
             throw new IllegalArgumentException("Max transcript support level must be in range [1,5] (was " + maxTranscriptSupportLevel + ")");
         this.maxTranscriptSupportLevel = maxTranscriptSupportLevel;
+    }
+
+    @Override
+    public boolean useNoncodingTranscripts() {
+        return useNoncodingTranscripts;
+    }
+
+    public void setUseNoncodingTranscripts(boolean useNoncodingTranscripts) {
+        this.useNoncodingTranscripts = useNoncodingTranscripts;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        DatasourcePropertiesImpl that = (DatasourcePropertiesImpl) o;
+        return maxTranscriptSupportLevel == that.maxTranscriptSupportLevel && useNoncodingTranscripts == that.useNoncodingTranscripts;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(maxTranscriptSupportLevel, useNoncodingTranscripts);
+    }
+
+    @Override
+    public String toString() {
+        return "DatasourcePropertiesImpl{" +
+                "maxTranscriptSupportLevel=" + maxTranscriptSupportLevel +
+                ", useNoncodingTranscripts=" + useNoncodingTranscripts +
+                '}';
     }
 }

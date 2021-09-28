@@ -83,4 +83,6 @@ public interface DatasourceProperties {
 
     int maxTranscriptSupportLevel();
 
+    boolean useNoncodingTranscripts();
+
 }
