@@ -76,19 +76,18 @@
 
 package org.monarchinitiative.squirls.ingest.transcripts;
 
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.monarchinitiative.squirls.core.reference.TranscriptModel;
 import org.monarchinitiative.svart.GenomicAssembly;
 import org.monarchinitiative.svart.parsers.GenomicAssemblyParser;
 
-import java.io.BufferedWriter;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.hasItems;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
@@ -108,5 +107,23 @@ public class JannovarDataManagerTest {
         assertThat(txsByGene.get("HNF4A"), hasSize(24));
         assertThat(txsByGene.get("GCK"), hasSize(14));
         assertThat(txsByGene.get("FBN1"), hasSize(11));
+
+        Map<String, TranscriptModel> fbn1Transcripts = txsByGene.get("FBN1").stream()
+                .collect(Collectors.toMap(TranscriptModel::accessionId, Function.identity()));
+
+        TranscriptModel tx = fbn1Transcripts.get("NM_000138.4");
+        assertThat(tx.hgvsSymbol(), equalTo("FBN1"));
+        assertThat(tx.accessionId(), equalTo("NM_000138.4"));
+        assertThat(tx.transcriptSupportLevel(), equalTo(-1));
+
+        tx = fbn1Transcripts.get("uc001zwx.2");
+        assertThat(tx.hgvsSymbol(), equalTo("FBN1"));
+        assertThat(tx.accessionId(), equalTo("uc001zwx.2"));
+        assertThat(tx.transcriptSupportLevel(), equalTo(1));
+
+        tx = fbn1Transcripts.get("ENST00000316623.5");
+        assertThat(tx.hgvsSymbol(), equalTo("FBN1"));
+        assertThat(tx.accessionId(), equalTo("ENST00000316623.5"));
+        assertThat(tx.transcriptSupportLevel(), equalTo(-1));
     }
 }
