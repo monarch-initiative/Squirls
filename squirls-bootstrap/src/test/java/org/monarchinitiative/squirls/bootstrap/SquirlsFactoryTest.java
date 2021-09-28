@@ -94,6 +94,7 @@ public class SquirlsFactoryTest {
     private static final SimpleSquirlsProperties PROPERTIES = SimpleSquirlsProperties.builder(RESOURCES_PATH)
             .annotatorProperties(new SimpleAnnotatorProperties())
             .classifierProperties(new SimpleClassifierProperties())
+            .datasourceProperties(new SimpleDatasourceProperties())
             .build();
 
     @Test

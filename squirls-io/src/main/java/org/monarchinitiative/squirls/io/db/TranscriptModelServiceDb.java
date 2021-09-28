@@ -338,7 +338,7 @@ public class TranscriptModelServiceDb implements TranscriptModelService {
     private List<TranscriptModel> processTranscriptResultSet(ResultSet rs) throws SQLException {
         Map<Integer, TranscriptModelBuilder> txMap = new HashMap<>();
         while (rs.next()) {
-            if (txSupportLevelIsAvailable && txAccessionIsNotEligible(rs.getInt("TX_SUPPORT_LEVEL")))
+            if (txSupportLevelIsAvailable && !transcriptIsEligible(rs.getInt("TX_SUPPORT_LEVEL")))
                 continue;
 
             int txId = rs.getInt(1);
@@ -367,9 +367,9 @@ public class TranscriptModelServiceDb implements TranscriptModelService {
                 .collect(Collectors.toUnmodifiableList());
     }
 
-    private boolean txAccessionIsNotEligible(int transcriptSupportLevel) {
-        return maxTxSupportLevel < transcriptSupportLevel
-                || transcriptSupportLevel < 0; // negative value means the transcript support level is N/A
+    private boolean transcriptIsEligible(int transcriptSupportLevel) {
+        // we use transcripts where TSL is missing (TSL = -1)
+        return transcriptSupportLevel <= maxTxSupportLevel;
     }
 
 }

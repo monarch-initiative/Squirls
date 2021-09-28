@@ -78,6 +78,7 @@ package org.monarchinitiative.squirls.initialize;
 
 /**
  * @author Daniel Danis
+ * @since 1.0.0
  */
 public interface SquirlsProperties {
 
@@ -90,4 +91,6 @@ public interface SquirlsProperties {
     ClassifierProperties getClassifier();
 
     AnnotatorProperties getAnnotator();
+
+    DatasourceProperties getDatasource();
 }

@@ -120,6 +120,7 @@ class SquirlsAutoConfigurationTest extends AbstractAutoConfigurationTest {
          */
         SquirlsProperties properties = context.getBean(SquirlsProperties.class);
         assertThat(properties.getClassifier().getVersion(), is("v0.4.6"));
+        assertThat(properties.getDatasource().maxTranscriptSupportLevel(), is(5));
 
         /*
          * High-level beans

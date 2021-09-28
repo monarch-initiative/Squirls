@@ -73,56 +73,14 @@
  *
  * Daniel Danis, Peter N Robinson, 2021
  */
-package org.monarchinitiative.squirls.core.reference;
-
-import java.util.Objects;
+package org.monarchinitiative.squirls.initialize;
 
 /**
  * @since 1.0.1
  * @author Daniel Danis
  */
-public class TranscriptModelServiceOptions {
+public interface DatasourceProperties {
 
-    private static final TranscriptModelServiceOptions DEFAULT = of(5);
+    int maxTranscriptSupportLevel();
 
-    private final int maxTxSupportLevel;
-
-    private TranscriptModelServiceOptions(int maxTxSupportLevel) {
-        this.maxTxSupportLevel = maxTxSupportLevel;
-    }
-
-    /**
-     * @return options that include transcripts supported by all transcript support levels.
-     */
-    public static TranscriptModelServiceOptions defaultOptions() {
-        return DEFAULT;
-    }
-
-    public static TranscriptModelServiceOptions of(int maxTxSupportLevel) {
-        return new TranscriptModelServiceOptions(maxTxSupportLevel);
-    }
-
-    public int maxTxSupportLevel() {
-        return maxTxSupportLevel;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        TranscriptModelServiceOptions that = (TranscriptModelServiceOptions) o;
-        return maxTxSupportLevel == that.maxTxSupportLevel;
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(maxTxSupportLevel);
-    }
-
-    @Override
-    public String toString() {
-        return "TranscriptModelServiceOptions{" +
-                "maxTxSupportLevel=" + maxTxSupportLevel +
-                '}';
-    }
 }

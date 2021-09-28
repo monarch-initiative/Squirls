@@ -78,6 +78,7 @@ package org.monarchinitiative.squirls.bootstrap;
 
 import org.monarchinitiative.squirls.initialize.AnnotatorProperties;
 import org.monarchinitiative.squirls.initialize.ClassifierProperties;
+import org.monarchinitiative.squirls.initialize.DatasourceProperties;
 import org.monarchinitiative.squirls.initialize.SquirlsProperties;
 
 import java.io.File;
@@ -93,10 +94,13 @@ public class SimpleSquirlsProperties implements SquirlsProperties {
 
     private final AnnotatorProperties annotatorProperties;
 
+    private final DatasourceProperties datasourceProperties;
+
     private SimpleSquirlsProperties(Builder builder) {
         dataDirectory = builder.dataDirectory;
         classifierProperties = builder.classifierProperties;
         annotatorProperties = builder.annotatorProperties;
+        datasourceProperties = builder.datasourceProperties;
     }
 
     @Override
@@ -126,6 +130,11 @@ public class SimpleSquirlsProperties implements SquirlsProperties {
         return annotatorProperties;
     }
 
+    @Override
+    public DatasourceProperties getDatasource() {
+        return datasourceProperties;
+    }
+
     public static Builder builder(File dataDirectory) {
         return builder(dataDirectory.getAbsolutePath());
     }
@@ -142,6 +151,8 @@ public class SimpleSquirlsProperties implements SquirlsProperties {
 
         private AnnotatorProperties annotatorProperties = new SimpleAnnotatorProperties();
 
+        private DatasourceProperties datasourceProperties = new SimpleDatasourceProperties();
+
         private Builder(String dataDirectory) {
             this.dataDirectory = dataDirectory;
         }
@@ -153,6 +164,11 @@ public class SimpleSquirlsProperties implements SquirlsProperties {
 
         public Builder annotatorProperties(AnnotatorProperties annotatorProperties) {
             this.annotatorProperties = annotatorProperties;
+            return this;
+        }
+
+        public Builder datasourceProperties(DatasourceProperties datasourceProperties) {
+            this.datasourceProperties = datasourceProperties;
             return this;
         }
 

@@ -86,6 +86,7 @@ import org.monarchinitiative.squirls.core.classifier.SquirlsClassifier;
 import org.monarchinitiative.squirls.core.reference.SplicingPwmData;
 import org.monarchinitiative.squirls.core.reference.StrandedSequenceService;
 import org.monarchinitiative.squirls.core.reference.TranscriptModelService;
+import org.monarchinitiative.squirls.core.reference.TranscriptModelServiceOptions;
 import org.monarchinitiative.squirls.core.scoring.AGEZSplicingAnnotator;
 import org.monarchinitiative.squirls.core.scoring.DenseSplicingAnnotator;
 import org.monarchinitiative.squirls.core.scoring.SplicingAnnotator;
@@ -142,7 +143,8 @@ import java.util.stream.Collectors;
 @EnableConfigurationProperties({
         SquirlsPropertiesImpl.class,
         ClassifierPropertiesImpl.class,
-        AnnotatorPropertiesImpl.class})
+        AnnotatorPropertiesImpl.class,
+        DatasourcePropertiesImpl.class})
 public class SquirlsAutoConfiguration {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SquirlsAutoConfiguration.class);
@@ -216,8 +218,18 @@ public class SquirlsAutoConfiguration {
     }
 
     @Bean
-    public TranscriptModelService transcriptModelService(DataSource squirlsDatasource, GenomicAssembly genomicAssembly) throws SquirlsResourceException {
-        return TranscriptModelServiceDb.of(squirlsDatasource, genomicAssembly);
+    public TranscriptModelService transcriptModelService(DataSource squirlsDatasource,
+                                                         GenomicAssembly genomicAssembly,
+                                                         TranscriptModelServiceOptions transcriptModelServiceOptions) throws SquirlsResourceException {
+        return TranscriptModelServiceDb.of(squirlsDatasource, genomicAssembly, transcriptModelServiceOptions);
+    }
+
+    @Bean
+    public TranscriptModelServiceOptions transcriptModelServiceOptions(SquirlsProperties properties) {
+        int maxTxSupportLevel = properties.getDatasource().maxTranscriptSupportLevel();
+        if (LOGGER.isInfoEnabled())
+            LOGGER.info("Using transcripts with transcript support level <={}", maxTxSupportLevel);
+        return TranscriptModelServiceOptions.of(maxTxSupportLevel);
     }
 
     @Bean

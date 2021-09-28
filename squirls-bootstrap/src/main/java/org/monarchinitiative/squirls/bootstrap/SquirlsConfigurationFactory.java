@@ -85,6 +85,7 @@ import org.monarchinitiative.squirls.core.classifier.SquirlsClassifier;
 import org.monarchinitiative.squirls.core.reference.SplicingPwmData;
 import org.monarchinitiative.squirls.core.reference.StrandedSequenceService;
 import org.monarchinitiative.squirls.core.reference.TranscriptModelService;
+import org.monarchinitiative.squirls.core.reference.TranscriptModelServiceOptions;
 import org.monarchinitiative.squirls.core.scoring.AGEZSplicingAnnotator;
 import org.monarchinitiative.squirls.core.scoring.DenseSplicingAnnotator;
 import org.monarchinitiative.squirls.core.scoring.SplicingAnnotator;
@@ -138,8 +139,8 @@ import java.util.stream.Collectors;
  * {@link #getSquirls(SquirlsResourceVersion)} to get {@link Squirls} for the particular
  * {@link SquirlsResourceVersion}.
  *
- * @since 1.0.1
  * @author Daniel Danis
+ * @since 1.0.1
  */
 @API(status = API.Status.STABLE, since = "1.0.1")
 public class SquirlsConfigurationFactory {
@@ -152,14 +153,14 @@ public class SquirlsConfigurationFactory {
 
     private final SquirlsProperties properties;
 
-    public static SquirlsConfigurationFactory of(SquirlsProperties properties) throws MissingSquirlsResourceException, UndefinedSquirlsResourceException {
-        return new SquirlsConfigurationFactory(properties);
-    }
-
     private SquirlsConfigurationFactory(SquirlsProperties properties) throws MissingSquirlsResourceException, UndefinedSquirlsResourceException {
         this.properties = Objects.requireNonNull(properties, "Squirls properties must not be null");
         File dataDir = new File(Objects.requireNonNull(properties.getDataDirectory(), "Data directory must not be null"));
         this.resolverMap = Map.copyOf(exploreDataDirectory(dataDir));
+    }
+
+    public static SquirlsConfigurationFactory of(SquirlsProperties properties) throws MissingSquirlsResourceException, UndefinedSquirlsResourceException {
+        return new SquirlsConfigurationFactory(properties);
     }
 
     private static Map<SquirlsResourceVersion, SquirlsDataResolver> exploreDataDirectory(File dataDirectory) throws MissingSquirlsResourceException, UndefinedSquirlsResourceException {
@@ -189,7 +190,7 @@ public class SquirlsConfigurationFactory {
     private static Squirls configure(SquirlsDataResolver dataResolver, SquirlsProperties properties) throws IOException, SquirlsResourceException {
         DataSource squirlsDatasource = squirlsDatasource(dataResolver);
 
-        SquirlsDataService squirlsDataService = configureSquirlsDataService(dataResolver, squirlsDatasource);
+        SquirlsDataService squirlsDataService = configureSquirlsDataService(dataResolver, squirlsDatasource, properties.getDatasource());
 
         BigWigAccessor phylopBigwigAccessor = new BigWigAccessor(dataResolver.phylopPath());
         SplicingAnnotator splicingAnnotator = configureSplicingAnnotator(properties, squirlsDatasource, phylopBigwigAccessor);
@@ -213,12 +214,19 @@ public class SquirlsConfigurationFactory {
         return new HikariDataSource(config);
     }
 
-    private static SquirlsDataService configureSquirlsDataService(SquirlsDataResolver dataResolver, DataSource squirlsDatasource) throws SquirlsResourceException {
+    private static SquirlsDataService configureSquirlsDataService(SquirlsDataResolver dataResolver,
+                                                                  DataSource squirlsDatasource,
+                                                                  DatasourceProperties datasourceProperties) throws SquirlsResourceException {
         StrandedSequenceService strandedSequenceService = new FastaStrandedSequenceService(dataResolver.genomeAssemblyReportPath(),
                 dataResolver.genomeFastaPath(),
                 dataResolver.genomeFastaFaiPath(),
                 dataResolver.genomeFastaDictPath());
-        TranscriptModelService transcriptModelService = TranscriptModelServiceDb.of(squirlsDatasource, strandedSequenceService.genomicAssembly());
+
+        if (LOGGER.isInfoEnabled())
+            LOGGER.info("Using transcripts with transcript support level <={}", datasourceProperties.maxTranscriptSupportLevel());
+        TranscriptModelServiceOptions transcriptModelServiceOptions = TranscriptModelServiceOptions.of(datasourceProperties.maxTranscriptSupportLevel());
+        TranscriptModelService transcriptModelService = TranscriptModelServiceDb.of(squirlsDatasource, strandedSequenceService.genomicAssembly(), transcriptModelServiceOptions);
+
         return new SquirlsDataServiceImpl(strandedSequenceService, transcriptModelService);
     }
 

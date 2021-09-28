@@ -196,7 +196,7 @@ public class JannovarDataManager {
         that are marked as primary in UCSC, 7 for the longest transcript (in absence of both level and UCSC primary
         marking), and 8 for transcripts that fall neither into pseudo-level 6 and 7. A value of -1 is used for N/A.
         */
-        if (transcriptSupportLevel < -1 || transcriptSupportLevel > 8)
+        if (transcriptSupportLevel < -1 || transcriptSupportLevel == 0 || transcriptSupportLevel > 8)
             throw new IllegalArgumentException("Illegal TSL=" + transcriptSupportLevel);
 
         if (transcriptSupportLevel == 6) {

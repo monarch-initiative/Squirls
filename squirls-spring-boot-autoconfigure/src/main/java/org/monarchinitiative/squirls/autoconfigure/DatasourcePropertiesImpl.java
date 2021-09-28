@@ -73,56 +73,28 @@
  *
  * Daniel Danis, Peter N Robinson, 2021
  */
-package org.monarchinitiative.squirls.core.reference;
+package org.monarchinitiative.squirls.autoconfigure;
 
-import java.util.Objects;
+import org.monarchinitiative.squirls.initialize.DatasourceProperties;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
- * @since 1.0.1
  * @author Daniel Danis
+ * @since 1.0.1
  */
-public class TranscriptModelServiceOptions {
+@ConfigurationProperties(prefix = "squirls.datasource")
+public class DatasourcePropertiesImpl implements DatasourceProperties {
 
-    private static final TranscriptModelServiceOptions DEFAULT = of(5);
-
-    private final int maxTxSupportLevel;
-
-    private TranscriptModelServiceOptions(int maxTxSupportLevel) {
-        this.maxTxSupportLevel = maxTxSupportLevel;
-    }
-
-    /**
-     * @return options that include transcripts supported by all transcript support levels.
-     */
-    public static TranscriptModelServiceOptions defaultOptions() {
-        return DEFAULT;
-    }
-
-    public static TranscriptModelServiceOptions of(int maxTxSupportLevel) {
-        return new TranscriptModelServiceOptions(maxTxSupportLevel);
-    }
-
-    public int maxTxSupportLevel() {
-        return maxTxSupportLevel;
-    }
+    private int maxTranscriptSupportLevel = 5;
 
     @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        TranscriptModelServiceOptions that = (TranscriptModelServiceOptions) o;
-        return maxTxSupportLevel == that.maxTxSupportLevel;
+    public int maxTranscriptSupportLevel() {
+        return maxTranscriptSupportLevel;
     }
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(maxTxSupportLevel);
-    }
-
-    @Override
-    public String toString() {
-        return "TranscriptModelServiceOptions{" +
-                "maxTxSupportLevel=" + maxTxSupportLevel +
-                '}';
+    public void setMaxTranscriptSupportLevel(int maxTranscriptSupportLevel) {
+        if (maxTranscriptSupportLevel > 5 || maxTranscriptSupportLevel <= 0)
+            throw new IllegalArgumentException("Max transcript support level must be in range [1,5] (was " + maxTranscriptSupportLevel + ")");
+        this.maxTranscriptSupportLevel = maxTranscriptSupportLevel;
     }
 }

@@ -78,6 +78,7 @@ package org.monarchinitiative.squirls.autoconfigure;
 
 import org.monarchinitiative.squirls.initialize.AnnotatorProperties;
 import org.monarchinitiative.squirls.initialize.ClassifierProperties;
+import org.monarchinitiative.squirls.initialize.DatasourceProperties;
 import org.monarchinitiative.squirls.initialize.SquirlsProperties;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.NestedConfigurationProperty;
@@ -111,6 +112,9 @@ public class SquirlsPropertiesImpl implements SquirlsProperties {
 
     @NestedConfigurationProperty // squirls.annotator
     private AnnotatorProperties annotator = new AnnotatorPropertiesImpl();
+
+    @NestedConfigurationProperty // squirls.datasource
+    private DatasourceProperties datasource = new DatasourcePropertiesImpl();
 
     @Override
     public String getDataDirectory() {
@@ -151,6 +155,15 @@ public class SquirlsPropertiesImpl implements SquirlsProperties {
     @Override
     public AnnotatorProperties getAnnotator() {
         return annotator;
+    }
+
+    public void setDatasource(DatasourceProperties datasource) {
+        this.datasource = datasource;
+    }
+
+    @Override
+    public DatasourceProperties getDatasource() {
+        return datasource;
     }
 
     public void setAnnotator(AnnotatorProperties annotator) {

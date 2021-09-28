@@ -73,7 +73,9 @@
  *
  * Daniel Danis, Peter N Robinson, 2021
  */
-package org.monarchinitiative.squirls.core.reference;
+package org.monarchinitiative.squirls.bootstrap;
+
+import org.monarchinitiative.squirls.initialize.DatasourceProperties;
 
 import java.util.Objects;
 
@@ -81,48 +83,38 @@ import java.util.Objects;
  * @since 1.0.1
  * @author Daniel Danis
  */
-public class TranscriptModelServiceOptions {
+public class SimpleDatasourceProperties implements DatasourceProperties {
 
-    private static final TranscriptModelServiceOptions DEFAULT = of(5);
+    private int maxTranscriptSupportLevel = 5;
 
-    private final int maxTxSupportLevel;
-
-    private TranscriptModelServiceOptions(int maxTxSupportLevel) {
-        this.maxTxSupportLevel = maxTxSupportLevel;
+    @Override
+    public int maxTranscriptSupportLevel() {
+        return maxTranscriptSupportLevel;
     }
 
-    /**
-     * @return options that include transcripts supported by all transcript support levels.
-     */
-    public static TranscriptModelServiceOptions defaultOptions() {
-        return DEFAULT;
-    }
-
-    public static TranscriptModelServiceOptions of(int maxTxSupportLevel) {
-        return new TranscriptModelServiceOptions(maxTxSupportLevel);
-    }
-
-    public int maxTxSupportLevel() {
-        return maxTxSupportLevel;
+    public void setMaxTranscriptSupportLevel(int maxTranscriptSupportLevel) {
+        if (maxTranscriptSupportLevel > 5 || maxTranscriptSupportLevel <= 0)
+            throw new IllegalArgumentException("Max transcript support level must be in range [1,5] (was " + maxTranscriptSupportLevel + ")");
+        this.maxTranscriptSupportLevel = maxTranscriptSupportLevel;
     }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        TranscriptModelServiceOptions that = (TranscriptModelServiceOptions) o;
-        return maxTxSupportLevel == that.maxTxSupportLevel;
+        SimpleDatasourceProperties that = (SimpleDatasourceProperties) o;
+        return maxTranscriptSupportLevel == that.maxTranscriptSupportLevel;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(maxTxSupportLevel);
+        return Objects.hash(maxTranscriptSupportLevel);
     }
 
     @Override
     public String toString() {
-        return "TranscriptModelServiceOptions{" +
-                "maxTxSupportLevel=" + maxTxSupportLevel +
+        return "SimpleDatasourceProperties{" +
+                "maxTranscriptSupportLevel=" + maxTranscriptSupportLevel +
                 '}';
     }
 }
