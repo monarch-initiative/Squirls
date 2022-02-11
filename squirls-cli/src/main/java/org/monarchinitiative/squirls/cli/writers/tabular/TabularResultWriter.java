@@ -85,7 +85,7 @@ import org.monarchinitiative.squirls.cli.writers.WritableSplicingAllele;
 import org.monarchinitiative.squirls.core.SquirlsResult;
 import org.monarchinitiative.squirls.core.SquirlsTxResult;
 import org.monarchinitiative.svart.CoordinateSystem;
-import org.monarchinitiative.svart.Variant;
+import org.monarchinitiative.svart.GenomicVariant;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -186,7 +186,7 @@ public class TabularResultWriter implements ResultWriter {
             // we write the following fields
             // "chrom", "pos", "ref", "alt", "gene_symbol", "tx_accession", "interpretation", "squirls_score", "squirls_features" (optional)
 
-            Variant variant = allele.variant();
+            GenomicVariant variant = allele.variant();
             List<Object> columns = new LinkedList<>();
             columns.add(variant.contigName());
             columns.add(variant.startWithCoordinateSystem(CoordinateSystem.oneBased()));

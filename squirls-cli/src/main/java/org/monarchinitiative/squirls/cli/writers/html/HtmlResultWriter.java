@@ -85,7 +85,7 @@ import org.monarchinitiative.squirls.cli.writers.ResultWriter;
 import org.monarchinitiative.squirls.cli.writers.WritableSplicingAllele;
 import org.monarchinitiative.squirls.core.SquirlsResult;
 import org.monarchinitiative.svart.CoordinateSystem;
-import org.monarchinitiative.svart.Variant;
+import org.monarchinitiative.svart.GenomicVariant;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 import org.thymeleaf.templatemode.TemplateMode;
@@ -132,7 +132,7 @@ public class HtmlResultWriter implements ResultWriter {
     }
 
     private static String getRepresentation(WritableSplicingAllele writableSplicingAllele) {
-        Variant variant = writableSplicingAllele.variant();
+        GenomicVariant variant = writableSplicingAllele.variant();
         return String.format("%s:%s %s>%s",
                 variant.contigName(),
                 NUMBER_FORMAT.format(variant.startWithCoordinateSystem(CoordinateSystem.oneBased())),
@@ -182,9 +182,9 @@ public class HtmlResultWriter implements ResultWriter {
 
         private final SquirlsResult squirlsResult;
 
-        private final Variant variant;
+        private final GenomicVariant variant;
 
-        private SimpleVisualizableAllele(Variant variant, VariantAnnotations annotations, SquirlsResult squirlsResult) {
+        private SimpleVisualizableAllele(GenomicVariant variant, VariantAnnotations annotations, SquirlsResult squirlsResult) {
             this.annotations = annotations;
             this.squirlsResult = squirlsResult;
             this.variant = variant;
@@ -201,7 +201,7 @@ public class HtmlResultWriter implements ResultWriter {
         }
 
         @Override
-        public Variant variant() {
+        public GenomicVariant variant() {
             return variant;
         }
 

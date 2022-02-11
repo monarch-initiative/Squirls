@@ -76,7 +76,7 @@
 
 package org.monarchinitiative.squirls.core.reference;
 
-import org.monarchinitiative.svart.GenomicAssembly;
+import org.monarchinitiative.svart.assembly.GenomicAssembly;
 
 /**
  * @author Daniel Danis

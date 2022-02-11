@@ -80,6 +80,7 @@ import org.monarchinitiative.squirls.core.reference.TranscriptModel;
 import org.monarchinitiative.squirls.core.reference.TranscriptModelService;
 import org.monarchinitiative.squirls.io.SquirlsResourceException;
 import org.monarchinitiative.svart.*;
+import org.monarchinitiative.svart.assembly.GenomicAssembly;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

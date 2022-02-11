@@ -81,6 +81,7 @@ import org.monarchinitiative.squirls.cli.Main;
 import org.monarchinitiative.squirls.cli.cmd.AnnotatingSquirlsCommand;
 import org.monarchinitiative.squirls.core.*;
 import org.monarchinitiative.svart.*;
+import org.monarchinitiative.svart.assembly.GenomicAssembly;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ConfigurableApplicationContext;
@@ -138,7 +139,7 @@ public class AnnotatePosCommand extends AnnotatingSquirlsCommand {
                     continue;
                 }
 
-                Variant variant = Variant.of(contig, "", Strand.POSITIVE, CoordinateSystem.oneBased(), change.getPos(), change.getRef(), change.getAlt());
+                GenomicVariant variant = GenomicVariant.of(contig, "", Strand.POSITIVE, CoordinateSystem.oneBased(), change.getPos(), change.getRef(), change.getAlt());
                 SquirlsResult squirlsResult = splicingEvaluator.evaluate(variant);
                 List<String> columns = new ArrayList<>();
 

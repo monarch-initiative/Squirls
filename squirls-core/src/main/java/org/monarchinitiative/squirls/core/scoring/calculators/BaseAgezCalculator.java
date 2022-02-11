@@ -80,7 +80,7 @@ import org.monarchinitiative.squirls.core.reference.SplicingLocationData;
 import org.monarchinitiative.squirls.core.reference.TranscriptModel;
 import org.monarchinitiative.squirls.core.reference.TranscriptModelLocator;
 import org.monarchinitiative.svart.GenomicRegion;
-import org.monarchinitiative.svart.Variant;
+import org.monarchinitiative.svart.GenomicVariant;
 
 /**
  * @author Daniel Danis
@@ -98,7 +98,7 @@ abstract class BaseAgezCalculator implements FeatureCalculator {
         this.agezEnd = agezEnd;
     }
 
-    boolean overlapsWithAgezRegion(Variant variant, TranscriptModel transcript) {
+    boolean overlapsWithAgezRegion(GenomicVariant variant, TranscriptModel transcript) {
         SplicingLocationData locationData = locator.locate(variant, transcript);
 
         GenomicRegion agezInterval = null;

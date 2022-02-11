@@ -129,7 +129,7 @@ class VariantSplicingEvaluatorDefault implements VariantSplicingEvaluator {
      * @return possibly empty map with {@link SquirlsResult} for transcript ID
      */
     @Override
-    public SquirlsResult evaluate(Variant variant, Set<String> txIds) {
+    public SquirlsResult evaluate(GenomicVariant variant, Set<String> txIds) {
         if (VariantType.isSymbolic(variant.ref(), variant.alt())) {
             if (LOGGER.isDebugEnabled())
                 LOGGER.debug("Skipping symbolic variant {}:{}-{} {}", variant.contigName(), variant.start(), variant.end(), variant.variantType());
@@ -215,7 +215,7 @@ class VariantSplicingEvaluatorDefault implements VariantSplicingEvaluator {
      * Only transcripts consisting of 2 or more exons that overlap with the <code>variant</code> are returned.
      * </p>
      *
-     * @param variant {@link Variant} with variant coordinates
+     * @param variant {@link GenomicVariant} with variant coordinates
      * @param txIds   set of transcript accession IDs
      * @return map with transcripts group
      */

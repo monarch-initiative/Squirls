@@ -86,6 +86,9 @@ import org.monarchinitiative.squirls.core.reference.StrandedSequence;
 import org.monarchinitiative.squirls.core.reference.TranscriptModel;
 import org.monarchinitiative.squirls.core.scoring.SplicingAnnotator;
 import org.monarchinitiative.svart.*;
+import org.monarchinitiative.svart.assembly.AssignedMoleculeType;
+import org.monarchinitiative.svart.assembly.GenomicAssembly;
+import org.monarchinitiative.svart.assembly.SequenceRole;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.util.*;
@@ -140,7 +143,7 @@ public class VariantSplicingEvaluatorDefaultTest {
     @Test
     public void evaluateWrtTx() {
         Contig chr9 = assembly.contigByName("9");
-        Variant variant = Variant.of(chr9, "", Strand.POSITIVE, CoordinateSystem.oneBased(), 136_223_949, "G", "C");
+        GenomicVariant variant = GenomicVariant.of(chr9, "", Strand.POSITIVE, CoordinateSystem.oneBased(), 136_223_949, "G", "C");
 
         // 0 - squirls data service
         TranscriptModel stx = PojosForTesting.surf2_NM_017503_5(chr9);
@@ -186,7 +189,7 @@ public class VariantSplicingEvaluatorDefaultTest {
     @Test
     public void evaluateWrtTx_unknownContig() {
         Contig unknown = Contig.of(1_000, "Unknown", SequenceRole.ASSEMBLED_MOLECULE, "Unknown", AssignedMoleculeType.CHROMOSOME, 1_000_000_000, "", "", "");
-        Variant variant = Variant.of(unknown,"", Strand.POSITIVE, CoordinateSystem.oneBased(), 136_223_949, "G", "C");
+        GenomicVariant variant = GenomicVariant.of(unknown,"", Strand.POSITIVE, CoordinateSystem.oneBased(), 136_223_949, "G", "C");
         SquirlsResult squirlsResult = evaluator.evaluate(variant);
 
         assertThat(squirlsResult.isEmpty(), is(true));
@@ -197,7 +200,7 @@ public class VariantSplicingEvaluatorDefaultTest {
         when(squirlsDataService.transcriptByAccession("BLABLA")).thenReturn(Optional.empty());
         Contig chr9 = assembly.contigByName("9");
 
-        Variant variant = Variant.of(chr9, "", Strand.POSITIVE, CoordinateSystem.oneBased(), 136_223_949, "G", "C");
+        GenomicVariant variant = GenomicVariant.of(chr9, "", Strand.POSITIVE, CoordinateSystem.oneBased(), 136_223_949, "G", "C");
 
         // -------------------------------------------------------------------------------------------------------------
         SquirlsResult squirlsResult = evaluator.evaluate(variant, Set.of("BLABLA"));
@@ -213,7 +216,7 @@ public class VariantSplicingEvaluatorDefaultTest {
         when(squirlsDataService.transcriptByAccession("NM_017503.5")).thenReturn(Optional.of(stx));
         when(squirlsDataService.sequenceForRegion(any(GenomicRegion.class))).thenReturn(null);
 
-        Variant variant = Variant.of(chr9, "", Strand.POSITIVE, CoordinateSystem.oneBased(), 136_223_949, "G", "C");
+        GenomicVariant variant = GenomicVariant.of(chr9, "", Strand.POSITIVE, CoordinateSystem.oneBased(), 136_223_949, "G", "C");
 
         // -------------------------------------------------------------------------------------------------------------
         SquirlsResult squirlsResult = evaluator.evaluate(variant, Set.of("NM_017503.5"));
@@ -229,7 +232,7 @@ public class VariantSplicingEvaluatorDefaultTest {
     @Test
     public void evaluateWrtCoordinates() {
         Contig chr9 = assembly.contigByName("9");
-        Variant variant = Variant.of(chr9, "", Strand.POSITIVE, CoordinateSystem.oneBased(), 136_223_949, "G", "C");
+        GenomicVariant variant = GenomicVariant.of(chr9, "", Strand.POSITIVE, CoordinateSystem.oneBased(), 136_223_949, "G", "C");
 
         TranscriptModel stx = PojosForTesting.surf2_NM_017503_5(chr9);
 

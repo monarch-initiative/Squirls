@@ -83,6 +83,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.monarchinitiative.squirls.core.reference.StrandedSequence;
 import org.monarchinitiative.svart.*;
+import org.monarchinitiative.svart.assembly.GenomicAssembly;
 import org.monarchinitiative.svart.parsers.GenomicAssemblyParser;
 
 import java.nio.file.Paths;
@@ -113,25 +114,15 @@ public class FastaStrandedSequenceServiceTest {
 
     @ParameterizedTest
     @CsvSource({
-            "1, POSITIVE,    LEFT_OPEN,  0, 5,    tcctg",
-            "2, POSITIVE,    LEFT_OPEN,  0, 5,    TGGGG",
-            "1, NEGATIVE,    LEFT_OPEN,  0, 5,    attcc",
-            "2, NEGATIVE,    LEFT_OPEN,  0, 5,    TCCTT",
+            "1, POSITIVE,   ZERO_BASED,  0, 5,    tcctg",
+            "2, POSITIVE,   ZERO_BASED,  0, 5,    TGGGG",
+            "1, NEGATIVE,   ZERO_BASED,  0, 5,    attcc",
+            "2, NEGATIVE,   ZERO_BASED,  0, 5,    TCCTT",
 
-            "1, POSITIVE, FULLY_CLOSED,  1, 5,    tcctg",
-            "2, POSITIVE, FULLY_CLOSED,  1, 5,    TGGGG",
-            "1, NEGATIVE, FULLY_CLOSED,  1, 5,    attcc",
-            "2, NEGATIVE, FULLY_CLOSED,  1, 5,    TCCTT",
-
-            "1, POSITIVE,   RIGHT_OPEN,  1, 6,    tcctg",
-            "2, POSITIVE,   RIGHT_OPEN,  1, 6,    TGGGG",
-            "1, NEGATIVE,   RIGHT_OPEN,  1, 6,    attcc",
-            "2, NEGATIVE,   RIGHT_OPEN,  1, 6,    TCCTT",
-
-            "1, POSITIVE,   FULLY_OPEN,  0, 6,    tcctg",
-            "2, POSITIVE,   FULLY_OPEN,  0, 6,    TGGGG",
-            "1, NEGATIVE,   FULLY_OPEN,  0, 6,    attcc",
-            "2, NEGATIVE,   FULLY_OPEN,  0, 6,    TCCTT",
+            "1, POSITIVE,    ONE_BASED,  1, 5,    tcctg",
+            "2, POSITIVE,    ONE_BASED,  1, 5,    TGGGG",
+            "1, NEGATIVE,    ONE_BASED,  1, 5,    attcc",
+            "2, NEGATIVE,    ONE_BASED,  1, 5,    TCCTT",
     })
     public void sequenceForRegion(String contig, Strand strand, CoordinateSystem coordinateSystem, int start, int end,
                                   String expectedSequence) {

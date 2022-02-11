@@ -106,7 +106,7 @@ public class HexamerTest extends CalculatorTestBase {
 
     @Test
     public void score() {
-        Variant variant = Variant.of(contig, "", Strand.POSITIVE, CoordinateSystem.zeroBased(), 1201, "t", "g");
+        GenomicVariant variant = GenomicVariant.of(contig, "", Strand.POSITIVE, CoordinateSystem.zeroBased(), 1201, "t", "g");
         assertThat(calculator.score(variant, txOnPositiveStrand, sequence), is(closeTo(-.837930, EPSILON)));
     }
 
@@ -127,15 +127,15 @@ public class HexamerTest extends CalculatorTestBase {
                         "C" + // c.617C>G
                         "TACTGTGCTCATAGgtaat");
         // representing the c.520C>T variant from Figure 3
-        Variant first = Variant.of(contig, "", Strand.POSITIVE, CoordinateSystem.oneBased(), 9, "C", "T");
+        GenomicVariant first = GenomicVariant.of(contig, "", Strand.POSITIVE, CoordinateSystem.oneBased(), 9, "C", "T");
         assertThat(calculator.score(first, txOnPositiveStrand, si), is(closeTo(-2.811, EPSILON)));
 
         // representing the c.581G>A variant from Figure 3
-        Variant second = Variant.of(contig, "", Strand.POSITIVE, CoordinateSystem.oneBased(), 70, "G", "A");
+        GenomicVariant second = GenomicVariant.of(contig, "", Strand.POSITIVE, CoordinateSystem.oneBased(), 70, "G", "A");
         assertThat(calculator.score(second, txOnPositiveStrand, si), is(closeTo(-3.006, EPSILON)));
 
         // representing the c.617C>G variant from Figure 3
-        Variant third = Variant.of(contig, "", Strand.POSITIVE, CoordinateSystem.oneBased(), 106, "C", "G");
+        GenomicVariant third = GenomicVariant.of(contig, "", Strand.POSITIVE, CoordinateSystem.oneBased(), 106, "C", "G");
         assertThat(calculator.score(third, txOnPositiveStrand, si), is(closeTo(-1.115, EPSILON)));
     }
 }

@@ -78,7 +78,7 @@ package org.monarchinitiative.squirls.core.scoring.calculators;
 
 import org.monarchinitiative.squirls.core.reference.*;
 import org.monarchinitiative.squirls.core.scoring.calculators.ic.SplicingInformationContentCalculator;
-import org.monarchinitiative.svart.Variant;
+import org.monarchinitiative.svart.GenomicVariant;
 
 /**
  * @author Daniel Danis
@@ -100,9 +100,9 @@ abstract class BaseFeatureCalculator implements FeatureCalculator {
     }
 
     @Override
-    public double score(Variant variant, TranscriptModel transcript, StrandedSequence sequence) {
+    public double score(GenomicVariant variant, TranscriptModel transcript, StrandedSequence sequence) {
         return score(variant, locator.locate(variant, transcript), transcript, sequence);
     }
 
-    protected abstract double score(Variant variant, SplicingLocationData locationData, TranscriptModel transcript, StrandedSequence sequence);
+    protected abstract double score(GenomicVariant variant, SplicingLocationData locationData, TranscriptModel transcript, StrandedSequence sequence);
 }

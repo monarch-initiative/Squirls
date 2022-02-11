@@ -93,7 +93,7 @@ import org.monarchinitiative.squirls.cli.writers.WritableSplicingAllele;
 import org.monarchinitiative.squirls.core.SquirlsResult;
 import org.monarchinitiative.squirls.core.SquirlsTxResult;
 import org.monarchinitiative.svart.CoordinateSystem;
-import org.monarchinitiative.svart.Variant;
+import org.monarchinitiative.svart.GenomicVariant;
 
 import java.io.BufferedOutputStream;
 import java.io.IOException;
@@ -173,7 +173,7 @@ public class VcfResultWriter implements ResultWriter {
      */
     private Function<WritableSplicingAllele, VariantContext> addInfoFields() {
         return ve -> {
-            Variant variant = ve.variant();
+            GenomicVariant variant = ve.variant();
             VariantContextBuilder builder;
             if (ve.variantContext() == null) {
                 List<Allele> alleles = List.of(Allele.create(variant.ref(), true), Allele.create(variant.alt()));

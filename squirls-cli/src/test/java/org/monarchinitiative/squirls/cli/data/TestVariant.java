@@ -84,7 +84,7 @@ import org.monarchinitiative.squirls.core.VariantOnTranscript;
 import org.monarchinitiative.squirls.core.classifier.SquirlsFeatures;
 import org.monarchinitiative.squirls.core.reference.StrandedSequence;
 import org.monarchinitiative.squirls.core.reference.TranscriptModel;
-import org.monarchinitiative.svart.Variant;
+import org.monarchinitiative.svart.GenomicVariant;
 
 import java.util.Map;
 import java.util.Objects;
@@ -109,7 +109,7 @@ public class TestVariant implements WritableSplicingAllele, SquirlsFeatures, Var
      */
     private final VariantContext base;
 
-    private final Variant variant;
+    private final GenomicVariant variant;
 
     private final TranscriptModel tx;
 
@@ -129,7 +129,7 @@ public class TestVariant implements WritableSplicingAllele, SquirlsFeatures, Var
      */
     private String graphics;
 
-    TestVariant(VariantContext base, Variant variant, TranscriptModel tx, StrandedSequence si, Map<String, Double> features) {
+    TestVariant(VariantContext base, GenomicVariant variant, TranscriptModel tx, StrandedSequence si, Map<String, Double> features) {
         this.base = base;
         this.variant = variant;
         this.tx = tx;
@@ -169,7 +169,7 @@ public class TestVariant implements WritableSplicingAllele, SquirlsFeatures, Var
     }
 
     @Override
-    public Variant variant() {
+    public GenomicVariant variant() {
         return variant;
     }
 

@@ -78,7 +78,7 @@ package org.monarchinitiative.squirls.core.scoring.calculators;
 
 import org.monarchinitiative.squirls.core.reference.*;
 import org.monarchinitiative.svart.GenomicRegion;
-import org.monarchinitiative.svart.Variant;
+import org.monarchinitiative.svart.GenomicVariant;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -117,7 +117,7 @@ public class PyrimidineToPurineAtMinusThree implements FeatureCalculator {
      * (e.g. insufficient <code>sequence</code>)
      */
     @Override
-    public double score(Variant variant, TranscriptModel transcript, StrandedSequence sequence) {
+    public double score(GenomicVariant variant, TranscriptModel transcript, StrandedSequence sequence) {
         SplicingLocationData locationData = locator.locate(variant, transcript);
 
         if (locationData.getPosition() != SplicingLocationData.SplicingPosition.ACCEPTOR) {

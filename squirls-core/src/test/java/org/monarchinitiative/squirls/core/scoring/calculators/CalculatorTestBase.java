@@ -82,6 +82,8 @@ import org.monarchinitiative.squirls.core.TestDataSourceConfig;
 import org.monarchinitiative.squirls.core.reference.*;
 import org.monarchinitiative.squirls.core.scoring.calculators.ic.SplicingInformationContentCalculator;
 import org.monarchinitiative.svart.*;
+import org.monarchinitiative.svart.assembly.AssignedMoleculeType;
+import org.monarchinitiative.svart.assembly.SequenceRole;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 

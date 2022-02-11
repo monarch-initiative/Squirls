@@ -79,7 +79,7 @@ package org.monarchinitiative.squirls.core.scoring.calculators;
 import org.monarchinitiative.squirls.core.reference.StrandedSequence;
 import org.monarchinitiative.squirls.core.reference.TranscriptModel;
 import org.monarchinitiative.squirls.core.reference.TranscriptModelLocator;
-import org.monarchinitiative.svart.Variant;
+import org.monarchinitiative.svart.GenomicVariant;
 
 
 /**
@@ -114,7 +114,7 @@ public class PptIsTruncated extends BaseAgezCalculator {
     }
 
     @Override
-    public double score(Variant variant, TranscriptModel transcript, StrandedSequence sequence) {
+    public double score(GenomicVariant variant, TranscriptModel transcript, StrandedSequence sequence) {
         switch (variant.variantType().baseType()) {
             case DEL:
             case MNV: // represents SVs but MNVs as well, and we want to catch MNVs!

@@ -81,7 +81,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.monarchinitiative.svart.CoordinateSystem;
 import org.monarchinitiative.svart.Strand;
-import org.monarchinitiative.svart.Variant;
+import org.monarchinitiative.svart.GenomicVariant;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -112,7 +112,7 @@ public class PyrimidineToPurineAtMinusThreeTest extends CalculatorTestBase {
             "1402,G,T,0.", // not located within the acceptor site
     })
     public void score(int pos, String ref, String alt, double expected) {
-        Variant variant = Variant.of(contig, "", Strand.POSITIVE, CoordinateSystem.zeroBased(), pos, ref, alt);
+        GenomicVariant variant = GenomicVariant.of(contig, "", Strand.POSITIVE, CoordinateSystem.zeroBased(), pos, ref, alt);
         assertThat(calculator.score(variant, txOnPositiveStrand, sequence), is(closeTo(expected, EPSILON)));
     }
 

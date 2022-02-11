@@ -87,7 +87,7 @@ import org.monarchinitiative.squirls.core.Utils;
 import org.monarchinitiative.squirls.core.reference.*;
 import org.monarchinitiative.squirls.core.scoring.calculators.ic.SplicingInformationContentCalculator;
 import org.monarchinitiative.svart.GenomicRegion;
-import org.monarchinitiative.svart.Variant;
+import org.monarchinitiative.svart.GenomicVariant;
 import org.monarchinitiative.vmvt.core.VmvtGenerator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -182,7 +182,7 @@ public class PanelGraphicsGenerator implements SplicingVariantGraphicsGenerator 
         TranscriptModel transcript = stOpt.get();
 
 
-        Variant variant = allele.variant().withStrand(transcript.strand()).withCoordinateSystem(transcript.coordinateSystem());
+        GenomicVariant variant = allele.variant().withStrand(transcript.strand()).withCoordinateSystem(transcript.coordinateSystem());
 
         SplicingLocationData locationData = locator.locate(variant, transcript);
         Optional<GenomicRegion> dOpt = locationData.getDonorRegion();

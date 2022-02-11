@@ -160,7 +160,7 @@ public class AlleleGenerator {
      * @param sequence sequence to use for creating snippet
      * @return nucleotide snippet for splice donor site or <code>null</code> if wrong input is provided
      */
-    public String getDonorSiteWithAltAllele(GenomicRegion donor, Variant variant, StrandedSequence sequence) throws SpliceSiteDeletedException {
+    public String getDonorSiteWithAltAllele(GenomicRegion donor, GenomicVariant variant, StrandedSequence sequence) throws SpliceSiteDeletedException {
         String result; // this method creates the result String in 5' --> 3' direction
 
         if (donor.contigId() != variant.contigId() || donor.contigId() != sequence.contigId()) {
@@ -248,7 +248,7 @@ public class AlleleGenerator {
      * @param sequence sequence to use for creating snippet
      * @return nucleotide snippet for splice acceptor site or <code>null</code> if wrong input is provided
      */
-    public String getAcceptorSiteWithAltAllele(GenomicRegion acceptor, Variant variant, StrandedSequence sequence) throws SpliceSiteDeletedException {
+    public String getAcceptorSiteWithAltAllele(GenomicRegion acceptor, GenomicVariant variant, StrandedSequence sequence) throws SpliceSiteDeletedException {
         String result = ""; // this method creates the result String in 3' --> 5' direction
 
         if (acceptor.contigId() != variant.contigId() || acceptor.contigId() != sequence.contigId()) {

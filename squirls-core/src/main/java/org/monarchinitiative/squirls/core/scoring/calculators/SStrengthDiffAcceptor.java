@@ -79,7 +79,7 @@ package org.monarchinitiative.squirls.core.scoring.calculators;
 import org.monarchinitiative.squirls.core.reference.*;
 import org.monarchinitiative.squirls.core.scoring.calculators.ic.SplicingInformationContentCalculator;
 import org.monarchinitiative.svart.GenomicRegion;
-import org.monarchinitiative.svart.Variant;
+import org.monarchinitiative.svart.GenomicVariant;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -106,7 +106,7 @@ public class SStrengthDiffAcceptor implements FeatureCalculator {
     }
 
     @Override
-    public double score(Variant variant, TranscriptModel transcript, StrandedSequence sequence) {
+    public double score(GenomicVariant variant, TranscriptModel transcript, StrandedSequence sequence) {
         final SplicingLocationData locationData = locator.locate(variant, transcript);
         switch (locationData.getPosition()) {
             case EXON:

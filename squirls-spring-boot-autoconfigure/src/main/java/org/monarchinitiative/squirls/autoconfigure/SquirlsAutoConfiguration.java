@@ -102,7 +102,7 @@ import org.monarchinitiative.squirls.io.db.DbSplicingPositionalWeightMatrixParse
 import org.monarchinitiative.squirls.io.db.TranscriptModelServiceDb;
 import org.monarchinitiative.squirls.io.sequence.FastaStrandedSequenceService;
 import org.monarchinitiative.squirls.io.sequence.InvalidFastaFileException;
-import org.monarchinitiative.svart.GenomicAssembly;
+import org.monarchinitiative.svart.assembly.GenomicAssembly;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;

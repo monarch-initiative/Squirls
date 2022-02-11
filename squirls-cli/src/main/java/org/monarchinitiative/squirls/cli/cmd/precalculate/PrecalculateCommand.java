@@ -93,6 +93,8 @@ import org.monarchinitiative.squirls.core.*;
 import org.monarchinitiative.squirls.core.classifier.SquirlsClassifier;
 import org.monarchinitiative.squirls.core.scoring.SplicingAnnotator;
 import org.monarchinitiative.svart.*;
+import org.monarchinitiative.svart.assembly.GenomicAssembly;
+import org.monarchinitiative.svart.assembly.SequenceRole;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ConfigurableApplicationContext;

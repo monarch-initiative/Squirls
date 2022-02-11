@@ -100,6 +100,7 @@ import org.monarchinitiative.squirls.core.SquirlsException;
 import org.monarchinitiative.squirls.core.SquirlsResult;
 import org.monarchinitiative.squirls.core.VariantSplicingEvaluator;
 import org.monarchinitiative.svart.*;
+import org.monarchinitiative.svart.assembly.GenomicAssembly;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ConfigurableApplicationContext;
@@ -142,7 +143,7 @@ public class AnnotateCsvCommand extends AnnotatingSquirlsCommand {
             description = "Prefix for the output files")
     public String outputPrefix;
 
-    private static Variant parseCsvRecord(GenomicAssembly assembly, CSVRecord record) throws SquirlsException {
+    private static GenomicVariant parseCsvRecord(GenomicAssembly assembly, CSVRecord record) throws SquirlsException {
         String chrom = record.get("CHROM");
         Contig contig = assembly.contigByName(chrom);
         if (contig.isUnknown())
@@ -157,10 +158,10 @@ public class AnnotateCsvCommand extends AnnotatingSquirlsCommand {
 
         String ref = record.get("REF");
         String alt = record.get("ALT");
-        return Variant.of(contig, "", Strand.POSITIVE, CoordinateSystem.oneBased(), pos, ref, alt);
+        return GenomicVariant.of(contig, "", Strand.POSITIVE, CoordinateSystem.oneBased(), pos, ref, alt);
     }
 
-    private static VariantAnnotations annotateWithJannovar(VariantAnnotator annotator, ReferenceDictionary rd, Variant variant) throws AnnotationException, RuntimeException {
+    private static VariantAnnotations annotateWithJannovar(VariantAnnotator annotator, ReferenceDictionary rd, GenomicVariant variant) throws AnnotationException, RuntimeException {
         Integer contigId = rd.getContigNameToID().get(variant.contigName());
         if (contigId == null)
             throw new AnnotationException("Unknown contig " + variant.contigName());
@@ -208,7 +209,7 @@ public class AnnotateCsvCommand extends AnnotatingSquirlsCommand {
                 for (CSVRecord record : parser) {
                     allVariants++;
 
-                    Variant variant;
+                    GenomicVariant variant;
                     try {
                         variant = parseCsvRecord(assembly, record);
                     } catch (SquirlsException e) {

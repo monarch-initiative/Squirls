@@ -79,7 +79,7 @@ package org.monarchinitiative.squirls.core;
 import org.apiguardian.api.API;
 import org.monarchinitiative.squirls.core.classifier.SquirlsClassifier;
 import org.monarchinitiative.squirls.core.scoring.SplicingAnnotator;
-import org.monarchinitiative.svart.Variant;
+import org.monarchinitiative.svart.GenomicVariant;
 
 import java.util.Set;
 
@@ -102,14 +102,14 @@ public interface VariantSplicingEvaluator {
      * @param txIds set of transcript accession IDs with respect to which the variant should be evaluated
      * @return splicing prediction data
      */
-    SquirlsResult evaluate(Variant variant, Set<String> txIds);
+    SquirlsResult evaluate(GenomicVariant variant, Set<String> txIds);
 
     /**
      * Calculate splicing scores for given variant with respect to all transcripts the variant overlaps with.
      *
      * @return map with splicing pathogenicity data mapped to transcript accession id
      */
-    default SquirlsResult evaluate(Variant variant) {
+    default SquirlsResult evaluate(GenomicVariant variant) {
         return evaluate(variant, Set.of());
     }
 }

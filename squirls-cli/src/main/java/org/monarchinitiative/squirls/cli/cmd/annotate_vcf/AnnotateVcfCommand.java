@@ -99,6 +99,7 @@ import org.monarchinitiative.squirls.core.SquirlsDataService;
 import org.monarchinitiative.squirls.core.SquirlsResult;
 import org.monarchinitiative.squirls.core.VariantSplicingEvaluator;
 import org.monarchinitiative.svart.*;
+import org.monarchinitiative.svart.assembly.GenomicAssembly;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ConfigurableApplicationContext;
@@ -196,7 +197,7 @@ public class AnnotateVcfCommand extends AnnotatingSquirlsCommand {
                 }
 
                 // Squirls scores
-                Variant variant;
+                GenomicVariant variant;
                 SquirlsResult squirlsResult;
                 Contig contig = contigMap.getOrDefault(contigName, Contig.unknown());
                 if (contig.equals(Contig.unknown()) || variantAnnotations.getHighestImpactEffect().isOffTranscript()) {
@@ -204,7 +205,7 @@ public class AnnotateVcfCommand extends AnnotatingSquirlsCommand {
                     variant = null;
                     squirlsResult = SquirlsResult.empty();
                 } else {
-                    variant = Variant.of(contig, vc.getID(), org.monarchinitiative.svart.Strand.POSITIVE, CoordinateSystem.oneBased(),
+                    variant = GenomicVariant.of(contig, vc.getID(), org.monarchinitiative.svart.Strand.POSITIVE, CoordinateSystem.oneBased(),
                             vc.getStart(), vc.getReference().getDisplayString(), allele.getDisplayString());
                     Set<String> txAccessions = variantAnnotations.getAnnotations().stream()
                             .map(Annotation::getTranscript)

@@ -79,7 +79,7 @@ package org.monarchinitiative.squirls.cli.visualization;
 import de.charite.compbio.jannovar.annotation.VariantAnnotations;
 import de.charite.compbio.jannovar.reference.GenomeVariant;
 import org.monarchinitiative.squirls.core.SquirlsResult;
-import org.monarchinitiative.svart.Variant;
+import org.monarchinitiative.svart.GenomicVariant;
 
 /**
  * This interface specifies what an instance must meet in order to be usable for {@link SplicingVariantGraphicsGenerator}
@@ -99,7 +99,7 @@ public interface VisualizableVariantAllele {
      */
     SquirlsResult squirlsResults();
 
-    Variant variant();
+    GenomicVariant variant();
 
     default GenomeVariant genomeVariant() {
         return variantAnnotations().getGenomeVariant();

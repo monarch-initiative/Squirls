@@ -79,7 +79,7 @@ package org.monarchinitiative.squirls.cli.writers;
 import de.charite.compbio.jannovar.annotation.VariantAnnotations;
 import htsjdk.variant.variantcontext.VariantContext;
 import org.monarchinitiative.squirls.core.SquirlsResult;
-import org.monarchinitiative.svart.Variant;
+import org.monarchinitiative.svart.GenomicVariant;
 
 import java.util.Objects;
 
@@ -88,25 +88,25 @@ import java.util.Objects;
  */
 public class WritableSplicingAlleleDefault implements WritableSplicingAllele {
 
-    private final Variant variant;
+    private final GenomicVariant variant;
     private final VariantAnnotations annotations;
     private final SquirlsResult squirlsResult;
     private final VariantContext variantContext;
 
-    public static WritableSplicingAlleleDefault of(Variant variant,
+    public static WritableSplicingAlleleDefault of(GenomicVariant variant,
                                                    VariantAnnotations annotations,
                                                    SquirlsResult squirlsResult) {
         return of(variant, annotations, squirlsResult, null);
     }
 
-    public static WritableSplicingAlleleDefault of(Variant variant,
+    public static WritableSplicingAlleleDefault of(GenomicVariant variant,
                                                    VariantAnnotations annotations,
                                                    SquirlsResult squirlsResult,
                                                    VariantContext variantContext) {
         return new WritableSplicingAlleleDefault(variant, annotations, squirlsResult, variantContext);
     }
 
-    private WritableSplicingAlleleDefault(Variant variant,
+    private WritableSplicingAlleleDefault(GenomicVariant variant,
                                           VariantAnnotations annotations,
                                           SquirlsResult squirlsResult,
                                           VariantContext variantContext) {
@@ -127,7 +127,7 @@ public class WritableSplicingAlleleDefault implements WritableSplicingAllele {
     }
 
     @Override
-    public Variant variant() {
+    public GenomicVariant variant() {
         return variant;
     }
 

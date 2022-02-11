@@ -86,8 +86,8 @@ import org.monarchinitiative.squirls.core.reference.TranscriptModel;
 import org.monarchinitiative.squirls.core.scoring.SplicingAnnotator;
 import org.monarchinitiative.svart.CoordinateSystem;
 import org.monarchinitiative.svart.GenomicRegion;
+import org.monarchinitiative.svart.GenomicVariant;
 import org.monarchinitiative.svart.Strand;
-import org.monarchinitiative.svart.Variant;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -190,9 +190,9 @@ class Precalculation extends RecursiveAction {
         GenomicRegion query = GenomicRegion.of(region.contig(), Strand.POSITIVE, CoordinateSystem.zeroBased(), min, max);
         StrandedSequence enoughSequence = dataService.sequenceForRegion(query);
 
-        List<Variant> variants = generator.generate(dataService.sequenceForRegion(region));
+        List<GenomicVariant> variants = generator.generate(dataService.sequenceForRegion(region));
 
-        for (Variant variant : variants) {
+        for (GenomicVariant variant : variants) {
             List<SquirlsTxResult> results = new ArrayList<>(transcripts.size());
             for (TranscriptModel tx : transcripts) {
                 if (!tx.overlapsWith(variant) || tx.exonCount() == 1)

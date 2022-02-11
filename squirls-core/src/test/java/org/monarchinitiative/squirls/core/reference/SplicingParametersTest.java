@@ -80,6 +80,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.monarchinitiative.squirls.core.TestDataSourceConfig;
 import org.monarchinitiative.svart.*;
+import org.monarchinitiative.svart.assembly.AssignedMoleculeType;
+import org.monarchinitiative.svart.assembly.SequenceRole;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import static org.hamcrest.MatcherAssert.assertThat;

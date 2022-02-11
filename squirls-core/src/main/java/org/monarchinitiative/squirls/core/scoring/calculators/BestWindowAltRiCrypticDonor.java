@@ -81,7 +81,7 @@ import org.monarchinitiative.squirls.core.reference.StrandedSequence;
 import org.monarchinitiative.squirls.core.reference.TranscriptModel;
 import org.monarchinitiative.squirls.core.Utils;
 import org.monarchinitiative.squirls.core.scoring.calculators.ic.SplicingInformationContentCalculator;
-import org.monarchinitiative.svart.Variant;
+import org.monarchinitiative.svart.GenomicVariant;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -110,7 +110,7 @@ public class BestWindowAltRiCrypticDonor implements FeatureCalculator {
      * @return feature value
      */
     @Override
-    public double score(Variant variant, TranscriptModel transcript, StrandedSequence sequence) {
+    public double score(GenomicVariant variant, TranscriptModel transcript, StrandedSequence sequence) {
         String donorNeighborSnippet = generator.getDonorNeighborSnippet(variant, sequence, variant.alt());
 
         if (donorNeighborSnippet == null) {

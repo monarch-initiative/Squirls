@@ -79,7 +79,7 @@ package org.monarchinitiative.squirls.core.scoring.calculators;
 import org.monarchinitiative.squirls.core.reference.*;
 import org.monarchinitiative.squirls.core.scoring.calculators.ic.SplicingInformationContentCalculator;
 import org.monarchinitiative.svart.GenomicRegion;
-import org.monarchinitiative.svart.Variant;
+import org.monarchinitiative.svart.GenomicVariant;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -99,7 +99,7 @@ public class WtRiAcceptor extends BaseFeatureCalculator {
     }
 
     @Override
-    protected double score(Variant variant, SplicingLocationData locationData, TranscriptModel tx, StrandedSequence sequence) {
+    protected double score(GenomicVariant variant, SplicingLocationData locationData, TranscriptModel tx, StrandedSequence sequence) {
         switch (locationData.getPosition()) {
             case DONOR:
             case ACCEPTOR:
@@ -115,7 +115,7 @@ public class WtRiAcceptor extends BaseFeatureCalculator {
     }
 
 
-    private double score(Variant variant, GenomicRegion acceptor, StrandedSequence sequence) {
+    private double score(GenomicVariant variant, GenomicRegion acceptor, StrandedSequence sequence) {
         String acceptorSiteSnippet = sequence.subsequence(acceptor);
 
         if (acceptorSiteSnippet == null) {

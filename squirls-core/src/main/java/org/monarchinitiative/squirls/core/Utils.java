@@ -272,7 +272,7 @@ public class Utils {
             The code below handles these situations.
             */
             Coordinates variantCoordinates = variant.coordinates().withCoordinateSystem(CoordinateSystem.oneBased());
-            if (variantCoordinates.contains(closestSite) && variantCoordinates.length() > 1) {
+            if (variantCoordinates.contains(CoordinateSystem.oneBased(), closestSite, closestSite) && variantCoordinates.length() > 1) {
                 // deletion of the boundary
                 return 0;
             } else if (variantCoordinates.start() == closestSite) {

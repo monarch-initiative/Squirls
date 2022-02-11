@@ -76,14 +76,11 @@
 
 package org.monarchinitiative.squirls.ingest.transcripts;
 
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.monarchinitiative.squirls.core.reference.TranscriptModel;
-import org.monarchinitiative.svart.GenomicAssembly;
+import org.monarchinitiative.svart.assembly.GenomicAssembly;
 import org.monarchinitiative.svart.parsers.GenomicAssemblyParser;
 
-import java.io.BufferedWriter;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;

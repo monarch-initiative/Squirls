@@ -80,6 +80,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.monarchinitiative.svart.*;
+import org.monarchinitiative.svart.assembly.AssignedMoleculeType;
+import org.monarchinitiative.svart.assembly.SequenceRole;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
@@ -102,34 +104,30 @@ public class StrandedSequenceTest {
 
     @ParameterizedTest
     @CsvSource({
-            "POSITIVE,     LEFT_OPEN, 100, 105,      ACGTA",
-            "POSITIVE,  FULLY_CLOSED, 101, 105,      ACGTA",
+            "POSITIVE,    ZERO_BASED, 100, 105,      ACGTA",
+            "POSITIVE,     ONE_BASED, 101, 105,      ACGTA",
 
-            "NEGATIVE,     LEFT_OPEN, 395, 400,      TACGT",
-            "NEGATIVE,  FULLY_CLOSED, 396, 400,      TACGT",
+            "NEGATIVE,    ZERO_BASED, 395, 400,      TACGT",
+            "NEGATIVE,     ONE_BASED, 396, 400,      TACGT",
 
-            "POSITIVE,     LEFT_OPEN, 103, 105,      TA",
-            "POSITIVE,  FULLY_CLOSED, 104, 105,      TA",
+            "POSITIVE,    ZERO_BASED, 103, 105,      TA",
+            "POSITIVE,     ONE_BASED, 104, 105,      TA",
 
-            "POSITIVE,     LEFT_OPEN, 100, 101,      A",
-            "POSITIVE,  FULLY_CLOSED, 101, 101,      A",
+            "POSITIVE,    ZERO_BASED, 100, 101,      A",
+            "POSITIVE,     ONE_BASED, 101, 101,      A",
 
-            "POSITIVE,     LEFT_OPEN, 104, 105,      A",
-            "POSITIVE,  FULLY_CLOSED, 105, 105,      A",
+            "POSITIVE,    ZERO_BASED, 104, 105,      A",
+            "POSITIVE,     ONE_BASED, 105, 105,      A",
 
-            "NEGATIVE,     LEFT_OPEN, 399, 400,      T",
-            "NEGATIVE,  FULLY_CLOSED, 400, 400,      T"})
+            "NEGATIVE,    ZERO_BASED, 399, 400,      T",
+            "NEGATIVE,     ONE_BASED, 400, 400,      T"})
     public void subsequence(Strand strand, CoordinateSystem coordinateSystem, int start, int end,
                             String expected) {
         StrandedSequence zeroSeq = StrandedSequence.of(CONTIG, Strand.POSITIVE, Coordinates.of(CoordinateSystem.zeroBased(), 100, 105), "ACGTA");
         StrandedSequence oneSeq = StrandedSequence.of(CONTIG, Strand.POSITIVE, Coordinates.of(CoordinateSystem.oneBased(), 101, 105), "ACGTA");
-        StrandedSequence fullyOpenSeq = StrandedSequence.of(CONTIG, Strand.POSITIVE, Coordinates.of(CoordinateSystem.FULLY_OPEN, 100, 106), "ACGTA");
-        StrandedSequence rightOpenSeq = StrandedSequence.of(CONTIG, Strand.POSITIVE, Coordinates.of(CoordinateSystem.RIGHT_OPEN, 101, 106), "ACGTA");
         GenomicRegion query = GenomicRegion.of(CONTIG, strand, Coordinates.of(coordinateSystem, start, end));
 
         assertThat(zeroSeq.subsequence(query), equalTo(expected));
         assertThat(oneSeq.subsequence(query), equalTo(expected));
-        assertThat(fullyOpenSeq.subsequence(query), equalTo(expected));
-        assertThat(rightOpenSeq.subsequence(query), equalTo(expected));
     }
 }

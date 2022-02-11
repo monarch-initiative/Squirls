@@ -84,7 +84,7 @@ import org.monarchinitiative.squirls.core.SimpleAnnotatableSquirlsFeatures;
 import org.monarchinitiative.squirls.core.classifier.SquirlsFeatures;
 import org.monarchinitiative.svart.CoordinateSystem;
 import org.monarchinitiative.svart.Strand;
-import org.monarchinitiative.svart.Variant;
+import org.monarchinitiative.svart.GenomicVariant;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -111,7 +111,7 @@ public class AGEZSplicingAnnotatorTest extends BaseSplicingAnnotatorTest {
     public void annotate(int pos, String ref, String alt,
                          double createsAgInAgez, double pptIsTruncated,
                          double purineAtMinusThree, double createsYagInAgez) {
-        Variant variant = Variant.of(contig, "", Strand.POSITIVE, CoordinateSystem.zeroBased(), pos, ref, alt);
+        GenomicVariant variant = GenomicVariant.of(contig, "", Strand.POSITIVE, CoordinateSystem.zeroBased(), pos, ref, alt);
         SimpleAnnotatableSquirlsFeatures ann = new SimpleAnnotatableSquirlsFeatures(variant, st, sequence);
         SquirlsFeatures features = annotator.annotate(ann);
 
@@ -123,7 +123,7 @@ public class AGEZSplicingAnnotatorTest extends BaseSplicingAnnotatorTest {
 
     @Test
     public void allFeaturesAreCalculated() {
-        Variant variant = Variant.of(contig, "", Strand.POSITIVE, CoordinateSystem.zeroBased(), 1389, "c", "cag");
+        GenomicVariant variant = GenomicVariant.of(contig, "", Strand.POSITIVE, CoordinateSystem.zeroBased(), 1389, "c", "cag");
 
         SimpleAnnotatableSquirlsFeatures ann = new SimpleAnnotatableSquirlsFeatures(variant, st, sequence);
         SquirlsFeatures features = annotator.annotate(ann);

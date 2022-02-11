@@ -79,7 +79,7 @@ package org.monarchinitiative.squirls.core;
 import org.monarchinitiative.squirls.core.classifier.SquirlsFeatures;
 import org.monarchinitiative.squirls.core.reference.StrandedSequence;
 import org.monarchinitiative.squirls.core.reference.TranscriptModel;
-import org.monarchinitiative.svart.Variant;
+import org.monarchinitiative.svart.GenomicVariant;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -88,19 +88,19 @@ import java.util.Set;
 
 public class SimpleAnnotatableSquirlsFeatures implements SquirlsFeatures, VariantOnTranscript {
 
-    private final Variant variant;
+    private final GenomicVariant variant;
     private final TranscriptModel transcript;
     private final StrandedSequence sequence;
     private final Map<String, Double> features = new HashMap<>();
 
-    public SimpleAnnotatableSquirlsFeatures(Variant variant, TranscriptModel transcript, StrandedSequence sequence) {
+    public SimpleAnnotatableSquirlsFeatures(GenomicVariant variant, TranscriptModel transcript, StrandedSequence sequence) {
         this.variant = variant;
         this.transcript = transcript;
         this.sequence = sequence;
     }
 
     @Override
-    public Variant variant() {
+    public GenomicVariant variant() {
         return variant;
     }
 

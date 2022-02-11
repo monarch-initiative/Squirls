@@ -83,6 +83,8 @@ import org.junit.jupiter.params.provider.CsvSource;
 import org.monarchinitiative.squirls.core.PojosForTesting;
 import org.monarchinitiative.squirls.core.TestDataSourceConfig;
 import org.monarchinitiative.svart.*;
+import org.monarchinitiative.svart.assembly.AssignedMoleculeType;
+import org.monarchinitiative.svart.assembly.SequenceRole;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.util.Optional;

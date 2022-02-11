@@ -93,6 +93,7 @@ import org.monarchinitiative.squirls.core.SquirlsTxResult;
 import org.monarchinitiative.squirls.core.reference.StrandedSequence;
 import org.monarchinitiative.squirls.core.reference.TranscriptModel;
 import org.monarchinitiative.svart.*;
+import org.monarchinitiative.svart.assembly.GenomicAssembly;
 import org.monarchinitiative.vmvt.core.VmvtGenerator;
 
 import java.util.*;
@@ -177,7 +178,7 @@ public class VariantsForTesting {
                 .collect(Collectors.toMap(v -> v[0], v -> Double.parseDouble(v[1])));
 
         TranscriptModel st = transcripts.stream().min(Comparator.comparing(TranscriptModel::accessionId)).orElseThrow();
-        Variant variant = Variant.of(contig, "", org.monarchinitiative.svart.Strand.POSITIVE, CoordinateSystem.oneBased(), pos, ref, alt);
+        GenomicVariant variant = GenomicVariant.of(contig, "", org.monarchinitiative.svart.Strand.POSITIVE, CoordinateSystem.oneBased(), pos, ref, alt);
 
         /*
         Prepare test object

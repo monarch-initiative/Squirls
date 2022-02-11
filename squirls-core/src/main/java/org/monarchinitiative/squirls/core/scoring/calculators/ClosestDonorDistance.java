@@ -95,7 +95,7 @@ public class ClosestDonorDistance implements FeatureCalculator {
     private static final Logger LOGGER = LoggerFactory.getLogger(ClosestDonorDistance.class);
 
     @Override
-    public double score(Variant variant, TranscriptModel transcript, StrandedSequence sequence) {
+    public double score(GenomicVariant variant, TranscriptModel transcript, StrandedSequence sequence) {
         // find the closest donor site
         Optional<Integer> closestPosition = transcript.exons().stream()
                 .map(exon -> exon.endWithCoordinateSystem(CoordinateSystem.zeroBased()))

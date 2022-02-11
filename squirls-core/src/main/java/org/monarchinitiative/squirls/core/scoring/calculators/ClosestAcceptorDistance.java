@@ -80,7 +80,7 @@ import org.monarchinitiative.squirls.core.Utils;
 import org.monarchinitiative.squirls.core.reference.StrandedSequence;
 import org.monarchinitiative.squirls.core.reference.TranscriptModel;
 import org.monarchinitiative.svart.CoordinateSystem;
-import org.monarchinitiative.svart.Variant;
+import org.monarchinitiative.svart.GenomicVariant;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -95,7 +95,7 @@ public class ClosestAcceptorDistance implements FeatureCalculator {
     private static final Logger LOGGER = LoggerFactory.getLogger(ClosestAcceptorDistance.class);
 
     @Override
-    public double score(Variant variant, TranscriptModel transcript, StrandedSequence sequence) {
+    public double score(GenomicVariant variant, TranscriptModel transcript, StrandedSequence sequence) {
         // find the closest acceptor site
         Optional<Integer> closestPosition = transcript.exons().stream()
                 .map(exon -> exon.startWithCoordinateSystem(CoordinateSystem.zeroBased()))

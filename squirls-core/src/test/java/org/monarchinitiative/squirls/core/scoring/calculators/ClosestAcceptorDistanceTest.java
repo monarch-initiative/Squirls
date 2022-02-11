@@ -81,7 +81,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.monarchinitiative.svart.CoordinateSystem;
 import org.monarchinitiative.svart.Strand;
-import org.monarchinitiative.svart.Variant;
+import org.monarchinitiative.svart.GenomicVariant;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -109,10 +109,10 @@ public class ClosestAcceptorDistanceTest extends CalculatorTestBase {
     })
     public void score_positiveTx(int pos, double expected) {
         // ref and alt do not matter
-        Variant oneBased = Variant.of(contig, "", Strand.POSITIVE, CoordinateSystem.oneBased(), pos, "g", "a");
+        GenomicVariant oneBased = GenomicVariant.of(contig, "", Strand.POSITIVE, CoordinateSystem.oneBased(), pos, "g", "a");
         assertThat(scorer.score(oneBased, txOnPositiveStrand, sequence), is(closeTo(expected, EPSILON)));
 
-        Variant zeroBased = Variant.of(contig, "", Strand.POSITIVE, CoordinateSystem.zeroBased(), pos - 1, "g", "a");
+        GenomicVariant zeroBased = GenomicVariant.of(contig, "", Strand.POSITIVE, CoordinateSystem.zeroBased(), pos - 1, "g", "a");
         assertThat(scorer.score(zeroBased, txOnPositiveStrand, sequence), is(closeTo(expected, EPSILON)));
     }
 
@@ -129,10 +129,10 @@ public class ClosestAcceptorDistanceTest extends CalculatorTestBase {
     })
     public void score_negativeTx(int pos, double expected) {
         // ref and alt do not matter
-        Variant oneBased = Variant.of(contig, "", Strand.POSITIVE, CoordinateSystem.oneBased(), pos, "g", "a").withStrand(txOnNegativeStrand.strand());
+        GenomicVariant oneBased = GenomicVariant.of(contig, "", Strand.POSITIVE, CoordinateSystem.oneBased(), pos, "g", "a").withStrand(txOnNegativeStrand.strand());
         assertThat(scorer.score(oneBased, txOnNegativeStrand, sequence), is(closeTo(expected, EPSILON)));
 
-        Variant zeroBased = Variant.of(contig, "", Strand.POSITIVE, CoordinateSystem.zeroBased(), pos - 1, "g", "a").withStrand(txOnNegativeStrand.strand());
+        GenomicVariant zeroBased = GenomicVariant.of(contig, "", Strand.POSITIVE, CoordinateSystem.zeroBased(), pos - 1, "g", "a").withStrand(txOnNegativeStrand.strand());
         assertThat(scorer.score(zeroBased, txOnNegativeStrand, sequence), is(closeTo(expected, EPSILON)));
     }
 }

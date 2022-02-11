@@ -77,10 +77,9 @@
 package org.monarchinitiative.squirls.cli.writers;
 
 import de.charite.compbio.jannovar.annotation.VariantAnnotations;
-import htsjdk.variant.variantcontext.Allele;
 import htsjdk.variant.variantcontext.VariantContext;
 import org.monarchinitiative.squirls.core.SquirlsResult;
-import org.monarchinitiative.svart.Variant;
+import org.monarchinitiative.svart.GenomicVariant;
 
 
 /**
@@ -102,7 +101,7 @@ public interface WritableSplicingAllele {
 
     VariantAnnotations variantAnnotations();
 
-    Variant variant();
+    GenomicVariant variant();
 
     /**
      * Get result of Squirls prediction wrt. overlapping transcripts
