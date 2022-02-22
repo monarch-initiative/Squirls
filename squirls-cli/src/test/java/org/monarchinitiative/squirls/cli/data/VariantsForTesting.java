@@ -144,6 +144,7 @@ public class VariantsForTesting {
 
     private TestVariant makeEvaluation(Contig contig,
                                        String chrom,
+                                       String id,
                                        int pos,
                                        String variantId,
                                        String ref,
@@ -178,7 +179,7 @@ public class VariantsForTesting {
                 .collect(Collectors.toMap(v -> v[0], v -> Double.parseDouble(v[1])));
 
         TranscriptModel st = transcripts.stream().min(Comparator.comparing(TranscriptModel::accessionId)).orElseThrow();
-        GenomicVariant variant = GenomicVariant.of(contig, "", org.monarchinitiative.svart.Strand.POSITIVE, CoordinateSystem.oneBased(), pos, ref, alt);
+        GenomicVariant variant = GenomicVariant.of(contig, id, org.monarchinitiative.svart.Strand.POSITIVE, CoordinateSystem.oneBased(), pos, ref, alt);
 
         /*
         Prepare test object
@@ -275,7 +276,7 @@ public class VariantsForTesting {
 
         // *************************************************************************************************************
 
-        return makeEvaluation(contig, chrom, pos, variantId, ref, alt, seqIds, transcripts, si, pathogenicity, featurePayload, ruler, primary, secondary, "Canonical donor");
+        return makeEvaluation(contig, chrom, "BRCA2DonorExon15plus2QUID", pos, variantId, ref, alt, seqIds, transcripts, si, pathogenicity, featurePayload, ruler, primary, secondary, "Canonical donor");
     }
 
     /**
@@ -331,7 +332,7 @@ public class VariantsForTesting {
 
         // *************************************************************************************************************
 
-        return makeEvaluation(contig, chrom, pos, variantId, ref, alt, seqIds, transcripts, si, pathogenicity, featurePayload, ruler, primary, secondary, "Canonical donor");
+        return makeEvaluation(contig, chrom, "ALPLDonorExon7Minus2", pos, variantId, ref, alt, seqIds, transcripts, si, pathogenicity, featurePayload, ruler, primary, secondary, "Canonical donor");
     }
 
     /**
@@ -394,7 +395,7 @@ public class VariantsForTesting {
 
         // *************************************************************************************************************
 
-        return makeEvaluation(contig, chrom, pos, variantId, ref, alt, seqIds, transcripts, si, pathogenicity, featurePayload, ruler, primary, secondary, "Cryptic donor");
+        return makeEvaluation(contig, chrom, "HBBcodingExon1UpstreamCrypticInCanonical", pos, variantId, ref, alt, seqIds, transcripts, si, pathogenicity, featurePayload, ruler, primary, secondary, "Cryptic donor");
     }
 
     /**
@@ -457,7 +458,7 @@ public class VariantsForTesting {
 
         // *************************************************************************************************************
 
-        return makeEvaluation(contig, chrom, pos, variantId, ref, alt, seqIds, transcripts, si, pathogenicity, featurePayload, ruler, primary, secondary, "Cryptic donor");
+        return makeEvaluation(contig, chrom, "HBBcodingExon1UpstreamCryptic", pos, variantId, ref, alt, seqIds, transcripts, si, pathogenicity, featurePayload, ruler, primary, secondary, "Cryptic donor");
     }
 
     /**
@@ -520,7 +521,7 @@ public class VariantsForTesting {
 
         // *************************************************************************************************************
 
-        return makeEvaluation(contig, chrom, pos, variantId, ref, alt, seqIds, transcripts, si, pathogenicity, featurePayload, logo, primary, secondary, "Canonical acceptor");
+        return makeEvaluation(contig, chrom, "VWFAcceptorExon26minus2QUID", pos, variantId, ref, alt, seqIds, transcripts, si, pathogenicity, featurePayload, logo, primary, secondary, "Canonical acceptor");
     }
 
     /**
@@ -576,7 +577,7 @@ public class VariantsForTesting {
 
         // *************************************************************************************************************
 
-        return makeEvaluation(contig, chrom, pos, variantId, ref, alt, seqIds, transcripts, si, pathogenicity, featurePayload, logo, primary, secondary, "Cryptic acceptor");
+        return makeEvaluation(contig, chrom, "TSC2AcceptorExon11Minus3", pos, variantId, ref, alt, seqIds, transcripts, si, pathogenicity, featurePayload, logo, primary, secondary, "Cryptic acceptor");
     }
 
 
@@ -641,7 +642,7 @@ public class VariantsForTesting {
 
         // *************************************************************************************************************
 
-        return makeEvaluation(contig, chrom, pos, variantId, ref, alt, seqIds, transcripts, si, pathogenicity, featurePayload, ruler, primary, secondary, "Cryptic acceptor");
+        return makeEvaluation(contig, chrom, "COL4A5AcceptorExon11Minus8", pos, variantId, ref, alt, seqIds, transcripts, si, pathogenicity, featurePayload, ruler, primary, secondary, "Cryptic acceptor");
     }
 
     /**
@@ -705,7 +706,7 @@ public class VariantsForTesting {
 
         // *************************************************************************************************************
 
-        return makeEvaluation(contig, chrom, pos, variantId, ref, alt, seqIds, transcripts, si, pathogenicity, featurePayload, ruler, primary, secondary, "Cryptic acceptor");
+        return makeEvaluation(contig, chrom, "RYR1codingExon102crypticAcceptor", pos, variantId, ref, alt, seqIds, transcripts, si, pathogenicity, featurePayload, ruler, primary, secondary, "Cryptic acceptor");
     }
 
 
@@ -777,7 +778,7 @@ public class VariantsForTesting {
 
         // *************************************************************************************************************
 
-        return makeEvaluation(contig, chrom, pos, variantId, ref, alt, seqIds, transcripts, si, pathogenicity, featurePayload, ruler, primary, secondary, "Splicing regulatory elements");
+        return makeEvaluation(contig, chrom, "NF1codingExon9coding_SRE", pos, variantId, ref, alt, seqIds, transcripts, si, pathogenicity, featurePayload, ruler, primary, secondary, "Splicing regulatory elements");
     }
 
 }

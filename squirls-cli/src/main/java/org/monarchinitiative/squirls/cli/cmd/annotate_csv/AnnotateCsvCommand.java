@@ -110,6 +110,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
@@ -126,7 +128,11 @@ public class AnnotateCsvCommand extends AnnotatingSquirlsCommand {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AnnotateCsvCommand.class);
 
+    private static final Pattern BASES = Pattern.compile("[ACGT]+", Pattern.CASE_INSENSITIVE);
+
     private static final List<String> EXPECTED_HEADER = List.of("CHROM", "POS", "REF", "ALT");
+
+    private static boolean notifiedAboutId = false;
 
     @CommandLine.Parameters(index = "1",
             paramLabel = "hg38_refseq.ser",
@@ -144,11 +150,13 @@ public class AnnotateCsvCommand extends AnnotatingSquirlsCommand {
     public String outputPrefix;
 
     private static GenomicVariant parseCsvRecord(GenomicAssembly assembly, CSVRecord record) throws SquirlsException {
+        // parse contig
         String chrom = record.get("CHROM");
         Contig contig = assembly.contigByName(chrom);
         if (contig.isUnknown())
             throw new SquirlsException("Unknown contig `" + chrom + "` in record `" + record + "`");
 
+        // parse position
         int pos;
         try {
             pos = Integer.parseInt(record.get("POS"));
@@ -156,9 +164,31 @@ public class AnnotateCsvCommand extends AnnotatingSquirlsCommand {
             throw new SquirlsException("Invalid pos `" + record.get("POS") + " in record `" + record + "`", e);
         }
 
+        // parse id (optional)
+        String id;
+        if (record.isSet("ID")) {
+            id = record.get("ID");
+        } else {
+            if (!notifiedAboutId) {
+                // TODO(v2) - fail upon missing ID
+                LOGGER.warn("Missing variant ID. The ID will become mandatory column in next major release (v2)");
+                notifiedAboutId = true;
+            }
+            id = "";
+        }
+
+        // parse & validate alleles
         String ref = record.get("REF");
         String alt = record.get("ALT");
-        return GenomicVariant.of(contig, "", Strand.POSITIVE, CoordinateSystem.oneBased(), pos, ref, alt);
+        Matcher refMatcher = BASES.matcher(ref);
+        if (!refMatcher.matches())
+            throw new SquirlsException("Invalid REF allele `" + ref + "` in record `" + record + '`');
+
+        Matcher altMatcher = BASES.matcher(alt);
+        if (!altMatcher.matches())
+            throw new SquirlsException("Invalid ALT allele `" + alt + "` in record `" + record + '`');
+
+        return GenomicVariant.of(contig, id, Strand.POSITIVE, CoordinateSystem.oneBased(), pos, ref, alt);
     }
 
     private static VariantAnnotations annotateWithJannovar(VariantAnnotator annotator, ReferenceDictionary rd, GenomicVariant variant) throws AnnotationException, RuntimeException {

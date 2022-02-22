@@ -157,7 +157,7 @@ public class TabularResultWriter implements ResultWriter {
         LOGGER.info("Writing tabular output to `{}`", outputPath);
 
         List<String> header = new ArrayList<>(
-                List.of("chrom", "pos", "ref", "alt", "gene_symbol", "tx_accession", "interpretation", "squirls_score"));
+                List.of("id", "chrom", "pos", "ref", "alt", "gene_symbol", "tx_accession", "interpretation", "squirls_score"));
         if (reportTranscripts)
             header.add("transcripts");
 
@@ -184,10 +184,11 @@ public class TabularResultWriter implements ResultWriter {
     private Consumer<WritableSplicingAllele> writeAllele(CSVPrinter printer) {
         return allele -> {
             // we write the following fields
-            // "chrom", "pos", "ref", "alt", "gene_symbol", "tx_accession", "interpretation", "squirls_score", "squirls_features" (optional)
+            // "chrom", "id", "pos", "ref", "alt", "gene_symbol", "tx_accession", "interpretation", "squirls_score", "squirls_features" (optional)
 
             GenomicVariant variant = allele.variant();
             List<Object> columns = new LinkedList<>();
+            columns.add(variant.id());
             columns.add(variant.contigName());
             columns.add(variant.startWithCoordinateSystem(CoordinateSystem.oneBased()));
             columns.add(variant.ref());
