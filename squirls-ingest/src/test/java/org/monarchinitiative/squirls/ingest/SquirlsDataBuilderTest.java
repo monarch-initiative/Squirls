@@ -131,6 +131,7 @@ public class SquirlsDataBuilderTest {
     public DataSource dataSource;
     private Path buildDir;
 
+    @Deprecated // TODO - remove
     private static List<TranscriptModel> makeTranscripts() {
         Contig chr2 = CONTIGS.get(1);
         TranscriptModel tx = TranscriptModel.coding(chr2, Strand.POSITIVE, Coordinates.of(CoordinateSystem.zeroBased(), 10_000, 20_000), 11_000, 19_000,
@@ -167,9 +168,9 @@ public class SquirlsDataBuilderTest {
         assertThat("FASTA dictionary was not generated", buildDir.resolve(String.format("%s.fa.dict", VERSIONED_ASSEMBLY)).toFile().isFile(), is(true));
     }
 
-    // TODO - remove
     @Test
     @Sql("create_schema.sql")
+    @Deprecated // TODO - remove
     @Disabled
     public void ingestTranscripts() throws Exception {
         // arrange - nothing to be done

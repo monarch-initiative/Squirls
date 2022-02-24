@@ -95,8 +95,9 @@ import org.monarchinitiative.squirls.io.SquirlsResourceException;
 import org.monarchinitiative.squirls.io.db.DbClassifierFactory;
 import org.monarchinitiative.squirls.io.db.DbKMerDao;
 import org.monarchinitiative.squirls.io.db.DbSplicingPositionalWeightMatrixParser;
-import org.monarchinitiative.squirls.io.db.TranscriptModelServiceDb;
 import org.monarchinitiative.squirls.io.sequence.FastaStrandedSequenceService;
+import org.monarchinitiative.squirls.io.transcript.TranscriptModelServiceSg;
+import org.monarchinitiative.svart.assembly.GenomicAssembly;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -189,12 +190,12 @@ public class SquirlsConfigurationFactory {
     private static Squirls configure(SquirlsDataResolver dataResolver, SquirlsProperties properties) throws IOException, SquirlsResourceException {
         DataSource squirlsDatasource = squirlsDatasource(dataResolver);
 
-        SquirlsDataService squirlsDataService = configureSquirlsDataService(dataResolver, squirlsDatasource);
+        SquirlsDataService squirlsDataService = configureSquirlsDataService(properties, dataResolver);
 
         BigWigAccessor phylopBigwigAccessor = new BigWigAccessor(dataResolver.phylopPath());
         SplicingAnnotator splicingAnnotator = configureSplicingAnnotator(properties, squirlsDatasource, phylopBigwigAccessor);
 
-        SquirlsClassifier squirlsClassifier = configureSquirlsClassifier(squirlsDatasource, properties);
+        SquirlsClassifier squirlsClassifier = configureSquirlsClassifier(properties, squirlsDatasource);
         VariantSplicingEvaluator variantSplicingEvaluator = VariantSplicingEvaluator.of(squirlsDataService, splicingAnnotator, squirlsClassifier);
 
         return new SquirlsImpl(dataResolver.resourceVersion(), squirlsDataService, splicingAnnotator, squirlsClassifier, variantSplicingEvaluator);
@@ -213,13 +214,36 @@ public class SquirlsConfigurationFactory {
         return new HikariDataSource(config);
     }
 
-    private static SquirlsDataService configureSquirlsDataService(SquirlsDataResolver dataResolver, DataSource squirlsDatasource) throws SquirlsResourceException {
+    private static SquirlsDataService configureSquirlsDataService(SquirlsProperties properties,
+                                                                  SquirlsDataResolver dataResolver) throws SquirlsResourceException {
         StrandedSequenceService strandedSequenceService = new FastaStrandedSequenceService(dataResolver.genomeAssemblyReportPath(),
                 dataResolver.genomeFastaPath(),
                 dataResolver.genomeFastaFaiPath(),
                 dataResolver.genomeFastaDictPath());
-        TranscriptModelService transcriptModelService = new TranscriptModelServiceDb(squirlsDatasource, strandedSequenceService.genomicAssembly());
+
+        TranscriptModelService transcriptModelService = configureTranscriptModelService(properties, strandedSequenceService.genomicAssembly(), dataResolver);
+
         return new SquirlsDataServiceImpl(strandedSequenceService, transcriptModelService);
+    }
+
+    private static TranscriptModelService configureTranscriptModelService(SquirlsProperties properties,
+                                                                            GenomicAssembly genomicAssembly,
+                                                                            SquirlsDataResolver dataResolver) throws SquirlsResourceException {
+        Path silentGenesJsonPath;
+        switch (properties.getTranscriptSource()) {
+            case REFSEQ:
+                silentGenesJsonPath = dataResolver.refseqJsonPath();
+                break;
+            case GENCODE:
+                silentGenesJsonPath = dataResolver.gencodeJsonPath();
+                break;
+            default:
+                throw new SquirlsResourceException("Unknown transcript source `" + properties.getTranscriptSource() + "`");
+        }
+
+
+        return TranscriptModelServiceSg.of(genomicAssembly, silentGenesJsonPath);
+
     }
 
     private static SplicingAnnotator configureSplicingAnnotator(SquirlsProperties properties,
@@ -240,8 +264,8 @@ public class SquirlsConfigurationFactory {
         }
     }
 
-    private static SquirlsClassifier configureSquirlsClassifier(DataSource squirlsDatasource,
-                                                                SquirlsProperties properties) throws SquirlsResourceException {
+    private static SquirlsClassifier configureSquirlsClassifier(SquirlsProperties properties,
+                                                                DataSource squirlsDatasource) throws SquirlsResourceException {
         DbClassifierFactory classifierFactory = new DbClassifierFactory(squirlsDatasource);
         ClassifierProperties classifierProperties = properties.getClassifier();
 

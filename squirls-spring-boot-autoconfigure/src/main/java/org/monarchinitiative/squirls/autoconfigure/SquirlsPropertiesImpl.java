@@ -79,6 +79,7 @@ package org.monarchinitiative.squirls.autoconfigure;
 import org.monarchinitiative.squirls.initialize.AnnotatorProperties;
 import org.monarchinitiative.squirls.initialize.ClassifierProperties;
 import org.monarchinitiative.squirls.initialize.SquirlsProperties;
+import org.monarchinitiative.squirls.initialize.TranscriptSource;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.NestedConfigurationProperty;
 
@@ -97,6 +98,11 @@ public class SquirlsPropertiesImpl implements SquirlsProperties {
      * Genome assembly version, choose from {hg19, hg38}.
      */
     private String genomeAssembly;
+
+    /**
+     * Use either RefSeq or Gencode.
+     */
+    private TranscriptSource transcriptSource = TranscriptSource.GENCODE;
 
     /**
      * Exomiser-like data version, e.g. `1902`.
@@ -137,6 +143,15 @@ public class SquirlsPropertiesImpl implements SquirlsProperties {
 
     public void setDataVersion(String dataVersion) {
         this.dataVersion = dataVersion;
+    }
+
+    @Override
+    public TranscriptSource getTranscriptSource() {
+        return transcriptSource;
+    }
+
+    public void setTranscriptSource(TranscriptSource transcriptSource) {
+        this.transcriptSource = transcriptSource;
     }
 
     @Override

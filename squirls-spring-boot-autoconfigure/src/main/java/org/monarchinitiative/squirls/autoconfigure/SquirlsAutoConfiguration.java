@@ -99,9 +99,9 @@ import org.monarchinitiative.squirls.io.SquirlsResourceException;
 import org.monarchinitiative.squirls.io.db.DbClassifierFactory;
 import org.monarchinitiative.squirls.io.db.DbKMerDao;
 import org.monarchinitiative.squirls.io.db.DbSplicingPositionalWeightMatrixParser;
-import org.monarchinitiative.squirls.io.db.TranscriptModelServiceDb;
 import org.monarchinitiative.squirls.io.sequence.FastaStrandedSequenceService;
 import org.monarchinitiative.squirls.io.sequence.InvalidFastaFileException;
+import org.monarchinitiative.squirls.io.transcript.TranscriptModelServiceSg;
 import org.monarchinitiative.svart.assembly.GenomicAssembly;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -162,7 +162,7 @@ public class SquirlsAutoConfiguration {
         if (!Files.isDirectory(dataDirPath)) {
             throw new UndefinedSquirlsResourceException(String.format("Path to Squirls data directory '%s' does not point to real directory", dataDirPath));
         }
-        if (LOGGER.isInfoEnabled()) LOGGER.info("Spooling up Squirls v{} using resources in `{}`", SQUIRLS_VERSION, dataDirPath.toAbsolutePath());
+        LOGGER.info("Spooling up Squirls v{} using resources in `{}`", SQUIRLS_VERSION, dataDirPath.toAbsolutePath());
         return dataDirPath;
     }
 
@@ -189,7 +189,7 @@ public class SquirlsAutoConfiguration {
 
     @Bean
     public BigWigAccessor phylopBigwigAccessor(SquirlsDataResolver squirlsDataResolver) throws IOException {
-        if (LOGGER.isDebugEnabled()) LOGGER.debug("Using phyloP bigwig file at `{}`", squirlsDataResolver.phylopPath());
+        LOGGER.debug("Using phyloP bigwig file at `{}`", squirlsDataResolver.phylopPath());
         return new BigWigAccessor(squirlsDataResolver.phylopPath());
     }
 
@@ -216,8 +216,24 @@ public class SquirlsAutoConfiguration {
     }
 
     @Bean
-    public TranscriptModelService transcriptModelService(DataSource squirlsDatasource, GenomicAssembly genomicAssembly) throws SquirlsResourceException {
-        return new TranscriptModelServiceDb(squirlsDatasource, genomicAssembly);
+    public TranscriptModelService transcriptModelService(SquirlsProperties properties,
+                                                         GenomicAssembly genomicAssembly,
+                                                         SquirlsDataResolver dataResolver) throws SquirlsResourceException {
+        Path silentGenesJsonPath;
+        switch (properties.getTranscriptSource()) {
+            case REFSEQ:
+                LOGGER.debug("Using RefSeq transcripts");
+                silentGenesJsonPath = dataResolver.refseqJsonPath();
+                break;
+            case GENCODE:
+                LOGGER.debug("Using Gencode transcripts");
+                silentGenesJsonPath = dataResolver.gencodeJsonPath();
+                break;
+            default:
+                throw new SquirlsResourceException("Unknown transcript source `" + properties.getTranscriptSource() + "`");
+        }
+
+        return TranscriptModelServiceSg.of(genomicAssembly, silentGenesJsonPath);
     }
 
     @Bean
@@ -249,7 +265,7 @@ public class SquirlsAutoConfiguration {
             String msg = String.format("Classifier version `%s` is not available, choose one from %s",
                     clfVersion,
                     avail.stream().map(Objects::toString).sorted().collect(Collectors.joining(", ", "{", "}")));
-            if (LOGGER.isErrorEnabled()) LOGGER.error(msg);
+            LOGGER.error(msg);
             throw new UndefinedSquirlsResourceException(msg);
         }
 
@@ -321,7 +337,7 @@ public class SquirlsAutoConfiguration {
         try (InputStream is = SquirlsAutoConfiguration.class.getResourceAsStream("/squirls.properties")) {
             properties.load(is);
         } catch (IOException e) {
-            if (LOGGER.isWarnEnabled()) LOGGER.warn("Error loading properties: {}", e.getMessage());
+            LOGGER.warn("Error loading properties: {}", e.getMessage());
         }
         return properties;
     }

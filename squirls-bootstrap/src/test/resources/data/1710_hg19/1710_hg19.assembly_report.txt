@@ -1,8 +1,3 @@
-# ----------------------------------------------------------------------------------------------------------------------
-# Lengths of contigs were updated to match lengths of the example reference genome that is located in
-# this folder
-# ----------------------------------------------------------------------------------------------------------------------
-#
 # Assembly name:  GRCh37.p13
 # Description:    Genome Reference Consortium Human Build 37 patch release 13 (GRCh37.p13)
 # Organism name:  Homo sapiens (human)
@@ -39,30 +34,30 @@
 # RefSeq is equal or derived from GenBank object.
 #
 # Sequence-Name	Sequence-Role	Assigned-Molecule	Assigned-Molecule-Location/Type	GenBank-Accn	Relationship	RefSeq-Accn	Assembly-Unit	Sequence-Length	UCSC-style-name
-1	assembled-molecule	1	Chromosome	CM000663.1	=	NC_000001.10	Primary Assembly	59940	chr1
-2	assembled-molecule	2	Chromosome	CM000664.1	=	NC_000002.11	Primary Assembly	59940	chr2
-3	assembled-molecule	3	Chromosome	CM000665.1	=	NC_000003.11	Primary Assembly	59940	chr3
-4	assembled-molecule	4	Chromosome	CM000666.1	=	NC_000004.11	Primary Assembly	59940	chr4
-5	assembled-molecule	5	Chromosome	CM000667.1	=	NC_000005.9	Primary Assembly	59940	chr5
-6	assembled-molecule	6	Chromosome	CM000668.1	=	NC_000006.11	Primary Assembly	59940	chr6
-7	assembled-molecule	7	Chromosome	CM000669.1	=	NC_000007.13	Primary Assembly	59940	chr7
-8	assembled-molecule	8	Chromosome	CM000670.1	=	NC_000008.10	Primary Assembly	59940	chr8
-9	assembled-molecule	9	Chromosome	CM000671.1	=	NC_000009.11	Primary Assembly	59940	chr9
-10	assembled-molecule	10	Chromosome	CM000672.1	=	NC_000010.10	Primary Assembly	59940	chr10
-11	assembled-molecule	11	Chromosome	CM000673.1	=	NC_000011.9	Primary Assembly	59940	chr11
-12	assembled-molecule	12	Chromosome	CM000674.1	=	NC_000012.11	Primary Assembly	59940	chr12
-13	assembled-molecule	13	Chromosome	CM000675.1	=	NC_000013.10	Primary Assembly	59940	chr13
-14	assembled-molecule	14	Chromosome	CM000676.1	=	NC_000014.8	Primary Assembly	59940	chr14
-15	assembled-molecule	15	Chromosome	CM000677.1	=	NC_000015.9	Primary Assembly	59940	chr15
-16	assembled-molecule	16	Chromosome	CM000678.1	=	NC_000016.9	Primary Assembly	59940	chr16
-17	assembled-molecule	17	Chromosome	CM000679.1	=	NC_000017.10	Primary Assembly	59940	chr17
-18	assembled-molecule	18	Chromosome	CM000680.1	=	NC_000018.9	Primary Assembly	59940	chr18
-19	assembled-molecule	19	Chromosome	CM000681.1	=	NC_000019.9	Primary Assembly	59940	chr19
-20	assembled-molecule	20	Chromosome	CM000682.1	=	NC_000020.10	Primary Assembly	59940	chr20
-21	assembled-molecule	21	Chromosome	CM000683.1	=	NC_000021.8	Primary Assembly	59940	chr21
-22	assembled-molecule	22	Chromosome	CM000684.1	=	NC_000022.10	Primary Assembly	59940	chr22
-X	assembled-molecule	X	Chromosome	CM000685.1	=	NC_000023.10	Primary Assembly	59940	chrX
-Y	assembled-molecule	Y	Chromosome	CM000686.1	=	NC_000024.9	Primary Assembly	59940	chrY
+1	assembled-molecule	1	Chromosome	CM000663.1	=	NC_000001.10	Primary Assembly	249250621	chr1
+2	assembled-molecule	2	Chromosome	CM000664.1	=	NC_000002.11	Primary Assembly	243199373	chr2
+3	assembled-molecule	3	Chromosome	CM000665.1	=	NC_000003.11	Primary Assembly	198022430	chr3
+4	assembled-molecule	4	Chromosome	CM000666.1	=	NC_000004.11	Primary Assembly	191154276	chr4
+5	assembled-molecule	5	Chromosome	CM000667.1	=	NC_000005.9	Primary Assembly	180915260	chr5
+6	assembled-molecule	6	Chromosome	CM000668.1	=	NC_000006.11	Primary Assembly	171115067	chr6
+7	assembled-molecule	7	Chromosome	CM000669.1	=	NC_000007.13	Primary Assembly	159138663	chr7
+8	assembled-molecule	8	Chromosome	CM000670.1	=	NC_000008.10	Primary Assembly	146364022	chr8
+9	assembled-molecule	9	Chromosome	CM000671.1	=	NC_000009.11	Primary Assembly	141213431	chr9
+10	assembled-molecule	10	Chromosome	CM000672.1	=	NC_000010.10	Primary Assembly	135534747	chr10
+11	assembled-molecule	11	Chromosome	CM000673.1	=	NC_000011.9	Primary Assembly	135006516	chr11
+12	assembled-molecule	12	Chromosome	CM000674.1	=	NC_000012.11	Primary Assembly	133851895	chr12
+13	assembled-molecule	13	Chromosome	CM000675.1	=	NC_000013.10	Primary Assembly	115169878	chr13
+14	assembled-molecule	14	Chromosome	CM000676.1	=	NC_000014.8	Primary Assembly	107349540	chr14
+15	assembled-molecule	15	Chromosome	CM000677.1	=	NC_000015.9	Primary Assembly	102531392	chr15
+16	assembled-molecule	16	Chromosome	CM000678.1	=	NC_000016.9	Primary Assembly	90354753	chr16
+17	assembled-molecule	17	Chromosome	CM000679.1	=	NC_000017.10	Primary Assembly	81195210	chr17
+18	assembled-molecule	18	Chromosome	CM000680.1	=	NC_000018.9	Primary Assembly	78077248	chr18
+19	assembled-molecule	19	Chromosome	CM000681.1	=	NC_000019.9	Primary Assembly	59128983	chr19
+20	assembled-molecule	20	Chromosome	CM000682.1	=	NC_000020.10	Primary Assembly	63025520	chr20
+21	assembled-molecule	21	Chromosome	CM000683.1	=	NC_000021.8	Primary Assembly	48129895	chr21
+22	assembled-molecule	22	Chromosome	CM000684.1	=	NC_000022.10	Primary Assembly	51304566	chr22
+X	assembled-molecule	X	Chromosome	CM000685.1	=	NC_000023.10	Primary Assembly	155270560	chrX
+Y	assembled-molecule	Y	Chromosome	CM000686.1	=	NC_000024.9	Primary Assembly	59373566	chrY
 HSCHR1_RANDOM_CTG5	unlocalized-scaffold	1	Chromosome	GL000191.1	=	NT_113878.1	Primary Assembly	106433	chr1_gl000191_random
 HSCHR1_RANDOM_CTG12	unlocalized-scaffold	1	Chromosome	GL000192.1	=	NT_167207.1	Primary Assembly	547496	chr1_gl000192_random
 HSCHR4_RANDOM_CTG2	unlocalized-scaffold	4	Chromosome	GL000193.1	=	NT_113885.1	Primary Assembly	189789	chr4_gl000193_random

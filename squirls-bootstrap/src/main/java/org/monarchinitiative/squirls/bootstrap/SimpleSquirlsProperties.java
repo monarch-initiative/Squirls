@@ -79,6 +79,7 @@ package org.monarchinitiative.squirls.bootstrap;
 import org.monarchinitiative.squirls.initialize.AnnotatorProperties;
 import org.monarchinitiative.squirls.initialize.ClassifierProperties;
 import org.monarchinitiative.squirls.initialize.SquirlsProperties;
+import org.monarchinitiative.squirls.initialize.TranscriptSource;
 
 import java.io.File;
 
@@ -89,6 +90,8 @@ public class SimpleSquirlsProperties implements SquirlsProperties {
 
     private final String dataDirectory;
 
+    private final TranscriptSource transcriptSource;
+
     private final ClassifierProperties classifierProperties;
 
     private final AnnotatorProperties annotatorProperties;
@@ -97,6 +100,7 @@ public class SimpleSquirlsProperties implements SquirlsProperties {
         dataDirectory = builder.dataDirectory;
         classifierProperties = builder.classifierProperties;
         annotatorProperties = builder.annotatorProperties;
+        transcriptSource = builder.transcriptSource;
     }
 
     @Override
@@ -114,6 +118,11 @@ public class SimpleSquirlsProperties implements SquirlsProperties {
     @Deprecated
     public String getDataVersion() {
         return "";
+    }
+
+    @Override
+    public TranscriptSource getTranscriptSource() {
+        return transcriptSource;
     }
 
     @Override
@@ -138,12 +147,19 @@ public class SimpleSquirlsProperties implements SquirlsProperties {
 
         private final String dataDirectory;
 
+        private TranscriptSource transcriptSource = TranscriptSource.GENCODE;
+
         private ClassifierProperties classifierProperties = new SimpleClassifierProperties();
 
         private AnnotatorProperties annotatorProperties = new SimpleAnnotatorProperties();
 
         private Builder(String dataDirectory) {
             this.dataDirectory = dataDirectory;
+        }
+
+        public Builder transcriptSource(TranscriptSource transcriptSource) {
+            this.transcriptSource = transcriptSource;
+            return this;
         }
 
         public Builder classifierProperties(ClassifierProperties classifierProperties) {

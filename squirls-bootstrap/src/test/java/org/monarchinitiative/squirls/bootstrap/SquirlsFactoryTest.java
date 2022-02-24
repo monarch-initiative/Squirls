@@ -79,6 +79,7 @@ package org.monarchinitiative.squirls.bootstrap;
 import org.junit.jupiter.api.Test;
 import org.monarchinitiative.squirls.initialize.GenomicAssemblyVersion;
 import org.monarchinitiative.squirls.initialize.SquirlsResourceVersion;
+import org.monarchinitiative.squirls.initialize.TranscriptSource;
 import org.monarchinitiative.squirls.io.SquirlsResourceException;
 
 import java.io.File;
@@ -94,6 +95,7 @@ public class SquirlsFactoryTest {
     private static final SimpleSquirlsProperties PROPERTIES = SimpleSquirlsProperties.builder(RESOURCES_PATH)
             .annotatorProperties(new SimpleAnnotatorProperties())
             .classifierProperties(new SimpleClassifierProperties())
+            .transcriptSource(TranscriptSource.REFSEQ) // non-default
             .build();
 
     @Test
