@@ -5,3 +5,6 @@
  ___/ / /_/ / /_/ / // /  / /(__  )
 /____/\__, /\__,_/_//_/  /_//____/
         /_/
+
+Super-quick Information Content and Random Forest Learning for Splice Variants
+:: v@project.version@ ::
