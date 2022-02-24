@@ -77,6 +77,7 @@
 package org.monarchinitiative.squirls.cli.cmd.precalculate;
 
 import htsjdk.variant.variantcontext.writer.VariantContextWriter;
+import org.monarchinitiative.sgenes.model.Transcript;
 import org.monarchinitiative.squirls.cli.cmd.ProgressReporter;
 import org.monarchinitiative.squirls.core.*;
 import org.monarchinitiative.squirls.core.classifier.SquirlsClassifier;
@@ -171,12 +172,12 @@ class Precalculation extends RecursiveAction {
     }
 
     private void analyze(GenomicRegion region) {
-        List<TranscriptModel> transcripts = dataService.overlappingTranscripts(region);
+        List<Transcript> transcripts = dataService.overlappingTranscripts(region);
         if (transcripts.isEmpty())
             return;
 
         int min = -1, max = -1;
-        for (TranscriptModel tx : transcripts) {
+        for (Transcript tx : transcripts) {
             int txs = tx.startOnStrandWithCoordinateSystem(Strand.POSITIVE, CoordinateSystem.zeroBased());
             min = (min < 0) ? txs : Math.min(min, txs);
 
@@ -194,14 +195,14 @@ class Precalculation extends RecursiveAction {
 
         for (GenomicVariant variant : variants) {
             List<SquirlsTxResult> results = new ArrayList<>(transcripts.size());
-            for (TranscriptModel tx : transcripts) {
-                if (!tx.overlapsWith(variant) || tx.exonCount() == 1)
+            for (Transcript tx : transcripts) {
+                if (!tx.location().overlapsWith(variant) || tx.exonCount() == 1)
                     continue;
 
                 VariantOnTranscript vot = VariantOnTranscript.of(variant, tx, enoughSequence);
                 SquirlsFeatures features = annotator.annotate(vot);
                 Prediction prediction = classifier.predict(features);
-                SquirlsTxResult txResult = SquirlsTxResult.of(tx.accessionId(), prediction, Map.of()); // Features are not required downstream
+                SquirlsTxResult txResult = SquirlsTxResult.of(tx.accession(), prediction, Map.of()); // Features are not required downstream
                 results.add(txResult);
             }
 

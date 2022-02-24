@@ -80,10 +80,10 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
+import org.monarchinitiative.sgenes.model.Transcript;
 import org.monarchinitiative.squirls.core.classifier.SquirlsClassifier;
 import org.monarchinitiative.squirls.core.classifier.SquirlsFeatures;
 import org.monarchinitiative.squirls.core.reference.StrandedSequence;
-import org.monarchinitiative.squirls.core.reference.TranscriptModel;
 import org.monarchinitiative.squirls.core.scoring.SplicingAnnotator;
 import org.monarchinitiative.svart.*;
 import org.monarchinitiative.svart.assembly.AssignedMoleculeType;
@@ -146,7 +146,7 @@ public class VariantSplicingEvaluatorDefaultTest {
         GenomicVariant variant = GenomicVariant.of(chr9, "", Strand.POSITIVE, CoordinateSystem.oneBased(), 136_223_949, "G", "C");
 
         // 0 - squirls data service
-        TranscriptModel stx = PojosForTesting.surf2_NM_017503_5(chr9);
+        Transcript stx = PojosForTesting.surf2_NM_017503_5(chr9);
         when(squirlsDataService.transcriptByAccession("NM_017503.5")).thenReturn(Optional.of(stx));
         when(squirlsDataService.sequenceForRegion(any(GenomicRegion.class))).thenReturn(sequence);
 
@@ -212,7 +212,7 @@ public class VariantSplicingEvaluatorDefaultTest {
     @Test
     public void evaluateWrtTx_notEnoughSequenceAvailable() {
         Contig chr9 = assembly.contigByName("9");
-        TranscriptModel stx = PojosForTesting.surf2_NM_017503_5(chr9);
+        Transcript stx = PojosForTesting.surf2_NM_017503_5(chr9);
         when(squirlsDataService.transcriptByAccession("NM_017503.5")).thenReturn(Optional.of(stx));
         when(squirlsDataService.sequenceForRegion(any(GenomicRegion.class))).thenReturn(null);
 
@@ -234,7 +234,7 @@ public class VariantSplicingEvaluatorDefaultTest {
         Contig chr9 = assembly.contigByName("9");
         GenomicVariant variant = GenomicVariant.of(chr9, "", Strand.POSITIVE, CoordinateSystem.oneBased(), 136_223_949, "G", "C");
 
-        TranscriptModel stx = PojosForTesting.surf2_NM_017503_5(chr9);
+        Transcript stx = PojosForTesting.surf2_NM_017503_5(chr9);
 
         when(squirlsDataService.sequenceForRegion(any(GenomicRegion.class))).thenReturn(sequence);
         when(squirlsDataService.overlappingTranscripts(variant.toZeroBased())).thenReturn(List.of(stx));

@@ -76,6 +76,7 @@
 
 package org.monarchinitiative.squirls.core.scoring.calculators;
 
+import org.monarchinitiative.sgenes.model.Transcript;
 import org.monarchinitiative.squirls.core.reference.*;
 import org.monarchinitiative.squirls.core.scoring.calculators.ic.SplicingInformationContentCalculator;
 import org.monarchinitiative.svart.GenomicRegion;
@@ -99,7 +100,7 @@ public class WtRiDonor extends BaseFeatureCalculator {
     }
 
     @Override
-    protected double score(GenomicVariant variant, SplicingLocationData locationData, TranscriptModel tx, StrandedSequence sequence) {
+    protected double score(GenomicVariant variant, SplicingLocationData locationData, Transcript tx, StrandedSequence sequence) {
         switch (locationData.getPosition()) {
             case DONOR:
             case ACCEPTOR:

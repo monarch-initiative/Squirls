@@ -77,6 +77,7 @@
 package org.monarchinitiative.squirls.cli.visualization.panel;
 
 import de.charite.compbio.jannovar.annotation.Annotation;
+import org.monarchinitiative.sgenes.model.Transcript;
 import org.monarchinitiative.squirls.cli.visualization.SplicingVariantGraphicsGenerator;
 import org.monarchinitiative.squirls.cli.visualization.VisualizableVariantAllele;
 import org.monarchinitiative.squirls.cli.visualization.selector.VisualizationContext;
@@ -151,7 +152,7 @@ public class PanelGraphicsGenerator implements SplicingVariantGraphicsGenerator 
         templateEngine.setTemplateResolver(templateResolver);
     }
 
-    private StrandedSequence fetchSequenceForTranscript(TranscriptModel transcript) {
+    private StrandedSequence fetchSequenceForTranscript(GenomicRegion transcript) {
         return squirlsDataService.sequenceForRegion(transcript.withPadding(250, 250));
     }
 
@@ -173,13 +174,13 @@ public class PanelGraphicsGenerator implements SplicingVariantGraphicsGenerator 
         SquirlsTxResult highestPrediction = mspOpt.get();
         context.setVariable("highest_prediction", highestPrediction); // for features table
 
-        Optional<TranscriptModel> stOpt = squirlsDataService.transcriptByAccession(highestPrediction.accessionId());
+        Optional<Transcript> stOpt = squirlsDataService.transcriptByAccession(highestPrediction.accessionId());
         if (stOpt.isEmpty()) {
             if (LOGGER.isWarnEnabled())
                 LOGGER.warn("Could not find transcript {} for variant {}", highestPrediction.accessionId(), allele.genomeVariant());
             return EMPTY_SVG_IMAGE;
         }
-        TranscriptModel transcript = stOpt.get();
+        Transcript transcript = stOpt.get();
 
 
         GenomicVariant variant = allele.variant().withStrand(transcript.strand()).withCoordinateSystem(transcript.coordinateSystem());
@@ -211,10 +212,10 @@ public class PanelGraphicsGenerator implements SplicingVariantGraphicsGenerator 
         }
         context.setVariable("context", visualizationContext.getTitle());
 
-        StrandedSequence sequence = fetchSequenceForTranscript(transcript);
+        StrandedSequence sequence = fetchSequenceForTranscript(transcript.location());
         if (sequence == null) {
             if (LOGGER.isWarnEnabled())
-                LOGGER.warn("Unable to fetch enough reference sequence for transcript `{}`", transcript.accessionId());
+                LOGGER.warn("Unable to fetch enough reference sequence for transcript `{}`", transcript.accession());
             return templateEngine.process(templateName, context);
         }
 

@@ -88,6 +88,7 @@ import java.util.stream.Collectors;
 /**
  * @author Daniel Danis
  */
+@Deprecated
 class TranscriptModelBuilder {
 
     // all transcripts are stored in the database using 0-based system

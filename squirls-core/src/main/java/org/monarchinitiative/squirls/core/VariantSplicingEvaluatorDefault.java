@@ -76,10 +76,10 @@
 
 package org.monarchinitiative.squirls.core;
 
+import org.monarchinitiative.sgenes.model.Transcript;
 import org.monarchinitiative.squirls.core.classifier.SquirlsClassifier;
 import org.monarchinitiative.squirls.core.classifier.SquirlsFeatures;
 import org.monarchinitiative.squirls.core.reference.StrandedSequence;
-import org.monarchinitiative.squirls.core.reference.TranscriptModel;
 import org.monarchinitiative.squirls.core.scoring.SplicingAnnotator;
 import org.monarchinitiative.svart.*;
 import org.slf4j.Logger;
@@ -157,7 +157,7 @@ class VariantSplicingEvaluatorDefault implements VariantSplicingEvaluator {
          1 - get overlapping splicing transcripts. Query by coordinates if no txIDs are provided. Only transcripts with
          two or more exons that overlap with the variant interval are considered.
          */
-        Map<String, TranscriptModel> txMap = fetchTranscripts(variant, txIds);
+        Map<String, Transcript> txMap = fetchTranscripts(variant, txIds);
 
         if (txMap.isEmpty()) {
             // shortcut, no transcripts to evaluate
@@ -171,8 +171,8 @@ class VariantSplicingEvaluatorDefault implements VariantSplicingEvaluator {
         Strand strand = Strand.POSITIVE;
         CoordinateSystem coordinateSystem = CoordinateSystem.zeroBased();
         Integer bp = null, ep = null;
-        for (TranscriptModel tx : txMap.values()) {
-            GenomicRegion txIntervalFwd = tx.withStrand(strand).withCoordinateSystem(coordinateSystem);
+        for (Transcript tx : txMap.values()) {
+            GenomicRegion txIntervalFwd = tx.location().withStrand(strand).withCoordinateSystem(coordinateSystem);
             int start = txIntervalFwd.start();
             if (bp == null || bp > start) {
                 bp = start;
@@ -209,7 +209,7 @@ class VariantSplicingEvaluatorDefault implements VariantSplicingEvaluator {
     }
 
     /**
-     * Use provided variant coordinates <em>OR</em> transcript accession IDs to fetch {@link TranscriptModel}s from
+     * Use provided variant coordinates <em>OR</em> transcript accession IDs to fetch {@link Transcript}s from
      * the database.
      * <p>
      * Only transcripts consisting of 2 or more exons that overlap with the <code>variant</code> are returned.
@@ -219,25 +219,25 @@ class VariantSplicingEvaluatorDefault implements VariantSplicingEvaluator {
      * @param txIds   set of transcript accession IDs
      * @return map with transcripts group
      */
-    private Map<String, TranscriptModel> fetchTranscripts(GenomicRegion variant, Set<String> txIds) {
-        Map<String, TranscriptModel> txMap = new HashMap<>();
+    private Map<String, Transcript> fetchTranscripts(GenomicRegion variant, Set<String> txIds) {
+        Map<String, Transcript> txMap = new HashMap<>();
         variant = variant.toPositiveStrand().toZeroBased();
 
         if (txIds.isEmpty()) {
             // querying by coordinates
             return squirlsDataService.overlappingTranscripts(variant).stream()
                     .filter(st -> !st.introns().isEmpty())
-                    .collect(Collectors.toMap(TranscriptModel::accessionId, Function.identity()));
+                    .collect(Collectors.toMap(Transcript::accession, Function.identity()));
         } else {
             // or query by transcript IDs
             for (String txId : txIds) {
-                Optional<TranscriptModel> sto = squirlsDataService.transcriptByAccession(txId);
+                Optional<Transcript> sto = squirlsDataService.transcriptByAccession(txId);
                 if (sto.isPresent()) {
-                    TranscriptModel st = sto.get();
+                    Transcript st = sto.get();
                     // the transcript
                     //  - has 2+ exons
                     //  - overlaps with the variant
-                    if (!st.introns().isEmpty() && st.overlapsWith(variant)) {
+                    if (!st.introns().isEmpty() && st.location().overlapsWith(variant)) {
                         txMap.put(txId, st);
                     }
                 } else {

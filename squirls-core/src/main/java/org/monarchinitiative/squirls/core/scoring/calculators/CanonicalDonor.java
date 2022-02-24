@@ -76,6 +76,7 @@
 
 package org.monarchinitiative.squirls.core.scoring.calculators;
 
+import org.monarchinitiative.sgenes.model.Transcript;
 import org.monarchinitiative.squirls.core.Utils;
 import org.monarchinitiative.squirls.core.reference.*;
 import org.monarchinitiative.squirls.core.scoring.calculators.ic.SplicingInformationContentCalculator;
@@ -98,7 +99,7 @@ public class CanonicalDonor extends BaseFeatureCalculator {
     }
 
     @Override
-    protected double score(GenomicVariant variant, SplicingLocationData locationData, TranscriptModel tx, StrandedSequence sequence) {
+    protected double score(GenomicVariant variant, SplicingLocationData locationData, Transcript tx, StrandedSequence sequence) {
         if (locationData.getPosition() == SplicingLocationData.SplicingPosition.DONOR) {
             return locationData.getDonorRegion()
                     .map(donor -> score(variant, donor, sequence))
@@ -117,7 +118,7 @@ public class CanonicalDonor extends BaseFeatureCalculator {
         String donorSiteSnippet = sequence.subsequence(donor);
         if (donorSiteSnippet == null) {
             if (LOGGER.isDebugEnabled())
-                LOGGER.debug("Unable to create wt snippets for variant `{}` using interval `{}`", variant, Utils.formatAsRegion(sequence));
+                LOGGER.debug("Unable to create wt snippets for variant `{}` using interval `{}`", variant, Utils.formatAsRegion(sequence.location()));
             return Double.NaN;
         }
         double refScore = calculator.getSpliceDonorScore(donorSiteSnippet);
@@ -131,7 +132,7 @@ public class CanonicalDonor extends BaseFeatureCalculator {
 
         if (donorSiteWithAltAllele == null) {
             if (LOGGER.isDebugEnabled())
-                LOGGER.debug("Unable to create alt snippets for variant `{}` using interval `{}`", variant, Utils.formatAsRegion(sequence));
+                LOGGER.debug("Unable to create alt snippets for variant `{}` using interval `{}`", variant, Utils.formatAsRegion(sequence.location()));
             return Double.NaN;
         }
 

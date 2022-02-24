@@ -78,6 +78,7 @@ package org.monarchinitiative.squirls.cli.data;
 
 import de.charite.compbio.jannovar.annotation.VariantAnnotations;
 import htsjdk.variant.variantcontext.VariantContext;
+import org.monarchinitiative.sgenes.model.Transcript;
 import org.monarchinitiative.squirls.cli.writers.WritableSplicingAllele;
 import org.monarchinitiative.squirls.core.SquirlsResult;
 import org.monarchinitiative.squirls.core.VariantOnTranscript;
@@ -111,7 +112,7 @@ public class TestVariant implements WritableSplicingAllele, SquirlsFeatures, Var
 
     private final GenomicVariant variant;
 
-    private final TranscriptModel tx;
+    private final Transcript tx;
 
     private final StrandedSequence si;
 
@@ -129,7 +130,7 @@ public class TestVariant implements WritableSplicingAllele, SquirlsFeatures, Var
      */
     private String graphics;
 
-    TestVariant(VariantContext base, GenomicVariant variant, TranscriptModel tx, StrandedSequence si, Map<String, Double> features) {
+    TestVariant(VariantContext base, GenomicVariant variant, Transcript tx, StrandedSequence si, Map<String, Double> features) {
         this.base = base;
         this.variant = variant;
         this.tx = tx;
@@ -174,7 +175,7 @@ public class TestVariant implements WritableSplicingAllele, SquirlsFeatures, Var
     }
 
     @Override
-    public TranscriptModel transcript() {
+    public Transcript transcript() {
         return tx;
     }
 

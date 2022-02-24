@@ -76,7 +76,8 @@
 
 package org.monarchinitiative.squirls.cli.data;
 
-import org.monarchinitiative.squirls.core.reference.TranscriptModel;
+import org.monarchinitiative.sgenes.model.Transcript;
+import org.monarchinitiative.sgenes.model.TranscriptIdentifier;
 import org.monarchinitiative.svart.*;
 
 import java.util.List;
@@ -96,7 +97,7 @@ class Transcripts {
      *     <li>NM_001278928.1</li>
      * </ul>
      */
-    static List<TranscriptModel> surf2Transcripts(Contig contig) {
+    static List<Transcript> surf2Transcripts(Contig contig) {
         return List.of(surf2_NM_017503_4(contig), surf2_NM_001278928_1(contig));
     }
 
@@ -106,7 +107,7 @@ class Transcripts {
      *     <li>NM_000478.4</li>
      * </ul>
      */
-    static List<TranscriptModel> alplTranscripts(Contig contig) {
+    static List<Transcript> alplTranscripts(Contig contig) {
         return List.of(alpl_NM_000478_4(contig));
     }
 
@@ -116,7 +117,7 @@ class Transcripts {
      *      <li>NM_000548.3</li> - the transcript only contains the first, the 11th and the last exon of the real transcript
      *  </ul>
      */
-    static List<TranscriptModel> tsc2Transcripts(Contig contig) {
+    static List<Transcript> tsc2Transcripts(Contig contig) {
         return List.of(reduced_tsc2_NM000548_3(contig));
     }
 
@@ -126,7 +127,7 @@ class Transcripts {
      *      <li>NM_000495.4</li> - the transcript only contains the first, the 29th and the last exon of the real transcript
      *  </ul>
      */
-    static List<TranscriptModel> col4a5Transcripts(Contig contig) {
+    static List<Transcript> col4a5Transcripts(Contig contig) {
         return List.of(reduced_col4a5_NM_000495_4(contig));
     }
 
@@ -137,7 +138,7 @@ class Transcripts {
      *      real transcript
      *  </ul>
      */
-    static List<TranscriptModel> ryr1Transcripts(Contig contig) {
+    static List<Transcript> ryr1Transcripts(Contig contig) {
         return List.of(reduced_ryr1_NM_000540_2(contig));
     }
 
@@ -149,7 +150,7 @@ class Transcripts {
      *      real transcript
      *  </ul>
      */
-    static List<TranscriptModel> hbbTranscripts(Contig contig) {
+    static List<Transcript> hbbTranscripts(Contig contig) {
         return List.of(hbb_NM_000518_4(contig));
     }
 
@@ -161,7 +162,7 @@ class Transcripts {
      *      real transcript
      *  </ul>
      */
-    static List<TranscriptModel> brca2Transcripts(Contig contig) {
+    static List<Transcript> brca2Transcripts(Contig contig) {
         return List.of(reduced_brca2_NM_000059_3(contig));
     }
 
@@ -173,7 +174,7 @@ class Transcripts {
      *      real transcript
      *  </ul>
      */
-    static List<TranscriptModel> vwfTranscripts(Contig contig) {
+    static List<Transcript> vwfTranscripts(Contig contig) {
         return List.of(reduced_vwf_NM_000552_3(contig));
     }
 
@@ -184,7 +185,7 @@ class Transcripts {
      *      real transcript
      *  </ul>
      */
-    static List<TranscriptModel> nf1Transcripts(Contig contig) {
+    static List<Transcript> nf1Transcripts(Contig contig) {
         return List.of(reduced_nf1_NM_000267_3(contig));
     }
 
@@ -194,12 +195,14 @@ class Transcripts {
      *
      * @return transcript
      */
-    private static TranscriptModel reduced_nf1_NM_000267_3(Contig contig) {
-        return TranscriptModel.coding(contig, Strand.POSITIVE, Coordinates.of(CoordinateSystem.zeroBased(),
-                29_421_944, 29_704_695), 29_421_944, 29_704_695, "NM_000267.3", "NF1",
-                List.of(GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(), 29_421_944, 29_422_387),
-                        GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(), 29_527_439, 29_527_613),
-                        GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(), 29_701_030, 29_704_695)));
+    private static Transcript reduced_nf1_NM_000267_3(Contig contig) {
+        return Transcript.of(
+                TranscriptIdentifier.of("NM_000267.3", "NF1", null),
+                GenomicRegion.of(contig, Strand.POSITIVE, Coordinates.of(CoordinateSystem.zeroBased(), 29_421_944, 29_704_695)),
+                List.of(Coordinates.of(CoordinateSystem.zeroBased(), 29_421_944, 29_422_387),
+                        Coordinates.of(CoordinateSystem.zeroBased(), 29_527_439, 29_527_613),
+                        Coordinates.of(CoordinateSystem.zeroBased(), 29_701_030, 29_704_695)),
+                Coordinates.of(CoordinateSystem.zeroBased(), 29_421_944, 29_704_695));
     }
 
     /**
@@ -207,15 +210,17 @@ class Transcripts {
      *
      * @return transcript
      */
-    private static TranscriptModel surf2_NM_017503_4(Contig contig) {
-        return TranscriptModel.coding(contig, Strand.POSITIVE, Coordinates.of(CoordinateSystem.zeroBased(),
-                136_223_424, 136_228_034), 136_223_424, 136_228_034, "NM_017503.4", "SURF2",
-                List.of(GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(), 136_223_424, 136_223_546),
-                        GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(), 136_223_788, 136_223_944),
-                        GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(), 136_224_585, 136_224_690),
-                        GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(), 136_226_824, 136_227_005),
-                        GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(), 136_227_139, 136_227_310),
-                        GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(), 136_227_930, 136_228_034)));
+    private static Transcript surf2_NM_017503_4(Contig contig) {
+        return Transcript.of(
+                TranscriptIdentifier.of("NM_017503.4", "SURF2", null),
+                GenomicRegion.of(contig, Strand.POSITIVE, Coordinates.of(CoordinateSystem.zeroBased(), 136_223_424, 136_228_034)),
+                List.of(Coordinates.of(CoordinateSystem.zeroBased(), 136_223_424, 136_223_546),
+                        Coordinates.of(CoordinateSystem.zeroBased(), 136_223_788, 136_223_944),
+                        Coordinates.of(CoordinateSystem.zeroBased(), 136_224_585, 136_224_690),
+                        Coordinates.of(CoordinateSystem.zeroBased(), 136_226_824, 136_227_005),
+                        Coordinates.of(CoordinateSystem.zeroBased(), 136_227_139, 136_227_310),
+                        Coordinates.of(CoordinateSystem.zeroBased(), 136_227_930, 136_228_034)),
+                Coordinates.of(CoordinateSystem.zeroBased(), 136_223_424, 136_228_034));
     }
 
     /**
@@ -228,16 +233,18 @@ class Transcripts {
      *
      * @return transcript
      */
-    private static TranscriptModel surf2_NM_001278928_1(Contig contig) {
+    private static Transcript surf2_NM_001278928_1(Contig contig) {
         // this is the same transcript as in the method surf2_NM_017503_4, except for the accession ID
-        return TranscriptModel.coding(contig, Strand.POSITIVE, Coordinates.of(CoordinateSystem.zeroBased(),
-                136_223_424, 136_228_034), 136_223_424, 136_228_034, "NM_001278928.1", "SURF2",
-                List.of(GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(), 136_223_424, 136_223_546),
-                        GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(), 136_223_788, 136_223_944),
-                        GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(), 136_224_585, 136_224_690),
-                        GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(), 136_226_824, 136_227_005),
-                        GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(), 136_227_139, 136_227_310),
-                        GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(), 136_227_930, 136_228_034)));
+        return Transcript.of(
+                TranscriptIdentifier.of("NM_001278928.1", "SURF2", null),
+                GenomicRegion.of(contig, Strand.POSITIVE, Coordinates.of(CoordinateSystem.zeroBased(), 136_223_424, 136_228_034)),
+                List.of(Coordinates.of(CoordinateSystem.zeroBased(), 136_223_424, 136_223_546),
+                        Coordinates.of(CoordinateSystem.zeroBased(), 136_223_788, 136_223_944),
+                        Coordinates.of(CoordinateSystem.zeroBased(), 136_224_585, 136_224_690),
+                        Coordinates.of(CoordinateSystem.zeroBased(), 136_226_824, 136_227_005),
+                        Coordinates.of(CoordinateSystem.zeroBased(), 136_227_139, 136_227_310),
+                        Coordinates.of(CoordinateSystem.zeroBased(), 136_227_930, 136_228_034)),
+                Coordinates.of(CoordinateSystem.zeroBased(), 136_223_424, 136_228_034));
     }
 
     /**
@@ -245,21 +252,24 @@ class Transcripts {
      *
      * @return transcript
      */
-    private static TranscriptModel alpl_NM_000478_4(Contig contig) {
-        return TranscriptModel.coding(contig, Strand.POSITIVE, Coordinates.of(CoordinateSystem.zeroBased(),
-                21_835_915, 21_904_903), 21_835_915, 21_904_903, "NM_000478.4", "ALPL",
-                List.of(GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(), 21_835_915, 21_836_010),
-                        GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(), 21_880_470, 21_880_635),
-                        GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(), 21_887_118, 21_887_238),
-                        GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(), 21_887_589, 21_887_705),
-                        GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(), 21_889_602, 21_889_777),
-                        GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(), 21_890_533, 21_890_709),
-                        GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(), 21_894_596, 21_894_740),
-                        GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(), 21_896_797, 21_896_867),
-                        GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(), 21_900_157, 21_900_292),
-                        GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(), 21_902_225, 21_902_417),
-                        GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(), 21_903_014, 21_903_134),
-                        GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(), 21_903_875, 21_904_903)));
+    private static Transcript alpl_NM_000478_4(Contig contig) {
+        return Transcript.of(
+                TranscriptIdentifier.of("NM_000478.4", "ALPL", null),
+                GenomicRegion.of(contig, Strand.POSITIVE, Coordinates.of(CoordinateSystem.zeroBased(), 21_835_915, 21_904_903)),
+                List.of(Coordinates.of(CoordinateSystem.zeroBased(), 21_835_915, 21_836_010),
+                        Coordinates.of(CoordinateSystem.zeroBased(), 21_880_470, 21_880_635),
+                        Coordinates.of(CoordinateSystem.zeroBased(), 21_887_118, 21_887_238),
+                        Coordinates.of(CoordinateSystem.zeroBased(), 21_887_589, 21_887_705),
+                        Coordinates.of(CoordinateSystem.zeroBased(), 21_889_602, 21_889_777),
+                        Coordinates.of(CoordinateSystem.zeroBased(), 21_890_533, 21_890_709),
+                        Coordinates.of(CoordinateSystem.zeroBased(), 21_894_596, 21_894_740),
+                        Coordinates.of(CoordinateSystem.zeroBased(), 21_896_797, 21_896_867),
+                        Coordinates.of(CoordinateSystem.zeroBased(), 21_900_157, 21_900_292),
+                        Coordinates.of(CoordinateSystem.zeroBased(), 21_902_225, 21_902_417),
+                        Coordinates.of(CoordinateSystem.zeroBased(), 21_903_014, 21_903_134),
+                        Coordinates.of(CoordinateSystem.zeroBased(), 21_903_875, 21_904_903)
+                        ),
+                Coordinates.of(CoordinateSystem.zeroBased(), 21_835_915, 21_904_903));
     }
 
     /**
@@ -268,12 +278,15 @@ class Transcripts {
      *
      * @return transcript
      */
-    private static TranscriptModel reduced_tsc2_NM000548_3(Contig contig) {
-        return TranscriptModel.coding(contig, Strand.POSITIVE, Coordinates.of(CoordinateSystem.zeroBased(),
-                2_097_985, 2_139_492), 2_097_985, 2_139_492, "NM_000548.3", "TSC2",
-                List.of(GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(), 2_097_985, 2_098_066),
-                        GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(), 2_110_670, 2_110_814),
-                        GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(), 2_138_446, 2_139_492)));
+    private static Transcript reduced_tsc2_NM000548_3(Contig contig) {
+        return Transcript.of(
+                TranscriptIdentifier.of("NM_000548.3", "TSC2", null),
+                GenomicRegion.of(contig, Strand.POSITIVE, Coordinates.of(CoordinateSystem.zeroBased(), 2_097_985, 2_139_492)),
+                List.of(Coordinates.of(CoordinateSystem.zeroBased(), 2_097_985, 2_098_066),
+                        Coordinates.of(CoordinateSystem.zeroBased(), 2_110_670, 2_110_814),
+                        Coordinates.of(CoordinateSystem.zeroBased(), 2_138_446, 2_139_492)
+                ),
+                Coordinates.of(CoordinateSystem.zeroBased(), 2_097_985, 2_139_492));
     }
 
     /**
@@ -282,13 +295,16 @@ class Transcripts {
      *
      * @return transcript
      */
-    private static TranscriptModel reduced_col4a5_NM_000495_4(Contig contig) {
-        return TranscriptModel.coding(contig, Strand.POSITIVE, Coordinates.of(CoordinateSystem.zeroBased(),
-                107_683_067, 107_940_775), 107_683_067, 107_940_775, "NM_000495.4", "COL4A5",
-                List.of(GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(), 107_683_067, 107_683_436),
-                        GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(), 107_849_971, 107_850_122),
-                        GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(), 107_939_526, 107_940_775)));
-    }
+    private static Transcript reduced_col4a5_NM_000495_4(Contig contig) {
+        return Transcript.of(
+                TranscriptIdentifier.of("NM_000495.4", "COL4A5", null),
+                GenomicRegion.of(contig, Strand.POSITIVE, Coordinates.of(CoordinateSystem.zeroBased(), 107_683_067, 107_940_775)),
+                List.of(Coordinates.of(CoordinateSystem.zeroBased(), 107_683_067, 107_683_436),
+                        Coordinates.of(CoordinateSystem.zeroBased(), 107_849_971, 107_850_122),
+                        Coordinates.of(CoordinateSystem.zeroBased(), 107_939_526, 107_940_775)
+                ),
+                Coordinates.of(CoordinateSystem.zeroBased(), 107_683_067, 107_940_775));
+        }
 
     /**
      * Get a transcript that contains the first, the 102nd, and the last (106th) exon of the <em>RYR1</em> <em>NM_000540.2</em>
@@ -296,12 +312,15 @@ class Transcripts {
      *
      * @return transcript
      */
-    private static TranscriptModel reduced_ryr1_NM_000540_2(Contig contig) {
-        return TranscriptModel.coding(contig, Strand.POSITIVE, Coordinates.of(CoordinateSystem.zeroBased(),
-                38_924_330, 39_078_204), 38_924_330, 39_078_204, "NM_000540.2", "RYR1",
-                List.of(GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(), 38_924_330, 38_924_514),
-                        GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(), 39_075_582, 39_075_739),
-                        GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(), 39_077_964, 39_078_204)));
+    private static Transcript reduced_ryr1_NM_000540_2(Contig contig) {
+        return Transcript.of(
+                TranscriptIdentifier.of("NM_000540.2", "RYR1", null),
+                GenomicRegion.of(contig, Strand.POSITIVE, Coordinates.of(CoordinateSystem.zeroBased(), 38_924_330, 39_078_204)),
+                List.of(Coordinates.of(CoordinateSystem.zeroBased(), 38_924_330, 38_924_514),
+                        Coordinates.of(CoordinateSystem.zeroBased(), 39_075_582, 39_075_739),
+                        Coordinates.of(CoordinateSystem.zeroBased(), 39_077_964, 39_078_204)
+                ),
+                Coordinates.of(CoordinateSystem.zeroBased(), 38_924_330, 39_078_204));
     }
 
     /**
@@ -310,12 +329,15 @@ class Transcripts {
      *
      * @return transcript
      */
-    private static TranscriptModel hbb_NM_000518_4(Contig contig) {
-        return TranscriptModel.coding(contig, Strand.POSITIVE, Coordinates.of(CoordinateSystem.zeroBased(),
-                5_246_693, 5_248_301), 5_246_693, 5_248_301, "NM_000518.4", "HBB",
-                List.of(GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(), 5_246_693, 5_246_956),
-                        GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(), 5_247_806, 5_248_029),
-                        GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(), 5_248_159, 5_248_301))).withStrand(Strand.NEGATIVE);
+    private static Transcript hbb_NM_000518_4(Contig contig) {
+        return Transcript.of(
+                TranscriptIdentifier.of("NM_000518.4", "HBB", null),
+                GenomicRegion.of(contig, Strand.POSITIVE, Coordinates.of(CoordinateSystem.zeroBased(), 5_246_693, 5_248_301)).toOppositeStrand(),
+                List.of(Coordinates.of(CoordinateSystem.zeroBased(), 5_248_159, 5_248_301).invert(contig),
+                        Coordinates.of(CoordinateSystem.zeroBased(), 5_247_806, 5_248_029).invert(contig),
+                        Coordinates.of(CoordinateSystem.zeroBased(), 5_246_693, 5_246_956).invert(contig)
+                ),
+                Coordinates.of(CoordinateSystem.zeroBased(), 5_246_693, 5_248_301).invert(contig));
     }
 
     /**
@@ -324,12 +346,15 @@ class Transcripts {
      *
      * @return transcript
      */
-    private static TranscriptModel reduced_brca2_NM_000059_3(Contig contig) {
-        return TranscriptModel.coding(contig, Strand.POSITIVE, Coordinates.of(CoordinateSystem.zeroBased(),
-                32_889_616, 32_973_809), 32_889_616, 32_973_809, "NM_000059.3", "BRCA2",
-                List.of(GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(), 32_889_616, 32_889_804),
-                        GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(), 32_930_564, 32_930_746),
-                        GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(), 32_972_298, 32_973_809)));
+    private static Transcript reduced_brca2_NM_000059_3(Contig contig) {
+        return Transcript.of(
+                TranscriptIdentifier.of("NM_000059.3", "BRCA2", null),
+                GenomicRegion.of(contig, Strand.POSITIVE, Coordinates.of(CoordinateSystem.zeroBased(), 32_889_616, 32_973_809)),
+                List.of(Coordinates.of(CoordinateSystem.zeroBased(), 32_889_616, 32_889_804),
+                        Coordinates.of(CoordinateSystem.zeroBased(), 32_930_564, 32_930_746),
+                        Coordinates.of(CoordinateSystem.zeroBased(), 32_972_298, 32_973_809)
+                ),
+                Coordinates.of(CoordinateSystem.zeroBased(), 32_889_616, 32_973_809));
     }
 
 
@@ -339,12 +364,14 @@ class Transcripts {
      *
      * @return transcript
      */
-    private static TranscriptModel reduced_vwf_NM_000552_3(Contig contig) {
-        return TranscriptModel.coding(contig, Strand.POSITIVE, Coordinates.of(CoordinateSystem.zeroBased(),
-                6_058_039, 6_233_841), 6_058_039, 6_233_841, "NM_000552.3", "VWF",
-                List.of(GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(), 6_058_039, 6_058_369),
-                        GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(), 6_131_905, 6_132_064),
-                        GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(), 6_233_586, 6_233_841)))
-                .withStrand(Strand.NEGATIVE);
+    private static Transcript reduced_vwf_NM_000552_3(Contig contig) {
+        return Transcript.of(
+                TranscriptIdentifier.of("NM_000552.3", "VWF", null),
+                GenomicRegion.of(contig, Strand.POSITIVE, Coordinates.of(CoordinateSystem.zeroBased(), 6_058_039, 6_233_841)).toOppositeStrand(),
+                List.of(Coordinates.of(CoordinateSystem.zeroBased(), 6_233_586, 6_233_841).invert(contig),
+                        Coordinates.of(CoordinateSystem.zeroBased(), 6_131_905, 6_132_064).invert(contig),
+                        Coordinates.of(CoordinateSystem.zeroBased(), 6_058_039, 6_058_369).invert(contig)
+                ),
+                Coordinates.of(CoordinateSystem.zeroBased(), 6_058_039, 6_233_841).invert(contig));
     }
 }

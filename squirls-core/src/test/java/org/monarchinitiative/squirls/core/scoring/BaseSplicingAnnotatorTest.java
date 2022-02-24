@@ -78,11 +78,11 @@ package org.monarchinitiative.squirls.core.scoring;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.mockito.Mock;
+import org.monarchinitiative.sgenes.model.Transcript;
 import org.monarchinitiative.squirls.core.PojosForTesting;
 import org.monarchinitiative.squirls.core.TestDataSourceConfig;
 import org.monarchinitiative.squirls.core.reference.SplicingPwmData;
 import org.monarchinitiative.squirls.core.reference.StrandedSequence;
-import org.monarchinitiative.squirls.core.reference.TranscriptModel;
 import org.monarchinitiative.squirls.core.scoring.calculators.conservation.BigWigAccessor;
 import org.monarchinitiative.svart.Contig;
 import org.monarchinitiative.svart.assembly.AssignedMoleculeType;
@@ -114,7 +114,7 @@ public abstract class BaseSplicingAnnotatorTest {
     @Mock
     public BigWigAccessor accessor;
 
-    protected TranscriptModel st;
+    protected Transcript st;
 
     protected StrandedSequence sequence;
 

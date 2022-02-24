@@ -76,8 +76,8 @@
 
 package org.monarchinitiative.squirls.core.scoring.calculators;
 
+import org.monarchinitiative.sgenes.model.Transcript;
 import org.monarchinitiative.squirls.core.reference.StrandedSequence;
-import org.monarchinitiative.squirls.core.reference.TranscriptModel;
 import org.monarchinitiative.squirls.core.scoring.calculators.conservation.BigWigAccessor;
 import org.monarchinitiative.svart.GenomicVariant;
 
@@ -105,7 +105,7 @@ public class BigWig implements FeatureCalculator {
      * @return score for given <code>variant</code> as described above
      */
     @Override
-    public double score(GenomicVariant variant, TranscriptModel transcript, StrandedSequence sequence) {
+    public double score(GenomicVariant variant, Transcript transcript, StrandedSequence sequence) {
         List<Float> scores = accessor.getScores(variant);
         return scores.stream()
                 .mapToDouble(Float::doubleValue)

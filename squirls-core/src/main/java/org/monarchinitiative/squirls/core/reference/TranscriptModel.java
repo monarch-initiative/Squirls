@@ -85,6 +85,7 @@ import java.util.Optional;
 /**
  * @author Daniel Danis
  */
+@Deprecated
 public interface TranscriptModel extends GenomicRegion {
 
     @Deprecated
@@ -105,6 +106,7 @@ public interface TranscriptModel extends GenomicRegion {
         return of(contig, strand, txCoordinates, accessionId, hgvsSymbol, true, cdsRegion, exons);
     }
 
+    @Deprecated
     static TranscriptModel coding(Contig contig,
                                   Strand strand,
                                   Coordinates coordinates,
@@ -119,6 +121,7 @@ public interface TranscriptModel extends GenomicRegion {
         return of(contig, strand, coordinates, accessionId, hgvsSymbol, true, cdsRegion, exons);
     }
 
+    @Deprecated
     static TranscriptModel noncoding(Contig contig,
                                      Strand strand,
                                      Coordinates coordinates,
@@ -128,6 +131,7 @@ public interface TranscriptModel extends GenomicRegion {
         return of(contig, strand, coordinates, accessionId, hgvsSymbol, false, null, exons);
     }
 
+    @Deprecated
     static TranscriptModel of(Contig contig,
                               Strand strand,
                               Coordinates coordinates,
@@ -140,6 +144,7 @@ public interface TranscriptModel extends GenomicRegion {
         return TranscriptModelDefault.of(contig, strand, coordinates, accessionId, hgvsSymbol, isCoding, cdsRegion, exons);
     }
 
+    @Deprecated
     static List<GenomicRegion> computeIntronLocations(List<GenomicRegion> exons) {
         if (exons.size() == 1) { // shortcut
             return List.of();

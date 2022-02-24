@@ -76,9 +76,9 @@
 
 package org.monarchinitiative.squirls.core.scoring.calculators;
 
+import org.monarchinitiative.sgenes.model.Transcript;
 import org.monarchinitiative.squirls.core.Utils;
 import org.monarchinitiative.squirls.core.reference.StrandedSequence;
-import org.monarchinitiative.squirls.core.reference.TranscriptModel;
 import org.monarchinitiative.svart.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -95,7 +95,7 @@ public class ClosestDonorDistance implements FeatureCalculator {
     private static final Logger LOGGER = LoggerFactory.getLogger(ClosestDonorDistance.class);
 
     @Override
-    public double score(GenomicVariant variant, TranscriptModel transcript, StrandedSequence sequence) {
+    public double score(GenomicVariant variant, Transcript transcript, StrandedSequence sequence) {
         // find the closest donor site
         Optional<Integer> closestPosition = transcript.exons().stream()
                 .map(exon -> exon.endWithCoordinateSystem(CoordinateSystem.zeroBased()))
@@ -105,7 +105,7 @@ public class ClosestDonorDistance implements FeatureCalculator {
             // this happens only if the transcript has no introns. We should not assess such transcripts in
             // the first place, since there is no splicing there.
             if (LOGGER.isWarnEnabled())
-                LOGGER.warn("Transcript with 0 introns {} passed here", transcript.accessionId());
+                LOGGER.warn("Transcript with 0 introns {} passed here", transcript.accession());
             return Double.NaN;
         }
 

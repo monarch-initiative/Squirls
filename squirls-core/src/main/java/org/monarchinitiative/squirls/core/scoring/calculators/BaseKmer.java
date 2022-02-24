@@ -77,9 +77,9 @@
 package org.monarchinitiative.squirls.core.scoring.calculators;
 
 
+import org.monarchinitiative.sgenes.model.Transcript;
 import org.monarchinitiative.squirls.core.reference.AlleleGenerator;
 import org.monarchinitiative.squirls.core.reference.StrandedSequence;
-import org.monarchinitiative.squirls.core.reference.TranscriptModel;
 import org.monarchinitiative.squirls.core.Utils;
 import org.monarchinitiative.svart.GenomicVariant;
 import org.slf4j.Logger;
@@ -117,7 +117,7 @@ public abstract class BaseKmer implements FeatureCalculator {
     protected abstract int getPadding();
 
     @Override
-    public double score(GenomicVariant variant, TranscriptModel transcript, StrandedSequence sequence) {
+    public double score(GenomicVariant variant, Transcript transcript, StrandedSequence sequence) {
         final String paddedRefAllele = AlleleGenerator.getPaddedAllele(variant, sequence, variant.ref(), getPadding());
         final String paddedAltAllele = AlleleGenerator.getPaddedAllele(variant, sequence, variant.alt(), getPadding());
         if (paddedRefAllele == null || paddedAltAllele == null) {

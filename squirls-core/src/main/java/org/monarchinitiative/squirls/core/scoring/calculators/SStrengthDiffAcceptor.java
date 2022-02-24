@@ -76,8 +76,10 @@
 
 package org.monarchinitiative.squirls.core.scoring.calculators;
 
+import org.monarchinitiative.sgenes.model.Transcript;
 import org.monarchinitiative.squirls.core.reference.*;
 import org.monarchinitiative.squirls.core.scoring.calculators.ic.SplicingInformationContentCalculator;
+import org.monarchinitiative.svart.Coordinates;
 import org.monarchinitiative.svart.GenomicRegion;
 import org.monarchinitiative.svart.GenomicVariant;
 import org.slf4j.Logger;
@@ -106,7 +108,7 @@ public class SStrengthDiffAcceptor implements FeatureCalculator {
     }
 
     @Override
-    public double score(GenomicVariant variant, TranscriptModel transcript, StrandedSequence sequence) {
+    public double score(GenomicVariant variant, Transcript transcript, StrandedSequence sequence) {
         final SplicingLocationData locationData = locator.locate(variant, transcript);
         switch (locationData.getPosition()) {
             case EXON:
@@ -114,8 +116,8 @@ public class SStrengthDiffAcceptor implements FeatureCalculator {
                 final int exonIdx = locationData.getExonIdx();
                 if (transcript.exons().size() - exonIdx > 1) {
                     // the current exon is NOT the last exon of the transcript
-                    GenomicRegion thisExon = transcript.exons().get(exonIdx);
-                    GenomicRegion thisAcceptor = generator.makeAcceptorInterval(thisExon);
+                    Coordinates thisExon = transcript.exons().get(exonIdx);
+                    GenomicRegion thisAcceptor = generator.makeAcceptorInterval(transcript.contig(), transcript.strand(), thisExon);
                     double thisAcceptorScore;
                     try {
                         String thisAcceptorSiteSnippet = generator.getAcceptorSiteWithAltAllele(thisAcceptor, variant, sequence);
@@ -127,8 +129,8 @@ public class SStrengthDiffAcceptor implements FeatureCalculator {
                         thisAcceptorScore = 0;
                     }
 
-                    GenomicRegion nextExon = transcript.exons().get(exonIdx + 1);
-                    GenomicRegion nextAcceptor = generator.makeAcceptorInterval(nextExon);
+                    Coordinates nextExon = transcript.exons().get(exonIdx + 1);
+                    GenomicRegion nextAcceptor = generator.makeAcceptorInterval(transcript.contig(), transcript.strand(), nextExon);
                     double nextAcceptorScore;
                     try {
                         String nextAcceptorSiteSnippet = generator.getAcceptorSiteWithAltAllele(nextAcceptor, variant, sequence);

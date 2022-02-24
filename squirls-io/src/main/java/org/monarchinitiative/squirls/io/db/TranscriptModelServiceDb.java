@@ -76,6 +76,7 @@
 
 package org.monarchinitiative.squirls.io.db;
 
+import org.monarchinitiative.sgenes.model.Transcript;
 import org.monarchinitiative.squirls.core.reference.TranscriptModel;
 import org.monarchinitiative.squirls.core.reference.TranscriptModelService;
 import org.monarchinitiative.squirls.io.SquirlsResourceException;
@@ -92,6 +93,7 @@ import java.util.stream.Collectors;
 /**
  * @author Daniel Danis
  */
+@Deprecated // we won't store the transcripts in database anymore
 public class TranscriptModelServiceDb implements TranscriptModelService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(TranscriptModelServiceDb.class);
@@ -216,7 +218,7 @@ public class TranscriptModelServiceDb implements TranscriptModelService {
     }
 
     @Override
-    public List<TranscriptModel> overlappingTranscripts(GenomicRegion query) {
+    public List<Transcript> overlappingTranscripts(GenomicRegion query) {
         String sql = "select tx.TX_ID, tx.CONTIG, tx.STRAND, tx.BEGIN, tx.END, " +
                 "  tx.TX_ACCESSION, tx.HGVS_SYMBOL, tx.CDS_START, tx.CDS_END, " +
                 "  e.EXON_NUMBER, e.BEGIN exon_begin, e.END exon_end " +
@@ -234,7 +236,8 @@ public class TranscriptModelServiceDb implements TranscriptModelService {
             statement.setInt(3, query.endOnStrandWithCoordinateSystem(Strand.POSITIVE, CoordinateSystem.zeroBased()));
 
             try (ResultSet rs = statement.executeQuery()) {
-                return processTranscriptResultSet(rs);
+//                return processTranscriptResultSet(rs);
+                return List.of();
             }
         } catch (SQLException e) {
             LOGGER.warn("Error occurred: {}", e.getMessage());
@@ -243,7 +246,7 @@ public class TranscriptModelServiceDb implements TranscriptModelService {
     }
 
     @Override
-    public Optional<TranscriptModel> transcriptByAccession(String txAccession) {
+    public Optional<Transcript> transcriptByAccession(String txAccession) {
         String sql = "select tx.TX_ID, tx.CONTIG, tx.STRAND, tx.BEGIN, tx.END, " +
                 " tx.TX_ACCESSION, tx.HGVS_SYMBOL, tx.CDS_START, tx.CDS_END, " +
                 " e.EXON_NUMBER, e.BEGIN exon_begin, e.END exon_end " +
@@ -259,7 +262,8 @@ public class TranscriptModelServiceDb implements TranscriptModelService {
             try (ResultSet rs = statement.executeQuery()) {
                 models = processTranscriptResultSet(rs);
                 if (models.size() == 1) {
-                    return Optional.of(models.get(0));
+//                    return Optional.of(models.get(0));
+                    return Optional.empty();
                 } else {
                     if (!models.isEmpty()) {
                         if (LOGGER.isWarnEnabled())

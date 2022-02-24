@@ -76,7 +76,9 @@
 
 package org.monarchinitiative.squirls.core.scoring.calculators;
 
+import org.monarchinitiative.sgenes.model.Transcript;
 import org.monarchinitiative.squirls.core.reference.*;
+import org.monarchinitiative.svart.Coordinates;
 import org.monarchinitiative.svart.GenomicRegion;
 import org.monarchinitiative.svart.GenomicVariant;
 import org.slf4j.Logger;
@@ -117,7 +119,7 @@ public class PyrimidineToPurineAtMinusThree implements FeatureCalculator {
      * (e.g. insufficient <code>sequence</code>)
      */
     @Override
-    public double score(GenomicVariant variant, TranscriptModel transcript, StrandedSequence sequence) {
+    public double score(GenomicVariant variant, Transcript transcript, StrandedSequence sequence) {
         SplicingLocationData locationData = locator.locate(variant, transcript);
 
         if (locationData.getPosition() != SplicingLocationData.SplicingPosition.ACCEPTOR) {
@@ -125,8 +127,8 @@ public class PyrimidineToPurineAtMinusThree implements FeatureCalculator {
             return 0.;
         }
 
-        GenomicRegion exon = transcript.exons().get(locationData.getExonIdx());
-        GenomicRegion acceptorInterval = generator.makeAcceptorInterval(exon);
+        Coordinates exon = transcript.exons().get(locationData.getExonIdx());
+        GenomicRegion acceptorInterval = generator.makeAcceptorInterval(transcript.contig(), transcript.strand(), exon);
 
         String refAcceptorSnippet = sequence.subsequence(acceptorInterval);
         String altAcceptorSnippet;

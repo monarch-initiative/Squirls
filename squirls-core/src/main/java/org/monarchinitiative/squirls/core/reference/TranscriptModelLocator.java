@@ -76,6 +76,7 @@
 
 package org.monarchinitiative.squirls.core.reference;
 
+import org.monarchinitiative.sgenes.model.Transcript;
 import org.monarchinitiative.svart.GenomicRegion;
 
 /**
@@ -90,7 +91,7 @@ public interface TranscriptModelLocator {
      * @param transcript transcript
      * @return location data
      */
-    SplicingLocationData locate(GenomicRegion variant, TranscriptModel transcript);
+    SplicingLocationData locate(GenomicRegion variant, Transcript transcript);
 
 
 }

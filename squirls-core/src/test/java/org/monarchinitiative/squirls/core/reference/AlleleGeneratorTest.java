@@ -227,7 +227,7 @@ public class AlleleGeneratorTest {
         Contig contig = TestContig.of(1, 20);
         GenomicRegion exon = GenomicRegion.of(contig, strand, CoordinateSystem.zeroBased(), exonStart, exonEnd);
 
-        GenomicRegion donor = generator.makeDonorInterval(exon);
+        GenomicRegion donor = generator.makeDonorInterval(exon.contig(), exon.strand(), exon.coordinates());
 
         assertThat(donor.contig(), equalTo(contig));
         assertThat(donor.start(), equalTo(start));
@@ -248,7 +248,7 @@ public class AlleleGeneratorTest {
         Contig contig = TestContig.of(1, 50);
         GenomicRegion exon = GenomicRegion.of(contig, strand, CoordinateSystem.zeroBased(), exonStart, exonEnd);
 
-        GenomicRegion acceptor = generator.makeAcceptorInterval(exon);
+        GenomicRegion acceptor = generator.makeAcceptorInterval(exon.contig(), exon.strand(), exon.coordinates());
 
         assertThat(acceptor.contig(), equalTo(contig));
         assertThat(acceptor.start(), equalTo(start));

@@ -137,19 +137,17 @@ public class AlleleGenerator {
     }
 
     /**
-     * @param exon a region that represents an exon
      * @return interval of splice donor site
      */
-    public GenomicRegion makeDonorInterval(GenomicRegion exon) {
-        return splicingParameters.makeDonorRegion(exon);
+    public GenomicRegion makeDonorInterval(Contig contig, Strand strand, Coordinates exon) {
+        return splicingParameters.makeDonorRegion(contig, strand, exon);
     }
 
     /**
-     * @param exon a region that represents an exon
      * @return interval of splice acceptor site
      */
-    public GenomicRegion makeAcceptorInterval(GenomicRegion exon) {
-        return splicingParameters.makeAcceptorRegion(exon);
+    public GenomicRegion makeAcceptorInterval(Contig contig, Strand strand, Coordinates exon) {
+        return splicingParameters.makeAcceptorRegion(contig, strand, exon);
     }
 
     /**
@@ -198,7 +196,7 @@ public class AlleleGenerator {
                 if (seq == null) {
                     if (LOGGER.isWarnEnabled())
                         LOGGER.warn("Not enough of fasta sequence provided for variant `{}` - sequence: `{}`, required: `{}`",
-                                variant, Utils.formatAsRegion(sequence), interval);
+                                variant, Utils.formatAsRegion(sequence.location()), interval);
                     return null;
                 }
                 result = seq + result;
@@ -213,7 +211,7 @@ public class AlleleGenerator {
             if (seq == null) {
                 if (LOGGER.isWarnEnabled())
                     LOGGER.warn("Not enough of fasta sequence provided for variant `{}` - sequence: `{}`, required: `{}`",
-                            variant, Utils.formatAsRegion(sequence), interval);
+                            variant, Utils.formatAsRegion(sequence.location()), interval);
                 return null;
             }
             result = seq + alt;
@@ -231,7 +229,7 @@ public class AlleleGenerator {
         if (seq == null) {
             if (LOGGER.isWarnEnabled())
                 LOGGER.warn("Not enough of fasta sequence provided for variant `{}` - sequence: `{}`, required: `{}`",
-                        variant, Utils.formatAsRegion(sequence), interval);
+                        variant, Utils.formatAsRegion(sequence.location()), interval);
             return null;
         }
         result += seq;
@@ -286,7 +284,7 @@ public class AlleleGenerator {
                 if (seq == null) {
                     if (LOGGER.isWarnEnabled())
                         LOGGER.warn("Not enough of fasta sequence provided for variant `{}` - sequence: `{}`, required: `{}`",
-                                variant, Utils.formatAsRegion(sequence), interval);
+                                variant, Utils.formatAsRegion(sequence.location()), interval);
                     return null;
                 }
                 result = result + seq;
@@ -299,7 +297,7 @@ public class AlleleGenerator {
                 if (seq == null) {
                     if (LOGGER.isWarnEnabled())
                         LOGGER.warn("Not enough of fasta sequence provided for variant `{}` - sequence: `{}`, required: `{}`",
-                                variant, Utils.formatAsRegion(sequence), interval);
+                                variant, Utils.formatAsRegion(sequence.location()), interval);
                     return null;
                 }
                 result = alt + seq;

@@ -76,8 +76,9 @@
 
 package org.monarchinitiative.squirls.core;
 
+import org.monarchinitiative.sgenes.model.Transcript;
 import org.monarchinitiative.squirls.core.reference.StrandedSequence;
-import org.monarchinitiative.squirls.core.reference.TranscriptModel;
+
 import org.monarchinitiative.svart.GenomicVariant;
 
 /**
@@ -85,13 +86,13 @@ import org.monarchinitiative.svart.GenomicVariant;
  */
 public interface VariantOnTranscript {
 
-    static VariantOnTranscript of(GenomicVariant variant, TranscriptModel transcript, StrandedSequence sequence) {
+    static VariantOnTranscript of(GenomicVariant variant, Transcript transcript, StrandedSequence sequence) {
         return VariantOnTranscriptDefault.of(variant, transcript, sequence);
     }
 
     GenomicVariant variant();
 
-    TranscriptModel transcript();
+    Transcript transcript();
 
     StrandedSequence sequence();
 

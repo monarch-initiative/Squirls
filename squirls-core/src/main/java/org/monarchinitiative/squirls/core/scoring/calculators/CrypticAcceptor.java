@@ -76,6 +76,7 @@
 
 package org.monarchinitiative.squirls.core.scoring.calculators;
 
+import org.monarchinitiative.sgenes.model.Transcript;
 import org.monarchinitiative.squirls.core.reference.*;
 import org.monarchinitiative.squirls.core.Utils;
 import org.monarchinitiative.squirls.core.scoring.calculators.ic.SplicingInformationContentCalculator;
@@ -104,7 +105,7 @@ public class CrypticAcceptor extends BaseFeatureCalculator {
     }
 
     @Override
-    protected double score(GenomicVariant variant, SplicingLocationData locationData, TranscriptModel transcript, StrandedSequence sequence) {
+    protected double score(GenomicVariant variant, SplicingLocationData locationData, Transcript transcript, StrandedSequence sequence) {
         switch (locationData.getPosition()) {
             case EXON:
             case DONOR:
@@ -127,7 +128,7 @@ public class CrypticAcceptor extends BaseFeatureCalculator {
         if (acceptorNeighborSnippet == null) {
             if (LOGGER.isWarnEnabled())
                 LOGGER.warn("Unable to create sliding window snippet +- {}bp for variant `{}` using sequence `{}`",
-                        padding, variant, Utils.formatAsRegion(sequence));
+                        padding, variant, Utils.formatAsRegion(sequence.location()));
             return Double.NaN;
         }
         double crypticMaxScore = Utils.slidingWindow(acceptorNeighborSnippet, calculator.getSplicingParameters().getAcceptorLength())
@@ -149,7 +150,7 @@ public class CrypticAcceptor extends BaseFeatureCalculator {
         if (acceptorSnippet == null) {
             if (LOGGER.isWarnEnabled())
                 LOGGER.warn("Unable to create acceptor snippet at `{}` for variant `{}` using sequence `{}`",
-                        acceptor, variant, Utils.formatAsRegion(sequence));
+                        acceptor, variant, Utils.formatAsRegion(sequence.location()));
             return Double.NaN;
         }
 

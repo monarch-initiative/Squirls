@@ -77,6 +77,7 @@
 package org.monarchinitiative.squirls.core.scoring.calculators;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.monarchinitiative.sgenes.model.Transcript;
 import org.monarchinitiative.squirls.core.PojosForTesting;
 import org.monarchinitiative.squirls.core.TestDataSourceConfig;
 import org.monarchinitiative.squirls.core.reference.*;
@@ -110,8 +111,8 @@ public class CalculatorTestBase {
     @Autowired
     public TranscriptModelLocator locator;
 
-    protected TranscriptModel txOnPositiveStrand;
-    protected TranscriptModel txOnNegativeStrand;
+    protected Transcript txOnPositiveStrand;
+    protected Transcript txOnNegativeStrand;
 
     protected StrandedSequence sequence;
 
@@ -121,7 +122,7 @@ public class CalculatorTestBase {
     @BeforeEach
     public void setUp() throws Exception {
         txOnPositiveStrand = PojosForTesting.getTranscriptWithThreeExons(contig);
-        txOnNegativeStrand = PojosForTesting.getTranscriptWithThreeExons(contig).withStrand(Strand.NEGATIVE);
+        txOnNegativeStrand = PojosForTesting.getTranscriptWithThreeExonsOnRevStrand(contig);
         sequence = PojosForTesting.getSequenceIntervalForTranscriptWithThreeExons(contig);
         Contig other = Contig.of(44, "44", SequenceRole.ASSEMBLED_MOLECULE, "44", AssignedMoleculeType.CHROMOSOME, 100_000, "", "", "");
         sequenceOnOtherChrom = StrandedSequence.of(GenomicRegion.of(other, Strand.POSITIVE, CoordinateSystem.zeroBased(), 0, 4), "ACGT");

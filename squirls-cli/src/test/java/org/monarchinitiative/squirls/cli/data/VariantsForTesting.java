@@ -87,6 +87,7 @@ import de.charite.compbio.jannovar.reference.Strand;
 import htsjdk.variant.variantcontext.Allele;
 import htsjdk.variant.variantcontext.VariantContext;
 import htsjdk.variant.variantcontext.VariantContextBuilder;
+import org.monarchinitiative.sgenes.model.Transcript;
 import org.monarchinitiative.squirls.core.PartialPrediction;
 import org.monarchinitiative.squirls.core.Prediction;
 import org.monarchinitiative.squirls.core.SquirlsTxResult;
@@ -150,7 +151,7 @@ public class VariantsForTesting {
                                        String ref,
                                        String alt,
                                        Set<String> seqIds,
-                                       Collection<TranscriptModel> transcripts,
+                                       Collection<Transcript> transcripts,
                                        StrandedSequence si,
                                        double pathogenicity,
                                        String featurePayload,
@@ -178,7 +179,7 @@ public class VariantsForTesting {
                 .map(line -> line.split("="))
                 .collect(Collectors.toMap(v -> v[0], v -> Double.parseDouble(v[1])));
 
-        TranscriptModel st = transcripts.stream().min(Comparator.comparing(TranscriptModel::accessionId)).orElseThrow();
+        Transcript st = transcripts.stream().min(Comparator.comparing(Transcript::accession)).orElseThrow();
         GenomicVariant variant = GenomicVariant.of(contig, id, org.monarchinitiative.svart.Strand.POSITIVE, CoordinateSystem.oneBased(), pos, ref, alt);
 
         /*
@@ -188,8 +189,8 @@ public class VariantsForTesting {
 
 
         Set<SquirlsTxResult> txResults = new HashSet<>();
-        for (TranscriptModel transcript : transcripts) {
-            SquirlsTxResultSimple squirlsTxResult = new SquirlsTxResultSimple(transcript.accessionId(),
+        for (Transcript transcript : transcripts) {
+            SquirlsTxResultSimple squirlsTxResult = new SquirlsTxResultSimple(transcript.accession(),
                     Prediction.of(PartialPrediction.of("fake", pathogenicity, FAKE_THRESHOLD)),
                     featureMap);
             txResults.add(squirlsTxResult);
@@ -239,7 +240,7 @@ public class VariantsForTesting {
         double pathogenicity = 0.95;
 
         StrandedSequence si = Sequences.getBrca2Exon15Sequence(contig);
-        Collection<TranscriptModel> transcripts = Transcripts.brca2Transcripts(contig);
+        Collection<Transcript> transcripts = Transcripts.brca2Transcripts(contig);
         String featurePayload = "acceptor_offset=184.0\n" +
                 "alt_ri_best_window_acceptor=6.24199227902568\n" +
                 "alt_ri_best_window_donor=1.6462531025600458\n" +
@@ -302,7 +303,7 @@ public class VariantsForTesting {
         double pathogenicity = 0.94;
 
         StrandedSequence si = Sequences.getAlplExon7Sequence(contig);
-        Collection<TranscriptModel> transcripts = Transcripts.alplTranscripts(contig);
+        Collection<Transcript> transcripts = Transcripts.alplTranscripts(contig);
         String featurePayload = "acceptor_offset=143.0\n" +
                 "alt_ri_best_window_acceptor=-3.06184416990555\n" +
                 "alt_ri_best_window_donor=2.4205699538253014\n" +
@@ -358,7 +359,7 @@ public class VariantsForTesting {
         double pathogenicity = 0.93;
 
         StrandedSequence si = Sequences.getHbbExon1Sequence(contig);
-        Collection<TranscriptModel> transcripts = Transcripts.hbbTranscripts(contig);
+        Collection<Transcript> transcripts = Transcripts.hbbTranscripts(contig);
         String featurePayload = "acceptor_offset=-133.0\n" +
                 "alt_ri_best_window_acceptor=-1.781069482220321\n" +
                 "alt_ri_best_window_donor=6.324680776661294\n" +
@@ -421,7 +422,7 @@ public class VariantsForTesting {
         double pathogenicity = 0.92;
 
         StrandedSequence si = Sequences.getHbbExon1Sequence(contig);
-        Collection<TranscriptModel> transcripts = Transcripts.hbbTranscripts(contig);
+        Collection<Transcript> transcripts = Transcripts.hbbTranscripts(contig);
         String featurePayload = "acceptor_offset=-144.0\n" +
                 "alt_ri_best_window_acceptor=-1.679406754820472\n" +
                 "alt_ri_best_window_donor=8.331467886352396\n" +
@@ -484,7 +485,7 @@ public class VariantsForTesting {
         double pathogenicity = 0.91;
 
         StrandedSequence si = Sequences.getVwfExon26Sequence(contig);
-        Collection<TranscriptModel> transcripts = Transcripts.vwfTranscripts(contig);
+        Collection<Transcript> transcripts = Transcripts.vwfTranscripts(contig);
         String featurePayload = "acceptor_offset=-2.0\n" +
                 "alt_ri_best_window_acceptor=3.648124750022908\n" +
                 "alt_ri_best_window_donor=-8.032751156095085\n" +
@@ -547,7 +548,7 @@ public class VariantsForTesting {
         double pathogenicity = 0.90;
 
         StrandedSequence si = Sequences.getTsc2Exon11Sequence(contig);
-        Collection<TranscriptModel> transcripts = Transcripts.tsc2Transcripts(contig);
+        Collection<Transcript> transcripts = Transcripts.tsc2Transcripts(contig);
         String featurePayload = "acceptor_offset=-3.0\n" +
                 "alt_ri_best_window_acceptor=-2.95580052736842\n" +
                 "alt_ri_best_window_donor=-1.9417000079717732\n" +
@@ -604,7 +605,7 @@ public class VariantsForTesting {
         double pathogenicity = 0.89;
 
         StrandedSequence si = Sequences.getCol4a5Exon29Sequence(contig);
-        Collection<TranscriptModel> transcripts = Transcripts.col4a5Transcripts(contig);
+        Collection<Transcript> transcripts = Transcripts.col4a5Transcripts(contig);
 
         String featurePayload = "acceptor_offset=-8.0\n" +
                 "alt_ri_best_window_acceptor=4.2276385348389045\n" +
@@ -668,7 +669,7 @@ public class VariantsForTesting {
         double pathogenicity = 0.88;
 
         StrandedSequence si = Sequences.getRyr1Exon102Sequence(contig);
-        Collection<TranscriptModel> transcripts = Transcripts.ryr1Transcripts(contig);
+        Collection<Transcript> transcripts = Transcripts.ryr1Transcripts(contig);
         String featurePayload = "acceptor_offset=21.0\n" +
                 "alt_ri_best_window_acceptor=8.15014683108099\n" +
                 "alt_ri_best_window_donor=7.955283012714299\n" +
@@ -733,7 +734,7 @@ public class VariantsForTesting {
         double pathogenicity = 0.87;
 
         StrandedSequence si = Sequences.getNf1Exon9Sequence(contig);
-        Collection<TranscriptModel> transcripts = Transcripts.nf1Transcripts(contig);
+        Collection<Transcript> transcripts = Transcripts.nf1Transcripts(contig);
         String featurePayload = "acceptor_offset=22.0\n" +
                 "alt_ri_best_window_acceptor=-1.0318475740969986\n" +
                 "alt_ri_best_window_donor=-2.8493547798837007\n" +

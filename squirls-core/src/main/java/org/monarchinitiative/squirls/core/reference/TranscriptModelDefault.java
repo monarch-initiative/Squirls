@@ -86,6 +86,7 @@ import java.util.Optional;
 /**
  * @author Daniel Danis
  */
+@Deprecated
 class TranscriptModelDefault extends BaseGenomicRegion<TranscriptModelDefault> implements TranscriptModel {
     private final String accessionId;
     private final String hgvsSymbol;
