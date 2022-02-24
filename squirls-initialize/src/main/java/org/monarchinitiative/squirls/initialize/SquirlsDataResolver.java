@@ -101,7 +101,7 @@ public class SquirlsDataResolver {
         this.squirlsDataDirectory = squirlsDataDirectory.resolve(String.format("%s_%s", dataVersion, genomeAssembly));
 
         // now check that we have all files present
-        List<Path> paths = List.of(genomeAssemblyReportPath(), genomeFastaPath(), genomeFastaFaiPath(), genomeFastaDictPath(), dataSourceFullPath(), phylopPath());
+        List<Path> paths = List.of(genomeAssemblyReportPath(), genomeFastaPath(), genomeFastaFaiPath(), genomeFastaDictPath(), dataSourceFullPath(), phylopPath(), gencodeJsonPath(), refseqJsonPath());
         for (Path path : paths) {
             if (!(Files.isRegularFile(path) && Files.isReadable(path))) {
                 throw new MissingSquirlsResourceException(String.format("The file `%s` is missing in SQUIRLS directory", path.toFile().getName()));
@@ -142,6 +142,16 @@ public class SquirlsDataResolver {
 
     public Path phylopPath() {
         return squirlsDataDirectory.resolve(String.format("%s_%s.phylop.bw", dataVersion, genomeAssembly))
+                .toAbsolutePath();
+    }
+
+    public Path gencodeJsonPath() {
+        return squirlsDataDirectory.resolve(String.format("%s_%s.gencode.json.gz", dataVersion, genomeAssembly))
+                .toAbsolutePath();
+    }
+
+    public Path refseqJsonPath() {
+        return squirlsDataDirectory.resolve(String.format("%s_%s.refseq.json.gz", dataVersion, genomeAssembly))
                 .toAbsolutePath();
     }
 

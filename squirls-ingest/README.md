@@ -25,12 +25,12 @@ Then, open the `config.yml` file and provide the required information.
 Having the config file ready, we can build the resource directory.
 
 ```bash
-java -jar squirls-ingest-1.0.4.jar ingest -c config.yml run-ingest build-dir 2005 hg19
+java -jar squirls-ingest-1.0.4.jar ingest -c config.yml --assembly hg19 --db-version 2005 --build-dir path/to/build-dir 
 ```
 
 where
 
-- `build-dir` - denotes a path to resource directory
+- `path/to/build-dir` - denotes a path to resource directory
 - `2005` - denotes an arbitrary version tag for this build
 - `hg19` - denotes a genome assembly tag
 

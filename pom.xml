@@ -28,6 +28,7 @@
         <java.version>11</java.version>
 
         <svart.version>2.0.0-RC1</svart.version>
+        <silent.genes.version>0.2.1-SNAPSHOT</silent.genes.version> <!-- TODO use stable release -->
         <vmvt.version>0.9.4</vmvt.version>
         <htsjdk.version>2.23.0</htsjdk.version>
         <jannovar.version>0.35</jannovar.version>
@@ -74,6 +75,22 @@
                 <groupId>org.monarchinitiative.svart</groupId>
                 <artifactId>svart</artifactId>
                 <version>${svart.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.monarchinitiative.sgenes</groupId>
+                <artifactId>silent-genes-model</artifactId>
+                <version>${silent.genes.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.monarchinitiative.sgenes</groupId>
+                <artifactId>silent-genes-io</artifactId>
+                <version>${silent.genes.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.monarchinitiative.sgenes</groupId>
+                <artifactId>silent-genes-gtf</artifactId>
+                <version>${silent.genes.version}</version>
             </dependency>
 
             <!-- VMVT is a library for visualisation of variant impact on splice donor/acceptor sites in form of

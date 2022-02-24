@@ -76,6 +76,7 @@
 
 package org.monarchinitiative.squirls.ingest.transcripts;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.monarchinitiative.squirls.core.reference.TranscriptModel;
 import org.monarchinitiative.svart.assembly.GenomicAssembly;
@@ -90,6 +91,8 @@ import static org.hamcrest.CoreMatchers.hasItems;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
 
+@Deprecated
+@Disabled // TODO - remove
 public class JannovarDataManagerTest {
 
     private static final GenomicAssembly genomicAssembly = GenomicAssemblyParser.parseAssembly(Paths.get("src/test/resources/org/monarchinitiative/squirls/ingest/GCF_000001405.25_GRCh37.p13_assembly_report.txt"));

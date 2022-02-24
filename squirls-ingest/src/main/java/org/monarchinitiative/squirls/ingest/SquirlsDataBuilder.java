@@ -79,41 +79,38 @@ package org.monarchinitiative.squirls.ingest;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import org.flywaydb.core.Flyway;
+import org.monarchinitiative.sgenes.gtf.io.GtfGeneParser;
+import org.monarchinitiative.sgenes.gtf.io.GtfGeneParserFactory;
+import org.monarchinitiative.sgenes.gtf.model.*;
+import org.monarchinitiative.sgenes.io.json.JsonGeneParser;
 import org.monarchinitiative.squirls.core.SquirlsException;
 import org.monarchinitiative.squirls.core.reference.SplicingParameters;
 import org.monarchinitiative.squirls.core.reference.SplicingPwmData;
-import org.monarchinitiative.squirls.core.reference.TranscriptModel;
 import org.monarchinitiative.squirls.ingest.data.GenomeAssemblyDownloader;
 import org.monarchinitiative.squirls.ingest.data.UrlResourceDownloader;
 import org.monarchinitiative.squirls.ingest.parse.FileKMerParser;
 import org.monarchinitiative.squirls.ingest.parse.InputStreamBasedPositionalWeightMatrixParser;
-import org.monarchinitiative.squirls.ingest.transcripts.JannovarDataManager;
-import org.monarchinitiative.squirls.ingest.transcripts.TranscriptsIngestRunner;
 import org.monarchinitiative.squirls.io.SplicingPositionalWeightMatrixParser;
 import org.monarchinitiative.squirls.io.SquirlsClassifierVersion;
-import org.monarchinitiative.squirls.io.SquirlsResourceException;
 import org.monarchinitiative.squirls.io.db.DbClassifierFactory;
 import org.monarchinitiative.squirls.io.db.DbKMerDao;
 import org.monarchinitiative.squirls.io.db.PwmIngestDao;
-import org.monarchinitiative.squirls.io.db.TranscriptModelServiceDb;
 import org.monarchinitiative.squirls.io.sequence.FastaStrandedSequenceService;
 import org.monarchinitiative.svart.assembly.GenomicAssembly;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.sql.DataSource;
-import java.io.Closeable;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+import java.util.zip.GZIPOutputStream;
 
 /**
  * A static class with methods for building splicing database.
@@ -180,15 +177,50 @@ public class SquirlsDataBuilder {
         return new GenomeAssemblyDownloader(genomeUrl, genomeFastaPath, overwrite);
     }
 
-    /**
-     * Store the transcripts in the database.
-     */
-    static void ingestTranscripts(DataSource dataSource,
-                                  GenomicAssembly genomicAssembly,
-                                  Collection<TranscriptModel> transcripts) throws SquirlsResourceException {
-        TranscriptModelServiceDb transcriptIngestDao = new TranscriptModelServiceDb(dataSource, genomicAssembly);
-        TranscriptsIngestRunner transcriptsIngestRunner = new TranscriptsIngestRunner(transcriptIngestDao, transcripts);
-        transcriptsIngestRunner.run();
+    private static void ingestSilentGenesTranscripts(Path buildDir,
+                                                     String versionedAssembly,
+                                                     GenomicAssembly assembly,
+                                                     Path refseqGtfPath,
+                                                     Path gencodeGtfPath) throws IOException {
+        // Refseq
+        LOGGER.info("Reading RefSeq genes from {}", refseqGtfPath.toAbsolutePath());
+        GtfGeneParser<RefseqGene> refseqParser = GtfGeneParserFactory.refseqGtfParser(refseqGtfPath, assembly);
+        Set<RefseqSource> refseqSources = Set.of(RefseqSource.BestRefSeq, RefseqSource.CuratedGenomic, RefseqSource.RefSeq);
+        List<RefseqGene> refseqGenes = refseqParser.stream()
+                // TODO - elaborate filtering to create refseq curated and refseq
+                .filter(g -> g.transcriptStream().map(RefseqTranscript::source).anyMatch(refseqSources::contains))
+                .collect(Collectors.toList());
+        LOGGER.info("Found {} genes", refseqGenes.size());
+
+        JsonGeneParser parser = JsonGeneParser.of(assembly);
+        Path refseqOutput = buildDir.resolve(String.format("%s.refseq.json.gz", versionedAssembly));
+        LOGGER.info("Serializing genes to {}", refseqOutput.toAbsolutePath());
+        try (OutputStream os = openForWriting(refseqOutput)) {
+            parser.write(refseqGenes, os);
+        }
+
+        // Gencode
+        LOGGER.info("Reading Gencode genes from {}", gencodeGtfPath.toAbsolutePath());
+        GtfGeneParser<GencodeGene> gencodeParser = GtfGeneParserFactory.gencodeGeneParser(gencodeGtfPath, assembly);
+        Set<EvidenceLevel> gencodeEvidences = Set.of(EvidenceLevel.VERIFIED, EvidenceLevel.MANUALLY_ANNOTATED);
+        List<GencodeGene> gencodeGenes = gencodeParser.stream()
+                .filter(g -> gencodeEvidences.contains(g.evidenceLevel())) // TODO - elaborate filtering
+                .collect(Collectors.toList());
+        LOGGER.info("Read {} genes", gencodeGenes.size());
+
+        Path gencodeOutput = buildDir.resolve(String.format("%s.gencode.json.gz", versionedAssembly));
+        LOGGER.info("Serializing genes to {}", gencodeOutput.toAbsolutePath());
+        try (OutputStream os = openForWriting(gencodeOutput)) {
+            parser.write(gencodeGenes, os);
+        }
+    }
+
+    private static BufferedOutputStream openForWriting(Path output) throws IOException {
+        if (output.toFile().getName().endsWith(".gz")) {
+            return new BufferedOutputStream(new GZIPOutputStream(Files.newOutputStream(output)));
+        } else {
+            return new BufferedOutputStream(Files.newOutputStream(output));
+        }
     }
 
     /**
@@ -238,13 +270,17 @@ public class SquirlsDataBuilder {
      * Build the database given inputs.
      *
      * @param buildDir          path to directory where the database file should be stored
-     * @param genomeUrl         url pointing to `tar.gz` file with reference genome
-     * @param jannovarDbDir     path to directory with Jannovar serialized files
+     * @param genomeUrl         URL pointing to `tar.gz` file with reference genome
+     * @param refseqGtfUrl      URL pointing to RefSeq genes GTF file. The file may be gzipped
+     * @param gencodeGtfUrl     URL pointing to Gencode genes GTF file. The file may be gzipped
      * @param yamlPath          path to file with splice site definitions
      * @param versionedAssembly a string like `1710_hg19`, etc.
      * @throws SquirlsException if anything goes wrong
      */
-    public static void buildDatabase(Path buildDir, URL genomeUrl, URL genomeAssemblyReport, URL phylopUrl, Path jannovarDbDir, Path yamlPath,
+    public static void buildDatabase(Path buildDir, URL genomeUrl, URL genomeAssemblyReport,
+                                     URL refseqGtfUrl, URL gencodeGtfUrl,
+                                     URL phylopUrl,
+                                     Path yamlPath,
                                      Path hexamerPath, Path septamerPath,
                                      Map<SquirlsClassifierVersion, Path> classifiers,
                                      String versionedAssembly) throws SquirlsException {
@@ -257,16 +293,23 @@ public class SquirlsDataBuilder {
         Path genomeAssemblyReportPath = buildDir.resolve(String.format("%s.assembly_report.txt", versionedAssembly));
         Path phyloPPath = buildDir.resolve(String.format("%s.phylop.bw", versionedAssembly));
 
+        // We need to process gencode & refseq files, hence temporary files
+        Path gencodePath, refseqPath;
+        try {
+            gencodePath = Files.createTempFile("gencode", ".gtf.gz");
+            refseqPath = Files.createTempFile("refseq", ".gtf.gz");
+        } catch (IOException e) {
+            throw new SquirlsException(e);
+        }
+
         ExecutorService es = Executors.newFixedThreadPool(3);
         es.submit(downloadReferenceGenome(genomeUrl, buildDir, versionedAssembly, false));
         es.submit(new UrlResourceDownloader(phylopUrl, phyloPPath, false));
         es.submit(new UrlResourceDownloader(genomeAssemblyReport, genomeAssemblyReportPath, false));
+        es.submit(new UrlResourceDownloader(refseqGtfUrl, refseqPath, true));
+        es.submit(new UrlResourceDownloader(gencodeGtfUrl, gencodePath, true));
 
-        // 1 - deserialize Jannovar transcript databases
-        LOGGER.info("Loading transcripts from Jannovar transcript databases located in `{}`", jannovarDbDir);
-        JannovarDataManager manager = JannovarDataManager.fromDirectory(jannovarDbDir);
-
-        // 2a - parse YAML with splicing matrices
+        // 1a - parse YAML with splicing matrices
         SplicingPwmData splicingPwmData;
         try (InputStream is = Files.newInputStream(yamlPath)) {
             SplicingPositionalWeightMatrixParser parser = new InputStreamBasedPositionalWeightMatrixParser(is);
@@ -275,9 +318,9 @@ public class SquirlsDataBuilder {
             throw new SquirlsException(e);
         }
 
-        // 2b - parse k-mer maps
-        final Map<String, Double> hexamerMap;
-        final Map<String, Double> septamerMap;
+        // 1b - parse k-mer maps
+        Map<String, Double> hexamerMap;
+        Map<String, Double> septamerMap;
         try {
             hexamerMap = new FileKMerParser(hexamerPath).getKmerMap();
             septamerMap = new FileKMerParser(septamerPath).getKmerMap();
@@ -285,25 +328,25 @@ public class SquirlsDataBuilder {
             throw new SquirlsException(e);
         }
 
-        // 3 - create and fill the database
-        // 3a - initialize database
+        // 2 - create and fill the database
+        // 2a - initialize database
         Path databasePath = buildDir.resolve(String.format("%s.splicing", versionedAssembly));
         LOGGER.info("Creating database at `{}`", databasePath);
         DataSource dataSource = makeDataSource(databasePath);
 
-        // 3b - apply migrations
+        // 2b - apply migrations
         final int i = applyMigrations(dataSource);
         LOGGER.info("Applied {} migrations", i);
 
-        // 3c - store PWM data
+        // 2c - store PWM data
         LOGGER.info("Inserting PWMs");
         processPwms(dataSource, splicingPwmData);
 
-        // 3d - store k-mer maps
+        // 2d - store k-mer maps
         LOGGER.info("Inserting k-mer maps");
         processKmers(dataSource, hexamerMap, septamerMap);
 
-        // 3e - store classifier
+        // 2e - store classifier
         try {
             LOGGER.info("Inserting classifiers");
             Map<SquirlsClassifierVersion, byte[]> clfData = readClassifiers(classifiers);
@@ -322,26 +365,32 @@ public class SquirlsDataBuilder {
             }
             System.out.print('\n');
         } catch (InterruptedException e) {
-            if (LOGGER.isWarnEnabled()) LOGGER.warn("Interrupting the download");
+            LOGGER.warn("Interrupting the download");
             es.shutdownNow();
         }
 
-        // 3f - store reference dictionary and transcripts
+        // 2f - store reference dictionary and transcripts
         try (FastaStrandedSequenceService accessor = new FastaStrandedSequenceService(genomeAssemblyReportPath,
                 genomeFastaPath, genomeFastaFaiPath, genomeFastaDictPath)) {
             GenomicAssembly genomicAssembly = accessor.genomicAssembly();
 
-            if (LOGGER.isInfoEnabled()) LOGGER.info("Inserting transcripts");
-            ingestTranscripts(dataSource, genomicAssembly, manager.getAllTranscriptModels(genomicAssembly));
+            ingestSilentGenesTranscripts(buildDir, versionedAssembly, genomicAssembly, refseqPath, gencodePath);
         } catch (Exception e) {
             throw new SquirlsException(e);
+        } finally {
+            try {
+                Files.delete(refseqPath);
+                Files.delete(gencodePath);
+            } catch (IOException e) {
+                LOGGER.warn("Unable to delete temporary GTF files");
+            }
         }
         if (dataSource instanceof Closeable) {
             try {
-                if (LOGGER.isInfoEnabled()) LOGGER.info("Closing database connections");
+                LOGGER.info("Closing database connections");
                 ((Closeable) dataSource).close();
             } catch (IOException e) {
-                if (LOGGER.isWarnEnabled()) LOGGER.warn("Could not close the datasource");
+                LOGGER.warn("Could not close the datasource");
             }
         }
     }

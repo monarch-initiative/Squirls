@@ -186,9 +186,11 @@ public class IngestCommand implements Callable<Integer> {
 
 
             // 1 - create build folder
-            URL genomeUrl = new URL(ingestProperties.getFastaUrl());
+            URL genomeUrl = new URL(ingestProperties.fastaUrl());
             URL assemblyReportUrl = new URL(ingestProperties.assemblyReportUrl());
-            URL phylopUrl = new URL(ingestProperties.getPhylopUrl());
+            URL phylopUrl = new URL(ingestProperties.phylopUrl());
+            URL refseqGtfUrl = new URL(ingestProperties.refseqGtfUrl());
+            URL gencodeGtfUrl = new URL(ingestProperties.gencodeGtfUrl());
 
             String versionedAssembly = getVersionedAssembly(assembly, version);
             Path versionedAssemblyBuildPath = buildDirPath.resolve(versionedAssembly);
@@ -197,19 +199,18 @@ public class IngestCommand implements Callable<Integer> {
 
 
             // 2 - read classifier data
-            Map<SquirlsClassifierVersion, Path> classifiers = ingestProperties.getClassifiers().stream()
+            Map<SquirlsClassifierVersion, Path> classifiers = ingestProperties.classifiers().stream()
                     .collect(Collectors.toMap(
-                            clfData -> SquirlsClassifierVersion.parseString(clfData.getVersion()),
-                            clfData -> Paths.get(clfData.getClassifierPath())));
+                            clfData -> SquirlsClassifierVersion.parseString(clfData.version()),
+                            clfData -> Paths.get(clfData.classifierPath())));
 
 
             // 3 - build database
             SquirlsDataBuilder.buildDatabase(genomeBuildDir,
-                    genomeUrl, assemblyReportUrl, phylopUrl,
-                    Path.of(ingestProperties.getJannovarTranscriptDbDir()),
-                    Path.of(ingestProperties.getSplicingInformationContentMatrix()),
-                    Path.of(ingestProperties.getHexamerTsvPath()),
-                    Path.of(ingestProperties.getSeptamerTsvPath()),
+                    genomeUrl, assemblyReportUrl, refseqGtfUrl, gencodeGtfUrl, phylopUrl,
+                    Path.of(ingestProperties.splicingInformationContentMatrix()),
+                    Path.of(ingestProperties.hexamerTsvPath()),
+                    Path.of(ingestProperties.septamerTsvPath()),
                     classifiers, versionedAssembly);
 
 

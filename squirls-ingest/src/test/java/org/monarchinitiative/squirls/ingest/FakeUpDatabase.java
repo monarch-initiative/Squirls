@@ -91,20 +91,25 @@ public class FakeUpDatabase {
 
     private static final Path BUILD_DIR = Paths.get(System.getProperty("user.home") + "/dub/tmp/squirls");
 
-    private static final Path HG19_JANNOVAR_DB_DIR = Paths.get(FakeUpDatabase.class.getResource("transcripts/hg19").getPath());
+    private static final Path DATA_DIR = Paths.get("src/test/resources/org/monarchinitiative/squirls/ingest");
+    private static final Path TX_DIR = DATA_DIR.resolve("transcripts");
 
-    private static final Path HG38_JANNOVAR_DB_DIR = Paths.get(FakeUpDatabase.class.getResource("transcripts/hg38").getPath());
+    private static final Path SPLICING_IC_MATRIX_PATH = DATA_DIR.resolve("parse").resolve("spliceSites.yaml");
 
-    private static final Path SPLICING_IC_MATRIX_PATH = Paths.get(FakeUpDatabase.class.getResource("parse/spliceSites.yaml").getPath());
-    private static final Path HEXAMER_TSV_PATH = Paths.get(FakeUpDatabase.class.getResource("hexamer-scores.tsv").getPath());
-    private static final Path SEPTAMER_TSV_PATH = Paths.get(FakeUpDatabase.class.getResource("septamer-scores.tsv").getPath());
+    private static final Path HEXAMER_TSV_PATH = DATA_DIR.resolve("hexamer-scores.tsv");
+    private static final Path SEPTAMER_TSV_PATH = DATA_DIR.resolve("septamer-scores.tsv");
 
     @Test
     public void makeHg19Database() throws Exception {
         URL genomeUrl = new URL("http://hgdownload.soe.ucsc.edu/goldenPath/hg19/bigZips/chromFa.tar.gz");
         URL assemblyUrl = new URL("https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/405/GCF_000001405.25_GRCh37.p13/GCF_000001405.25_GRCh37.p13_assembly_report.txt");
         URL phylopUrl = new URL("http://hgdownload.cse.ucsc.edu/goldenpath/hg19/phyloP100way/hg19.100way.phyloP100way.bw");
-        SquirlsDataBuilder.buildDatabase(BUILD_DIR, genomeUrl, assemblyUrl, phylopUrl, HG19_JANNOVAR_DB_DIR, SPLICING_IC_MATRIX_PATH,
+
+        Path hg19Dir = DATA_DIR.resolve("gtf").resolve("hg19");
+        URL refseqGtfUrl = hg19Dir.resolve("GCF_000001405.25_GRCh37.p13_genomic.gck_hnf4a_fbn1.gtf.gz").toUri().toURL();
+        URL gencodeGtfUrl = hg19Dir.resolve("gencode.v19.annotation.gck_hnf4a_fbn1.gtf.gz").toUri().toURL();
+
+        SquirlsDataBuilder.buildDatabase(BUILD_DIR, genomeUrl, assemblyUrl, refseqGtfUrl, gencodeGtfUrl, phylopUrl, SPLICING_IC_MATRIX_PATH,
                 HEXAMER_TSV_PATH, SEPTAMER_TSV_PATH, TestDataSourceConfig.MODEL_PATHS, "1710_hg19");
     }
 
@@ -113,7 +118,11 @@ public class FakeUpDatabase {
         URL genomeUrl = new URL("http://hgdownload.soe.ucsc.edu/goldenPath/hg38/bigZips/hg38.chromFa.tar.gz");
         URL assemblyUrl = new URL("https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/405/GCF_000001405.39_GRCh38.p13/GCF_000001405.39_GRCh38.p13_assembly_report.txt");
         URL phylopUrl = new URL("http://hgdownload.soe.ucsc.edu/goldenPath/hg38/phyloP100way/hg38.phyloP100way.bw");
-        SquirlsDataBuilder.buildDatabase(BUILD_DIR, genomeUrl, assemblyUrl, phylopUrl, HG38_JANNOVAR_DB_DIR, SPLICING_IC_MATRIX_PATH,
+
+        Path hg38Dir = DATA_DIR.resolve("gtf").resolve("hg38");
+        URL refseqGtfUrl = hg38Dir.resolve("GCF_000001405.39_GRCh38.p13_genomic.gck_hnf4a_fbn1.gtf.gz").toUri().toURL();
+        URL gencodeGtfUrl = hg38Dir.resolve("gencode.v39.basic.annotation.gck_hnf4a_fbn1.gtf.gz").toUri().toURL();
+        SquirlsDataBuilder.buildDatabase(BUILD_DIR, genomeUrl, assemblyUrl, refseqGtfUrl, gencodeGtfUrl, phylopUrl, SPLICING_IC_MATRIX_PATH,
                 HEXAMER_TSV_PATH, SEPTAMER_TSV_PATH, TestDataSourceConfig.MODEL_PATHS, "1710_hg38");
     }
 }

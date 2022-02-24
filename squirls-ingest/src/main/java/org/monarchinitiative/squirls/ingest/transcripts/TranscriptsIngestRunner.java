@@ -87,6 +87,7 @@ import java.util.*;
 /**
  * @author Daniel Danis
  */
+@Deprecated
 public class TranscriptsIngestRunner implements Runnable {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(TranscriptsIngestRunner.class);

@@ -1,25 +1,47 @@
-# Ingest configuration file template
-# path to YML file with definitions of splice sites
+########################################################################################################################
+#                                        Ingest configuration file template                                            #
+########################################################################################################################
+### Zenodo resources
+#
+## path to YML file with definitions of splice sites
 splicingInformationContentMatrix:
-# path to directory with serialized Jannovar cache files with `*.ser` suffix
-jannovarTranscriptDbDir:
-# path to TSV file with ESRSeq (hexamer) scores
+
+## path to TSV file with ESRSeq (hexamer) scores
 hexamerTsvPath:
-# path to TSV file with SMS (septamer) scores
+
+## path to TSV file with SMS (septamer) scores
 septamerTsvPath:
+
 classifiers:
   # a list of classifiers to ingest
   # an unique version ID, e.g. `v1`
   - version:
     # path to YML file with classifier data
     classifierPath:
-# we expect to find tarball with FASTA files per-chromosome here
+
+### Public resources
+#
+## GTF with RefSeq transcripts. Try these first:
+#  hg19 - https://ftp.ncbi.nlm.nih.gov/genomes/refseq/vertebrate_mammalian/Homo_sapiens/all_assembly_versions/GCF_000001405.25_GRCh37.p13/GCF_000001405.25_GRCh37.p13_genomic.gtf.gz
+#  hg38 - https://ftp.ncbi.nlm.nih.gov/genomes/refseq/vertebrate_mammalian/Homo_sapiens/annotation_releases/109.20211119/GCF_000001405.39_GRCh38.p13/GCF_000001405.39_GRCh38.p13_genomic.gtf.gz
+refseqGtfUrl:
+
+## GTF with Gencode transcripts. Try these first:
+#  hg19 - https://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_19/gencode.v19.annotation.gtf.gz
+#  hg38 - https://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_39/gencode.v39.basic.annotation.gtf.gz
+gencodeGtfUrl:
+
+## we expect to find tarball with FASTA files per-chromosome here
+#hg19 - http://hgdownload.soe.ucsc.edu/goldenPath/hg19/bigZips/chromFa.tar.gz
+#hg38 - http://hgdownload.soe.ucsc.edu/goldenPath/hg38/bigZips/hg38.chromFa.tar.gz
 fastaUrl:
-#hg19: http://hgdownload.soe.ucsc.edu/goldenPath/hg19/bigZips/chromFa.tar.gz
-#hg38: http://hgdownload.soe.ucsc.edu/goldenPath/hg38/bigZips/hg38.chromFa.tar.gz
+
+## NCBI's assembly report
+#hg19 - https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/405/GCF_000001405.25_GRCh37.p13/GCF_000001405.25_GRCh37.p13_assembly_report.txt
+#hg38 - https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/405/GCF_000001405.39_GRCh38.p13/GCF_000001405.39_GRCh38.p13_assembly_report.txt
 assemblyReportUrl:
-#hg19: https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/405/GCF_000001405.25_GRCh37.p13/GCF_000001405.25_GRCh37.p13_assembly_report.txt
-#hg38: https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/405/GCF_000001405.39_GRCh38.p13/GCF_000001405.39_GRCh38.p13_assembly_report.txt
+
+## BigWig file with genome-wide PhyloP scores
+#hg19 - http://hgdownload.cse.ucsc.edu/goldenpath/hg19/phyloP100way/hg19.100way.phyloP100way.bw
+#hg38 - http://hgdownload.soe.ucsc.edu/goldenPath/hg38/phyloP100way/hg38.phyloP100way.bw
 phylopUrl:
-#hg19: http://hgdownload.cse.ucsc.edu/goldenpath/hg19/phyloP100way/hg19.100way.phyloP100way.bw
-#hg38: http://hgdownload.soe.ucsc.edu/goldenPath/hg38/phyloP100way/hg38.phyloP100way.bw

@@ -96,6 +96,7 @@ import java.util.stream.Collectors;
 /**
  * @author Daniel Danis
  */
+@Deprecated
 public class JannovarDataManager {
 
     private static final NumberFormat NF = NumberFormat.getInstance();
