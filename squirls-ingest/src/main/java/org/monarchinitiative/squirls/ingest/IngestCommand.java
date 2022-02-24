@@ -253,6 +253,7 @@ public class IngestCommand implements Callable<Integer> {
             LOGGER.error("Error: {}", e.getMessage());
             return 1;
         }
+        LOGGER.info("Done!");
         return 0;
     }
 }

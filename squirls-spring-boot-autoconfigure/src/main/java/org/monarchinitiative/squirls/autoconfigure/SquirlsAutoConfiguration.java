@@ -162,7 +162,7 @@ public class SquirlsAutoConfiguration {
         if (!Files.isDirectory(dataDirPath)) {
             throw new UndefinedSquirlsResourceException(String.format("Path to Squirls data directory '%s' does not point to real directory", dataDirPath));
         }
-        LOGGER.info("Spooling up Squirls v{} using resources in `{}`", SQUIRLS_VERSION, dataDirPath.toAbsolutePath());
+        LOGGER.info("Spooling up Squirls v{}, {} assembly, and {} data version, using resources in `{}`", SQUIRLS_VERSION, properties.getGenomeAssembly(), properties.getDataVersion(), dataDirPath.toAbsolutePath());
         return dataDirPath;
     }
 
@@ -222,11 +222,11 @@ public class SquirlsAutoConfiguration {
         Path silentGenesJsonPath;
         switch (properties.getTranscriptSource()) {
             case REFSEQ:
-                LOGGER.debug("Using RefSeq transcripts");
+                LOGGER.info("Using RefSeq transcripts");
                 silentGenesJsonPath = dataResolver.refseqJsonPath();
                 break;
             case GENCODE:
-                LOGGER.debug("Using Gencode transcripts");
+                LOGGER.info("Using Gencode transcripts");
                 silentGenesJsonPath = dataResolver.gencodeJsonPath();
                 break;
             default:

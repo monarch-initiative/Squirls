@@ -131,15 +131,13 @@ class VariantSplicingEvaluatorDefault implements VariantSplicingEvaluator {
     @Override
     public SquirlsResult evaluate(GenomicVariant variant, Set<String> txIds) {
         if (VariantType.isSymbolic(variant.ref(), variant.alt())) {
-            if (LOGGER.isDebugEnabled())
-                LOGGER.debug("Skipping symbolic variant {}:{}-{} {}", variant.contigName(), variant.start(), variant.end(), variant.variantType());
+            LOGGER.debug("Skipping symbolic variant {}:{}-{} {}", variant.contigName(), variant.start(), variant.end(), variant.variantType());
             return SquirlsResult.empty();
         } else if (VariantType.isMissingUpstreamDeletion(variant.alt())) {
             // VCF4.2 specs:
             // The ‘*’ allele is reserved to indicate that the allele is missing due to a upstream deletion.
-            if (LOGGER.isDebugEnabled())
-                LOGGER.debug("Skipping variant where alt allele is missing due to an upstream deletion: {}:{}-{} {}",
-                        variant.contigName(), variant.startWithCoordinateSystem(CoordinateSystem.oneBased()), variant.ref(), variant.alt());
+            LOGGER.debug("Skipping variant where alt allele is missing due to an upstream deletion: {}:{}-{} {}",
+                    variant.contigName(), variant.startWithCoordinateSystem(CoordinateSystem.oneBased()), variant.ref(), variant.alt());
             return SquirlsResult.empty();
         }
 
@@ -148,8 +146,7 @@ class VariantSplicingEvaluatorDefault implements VariantSplicingEvaluator {
          */
         if (!squirlsDataService.genomicAssembly().containsContig(variant.contig())) {
             // unknown contig, nothing to be done here
-            if (LOGGER.isWarnEnabled())
-                LOGGER.warn("Unknown contig for variant {}:{}{}>{}", variant.contigName(), variant.start(), variant.ref(), variant.alt());
+            LOGGER.warn("Unknown contig for variant {}:{}{}>{}", variant.contigName(), variant.start(), variant.ref(), variant.alt());
             return SquirlsResult.empty();
         }
 
@@ -189,8 +186,7 @@ class VariantSplicingEvaluatorDefault implements VariantSplicingEvaluator {
         GenomicRegion toFetch = GenomicRegion.of(variant.contig(), strand, Coordinates.of(coordinateSystem, bp, ep));
         StrandedSequence seq = squirlsDataService.sequenceForRegion(toFetch);
         if (seq == null) {
-            if (LOGGER.isDebugEnabled())
-                LOGGER.debug("Unable to get reference sequence for `{}` when evaluating variant `{}`", toFetch, variant);
+            LOGGER.debug("Unable to get reference sequence for `{}` when evaluating variant `{}`", toFetch, variant);
             return SquirlsResult.empty();
         }
 
@@ -241,8 +237,7 @@ class VariantSplicingEvaluatorDefault implements VariantSplicingEvaluator {
                         txMap.put(txId, st);
                     }
                 } else {
-                    if (LOGGER.isWarnEnabled())
-                        LOGGER.warn("Unknown transcript id `{}` for variant {}", txId, variant);
+                    LOGGER.warn("Unknown transcript id `{}` for variant {}", txId, variant);
                 }
             }
         }
