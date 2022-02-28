@@ -76,18 +76,23 @@
 
 package org.monarchinitiative.squirls.core.reference;
 
+import org.monarchinitiative.sgenes.model.Gene;
 import org.monarchinitiative.sgenes.model.Transcript;
 import org.monarchinitiative.svart.GenomicRegion;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 /**
  * @author Daniel Danis
  */
 public interface TranscriptModelService {
 
-    List<String> getTranscriptAccessionIds();
+    /**
+     * @return all genes
+     */
+    Stream<Gene> genes();
 
     /**
      * Fetch transcripts that overlap with query interval specified by <code>contig</code>, <code>begin</code>, and
@@ -104,4 +109,10 @@ public interface TranscriptModelService {
      * @return {@link Optional} with transcript data. The optional is empty if no such transcript is present in the database
      */
     Optional<Transcript> transcriptByAccession(String txAccession);
+
+    default Stream<String> getTranscriptAccessions() {
+        return genes()
+                .flatMap(Gene::transcriptStream)
+                .map(Transcript::accession);
+    }
 }

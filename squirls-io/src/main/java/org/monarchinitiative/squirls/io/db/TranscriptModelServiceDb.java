@@ -76,6 +76,7 @@
 
 package org.monarchinitiative.squirls.io.db;
 
+import org.monarchinitiative.sgenes.model.Gene;
 import org.monarchinitiative.sgenes.model.Transcript;
 import org.monarchinitiative.squirls.core.reference.TranscriptModel;
 import org.monarchinitiative.squirls.core.reference.TranscriptModelService;
@@ -89,6 +90,7 @@ import javax.sql.DataSource;
 import java.sql.*;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * @author Daniel Danis
@@ -200,21 +202,26 @@ public class TranscriptModelServiceDb implements TranscriptModelService {
         return updated;
     }
 
+//    @Override
+//    public List<String> getTranscriptAccessions() {
+//        String sql = "SELECT DISTINCT TX_ACCESSION FROM SQUIRLS.TRANSCRIPTS";
+//        try (Connection connection = dataSource.getConnection();
+//             Statement statement = connection.createStatement();
+//             ResultSet rs = statement.executeQuery(sql)) {
+//            List<String> accessions = new ArrayList<>();
+//            while (rs.next())
+//                accessions.add(rs.getString(1));
+//            return accessions;
+//        } catch (SQLException e) {
+//            if (LOGGER.isWarnEnabled())
+//                LOGGER.warn("Error occurred: {}", e.getMessage());
+//            return List.of();
+//        }
+//    }
+
     @Override
-    public List<String> getTranscriptAccessionIds() {
-        String sql = "SELECT DISTINCT TX_ACCESSION FROM SQUIRLS.TRANSCRIPTS";
-        try (Connection connection = dataSource.getConnection();
-             Statement statement = connection.createStatement();
-             ResultSet rs = statement.executeQuery(sql)) {
-            List<String> accessions = new ArrayList<>();
-            while (rs.next())
-                accessions.add(rs.getString(1));
-            return accessions;
-        } catch (SQLException e) {
-            if (LOGGER.isWarnEnabled())
-                LOGGER.warn("Error occurred: {}", e.getMessage());
-            return List.of();
-        }
+    public Stream<Gene> genes() {
+        return Stream.of();
     }
 
     @Override

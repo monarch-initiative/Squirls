@@ -76,12 +76,15 @@
 
 package org.monarchinitiative.squirls.cli.cmd;
 
+import de.charite.compbio.jannovar.annotation.VariantAnnotator;
+import de.charite.compbio.jannovar.data.ReferenceDictionary;
+import org.monarchinitiative.sgenes.model.Gene;
 import org.monarchinitiative.squirls.cli.writers.*;
+import org.monarchinitiative.svart.assembly.GenomicAssembly;
 import picocli.CommandLine;
 
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Stream;
 
 /**
  * @author Daniel Danis
@@ -135,6 +138,14 @@ public abstract class AnnotatingSquirlsCommand extends SquirlsCommand {
                 .setReportFeatures(reportFeatures)
                 .setReportAllTranscripts(reportAllTranscripts)
                 .build();
+    }
+
+    protected static ReferenceDictionary createReferenceDictionary(GenomicAssembly assembly) {
+        return JannovarUtil.createReferenceDictionary(assembly);
+    }
+
+    protected static VariantAnnotator createVariantAnnotator(ReferenceDictionary rd, Stream<Gene> genes) {
+        return JannovarUtil.createVariantAnnotator(rd, genes);
     }
 
 }

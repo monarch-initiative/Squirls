@@ -22,6 +22,7 @@ import java.nio.file.Path;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import java.util.zip.GZIPInputStream;
 
 /**
@@ -29,9 +30,9 @@ import java.util.zip.GZIPInputStream;
  */
 public class TranscriptModelServiceSg implements TranscriptModelService {
 
+    private final List<Gene> genes;
     private final Map<String, Transcript> txByAccession;
-    private final List<String> txAccessions;
-    private final Map<String, IntervalArray<Gene>> chromosomeMap;
+    private final Map<String, IntervalArray<Transcript>> chromosomeMap;
 
 
     public static TranscriptModelService of(GenomicAssembly assembly, Path silentGenesJson) throws SquirlsResourceException {
@@ -50,29 +51,18 @@ public class TranscriptModelServiceSg implements TranscriptModelService {
     }
 
     public static TranscriptModelServiceSg of(List<Gene> genes) {
-        Objects.requireNonNull(genes, "Genes must not be null");
-        List<String> txAccessions = genes.stream()
-                .flatMap(Gene::transcriptStream)
-                .map(Transcript::accession)
-                .collect(Collectors.toUnmodifiableList());
-
-        Map<String, Transcript> txByAccession = genes.stream()
-                .flatMap(Gene::transcriptStream)
-                .collect(Collectors.toUnmodifiableMap(Transcript::accession, Function.identity()));
-
-        Map<String, IntervalArray<Gene>> chromosomeMap = prepareIntervalArrays(genes);
-
-        return new TranscriptModelServiceSg(txAccessions, txByAccession, chromosomeMap);
+        return new TranscriptModelServiceSg(genes);
     }
 
-    private static Map<String, IntervalArray<Gene>> prepareIntervalArrays(List<Gene> genes) {
-        Map<String, Set<Gene>> geneByContig = genes.stream()
-                .collect(Collectors.groupingBy(g -> g.contig().genBankAccession(), Collectors.toUnmodifiableSet()));
+    private static Map<String, IntervalArray<Transcript>> prepareIntervalArrays(List<Gene> genes) {
+        Map<String, List<Transcript>> geneByContig = genes.stream()
+                .flatMap(Gene::transcriptStream)
+                .collect(Collectors.groupingBy(g -> g.contig().genBankAccession()));
 
-        Map<String, IntervalArray<Gene>> chromosomeMap = new HashMap<>(geneByContig.keySet().size());
+        Map<String, IntervalArray<Transcript>> chromosomeMap = new HashMap<>(geneByContig.keySet().size());
         for (String contig : geneByContig.keySet()) {
-            Set<Gene> genesOnContig = geneByContig.get(contig);
-            IntervalArray<Gene> intervalArray = new IntervalArray<>(genesOnContig, GeneEndExtractor.instance());
+            List<Transcript> genesOnContig = geneByContig.get(contig);
+            IntervalArray<Transcript> intervalArray = new IntervalArray<>(genesOnContig, TranscriptEndExtractor.instance());
             chromosomeMap.put(contig, intervalArray);
         }
 
@@ -80,35 +70,32 @@ public class TranscriptModelServiceSg implements TranscriptModelService {
     }
 
 
-    private TranscriptModelServiceSg(List<String> txAccessions,
-                                     Map<String, Transcript> txByAccession,
-                                     Map<String, IntervalArray<Gene>> chromosomeMap) {
-        this.txAccessions = txAccessions;
-        this.txByAccession = txByAccession;
-        this.chromosomeMap = chromosomeMap;
+    private TranscriptModelServiceSg(List<Gene> genes) {
+        this.genes = Objects.requireNonNull(genes, "Genes must not be null");
+        this.txByAccession = genes.stream()
+                .flatMap(Gene::transcriptStream)
+                .collect(Collectors.toUnmodifiableMap(Transcript::accession, Function.identity()));
+        this.chromosomeMap = prepareIntervalArrays(genes);
     }
 
-
     @Override
-    public List<String> getTranscriptAccessionIds() {
-        return txAccessions;
+    public Stream<Gene> genes() {
+        return genes.stream();
     }
 
     @Override
     public List<Transcript> overlappingTranscripts(GenomicRegion query) {
-        IntervalArray<Gene> intervalArray = chromosomeMap.get(query.contig().genBankAccession());
+        IntervalArray<Transcript> intervalArray = chromosomeMap.get(query.contig().genBankAccession());
         if (intervalArray == null) {
             return List.of();
         }
 
-        IntervalArray<Gene>.QueryResult result = intervalArray.findOverlappingWithInterval(
+        IntervalArray<Transcript>.QueryResult result = intervalArray.findOverlappingWithInterval(
                 query.startOnStrandWithCoordinateSystem(Strand.POSITIVE, CoordinateSystem.zeroBased()),
                 query.endOnStrandWithCoordinateSystem(Strand.POSITIVE, CoordinateSystem.zeroBased())
         );
 
-        return result.getEntries().stream()
-                .flatMap(Gene::transcriptStream)
-                .collect(Collectors.toList());
+        return Collections.unmodifiableList(result.getEntries());
     }
 
     @Override

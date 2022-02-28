@@ -185,10 +185,7 @@ public class SquirlsDataBuilder {
         // Refseq
         LOGGER.info("Reading RefSeq genes from {}", refseqGtfPath.toAbsolutePath());
         GtfGeneParser<RefseqGene> refseqParser = GtfGeneParserFactory.refseqGtfParser(refseqGtfPath, assembly);
-        Set<RefseqSource> refseqSources = Set.of(RefseqSource.BestRefSeq, RefseqSource.CuratedGenomic, RefseqSource.RefSeq);
         List<RefseqGene> refseqGenes = refseqParser.stream()
-                // TODO - elaborate filtering to create refseq curated and refseq
-                .filter(g -> g.transcriptStream().map(RefseqTranscript::source).anyMatch(refseqSources::contains))
                 .collect(Collectors.toList());
         LOGGER.info("Found {} genes", refseqGenes.size());
 
@@ -202,9 +199,7 @@ public class SquirlsDataBuilder {
         // Gencode
         LOGGER.info("Reading Gencode genes from {}", gencodeGtfPath.toAbsolutePath());
         GtfGeneParser<GencodeGene> gencodeParser = GtfGeneParserFactory.gencodeGeneParser(gencodeGtfPath, assembly);
-        Set<EvidenceLevel> gencodeEvidences = Set.of(EvidenceLevel.VERIFIED, EvidenceLevel.MANUALLY_ANNOTATED);
         List<GencodeGene> gencodeGenes = gencodeParser.stream()
-                .filter(g -> gencodeEvidences.contains(g.evidenceLevel())) // TODO - elaborate filtering
                 .collect(Collectors.toList());
         LOGGER.info("Read {} genes", gencodeGenes.size());
 

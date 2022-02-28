@@ -80,11 +80,7 @@ import de.charite.compbio.jannovar.annotation.Annotation;
 import de.charite.compbio.jannovar.annotation.AnnotationException;
 import de.charite.compbio.jannovar.annotation.VariantAnnotations;
 import de.charite.compbio.jannovar.annotation.VariantAnnotator;
-import de.charite.compbio.jannovar.annotation.builders.AnnotationBuilderOptions;
-import de.charite.compbio.jannovar.data.JannovarData;
-import de.charite.compbio.jannovar.data.JannovarDataSerializer;
 import de.charite.compbio.jannovar.data.ReferenceDictionary;
-import de.charite.compbio.jannovar.data.SerializationException;
 import de.charite.compbio.jannovar.reference.GenomePosition;
 import de.charite.compbio.jannovar.reference.GenomeVariant;
 import de.charite.compbio.jannovar.reference.PositionType;
@@ -135,16 +131,11 @@ public class AnnotateCsvCommand extends AnnotatingSquirlsCommand {
     private static boolean notifiedAboutId = false;
 
     @CommandLine.Parameters(index = "1",
-            paramLabel = "hg38_refseq.ser",
-            description = "Path to Jannovar transcript database")
-    public Path jannovarDataPath;
-
-    @CommandLine.Parameters(index = "2",
             paramLabel = "input.csv",
             description = "Path to the input tabular file")
     public Path inputPath;
 
-    @CommandLine.Parameters(index = "3",
+    @CommandLine.Parameters(index = "2",
             paramLabel = "path/to/output",
             description = "Prefix for the output files")
     public String outputPrefix;
@@ -206,20 +197,14 @@ public class AnnotateCsvCommand extends AnnotatingSquirlsCommand {
     public Integer call() {
         LOGGER.info("Reading variants from `{}`", inputPath.toAbsolutePath());
 
-        JannovarData jd;
-        try {
-            LOGGER.info("Loading transcript database from `{}`", jannovarDataPath.toAbsolutePath());
-            jd = new JannovarDataSerializer(jannovarDataPath.toAbsolutePath().toString()).load();
-        } catch (SerializationException e) {
-            LOGGER.error("Unable to deserialize jannovar transcript database: {}", e.getMessage());
-            return 1;
-        }
-
         try (ConfigurableApplicationContext context = getContext()) {
-            VariantAnnotator annotator = new VariantAnnotator(jd.getRefDict(), jd.getChromosomes(), new AnnotationBuilderOptions());
             VariantSplicingEvaluator evaluator = context.getBean(VariantSplicingEvaluator.class);
             SquirlsDataService dataService = context.getBean(SquirlsDataService.class);
             GenomicAssembly assembly = dataService.genomicAssembly();
+
+            ReferenceDictionary rd = createReferenceDictionary(assembly);
+            VariantAnnotator annotator = createVariantAnnotator(rd, dataService.genes());
+
             // ensure the fail-fast behavior at the cost of being retrieved far from the usage
             AnalysisResultsWriter analysisResultsWriter = context.getBean(AnalysisResultsWriter.class);
 
@@ -250,7 +235,7 @@ public class AnnotateCsvCommand extends AnnotatingSquirlsCommand {
 
                     VariantAnnotations annotations;
                     try {
-                        annotations = annotateWithJannovar(annotator, jd.getRefDict(), variant);
+                        annotations = annotateWithJannovar(annotator, rd, variant);
                     } catch (AnnotationException | RuntimeException e) {
                         if (LOGGER.isWarnEnabled())
                             LOGGER.warn("line #{}: {}", record.getRecordNumber(), e.getMessage());
@@ -278,7 +263,7 @@ public class AnnotateCsvCommand extends AnnotatingSquirlsCommand {
                     .analysisStats(AnalysisStats.of(allVariants, allVariants, annotatedAlleleCount))
                     .settingsData(SettingsData.builder()
                             .inputPath(inputPath.toAbsolutePath().toString())
-                            .transcriptDb(jannovarDataPath.toAbsolutePath().toString())
+//                            .transcriptDb(jannovarDataPath.toAbsolutePath().toString()) // TODO - get path to transcript file
                             .nReported(nVariantsToReport)
                             .build())
                     .addAllVariants(annotated)

@@ -76,6 +76,7 @@
 
 package org.monarchinitiative.squirls.initialize;
 
+import org.monarchinitiative.sgenes.model.Gene;
 import org.monarchinitiative.sgenes.model.Transcript;
 import org.monarchinitiative.squirls.core.SquirlsDataService;
 import org.monarchinitiative.squirls.core.reference.StrandedSequence;
@@ -87,6 +88,7 @@ import org.monarchinitiative.svart.GenomicRegion;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 /**
  * @author Daniel Danis
@@ -112,8 +114,8 @@ public class SquirlsDataServiceImpl implements SquirlsDataService {
     }
 
     @Override
-    public List<String> getTranscriptAccessionIds() {
-        return transcriptModelService.getTranscriptAccessionIds();
+    public Stream<Gene> genes() {
+        return transcriptModelService.genes();
     }
 
     @Override

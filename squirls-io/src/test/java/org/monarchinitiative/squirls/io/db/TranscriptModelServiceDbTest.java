@@ -94,7 +94,7 @@ import org.springframework.test.context.jdbc.Sql;
 
 import javax.sql.DataSource;
 import java.util.List;
-import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
@@ -157,7 +157,7 @@ public class TranscriptModelServiceDbTest {
     @Test
     @Sql({"transcripts_create_tables.sql", "transcripts_insert.sql"})
     public void getTranscriptAccessionIds() {
-        List<String> accessionIds = instance.getTranscriptAccessionIds();
+        List<String> accessionIds = instance.getTranscriptAccessions().collect(Collectors.toList());
 
         assertThat(accessionIds, hasSize(5));
         assertThat(accessionIds, hasItems("NM_000001.1", "NM_000002.1", "NM_000003.1", "NM_000004.1", "NM_000005.1"));
