@@ -46,12 +46,12 @@ class JannovarUtil {
         return builder.build();
     }
 
-    static VariantAnnotator createVariantAnnotator(ReferenceDictionary rd, Stream<Gene> genes) {
+    static VariantAnnotator createVariantAnnotator(ReferenceDictionary rd, Stream<? extends Gene> genes) {
         ImmutableMap<Integer, Chromosome> chromosomes = createChromosomes(rd, genes);
         return new VariantAnnotator(rd, chromosomes, new AnnotationBuilderOptions());
     }
 
-    private static ImmutableMap<Integer, Chromosome> createChromosomes(ReferenceDictionary rd, Stream<Gene> genes) {
+    private static ImmutableMap<Integer, Chromosome> createChromosomes(ReferenceDictionary rd, Stream<? extends Gene> genes) {
         Map<Integer, List<TranscriptModel>> txByContigId = genes.parallel()
                 .flatMap(toTranscriptModels(rd))
                 .collect(Collectors.groupingBy(TranscriptModel::getChr));

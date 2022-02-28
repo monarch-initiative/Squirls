@@ -114,7 +114,7 @@ public class SquirlsDataServiceImpl implements SquirlsDataService {
     }
 
     @Override
-    public Stream<Gene> genes() {
+    public Stream<? extends Gene> genes() {
         return transcriptModelService.genes();
     }
 

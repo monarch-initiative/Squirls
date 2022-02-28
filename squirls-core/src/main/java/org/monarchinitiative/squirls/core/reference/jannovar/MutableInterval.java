@@ -1,4 +1,4 @@
-package org.monarchinitiative.squirls.io.transcript.jannovar;
+package org.monarchinitiative.squirls.core.reference.jannovar;
 
 /**
  * Mutable half-open interval, for incremental building of {@link Interval} objects.

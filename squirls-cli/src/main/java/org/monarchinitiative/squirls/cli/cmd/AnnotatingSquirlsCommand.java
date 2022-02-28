@@ -144,7 +144,7 @@ public abstract class AnnotatingSquirlsCommand extends SquirlsCommand {
         return JannovarUtil.createReferenceDictionary(assembly);
     }
 
-    protected static VariantAnnotator createVariantAnnotator(ReferenceDictionary rd, Stream<Gene> genes) {
+    protected static VariantAnnotator createVariantAnnotator(ReferenceDictionary rd, Stream<? extends Gene> genes) {
         return JannovarUtil.createVariantAnnotator(rd, genes);
     }
 

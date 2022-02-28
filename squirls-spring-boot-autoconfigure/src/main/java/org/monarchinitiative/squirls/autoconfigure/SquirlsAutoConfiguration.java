@@ -79,6 +79,10 @@ package org.monarchinitiative.squirls.autoconfigure;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
+import org.monarchinitiative.sgenes.io.GeneParser;
+import org.monarchinitiative.sgenes.io.GeneParserFactory;
+import org.monarchinitiative.sgenes.io.SerializationFormat;
+import org.monarchinitiative.sgenes.model.Gene;
 import org.monarchinitiative.squirls.autoconfigure.exception.InvalidSquirlsResourceException;
 import org.monarchinitiative.squirls.core.SquirlsDataService;
 import org.monarchinitiative.squirls.core.VariantSplicingEvaluator;
@@ -101,7 +105,6 @@ import org.monarchinitiative.squirls.io.db.DbKMerDao;
 import org.monarchinitiative.squirls.io.db.DbSplicingPositionalWeightMatrixParser;
 import org.monarchinitiative.squirls.io.sequence.FastaStrandedSequenceService;
 import org.monarchinitiative.squirls.io.sequence.InvalidFastaFileException;
-import org.monarchinitiative.squirls.io.transcript.TranscriptModelServiceSg;
 import org.monarchinitiative.svart.assembly.GenomicAssembly;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -117,10 +120,7 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Collection;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Properties;
+import java.util.*;
 import java.util.stream.Collectors;
 
 
@@ -233,7 +233,22 @@ public class SquirlsAutoConfiguration {
                 throw new SquirlsResourceException("Unknown transcript source `" + properties.getTranscriptSource() + "`");
         }
 
-        return TranscriptModelServiceSg.of(genomicAssembly, silentGenesJsonPath);
+        List<? extends Gene> genes = readGenes(genomicAssembly, silentGenesJsonPath);
+        return TranscriptModelService.of(genes);
+    }
+
+    private static List<? extends Gene> readGenes(GenomicAssembly assembly, Path jsonPath) throws SquirlsResourceException {
+        Objects.requireNonNull(assembly, "Assembly must not be null");
+        Objects.requireNonNull(jsonPath, "Genes JSON path must not be null");
+
+        GeneParserFactory parserFactory = GeneParserFactory.of(assembly);
+        GeneParser parser = parserFactory.forFormat(SerializationFormat.JSON);
+
+        try {
+            return parser.read(jsonPath);
+        } catch (IOException e) {
+            throw new SquirlsResourceException("Error occurred while reading file `" + jsonPath.toAbsolutePath() + "`", e);
+        }
     }
 
     @Bean

@@ -89,10 +89,14 @@ import java.util.stream.Stream;
  */
 public interface TranscriptModelService {
 
+    static TranscriptModelService of(List<? extends Gene> genes) {
+        return TranscriptModelServiceImpl.of(genes);
+    }
+
     /**
      * @return all genes
      */
-    Stream<Gene> genes();
+    Stream<? extends Gene> genes();
 
     /**
      * Fetch transcripts that overlap with query interval specified by <code>contig</code>, <code>begin</code>, and

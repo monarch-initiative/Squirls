@@ -1,4 +1,4 @@
-package org.monarchinitiative.squirls.io.transcript.jannovar;
+package org.monarchinitiative.squirls.core.reference.jannovar;
 
 /**
  * Half-open interval for serialization of an {@link IntervalArray}.

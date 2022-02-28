@@ -1,60 +1,31 @@
-package org.monarchinitiative.squirls.io.transcript;
+package org.monarchinitiative.squirls.core.reference;
 
-import org.monarchinitiative.sgenes.io.GeneParser;
-import org.monarchinitiative.sgenes.io.GeneParserFactory;
-import org.monarchinitiative.sgenes.io.SerializationFormat;
 import org.monarchinitiative.sgenes.model.Gene;
 import org.monarchinitiative.sgenes.model.Transcript;
-import org.monarchinitiative.squirls.core.reference.TranscriptModelService;
-import org.monarchinitiative.squirls.io.SquirlsResourceException;
-import org.monarchinitiative.squirls.io.transcript.jannovar.IntervalArray;
+import org.monarchinitiative.squirls.core.reference.jannovar.IntervalArray;
 import org.monarchinitiative.svart.CoordinateSystem;
 import org.monarchinitiative.svart.GenomicRegion;
 import org.monarchinitiative.svart.Strand;
-import org.monarchinitiative.svart.assembly.GenomicAssembly;
 
-
-import java.io.BufferedInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import java.util.zip.GZIPInputStream;
 
 /**
  * The service for serving transcripts stored in interval trees (in memory).
  */
-public class TranscriptModelServiceSg implements TranscriptModelService {
+class TranscriptModelServiceImpl implements TranscriptModelService {
 
-    private final List<Gene> genes;
+    private final List<? extends Gene> genes;
     private final Map<String, Transcript> txByAccession;
     private final Map<String, IntervalArray<Transcript>> chromosomeMap;
 
-
-    public static TranscriptModelService of(GenomicAssembly assembly, Path silentGenesJson) throws SquirlsResourceException {
-        Objects.requireNonNull(assembly, "Assembly must not be null");
-        Objects.requireNonNull(silentGenesJson, "Genes JSON path must not be null");
-
-        GeneParserFactory parserFactory = GeneParserFactory.of(assembly);
-        GeneParser parser = parserFactory.forFormat(SerializationFormat.JSON);
-
-        try (InputStream is = new BufferedInputStream(new GZIPInputStream(Files.newInputStream(silentGenesJson)))){
-            List<Gene> genes = (List<Gene>) parser.read(is);
-            return of(genes);
-        } catch (IOException e) {
-            throw new SquirlsResourceException("Error occurred while reading file `" + silentGenesJson.toAbsolutePath() + "`", e);
-        }
+    public static TranscriptModelServiceImpl of(List<? extends Gene> genes) {
+        return new TranscriptModelServiceImpl(genes);
     }
 
-    public static TranscriptModelServiceSg of(List<Gene> genes) {
-        return new TranscriptModelServiceSg(genes);
-    }
-
-    private static Map<String, IntervalArray<Transcript>> prepareIntervalArrays(List<Gene> genes) {
+    private static Map<String, IntervalArray<Transcript>> prepareIntervalArrays(List<? extends Gene> genes) {
         Map<String, List<Transcript>> geneByContig = genes.stream()
                 .flatMap(Gene::transcriptStream)
                 .collect(Collectors.groupingBy(g -> g.contig().genBankAccession()));
@@ -70,7 +41,7 @@ public class TranscriptModelServiceSg implements TranscriptModelService {
     }
 
 
-    private TranscriptModelServiceSg(List<Gene> genes) {
+    private TranscriptModelServiceImpl(List<? extends Gene> genes) {
         this.genes = Objects.requireNonNull(genes, "Genes must not be null");
         this.txByAccession = genes.stream()
                 .flatMap(Gene::transcriptStream)
@@ -79,7 +50,7 @@ public class TranscriptModelServiceSg implements TranscriptModelService {
     }
 
     @Override
-    public Stream<Gene> genes() {
+    public Stream<? extends Gene> genes() {
         return genes.stream();
     }
 

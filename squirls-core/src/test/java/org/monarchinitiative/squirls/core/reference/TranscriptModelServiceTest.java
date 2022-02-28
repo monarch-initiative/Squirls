@@ -1,4 +1,4 @@
-package org.monarchinitiative.squirls.io.transcript;
+package org.monarchinitiative.squirls.core.reference;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -14,22 +14,26 @@ import org.monarchinitiative.svart.Strand;
 import org.monarchinitiative.svart.assembly.GenomicAssemblies;
 import org.monarchinitiative.svart.assembly.GenomicAssembly;
 
-import java.util.*;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasItems;
 
-public class TranscriptModelServiceSgTest {
+public class TranscriptModelServiceTest {
 
     private static final GenomicAssembly ASSEMBLY = GenomicAssemblies.GRCh38p13();
 
-    private TranscriptModelServiceSg service;
+    private TranscriptModelService service;
 
     @BeforeEach
     public void setUp() {
         List<Gene> genes = List.of(Genes.surf1(), Genes.surf2());
-        service = TranscriptModelServiceSg.of(genes);
+        service = TranscriptModelService.of(genes);
     }
 
     @Test

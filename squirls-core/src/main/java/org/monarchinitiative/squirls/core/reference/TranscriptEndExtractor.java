@@ -1,7 +1,7 @@
-package org.monarchinitiative.squirls.io.transcript;
+package org.monarchinitiative.squirls.core.reference;
 
 import org.monarchinitiative.sgenes.model.Transcript;
-import org.monarchinitiative.squirls.io.transcript.jannovar.IntervalEndExtractor;
+import org.monarchinitiative.squirls.core.reference.jannovar.IntervalEndExtractor;
 import org.monarchinitiative.svart.CoordinateSystem;
 import org.monarchinitiative.svart.Strand;
 
