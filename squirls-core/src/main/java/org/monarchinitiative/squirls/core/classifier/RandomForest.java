@@ -102,7 +102,7 @@ public class RandomForest<T extends SquirlsFeatures> extends AbstractBinaryClass
 
     private final Collection<BinaryDecisionTree<T>> trees;
 
-    public RandomForest(Builder<T> builder) {
+    private RandomForest(Builder<T> builder) {
         super(builder);
         this.trees = builder.trees;
         check();
