@@ -80,33 +80,20 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-import org.monarchinitiative.squirls.core.reference.TranscriptModel;
 import org.monarchinitiative.squirls.ingest.data.GenomeAssemblyDownloaderTest;
-import org.monarchinitiative.svart.*;
-import org.monarchinitiative.svart.assembly.AssignedMoleculeType;
-import org.monarchinitiative.svart.assembly.GenomicAssembly;
-import org.monarchinitiative.svart.assembly.SequenceRole;
-import org.monarchinitiative.svart.impl.DefaultGenomicAssembly;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.jdbc.Sql;
 
 import javax.sql.DataSource;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.util.ArrayList;
-import java.util.List;
 
 import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.hasSize;
 
-@SpringBootTest(classes = {TestDataSourceConfig.class})
+@SpringBootTest(classes = TestDataSourceConfig.class)
 public class SquirlsDataBuilderTest {
 
     private static final Path DATA_DIR = Paths.get("src/test/resources/org/monarchinitiative/squirls/ingest");
@@ -120,28 +107,9 @@ public class SquirlsDataBuilderTest {
     private static final URL FASTA_URL = GenomeAssemblyDownloaderTest.class.getResource("shortHg19ChromFa.tar.gz");
     private static final URL ASSEMBLY_REPORT_URL = SquirlsDataBuilderTest.class.getResource("GCF_000001405.25_GRCh37.p13_assembly_report.short.txt");
 
-    private static final List<Contig> CONTIGS = List.of(
-            Contig.unknown(),
-            Contig.of(1, "2", SequenceRole.ASSEMBLED_MOLECULE, "2", AssignedMoleculeType.CHROMOSOME, 100_000, "", "", "chr2"),
-            Contig.of(2, "3", SequenceRole.ASSEMBLED_MOLECULE, "3", AssignedMoleculeType.CHROMOSOME, 200_000, "", "", "chr3"));
-
-    private static final GenomicAssembly GENOMIC_ASSEMBLY = DefaultGenomicAssembly.builder().contigs(CONTIGS).build();
-
     @Autowired
     public DataSource dataSource;
     private Path buildDir;
-
-    @Deprecated // TODO - remove
-    private static List<TranscriptModel> makeTranscripts() {
-        Contig chr2 = CONTIGS.get(1);
-        TranscriptModel tx = TranscriptModel.coding(chr2, Strand.POSITIVE, Coordinates.of(CoordinateSystem.zeroBased(), 10_000, 20_000), 11_000, 19_000,
-                "adam", "ADAM",
-                List.of(GenomicRegion.of(chr2, Strand.POSITIVE, CoordinateSystem.zeroBased(), 10_000, 12_000),
-                        GenomicRegion.of(chr2, Strand.POSITIVE, CoordinateSystem.zeroBased(), 14_000, 16_000),
-                        GenomicRegion.of(chr2, Strand.POSITIVE, CoordinateSystem.zeroBased(), 18_000, 20_000)));
-
-        return List.of(tx);
-    }
 
     @BeforeEach
     public void setUp() throws Exception {
@@ -166,57 +134,6 @@ public class SquirlsDataBuilderTest {
         assertThat("FASTA file was not generated", buildDir.resolve(String.format("%s.fa", VERSIONED_ASSEMBLY)).toFile().isFile(), is(true));
         assertThat("FASTA index was not generated", buildDir.resolve(String.format("%s.fa.fai", VERSIONED_ASSEMBLY)).toFile().isFile(), is(true));
         assertThat("FASTA dictionary was not generated", buildDir.resolve(String.format("%s.fa.dict", VERSIONED_ASSEMBLY)).toFile().isFile(), is(true));
-    }
-
-    @Test
-    @Sql("create_schema.sql")
-    @Deprecated // TODO - remove
-    @Disabled
-    public void ingestTranscripts() throws Exception {
-        // arrange - nothing to be done
-        List<TranscriptModel> transcriptModels = makeTranscripts();
-
-        // act
-//        SquirlsDataBuilder.ingestTranscripts(dataSource, GENOMIC_ASSEMBLY, transcriptModels);
-
-        // assert
-        String tmSql = "select CONTIG, BEGIN, END, BEGIN_ON_POS, END_ON_POS, STRAND, TX_ACCESSION " +
-                "from SQUIRLS.TRANSCRIPTS";
-
-        List<String> tms = new ArrayList<>();
-        try (Connection connection = dataSource.getConnection();
-             PreparedStatement tmSt = connection.prepareStatement(tmSql);
-             ResultSet tmRs = tmSt.executeQuery()) {
-            while (tmRs.next()) {
-                tms.add(String.join(",",
-                        tmRs.getString("CONTIG"),
-                        tmRs.getString("BEGIN"),
-                        tmRs.getString("END"),
-                        tmRs.getString("BEGIN_ON_POS"),
-                        tmRs.getString("END_ON_POS"),
-                        tmRs.getString("STRAND"),
-                        tmRs.getString("TX_ACCESSION")));
-            }
-        }
-        assertThat(tms, hasSize(1));
-        assertThat(tms, hasItem(String.join(",", "1", "10000", "20000", "10000", "20000", "TRUE", "adam")));
-
-        String efSql = "select TX_ID, BEGIN, END, EXON_NUMBER from SQUIRLS.EXONS;";
-
-        List<String> records = new ArrayList<>();
-        try (Connection connection = dataSource.getConnection();
-             PreparedStatement efSt = connection.prepareStatement(efSql);
-             ResultSet efRs = efSt.executeQuery()) {
-            while (efRs.next()) {
-                records.add(String.join(";",
-                        efRs.getString("TX_ID"),
-                        efRs.getString("BEGIN"),
-                        efRs.getString("END"),
-                        efRs.getString("EXON_NUMBER")));
-            }
-        }
-        assertThat(records, hasSize(3));
-        assertThat(records, hasItems("1;10000;12000;0", "1;14000;16000;1", "1;18000;20000;2"));
     }
 
     @Test
