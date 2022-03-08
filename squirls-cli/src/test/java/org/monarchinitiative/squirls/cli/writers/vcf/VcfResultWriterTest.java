@@ -92,6 +92,8 @@ import org.monarchinitiative.squirls.cli.writers.AnalysisResults;
 import org.monarchinitiative.squirls.cli.writers.AnalysisStats;
 import org.monarchinitiative.squirls.cli.writers.SettingsData;
 import org.monarchinitiative.squirls.cli.writers.WritableSplicingAllele;
+import org.monarchinitiative.squirls.core.config.FeatureSource;
+import org.monarchinitiative.squirls.core.config.TranscriptCategory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
@@ -148,6 +150,8 @@ public class VcfResultWriterTest {
                 .analysisStats(AnalysisStats.of(10, 8, 7))
                 .settingsData(SettingsData.builder()
                         .inputPath(inputPath.toString())
+                        .featureSource(FeatureSource.REFSEQ)
+                        .transcriptCategory(TranscriptCategory.MANUAL)
                         .nReported(2)
                         .build())
                 .build();
@@ -179,6 +183,8 @@ public class VcfResultWriterTest {
                 .analysisStats(AnalysisStats.of(10, 8, 7))
                 .settingsData(SettingsData.builder()
                         .inputPath(inputPath.toString())
+                        .featureSource(FeatureSource.REFSEQ)
+                        .transcriptCategory(TranscriptCategory.MANUAL)
                         .nReported(2)
                         .build())
                 .build();

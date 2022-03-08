@@ -302,12 +302,13 @@ public class AnnotateVcfCommand extends AnnotatingSquirlsCommand {
                 }
             }
 
-            // write out the results
+            // write out the results TODO - pull up
             AnalysisResults results = AnalysisResults.builder()
                     .addAllSampleNames(sampleNames)
                     .settingsData(SettingsData.builder()
                             .inputPath(inputPath.toString())
-//                            .transcriptDb(jannovarDataPath.toAbsolutePath().toString()) // TODO - resolve what to put here
+                            .featureSource(featureSource)
+                            .transcriptCategory(transcriptCategory)
                             .nReported(nVariantsToReport)
                             .build())
                     .analysisStats(progressReporter.getAnalysisStats())

@@ -81,5 +81,17 @@ package org.monarchinitiative.squirls.core.config;
  */
 public enum FeatureSource {
     GENCODE,
-    REFSEQ
+    REFSEQ;
+
+    @Override
+    public String toString() {
+        switch (this) {
+            case REFSEQ:
+                return "RefSeq";
+            case GENCODE:
+                return "Gencode";
+            default:
+                return "";
+        }
+    }
 }

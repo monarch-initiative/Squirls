@@ -77,7 +77,7 @@
 package org.monarchinitiative.squirls.core.config;
 
 import org.monarchinitiative.sgenes.model.TranscriptEvidence;
-
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -125,5 +125,61 @@ public enum TranscriptCategory {
 
     public boolean hasValue(TranscriptEvidence evidence) {
         return evidences.contains(evidence);
+    }
+
+    public List<String> definitions(FeatureSource featureSource) {
+        switch (this) {
+            case VERIFIED:
+                switch (featureSource) {
+                    case REFSEQ:
+                        return List.of("WARNING: Use GENCODE transcripts when using VERIFIED transcript category");
+                    case GENCODE:
+                        return List.of("Transcripts located at verified loci");
+                    default:
+                        throw new IllegalArgumentException("Unsupported value `" + featureSource + '`');
+                }
+            case MANUAL:
+                switch (featureSource) {
+                    case REFSEQ:
+                        return List.of("Known transcripts (NM_, NR_)");
+                    case GENCODE:
+                        return List.of("Transcripts located at verified loci",
+                                "Transcripts located at manually annotated loci");
+                    default:
+                        throw new IllegalArgumentException("Unsupported value `" + featureSource + '`');
+                }
+            case AUTOMATIC:
+            case ALL:
+                switch (featureSource) {
+                    case REFSEQ:
+                        return List.of("Known transcripts (NM_, NR_)",
+                                "Model transcripts (XM_, XR_)");
+                    case GENCODE:
+                        return List.of("Transcripts located at verified loci",
+                                "Transcripts located at manually annotated loci",
+                                "Transcripts located at automatically annotated loci");
+                    default:
+                        throw new IllegalArgumentException("Unsupported value `" + featureSource + '`');
+                }
+            default:
+                throw new IllegalArgumentException("Unsupported value `" + this + '`');
+        }
+    }
+
+
+    @Override
+    public String toString() {
+        switch (this) {
+            case ALL:
+                return "All";
+            case MANUAL:
+                return "Manual";
+            case VERIFIED:
+                return "Verified";
+            case AUTOMATIC:
+                return "Automatic";
+            default:
+                throw new IllegalArgumentException("Unsupported value `" + this + '`');
+        }
     }
 }

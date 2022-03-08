@@ -176,20 +176,22 @@
                   <h2>Analysis input</h2>
                   <h3>Analyzed variants</h3>
                   <p>
-                      Squirls analyzed variants stored in the VCF file located at:
+                      <em>Squirls</em> analyzed variants stored in the VCF file located at:
                   </p>
                   <p><div class="input-resource" th:text="${settings.getInputPath()}">/path/to/file.vcf</div></p>
 
-                  <h3>Transcript database</h3>
+                  <h3>Transcript definitions</h3>
                   <p>
-                      Squirls uses
-                      <a href="https://github.com/charite/jannovar/">Jannovar</a>
-                      library to perform functional annotation of variants
-                      with respect to genes and transcripts.
-                      The transcript definitions for the analysis were read
-                      from the database file at:
+                      <em>Squirls</em> used <em><span th:remove="tag" th:text="${settings.getFeatureSource()}">RefSeq</span></em> genes
+                      and evaluated the variants with respect to transcripts from the <em><span th:remove="tag" th:text="${settings.getTranscriptCategory()}">Manual</span></em> transcript category:
+                      <table class="table table-striped">
+                          <tbody>
+                            <tr th:each="definition: ${settings.definitions()}">
+                                <td><span th:remove="tag" th:text="${definition}">Known transcripts (NM_, NR_)</span></td>
+                            </tr>
+                          </tbody>
+                      </table>
                   </p>
-                  <p><div class="input-resource" th:text="${settings.getTranscriptDb()}">/path/to/jannovar.ser</div></p>
 
                   <h3>Number of reported variants</h3>
                   <p>
