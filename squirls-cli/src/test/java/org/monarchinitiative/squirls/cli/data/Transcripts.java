@@ -77,7 +77,9 @@
 package org.monarchinitiative.squirls.cli.data;
 
 import org.monarchinitiative.sgenes.model.Transcript;
+import org.monarchinitiative.sgenes.model.TranscriptEvidence;
 import org.monarchinitiative.sgenes.model.TranscriptIdentifier;
+import org.monarchinitiative.sgenes.model.TranscriptMetadata;
 import org.monarchinitiative.svart.*;
 
 import java.util.List;
@@ -202,7 +204,8 @@ class Transcripts {
                 List.of(Coordinates.of(CoordinateSystem.zeroBased(), 29_421_944, 29_422_387),
                         Coordinates.of(CoordinateSystem.zeroBased(), 29_527_439, 29_527_613),
                         Coordinates.of(CoordinateSystem.zeroBased(), 29_701_030, 29_704_695)),
-                Coordinates.of(CoordinateSystem.zeroBased(), 29_421_944, 29_704_695));
+                Coordinates.of(CoordinateSystem.zeroBased(), 29_421_944, 29_704_695),
+                TranscriptMetadata.of(TranscriptEvidence.KNOWN));
     }
 
     /**
@@ -220,7 +223,8 @@ class Transcripts {
                         Coordinates.of(CoordinateSystem.zeroBased(), 136_226_824, 136_227_005),
                         Coordinates.of(CoordinateSystem.zeroBased(), 136_227_139, 136_227_310),
                         Coordinates.of(CoordinateSystem.zeroBased(), 136_227_930, 136_228_034)),
-                Coordinates.of(CoordinateSystem.zeroBased(), 136_223_424, 136_228_034));
+                Coordinates.of(CoordinateSystem.zeroBased(), 136_223_424, 136_228_034),
+                TranscriptMetadata.of(TranscriptEvidence.KNOWN));
     }
 
     /**
@@ -244,7 +248,8 @@ class Transcripts {
                         Coordinates.of(CoordinateSystem.zeroBased(), 136_226_824, 136_227_005),
                         Coordinates.of(CoordinateSystem.zeroBased(), 136_227_139, 136_227_310),
                         Coordinates.of(CoordinateSystem.zeroBased(), 136_227_930, 136_228_034)),
-                Coordinates.of(CoordinateSystem.zeroBased(), 136_223_424, 136_228_034));
+                Coordinates.of(CoordinateSystem.zeroBased(), 136_223_424, 136_228_034),
+                TranscriptMetadata.of(TranscriptEvidence.KNOWN));
     }
 
     /**
@@ -269,7 +274,8 @@ class Transcripts {
                         Coordinates.of(CoordinateSystem.zeroBased(), 21_903_014, 21_903_134),
                         Coordinates.of(CoordinateSystem.zeroBased(), 21_903_875, 21_904_903)
                         ),
-                Coordinates.of(CoordinateSystem.zeroBased(), 21_835_915, 21_904_903));
+                Coordinates.of(CoordinateSystem.zeroBased(), 21_835_915, 21_904_903),
+                TranscriptMetadata.of(TranscriptEvidence.KNOWN));
     }
 
     /**
@@ -286,7 +292,8 @@ class Transcripts {
                         Coordinates.of(CoordinateSystem.zeroBased(), 2_110_670, 2_110_814),
                         Coordinates.of(CoordinateSystem.zeroBased(), 2_138_446, 2_139_492)
                 ),
-                Coordinates.of(CoordinateSystem.zeroBased(), 2_097_985, 2_139_492));
+                Coordinates.of(CoordinateSystem.zeroBased(), 2_097_985, 2_139_492),
+                TranscriptMetadata.of(TranscriptEvidence.KNOWN));
     }
 
     /**
@@ -303,7 +310,8 @@ class Transcripts {
                         Coordinates.of(CoordinateSystem.zeroBased(), 107_849_971, 107_850_122),
                         Coordinates.of(CoordinateSystem.zeroBased(), 107_939_526, 107_940_775)
                 ),
-                Coordinates.of(CoordinateSystem.zeroBased(), 107_683_067, 107_940_775));
+                Coordinates.of(CoordinateSystem.zeroBased(), 107_683_067, 107_940_775),
+                TranscriptMetadata.of(TranscriptEvidence.KNOWN));
         }
 
     /**
@@ -320,7 +328,8 @@ class Transcripts {
                         Coordinates.of(CoordinateSystem.zeroBased(), 39_075_582, 39_075_739),
                         Coordinates.of(CoordinateSystem.zeroBased(), 39_077_964, 39_078_204)
                 ),
-                Coordinates.of(CoordinateSystem.zeroBased(), 38_924_330, 39_078_204));
+                Coordinates.of(CoordinateSystem.zeroBased(), 38_924_330, 39_078_204),
+                TranscriptMetadata.of(TranscriptEvidence.KNOWN));
     }
 
     /**
@@ -337,7 +346,8 @@ class Transcripts {
                         Coordinates.of(CoordinateSystem.zeroBased(), 5_247_806, 5_248_029).invert(contig),
                         Coordinates.of(CoordinateSystem.zeroBased(), 5_246_693, 5_246_956).invert(contig)
                 ),
-                Coordinates.of(CoordinateSystem.zeroBased(), 5_246_693, 5_248_301).invert(contig));
+                Coordinates.of(CoordinateSystem.zeroBased(), 5_246_693, 5_248_301).invert(contig),
+                TranscriptMetadata.of(TranscriptEvidence.KNOWN));
     }
 
     /**
@@ -354,7 +364,8 @@ class Transcripts {
                         Coordinates.of(CoordinateSystem.zeroBased(), 32_930_564, 32_930_746),
                         Coordinates.of(CoordinateSystem.zeroBased(), 32_972_298, 32_973_809)
                 ),
-                Coordinates.of(CoordinateSystem.zeroBased(), 32_889_616, 32_973_809));
+                Coordinates.of(CoordinateSystem.zeroBased(), 32_889_616, 32_973_809),
+                TranscriptMetadata.of(TranscriptEvidence.KNOWN));
     }
 
 
@@ -372,6 +383,7 @@ class Transcripts {
                         Coordinates.of(CoordinateSystem.zeroBased(), 6_131_905, 6_132_064).invert(contig),
                         Coordinates.of(CoordinateSystem.zeroBased(), 6_058_039, 6_058_369).invert(contig)
                 ),
-                Coordinates.of(CoordinateSystem.zeroBased(), 6_058_039, 6_233_841).invert(contig));
+                Coordinates.of(CoordinateSystem.zeroBased(), 6_058_039, 6_233_841).invert(contig),
+                TranscriptMetadata.of(TranscriptEvidence.KNOWN));
     }
 }

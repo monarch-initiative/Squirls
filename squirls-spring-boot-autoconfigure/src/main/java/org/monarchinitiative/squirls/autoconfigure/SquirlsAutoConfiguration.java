@@ -79,17 +79,10 @@ package org.monarchinitiative.squirls.autoconfigure;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
-import org.monarchinitiative.sgenes.io.GeneParser;
-import org.monarchinitiative.sgenes.io.GeneParserFactory;
-import org.monarchinitiative.sgenes.io.SerializationFormat;
-import org.monarchinitiative.sgenes.model.Gene;
 import org.monarchinitiative.squirls.autoconfigure.exception.InvalidSquirlsResourceException;
-import org.monarchinitiative.squirls.core.SquirlsDataService;
-import org.monarchinitiative.squirls.core.VariantSplicingEvaluator;
 import org.monarchinitiative.squirls.core.classifier.SquirlsClassifier;
 import org.monarchinitiative.squirls.core.reference.SplicingPwmData;
 import org.monarchinitiative.squirls.core.reference.StrandedSequenceService;
-import org.monarchinitiative.squirls.core.reference.TranscriptModelService;
 import org.monarchinitiative.squirls.core.scoring.AGEZSplicingAnnotator;
 import org.monarchinitiative.squirls.core.scoring.DenseSplicingAnnotator;
 import org.monarchinitiative.squirls.core.scoring.SplicingAnnotator;
@@ -99,7 +92,6 @@ import org.monarchinitiative.squirls.initialize.UndefinedSquirlsResourceExceptio
 import org.monarchinitiative.squirls.io.ClassifierFactory;
 import org.monarchinitiative.squirls.io.CorruptedPwmException;
 import org.monarchinitiative.squirls.io.SquirlsClassifierVersion;
-import org.monarchinitiative.squirls.io.SquirlsResourceException;
 import org.monarchinitiative.squirls.io.db.DbClassifierFactory;
 import org.monarchinitiative.squirls.io.db.DbKMerDao;
 import org.monarchinitiative.squirls.io.db.DbSplicingPositionalWeightMatrixParser;
@@ -213,54 +205,6 @@ public class SquirlsAutoConfiguration {
     @Bean
     public GenomicAssembly genomicAssembly(StrandedSequenceService strandedSequenceService) {
         return strandedSequenceService.genomicAssembly();
-    }
-
-    @Bean
-    public TranscriptModelService transcriptModelService(SquirlsProperties properties,
-                                                         GenomicAssembly genomicAssembly,
-                                                         SquirlsDataResolver dataResolver) throws SquirlsResourceException {
-        Path silentGenesJsonPath;
-        switch (properties.getTranscriptSource()) {
-            case REFSEQ:
-                LOGGER.info("Using RefSeq transcripts");
-                silentGenesJsonPath = dataResolver.refseqJsonPath();
-                break;
-            case GENCODE:
-                LOGGER.info("Using Gencode transcripts");
-                silentGenesJsonPath = dataResolver.gencodeJsonPath();
-                break;
-            default:
-                throw new SquirlsResourceException("Unknown transcript source `" + properties.getTranscriptSource() + "`");
-        }
-
-        List<? extends Gene> genes = readGenes(genomicAssembly, silentGenesJsonPath);
-        return TranscriptModelService.of(genes);
-    }
-
-    private static List<? extends Gene> readGenes(GenomicAssembly assembly, Path jsonPath) throws SquirlsResourceException {
-        Objects.requireNonNull(assembly, "Assembly must not be null");
-        Objects.requireNonNull(jsonPath, "Genes JSON path must not be null");
-
-        GeneParserFactory parserFactory = GeneParserFactory.of(assembly);
-        GeneParser parser = parserFactory.forFormat(SerializationFormat.JSON);
-
-        try {
-            return parser.read(jsonPath);
-        } catch (IOException e) {
-            throw new SquirlsResourceException("Error occurred while reading file `" + jsonPath.toAbsolutePath() + "`", e);
-        }
-    }
-
-    @Bean
-    public SquirlsDataService squirlsDataService(TranscriptModelService transcriptModelService, StrandedSequenceService strandedSequenceService) {
-        return new SquirlsDataServiceImpl(strandedSequenceService, transcriptModelService);
-    }
-
-    @Bean
-    public VariantSplicingEvaluator variantSplicingEvaluator(SquirlsDataService squirlsDataService,
-                                                             SplicingAnnotator splicingAnnotator,
-                                                             SquirlsClassifier squirlsClassifier) {
-        return VariantSplicingEvaluator.of(squirlsDataService, splicingAnnotator, squirlsClassifier);
     }
 
     @Bean

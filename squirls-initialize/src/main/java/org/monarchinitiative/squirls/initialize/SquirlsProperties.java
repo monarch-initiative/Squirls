@@ -87,8 +87,6 @@ public interface SquirlsProperties {
 
     String getDataVersion();
 
-    TranscriptSource getTranscriptSource();
-
     ClassifierProperties getClassifier();
 
     AnnotatorProperties getAnnotator();

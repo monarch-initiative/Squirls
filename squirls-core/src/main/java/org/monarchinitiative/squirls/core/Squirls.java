@@ -74,66 +74,37 @@
  * Daniel Danis, Peter N Robinson, 2021
  */
 
-package org.monarchinitiative.squirls.bootstrap;
+package org.monarchinitiative.squirls.core;
 
-import org.monarchinitiative.squirls.core.SquirlsDataService;
-import org.monarchinitiative.squirls.core.VariantSplicingEvaluator;
+import org.apiguardian.api.API;
 import org.monarchinitiative.squirls.core.classifier.SquirlsClassifier;
 import org.monarchinitiative.squirls.core.scoring.SplicingAnnotator;
-import org.monarchinitiative.squirls.initialize.*;
-
 
 /**
+ * Components of SQUIRLS application.
+ *
+ * @since 2.0.0
  * @author Daniel Danis
- * @since 1.0.1
  */
-class SquirlsImpl implements Squirls {
+@API(status = API.Status.STABLE, since = "2.0.0")
+public interface Squirls {
 
-    private final SquirlsResourceVersion resourceVersion;
-
-    private final SquirlsDataService squirlsDataService;
-
-    private final SplicingAnnotator splicingAnnotator;
-
-    private final SquirlsClassifier squirlsClassifier;
-
-    private final VariantSplicingEvaluator variantSplicingEvaluator;
-
-    SquirlsImpl(SquirlsResourceVersion resourceVersion,
-                SquirlsDataService squirlsDataService,
-                SplicingAnnotator splicingAnnotator,
-                SquirlsClassifier squirlsClassifier,
-                VariantSplicingEvaluator variantSplicingEvaluator) {
-        this.resourceVersion = resourceVersion;
-        this.squirlsDataService = squirlsDataService;
-        this.splicingAnnotator = splicingAnnotator;
-        this.squirlsClassifier = squirlsClassifier;
-        this.variantSplicingEvaluator = variantSplicingEvaluator;
+    static Squirls of(SquirlsDataService squirlsDataService,
+                      SplicingAnnotator splicingAnnotator,
+                      SquirlsClassifier squirlsClassifier,
+                      VariantSplicingEvaluator variantSplicingEvaluator) {
+        return new SquirlsDefault(squirlsDataService,
+                splicingAnnotator,
+                squirlsClassifier,
+                variantSplicingEvaluator);
     }
 
+    SquirlsDataService squirlsDataService();
 
-    @Override
-    public SquirlsResourceVersion resourceVersion() {
-        return resourceVersion;
-    }
+    SplicingAnnotator splicingAnnotator();
 
-    @Override
-    public SquirlsDataService squirlsDataService() {
-        return squirlsDataService;
-    }
+    SquirlsClassifier squirlsClassifier();
 
-    @Override
-    public SplicingAnnotator splicingAnnotator() {
-        return splicingAnnotator;
-    }
+    VariantSplicingEvaluator variantSplicingEvaluator();
 
-    @Override
-    public SquirlsClassifier squirlsClassifier() {
-        return squirlsClassifier;
-    }
-
-    @Override
-    public VariantSplicingEvaluator variantSplicingEvaluator() {
-        return variantSplicingEvaluator;
-    }
 }

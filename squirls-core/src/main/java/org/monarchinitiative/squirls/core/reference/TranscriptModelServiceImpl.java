@@ -19,21 +19,20 @@ class TranscriptModelServiceImpl implements TranscriptModelService {
 
     private final List<? extends Gene> genes;
     private final Map<String, Transcript> txByAccession;
-    private final Map<String, IntervalArray<Transcript>> chromosomeMap;
+    private final Map<String, IntervalArray<Gene>> chromosomeMap;
 
     public static TranscriptModelServiceImpl of(List<? extends Gene> genes) {
         return new TranscriptModelServiceImpl(genes);
     }
 
-    private static Map<String, IntervalArray<Transcript>> prepareIntervalArrays(List<? extends Gene> genes) {
-        Map<String, List<Transcript>> geneByContig = genes.stream()
-                .flatMap(Gene::transcriptStream)
+    private static Map<String, IntervalArray<Gene>> prepareIntervalArrays(List<? extends Gene> genes) {
+        Map<String, List<Gene>> geneByContig = genes.stream()
                 .collect(Collectors.groupingBy(g -> g.contig().genBankAccession()));
 
-        Map<String, IntervalArray<Transcript>> chromosomeMap = new HashMap<>(geneByContig.keySet().size());
+        Map<String, IntervalArray<Gene>> chromosomeMap = new HashMap<>(geneByContig.keySet().size());
         for (String contig : geneByContig.keySet()) {
-            List<Transcript> genesOnContig = geneByContig.get(contig);
-            IntervalArray<Transcript> intervalArray = new IntervalArray<>(genesOnContig, TranscriptEndExtractor.instance());
+            List<Gene> genesOnContig = geneByContig.get(contig);
+            IntervalArray<Gene> intervalArray = new IntervalArray<>(genesOnContig, GeneEndExtractor.instance());
             chromosomeMap.put(contig, intervalArray);
         }
 
@@ -55,13 +54,13 @@ class TranscriptModelServiceImpl implements TranscriptModelService {
     }
 
     @Override
-    public List<Transcript> overlappingTranscripts(GenomicRegion query) {
-        IntervalArray<Transcript> intervalArray = chromosomeMap.get(query.contig().genBankAccession());
+    public List<Gene> overlappingGenes(GenomicRegion query) {
+        IntervalArray<Gene> intervalArray = chromosomeMap.get(query.contig().genBankAccession());
         if (intervalArray == null) {
             return List.of();
         }
 
-        IntervalArray<Transcript>.QueryResult result = intervalArray.findOverlappingWithInterval(
+        IntervalArray<Gene>.QueryResult result = intervalArray.findOverlappingWithInterval(
                 query.startOnStrandWithCoordinateSystem(Strand.POSITIVE, CoordinateSystem.zeroBased()),
                 query.endOnStrandWithCoordinateSystem(Strand.POSITIVE, CoordinateSystem.zeroBased())
         );

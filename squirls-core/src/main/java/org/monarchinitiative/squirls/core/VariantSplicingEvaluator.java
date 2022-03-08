@@ -78,6 +78,7 @@ package org.monarchinitiative.squirls.core;
 
 import org.apiguardian.api.API;
 import org.monarchinitiative.squirls.core.classifier.SquirlsClassifier;
+import org.monarchinitiative.squirls.core.config.TranscriptCategories;
 import org.monarchinitiative.squirls.core.scoring.SplicingAnnotator;
 import org.monarchinitiative.svart.GenomicVariant;
 
@@ -89,10 +90,26 @@ import java.util.Set;
 @API(status = API.Status.STABLE, since = "1.0.0")
 public interface VariantSplicingEvaluator {
 
+    /**
+     * @return evaluator with the default {@link TranscriptCategories#MANUAL}.
+     * @deprecated in favor of a static constructor that accepts {@link TranscriptCategories} parameter
+     */
+    @Deprecated(since = "2.0.0", forRemoval = true)
     static VariantSplicingEvaluator of(SquirlsDataService squirlsDataService,
                                        SplicingAnnotator annotator,
                                        SquirlsClassifier classifier) {
-        return VariantSplicingEvaluatorDefault.of(squirlsDataService, annotator, classifier);
+        return of(squirlsDataService, annotator, classifier, TranscriptCategories.MANUAL);
+    }
+
+    /**
+     * @return evaluator to evaluate variants with respect to transcripts that fall into the given {@link TranscriptCategories}
+     * @since 2.0.0
+     */
+    static VariantSplicingEvaluator of(SquirlsDataService squirlsDataService,
+                                       SplicingAnnotator annotator,
+                                       SquirlsClassifier classifier,
+                                       TranscriptCategories transcriptCategories) {
+        return VariantSplicingEvaluatorImpl.of(squirlsDataService, annotator, classifier, transcriptCategories);
     }
 
     /**
@@ -101,15 +118,20 @@ public interface VariantSplicingEvaluator {
      *
      * @param txIds set of transcript accession IDs with respect to which the variant should be evaluated
      * @return splicing prediction data
+     * @deprecated the evaluation with respect to specific transcript accessions should not be used.
+     * Configure the {@link SquirlsDataService} to provide only the relevant transcripts instead. The method will be
+     * removed in the release v3.0.0
      */
-    SquirlsResult evaluate(GenomicVariant variant, Set<String> txIds);
+    @Deprecated(since = "2.0.0", forRemoval = true)
+    default SquirlsResult evaluate(GenomicVariant variant, Set<String> txIds) {
+        return evaluate(variant);
+    }
 
     /**
      * Calculate splicing scores for given variant with respect to all transcripts the variant overlaps with.
      *
      * @return map with splicing pathogenicity data mapped to transcript accession id
      */
-    default SquirlsResult evaluate(GenomicVariant variant) {
-        return evaluate(variant, Set.of());
-    }
+    SquirlsResult evaluate(GenomicVariant variant);
+
 }

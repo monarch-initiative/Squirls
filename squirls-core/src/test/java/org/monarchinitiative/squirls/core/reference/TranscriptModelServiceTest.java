@@ -92,10 +92,11 @@ public class TranscriptModelServiceTest {
 
             "chr9, 133351760, 133361100, 'ENST00000371964.5;ENST00000371974.8;ENST00000371974.8'", // spanning both genes
     })
-    public void overlappingTranscripts(String contig, int start, int end, String accessions) {
+    public void overlappingGenes(String contig, int start, int end, String accessions) {
         GenomicRegion query = GenomicRegion.of(ASSEMBLY.contigByName(contig), Strand.POSITIVE, CoordinateSystem.zeroBased(), start, end);
-        List<Transcript> transcripts = service.overlappingTranscripts(query);
-        Set<String> actual = transcripts.stream()
+        List<Gene> genes = service.overlappingGenes(query);
+        Set<String> actual = genes.stream()
+                .flatMap(Gene::transcriptStream)
                 .map(Identified::accession)
                 .collect(Collectors.toSet());
 

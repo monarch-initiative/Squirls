@@ -74,70 +74,53 @@
  * Daniel Danis, Peter N Robinson, 2021
  */
 
-package org.monarchinitiative.squirls.initialize;
+package org.monarchinitiative.squirls.core.config;
 
-import org.monarchinitiative.sgenes.model.Gene;
-import org.monarchinitiative.sgenes.model.Transcript;
-import org.monarchinitiative.squirls.core.SquirlsDataService;
-import org.monarchinitiative.squirls.core.reference.StrandedSequence;
-import org.monarchinitiative.squirls.core.reference.StrandedSequenceService;
-import org.monarchinitiative.squirls.core.reference.TranscriptModelService;
-import org.monarchinitiative.svart.assembly.GenomicAssembly;
-import org.monarchinitiative.svart.GenomicRegion;
-
-import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
-import java.util.stream.Stream;
 
 /**
- * @author Daniel Danis
+ * Options for adjusting the analysis (e.g. including/excluding certain transcripts in the variant evaluation).
  */
-public class SquirlsDataServiceImpl implements SquirlsDataService {
+public class SquirlsOptions {
 
-    private final StrandedSequenceService sequenceService;
-    private final TranscriptModelService transcriptModelService;
+    private final FeatureSource featureSource;
+    private final TranscriptCategories transcriptCategories;
 
-    public SquirlsDataServiceImpl(StrandedSequenceService sequenceService, TranscriptModelService transcriptModelService) {
-        this.sequenceService = sequenceService;
-        this.transcriptModelService = transcriptModelService;
+    public static SquirlsOptions of(FeatureSource featureSource, TranscriptCategories transcriptCategories) {
+        return new SquirlsOptions(featureSource, transcriptCategories);
     }
 
-    @Override
-    public GenomicAssembly genomicAssembly() {
-        return sequenceService.genomicAssembly();
+    private SquirlsOptions(FeatureSource featureSource, TranscriptCategories transcriptCategories) {
+        this.featureSource = Objects.requireNonNull(featureSource, "Feature source must not be null");
+        this.transcriptCategories = Objects.requireNonNull(transcriptCategories, "Transcript categories must not be null");
     }
 
-    @Override
-    public StrandedSequence sequenceForRegion(GenomicRegion region) {
-        return sequenceService.sequenceForRegion(region);
+    public FeatureSource featureSource() {
+        return featureSource;
     }
 
-    @Override
-    public Stream<? extends Gene> genes() {
-        return transcriptModelService.genes();
-    }
-
-    @Override
-    public List<Transcript> overlappingTranscripts(GenomicRegion query) {
-        return transcriptModelService.overlappingTranscripts(query);
-    }
-
-    @Override
-    public Optional<Transcript> transcriptByAccession(String txAccession) {
-        return transcriptModelService.transcriptByAccession(txAccession);
+    public TranscriptCategories transcriptCategories() {
+        return transcriptCategories;
     }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        SquirlsDataServiceImpl that = (SquirlsDataServiceImpl) o;
-        return Objects.equals(sequenceService, that.sequenceService) && Objects.equals(transcriptModelService, that.transcriptModelService);
+        SquirlsOptions that = (SquirlsOptions) o;
+        return featureSource == that.featureSource && transcriptCategories == that.transcriptCategories;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(sequenceService, transcriptModelService);
+        return Objects.hash(featureSource, transcriptCategories);
+    }
+
+    @Override
+    public String toString() {
+        return "SquirlsOptions{" +
+                "featureSource=" + featureSource +
+                ", transcriptCategories=" + transcriptCategories +
+                '}';
     }
 }

@@ -71,91 +71,53 @@
  *
  * version:6-8-18
  *
- * Daniel Danis, Peter N Robinson, 2020
+ * Daniel Danis, Peter N Robinson, 2021
  */
 
-package org.monarchinitiative.squirls.autoconfigure;
+package org.monarchinitiative.squirls.core;
 
-import org.monarchinitiative.squirls.initialize.AnnotatorProperties;
-import org.monarchinitiative.squirls.initialize.ClassifierProperties;
-import org.monarchinitiative.squirls.initialize.SquirlsProperties;
-import org.monarchinitiative.squirls.initialize.TranscriptSource;
-import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.boot.context.properties.NestedConfigurationProperty;
+import org.monarchinitiative.squirls.core.classifier.SquirlsClassifier;
+import org.monarchinitiative.squirls.core.scoring.SplicingAnnotator;
+
 
 /**
  * @author Daniel Danis
+ * @since 2.0.0
  */
-@ConfigurationProperties(prefix = "squirls")
-public class SquirlsPropertiesImpl implements SquirlsProperties {
+class SquirlsDefault implements Squirls {
 
-    /**
-     * Path to directory with reference genome files and splicing database.
-     */
-    private String dataDirectory;
+    private final SquirlsDataService squirlsDataService;
+    private final SplicingAnnotator splicingAnnotator;
+    private final SquirlsClassifier squirlsClassifier;
+    private final VariantSplicingEvaluator variantSplicingEvaluator;
 
-    /**
-     * Genome assembly version, choose from {hg19, hg38}.
-     */
-    private String genomeAssembly;
-
-    /**
-     * Exomiser-like data version, e.g. `1902`.
-     */
-    private String dataVersion;
-
-    /**
-     * Version of the classifier to use.
-     */
-    @NestedConfigurationProperty // squirls.classifier
-    private ClassifierProperties classifier = new ClassifierPropertiesImpl();
-
-    @NestedConfigurationProperty // squirls.annotator
-    private AnnotatorProperties annotator = new AnnotatorPropertiesImpl();
-
-    @Override
-    public String getDataDirectory() {
-        return dataDirectory;
-    }
-
-    public void setDataDirectory(String dataDirectory) {
-        this.dataDirectory = dataDirectory;
+    SquirlsDefault(SquirlsDataService squirlsDataService,
+                   SplicingAnnotator splicingAnnotator,
+                   SquirlsClassifier squirlsClassifier,
+                   VariantSplicingEvaluator variantSplicingEvaluator) {
+        this.squirlsDataService = squirlsDataService;
+        this.splicingAnnotator = splicingAnnotator;
+        this.squirlsClassifier = squirlsClassifier;
+        this.variantSplicingEvaluator = variantSplicingEvaluator;
     }
 
     @Override
-    public String getGenomeAssembly() {
-        return genomeAssembly;
-    }
-
-    public void setGenomeAssembly(String genomeAssembly) {
-        this.genomeAssembly = genomeAssembly;
+    public SquirlsDataService squirlsDataService() {
+        return squirlsDataService;
     }
 
     @Override
-    public String getDataVersion() {
-        return dataVersion;
-    }
-
-    public void setDataVersion(String dataVersion) {
-        this.dataVersion = dataVersion;
+    public SplicingAnnotator splicingAnnotator() {
+        return splicingAnnotator;
     }
 
     @Override
-    public ClassifierProperties getClassifier() {
-        return classifier;
-    }
-
-    public void setClassifier(ClassifierProperties classifier) {
-        this.classifier = classifier;
+    public SquirlsClassifier squirlsClassifier() {
+        return squirlsClassifier;
     }
 
     @Override
-    public AnnotatorProperties getAnnotator() {
-        return annotator;
+    public VariantSplicingEvaluator variantSplicingEvaluator() {
+        return variantSplicingEvaluator;
     }
-
-    public void setAnnotator(AnnotatorProperties annotator) {
-        this.annotator = annotator;
-    }
-
 }

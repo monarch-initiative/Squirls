@@ -1,28 +1,28 @@
 package org.monarchinitiative.squirls.core.reference;
 
-import org.monarchinitiative.sgenes.model.Transcript;
+import org.monarchinitiative.sgenes.model.Gene;
 import org.monarchinitiative.squirls.core.reference.jannovar.IntervalEndExtractor;
 import org.monarchinitiative.svart.CoordinateSystem;
 import org.monarchinitiative.svart.Strand;
 
-class TranscriptEndExtractor implements IntervalEndExtractor<Transcript> {
+class GeneEndExtractor implements IntervalEndExtractor<Gene> {
 
-    private static final TranscriptEndExtractor INSTANCE = new TranscriptEndExtractor();
+    private static final GeneEndExtractor INSTANCE = new GeneEndExtractor();
 
-    static TranscriptEndExtractor instance() {
+    static GeneEndExtractor instance() {
         return INSTANCE;
     }
 
-    private TranscriptEndExtractor() {
+    private GeneEndExtractor() {
     }
 
     @Override
-    public int getBegin(Transcript tx) {
+    public int getBegin(Gene tx) {
         return tx.startOnStrandWithCoordinateSystem(Strand.POSITIVE, CoordinateSystem.zeroBased());
     }
 
     @Override
-    public int getEnd(Transcript tx) {
+    public int getEnd(Gene tx) {
         return tx.endOnStrandWithCoordinateSystem(Strand.POSITIVE, CoordinateSystem.zeroBased());
     }
 }

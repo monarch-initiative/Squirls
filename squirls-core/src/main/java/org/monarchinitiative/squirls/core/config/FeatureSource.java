@@ -74,32 +74,12 @@
  * Daniel Danis, Peter N Robinson, 2021
  */
 
-package org.monarchinitiative.squirls.bootstrap;
-
-import org.apiguardian.api.API;
-import org.monarchinitiative.squirls.core.SquirlsDataService;
-import org.monarchinitiative.squirls.core.VariantSplicingEvaluator;
-import org.monarchinitiative.squirls.core.classifier.SquirlsClassifier;
-import org.monarchinitiative.squirls.core.scoring.SplicingAnnotator;
-import org.monarchinitiative.squirls.initialize.SquirlsResourceVersion;
+package org.monarchinitiative.squirls.core.config;
 
 /**
- * Components of SQUIRLS application.
- *
- * @since 1.0.1
- * @author Daniel Danis
+ * Source of genes and transcripts.
  */
-@API(status = API.Status.STABLE, since = "1.0.1")
-public interface Squirls {
-
-    SquirlsResourceVersion resourceVersion();
-
-    SquirlsDataService squirlsDataService();
-
-    SplicingAnnotator splicingAnnotator();
-
-    SquirlsClassifier squirlsClassifier();
-
-    VariantSplicingEvaluator variantSplicingEvaluator();
-
+public enum FeatureSource {
+    GENCODE,
+    REFSEQ
 }

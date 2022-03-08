@@ -77,9 +77,12 @@
 package org.monarchinitiative.squirls.bootstrap;
 
 import org.junit.jupiter.api.Test;
+import org.monarchinitiative.squirls.core.Squirls;
+import org.monarchinitiative.squirls.core.config.FeatureSource;
+import org.monarchinitiative.squirls.core.config.SquirlsOptions;
+import org.monarchinitiative.squirls.core.config.TranscriptCategories;
 import org.monarchinitiative.squirls.initialize.GenomicAssemblyVersion;
 import org.monarchinitiative.squirls.initialize.SquirlsResourceVersion;
-import org.monarchinitiative.squirls.initialize.TranscriptSource;
 import org.monarchinitiative.squirls.io.SquirlsResourceException;
 
 import java.io.File;
@@ -92,15 +95,16 @@ public class SquirlsFactoryTest {
 
     private static final File RESOURCES_PATH = new File("src/test/resources/data");
 
+    private static final SquirlsOptions OPTIONS = SquirlsOptions.of(FeatureSource.REFSEQ, TranscriptCategories.MANUAL);
+
     private static final SimpleSquirlsProperties PROPERTIES = SimpleSquirlsProperties.builder(RESOURCES_PATH)
             .annotatorProperties(new SimpleAnnotatorProperties())
             .classifierProperties(new SimpleClassifierProperties())
-            .transcriptSource(TranscriptSource.REFSEQ) // non-default
             .build();
 
     @Test
     public void constructor() throws Exception {
-        SquirlsConfigurationFactory factory = SquirlsConfigurationFactory.of(PROPERTIES);
+        SquirlsConfigurationFactory factory = SquirlsConfigurationFactory.of(PROPERTIES, OPTIONS);
 
         assertThat(factory.supportedResourceVersions(), hasSize(1));
         assertThat(factory.supportedResourceVersions(), hasItem(SquirlsResourceVersion.of("1710", GenomicAssemblyVersion.GRCH37)));
@@ -108,12 +112,11 @@ public class SquirlsFactoryTest {
 
     @Test
     public void getConfiguration() throws Exception {
-        SquirlsConfigurationFactory factory = SquirlsConfigurationFactory.of(PROPERTIES);
+        SquirlsConfigurationFactory factory = SquirlsConfigurationFactory.of(PROPERTIES, OPTIONS);
         SquirlsResourceVersion resourceVersion = SquirlsResourceVersion.of("1710", GenomicAssemblyVersion.GRCH37);
 
         Squirls configuration = factory.getSquirls(resourceVersion);
 
-        assertThat(configuration.resourceVersion(), is(equalTo(resourceVersion)));
         assertThat(configuration.squirlsDataService(), is(notNullValue()));
         assertThat(configuration.splicingAnnotator(), is(notNullValue()));
         assertThat(configuration.squirlsClassifier(), is(notNullValue()));
@@ -122,7 +125,7 @@ public class SquirlsFactoryTest {
 
     @Test
     public void getConfiguration_throwsWhenMissing() throws Exception {
-        SquirlsConfigurationFactory factory = SquirlsConfigurationFactory.of(PROPERTIES);
+        SquirlsConfigurationFactory factory = SquirlsConfigurationFactory.of(PROPERTIES, OPTIONS);
         SquirlsResourceVersion resourceVersion = SquirlsResourceVersion.of("1710", GenomicAssemblyVersion.GRCH38);
 
         assertThat(factory.supportedResourceVersions(), not(hasItem(resourceVersion)));

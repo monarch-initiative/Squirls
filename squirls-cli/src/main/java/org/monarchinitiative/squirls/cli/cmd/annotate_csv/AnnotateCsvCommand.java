@@ -76,7 +76,6 @@
 
 package org.monarchinitiative.squirls.cli.cmd.annotate_csv;
 
-import de.charite.compbio.jannovar.annotation.Annotation;
 import de.charite.compbio.jannovar.annotation.AnnotationException;
 import de.charite.compbio.jannovar.annotation.VariantAnnotations;
 import de.charite.compbio.jannovar.annotation.VariantAnnotator;
@@ -84,17 +83,14 @@ import de.charite.compbio.jannovar.data.ReferenceDictionary;
 import de.charite.compbio.jannovar.reference.GenomePosition;
 import de.charite.compbio.jannovar.reference.GenomeVariant;
 import de.charite.compbio.jannovar.reference.PositionType;
-import de.charite.compbio.jannovar.reference.TranscriptModel;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
 import org.monarchinitiative.squirls.cli.Main;
 import org.monarchinitiative.squirls.cli.cmd.AnnotatingSquirlsCommand;
 import org.monarchinitiative.squirls.cli.writers.*;
-import org.monarchinitiative.squirls.core.SquirlsDataService;
-import org.monarchinitiative.squirls.core.SquirlsException;
-import org.monarchinitiative.squirls.core.SquirlsResult;
-import org.monarchinitiative.squirls.core.VariantSplicingEvaluator;
+import org.monarchinitiative.squirls.core.*;
+import org.monarchinitiative.squirls.io.SquirlsResourceException;
 import org.monarchinitiative.svart.*;
 import org.monarchinitiative.svart.assembly.GenomicAssembly;
 import org.slf4j.Logger;
@@ -108,7 +104,6 @@ import java.nio.file.Path;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 /**
  * @author Daniel Danis
@@ -198,12 +193,12 @@ public class AnnotateCsvCommand extends AnnotatingSquirlsCommand {
         LOGGER.info("Reading variants from `{}`", inputPath.toAbsolutePath());
 
         try (ConfigurableApplicationContext context = getContext()) {
-            VariantSplicingEvaluator evaluator = context.getBean(VariantSplicingEvaluator.class);
-            SquirlsDataService dataService = context.getBean(SquirlsDataService.class);
-            GenomicAssembly assembly = dataService.genomicAssembly();
+            Squirls squirls = getSquirls(context);
+            SquirlsDataService squirlsDataService = squirls.squirlsDataService();
+            GenomicAssembly assembly = squirlsDataService.genomicAssembly();
 
             ReferenceDictionary rd = createReferenceDictionary(assembly);
-            VariantAnnotator annotator = createVariantAnnotator(rd, dataService.genes());
+            VariantAnnotator annotator = createVariantAnnotator(rd, squirlsDataService.genes());
 
             // ensure the fail-fast behavior at the cost of being retrieved far from the usage
             AnalysisResultsWriter analysisResultsWriter = context.getBean(AnalysisResultsWriter.class);
@@ -242,12 +237,7 @@ public class AnnotateCsvCommand extends AnnotatingSquirlsCommand {
                         continue;
                     }
 
-                    Set<String> txAccessionIds = annotations.getAnnotations().stream()
-                            .map(Annotation::getTranscript)
-                            .map(TranscriptModel::getAccession)
-                            .collect(Collectors.toUnmodifiableSet());
-
-                    SquirlsResult squirlsResult = evaluator.evaluate(variant, txAccessionIds);
+                    SquirlsResult squirlsResult = squirls.variantSplicingEvaluator().evaluate(variant);
 
                     WritableSplicingAllele allele = WritableSplicingAlleleDefault.of(variant, annotations, squirlsResult);
                     annotated.add(allele);
@@ -270,6 +260,9 @@ public class AnnotateCsvCommand extends AnnotatingSquirlsCommand {
                     .build();
 
             analysisResultsWriter.writeResults(results, prepareOutputOptions(outputPrefix));
+        } catch (SquirlsResourceException e) {
+            e.printStackTrace();
+            // TODO - handle
         }
 
         return 0;

@@ -76,8 +76,7 @@
 
 package org.monarchinitiative.squirls.core;
 
-import org.monarchinitiative.sgenes.model.Transcript;
-import org.monarchinitiative.sgenes.model.TranscriptIdentifier;
+import org.monarchinitiative.sgenes.model.*;
 import org.monarchinitiative.squirls.core.reference.DoubleMatrix;
 import org.monarchinitiative.squirls.core.reference.SplicingParameters;
 import org.monarchinitiative.squirls.core.reference.StrandedSequence;
@@ -145,7 +144,8 @@ public class PojosForTesting {
                         Coordinates.of(CoordinateSystem.zeroBased(), 1400, 1600),
                         Coordinates.of(CoordinateSystem.zeroBased(), 1800, 2000)
                 ),
-                Coordinates.of(CoordinateSystem.zeroBased(), 1100, 1900));
+                Coordinates.of(CoordinateSystem.zeroBased(), 1100, 1900),
+                TranscriptMetadata.of(null));
     }
 
     public static Transcript getTranscriptWithSingleExon(Contig contig) {
@@ -155,7 +155,8 @@ public class PojosForTesting {
                 List.of(
                         Coordinates.of(CoordinateSystem.zeroBased(), 1000, 2000)
                 ),
-                Coordinates.of(CoordinateSystem.zeroBased(), 1100, 1900));
+                Coordinates.of(CoordinateSystem.zeroBased(), 1100, 1900),
+                TranscriptMetadata.of(null));
     }
 
     /**
@@ -171,7 +172,8 @@ public class PojosForTesting {
                         Coordinates.of(CoordinateSystem.zeroBased(), 1400, 1600).invert(contig),
                         Coordinates.of(CoordinateSystem.zeroBased(), 1000, 1200).invert(contig)
                 ),
-                Coordinates.of(CoordinateSystem.zeroBased(), 1100, 1900).invert(contig));
+                Coordinates.of(CoordinateSystem.zeroBased(), 1100, 1900).invert(contig),
+                TranscriptMetadata.of(null));
     }
 
     /**
@@ -191,7 +193,19 @@ public class PojosForTesting {
                         Coordinates.of(CoordinateSystem.zeroBased(), 136_227_140, 136_227_310),
                         Coordinates.of(CoordinateSystem.zeroBased(), 136_227_931, 136_228_034)
                 ),
-                Coordinates.of(CoordinateSystem.zeroBased(), 136_223_425, 136_228_034));
+                Coordinates.of(CoordinateSystem.zeroBased(), 136_223_425, 136_228_034),
+                TranscriptMetadata.of(TranscriptEvidence.KNOWN));
+    }
+
+    /**
+     * Get <em>SURF2</em> gene containing <em>NM_017503.5</em> transcript.
+     *
+     * @return transcript
+     */
+    public static Gene surf2(Contig contig) {
+        return Gene.of(GeneIdentifier.of("SURF1", "SURF1", "HGNC:11474", "NCBIGene:6834"),
+                GenomicRegion.of(contig, Strand.POSITIVE, Coordinates.of(CoordinateSystem.zeroBased(), 136_223_425, 136_228_034)),
+                List.of(surf2_NM_017503_5(contig)));
     }
 
     public static SplicingParameters makeFakeSplicingParameters() {

@@ -76,7 +76,6 @@
 
 package org.monarchinitiative.squirls.cli.cmd.annotate_vcf;
 
-import de.charite.compbio.jannovar.annotation.Annotation;
 import de.charite.compbio.jannovar.annotation.VariantAnnotations;
 import de.charite.compbio.jannovar.annotation.VariantAnnotator;
 import de.charite.compbio.jannovar.data.*;
@@ -90,12 +89,17 @@ import htsjdk.variant.vcf.VCFFileReader;
 import org.monarchinitiative.squirls.cli.Main;
 import org.monarchinitiative.squirls.cli.cmd.AnnotatingSquirlsCommand;
 import org.monarchinitiative.squirls.cli.cmd.SquirlsWorkerThread;
+import org.monarchinitiative.squirls.cli.visualization.selector.VisualizationContextSelector;
 import org.monarchinitiative.squirls.cli.writers.*;
+import org.monarchinitiative.squirls.core.Squirls;
 import org.monarchinitiative.squirls.core.SquirlsDataService;
 import org.monarchinitiative.squirls.core.SquirlsResult;
 import org.monarchinitiative.squirls.core.VariantSplicingEvaluator;
+import org.monarchinitiative.squirls.core.reference.SplicingPwmData;
+import org.monarchinitiative.squirls.io.SquirlsResourceException;
 import org.monarchinitiative.svart.*;
 import org.monarchinitiative.svart.assembly.GenomicAssembly;
+import org.monarchinitiative.vmvt.core.VmvtGenerator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ConfigurableApplicationContext;
@@ -196,11 +200,7 @@ public class AnnotateVcfCommand extends AnnotatingSquirlsCommand {
                 } else {
                     variant = GenomicVariant.of(contig, vc.getID(), org.monarchinitiative.svart.Strand.POSITIVE, CoordinateSystem.oneBased(),
                             vc.getStart(), vc.getReference().getDisplayString(), allele.getDisplayString());
-                    Set<String> txAccessions = variantAnnotations.getAnnotations().stream()
-                            .map(Annotation::getTranscript)
-                            .map(TranscriptModel::getAccession)
-                            .collect(Collectors.toSet());
-                    squirlsResult = evaluator.evaluate(variant, txAccessions);
+                    squirlsResult = evaluator.evaluate(variant);
                 }
 
                 evaluations.add(WritableSplicingAlleleDefault.of(variant, variantAnnotations, squirlsResult, vc));
@@ -250,15 +250,19 @@ public class AnnotateVcfCommand extends AnnotatingSquirlsCommand {
         }
 
         try (ConfigurableApplicationContext context = getContext()) {
-            VariantSplicingEvaluator evaluator = context.getBean(VariantSplicingEvaluator.class);
-            SquirlsDataService dataService = context.getBean(SquirlsDataService.class);
-            GenomicAssembly assembly = dataService.genomicAssembly();
+            Squirls squirls = getSquirls(context);
+            SquirlsDataService squirlsDataService = squirls.squirlsDataService();
+            GenomicAssembly assembly = squirlsDataService.genomicAssembly();
+
             Map<String, Contig> contigMap = prepareContigMap(assembly);
             // ensure the fail-fast behavior at the cost of being retrieved far from the usage
-            AnalysisResultsWriter analysisResultsWriter = context.getBean(AnalysisResultsWriter.class);
+            AnalysisResultsWriter analysisResultsWriter = analysisResultsWriter(splicingVariantGraphicsGenerator(context.getBean(VmvtGenerator.class),
+                    context.getBean(SplicingPwmData.class),
+                    context.getBean(VisualizationContextSelector.class),
+                    squirlsDataService));
 
             ReferenceDictionary rd = createReferenceDictionary(assembly);
-            VariantAnnotator annotator = createVariantAnnotator(rd, dataService.genes());
+            VariantAnnotator annotator = createVariantAnnotator(rd, squirlsDataService.genes());
             // annotate the variants
             // TODO: 29. 5. 2020 improve behavior & logging
             //  e.g. report progress in % if variant index and thus count is available
@@ -282,7 +286,7 @@ public class AnnotateVcfCommand extends AnnotatingSquirlsCommand {
                             .flatMap(Collection::stream)
                             .peek(progressReporter::logAllele)
 
-                            .map(annotateVariant(evaluator, rd, annotator, contigMap))
+                            .map(annotateVariant(squirls.variantSplicingEvaluator(), rd, annotator, contigMap))
                             .flatMap(Collection::stream)
                             .peek(wa -> {
                                 if (!wa.squirlsResult().isEmpty()) {
@@ -311,6 +315,9 @@ public class AnnotateVcfCommand extends AnnotatingSquirlsCommand {
                     .build();
 
             analysisResultsWriter.writeResults(results, prepareOutputOptions(outputPrefix));
+        } catch (SquirlsResourceException e) {
+            LOGGER.error("Error: ", e);
+            return 1;
         }
 
         return 0;

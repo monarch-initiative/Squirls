@@ -76,60 +76,68 @@
 
 package org.monarchinitiative.squirls.core;
 
+import org.monarchinitiative.sgenes.model.Gene;
 import org.monarchinitiative.sgenes.model.Transcript;
 import org.monarchinitiative.squirls.core.classifier.SquirlsClassifier;
 import org.monarchinitiative.squirls.core.classifier.SquirlsFeatures;
+import org.monarchinitiative.squirls.core.config.TranscriptCategories;
 import org.monarchinitiative.squirls.core.reference.StrandedSequence;
 import org.monarchinitiative.squirls.core.scoring.SplicingAnnotator;
 import org.monarchinitiative.svart.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
-import java.util.function.Function;
+import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
  * @author Daniel Danis
  */
-class VariantSplicingEvaluatorDefault implements VariantSplicingEvaluator {
+class VariantSplicingEvaluatorImpl implements VariantSplicingEvaluator {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(VariantSplicingEvaluatorDefault.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(VariantSplicingEvaluatorImpl.class);
 
     private static final int PADDING = 150;
 
     private final SquirlsDataService squirlsDataService;
 
     private final SplicingAnnotator annotator;
-
     private final SquirlsClassifier classifier;
 
-    private VariantSplicingEvaluatorDefault(SquirlsDataService squirlsDataService,
-                                            SplicingAnnotator annotator,
-                                            SquirlsClassifier classifier) {
+    private final TranscriptCategories transcriptCategories;
+
+    static VariantSplicingEvaluatorImpl of(SquirlsDataService squirlsDataService,
+                                           SplicingAnnotator annotator,
+                                           SquirlsClassifier classifier,
+                                           TranscriptCategories transcriptCategories) {
+        return new VariantSplicingEvaluatorImpl(squirlsDataService,
+                annotator,
+                classifier,
+                transcriptCategories);
+    }
+
+    private VariantSplicingEvaluatorImpl(SquirlsDataService squirlsDataService,
+                                         SplicingAnnotator annotator,
+                                         SquirlsClassifier classifier,
+                                         TranscriptCategories transcriptCategories) {
         this.squirlsDataService = Objects.requireNonNull(squirlsDataService, "Squirls data service cannot be null");
         this.annotator = Objects.requireNonNull(annotator, "Splicing Annotator cannot be null");
         this.classifier = Objects.requireNonNull(classifier, "Squirls classifier cannot be null");
-    }
-
-    static VariantSplicingEvaluatorDefault of(SquirlsDataService squirlsDataService,
-                                              SplicingAnnotator annotator,
-                                              SquirlsClassifier classifier) {
-        return new VariantSplicingEvaluatorDefault(squirlsDataService, annotator, classifier);
+        this.transcriptCategories = Objects.requireNonNull(transcriptCategories, "Transcript categories cannot be null");
     }
 
     /**
-     * Evaluate given variant with respect to transcripts in <code>txIds</code>. The method <em>attempts</em> to evaluate
-     * the variant with respect to given <code>txIds</code>, but does not guarantee that results will be provided for
+     * Evaluate given variant with respect to all overlapping transcripts. The method <em>attempts</em> to evaluate
+     * the variant with respect to each overlapping transcript, but does not guarantee that a result will be provided for
      * each transcript.
      * <p>
      * Note that only transcripts with at least 2 exons are considered.
      *
-     * @param txIds set of transcript accession IDs with respect to which the variant should be evaluated
-     * @return possibly empty map with {@link SquirlsResult} for transcript ID
+     * @return {@link SquirlsResult} with the available predictions
      */
     @Override
-    public SquirlsResult evaluate(GenomicVariant variant, Set<String> txIds) {
+    public SquirlsResult evaluate(GenomicVariant variant) {
         if (VariantType.isSymbolic(variant.ref(), variant.alt())) {
             LOGGER.debug("Skipping symbolic variant {}:{}-{} {}", variant.contigName(), variant.start(), variant.end(), variant.variantType());
             return SquirlsResult.empty();
@@ -151,13 +159,17 @@ class VariantSplicingEvaluatorDefault implements VariantSplicingEvaluator {
         }
 
         /*
-         1 - get overlapping splicing transcripts. Query by coordinates if no txIDs are provided. Only transcripts with
-         two or more exons that overlap with the variant interval are considered.
+         1 - get the overlapping genes and select the relevant transcripts.
          */
-        Map<String, Transcript> txMap = fetchTranscripts(variant, txIds);
+        List<? extends Transcript> transcripts = squirlsDataService.overlappingGenes(variant).stream()
+                .flatMap(Gene::transcriptStream)
+                .filter(tx -> tx.evidence()
+                        .map(transcriptCategories::hasValue)
+                        .orElse(false))
+                .collect(Collectors.toList());
 
-        if (txMap.isEmpty()) {
-            // shortcut, no transcripts to evaluate
+        if (transcripts.isEmpty()) {
+            // a shortcut, no transcripts to evaluate
             return SquirlsResult.empty();
         }
 
@@ -166,15 +178,13 @@ class VariantSplicingEvaluatorDefault implements VariantSplicingEvaluator {
          on POSITIVE strand using 0-based coordinate system.
          */
         Strand strand = Strand.POSITIVE;
-        CoordinateSystem coordinateSystem = CoordinateSystem.zeroBased();
         Integer bp = null, ep = null;
-        for (Transcript tx : txMap.values()) {
-            GenomicRegion txIntervalFwd = tx.location().withStrand(strand).withCoordinateSystem(coordinateSystem);
-            int start = txIntervalFwd.start();
+        for (Transcript tx : transcripts) {
+            int start = tx.startOnStrandWithCoordinateSystem(strand, CoordinateSystem.zeroBased());
             if (bp == null || bp > start) {
                 bp = start;
             }
-            int end = txIntervalFwd.end();
+            int end = tx.endOnStrandWithCoordinateSystem(strand, CoordinateSystem.zeroBased());
             if (ep == null || ep < end) {
                 ep = end;
             }
@@ -183,7 +193,7 @@ class VariantSplicingEvaluatorDefault implements VariantSplicingEvaluator {
         // PADDING should provide enough sequence in most cases
         bp -= PADDING;
         ep += PADDING;
-        GenomicRegion toFetch = GenomicRegion.of(variant.contig(), strand, Coordinates.of(coordinateSystem, bp, ep));
+        GenomicRegion toFetch = GenomicRegion.of(variant.contig(), strand, Coordinates.of(CoordinateSystem.zeroBased(), bp, ep));
         StrandedSequence seq = squirlsDataService.sequenceForRegion(toFetch);
         if (seq == null) {
             LOGGER.debug("Unable to get reference sequence for `{}` when evaluating variant `{}`", toFetch, variant);
@@ -193,55 +203,16 @@ class VariantSplicingEvaluatorDefault implements VariantSplicingEvaluator {
         /*
          3 - let's evaluate the variant with respect to all transcripts
          */
-        Set<SquirlsTxResult> squirlsTxResults = txMap.keySet().stream()
+        List<SquirlsTxResult> squirlsTxResults = transcripts.stream()
                 .map(tx -> {
-                    VariantOnTranscript vtx = VariantOnTranscript.of(variant, txMap.get(tx), seq);
+                    VariantOnTranscript vtx = VariantOnTranscript.of(variant, tx, seq);
                     SquirlsFeatures annotations = annotator.annotate(vtx);
                     Prediction prediction = classifier.predict(annotations);
-                    return SquirlsTxResult.of(tx, prediction, annotations.getFeatureMap());
+                    return SquirlsTxResult.of(tx.accession(), prediction, annotations.getFeatureMap());
                 })
-                .collect(Collectors.toSet());
+                .collect(Collectors.toUnmodifiableList());
         return SquirlsResult.of(squirlsTxResults);
     }
 
-    /**
-     * Use provided variant coordinates <em>OR</em> transcript accession IDs to fetch {@link Transcript}s from
-     * the database.
-     * <p>
-     * Only transcripts consisting of 2 or more exons that overlap with the <code>variant</code> are returned.
-     * </p>
-     *
-     * @param variant {@link GenomicVariant} with variant coordinates
-     * @param txIds   set of transcript accession IDs
-     * @return map with transcripts group
-     */
-    private Map<String, Transcript> fetchTranscripts(GenomicRegion variant, Set<String> txIds) {
-        Map<String, Transcript> txMap = new HashMap<>();
-        variant = variant.toPositiveStrand().toZeroBased();
-
-        if (txIds.isEmpty()) {
-            // querying by coordinates
-            return squirlsDataService.overlappingTranscripts(variant).stream()
-                    .filter(st -> !st.introns().isEmpty())
-                    .collect(Collectors.toMap(Transcript::accession, Function.identity()));
-        } else {
-            // or query by transcript IDs
-            for (String txId : txIds) {
-                Optional<Transcript> sto = squirlsDataService.transcriptByAccession(txId);
-                if (sto.isPresent()) {
-                    Transcript st = sto.get();
-                    // the transcript
-                    //  - has 2+ exons
-                    //  - overlaps with the variant
-                    if (!st.introns().isEmpty() && st.location().overlapsWith(variant)) {
-                        txMap.put(txId, st);
-                    }
-                } else {
-                    LOGGER.warn("Unknown transcript id `{}` for variant {}", txId, variant);
-                }
-            }
-        }
-        return txMap;
-    }
 
 }

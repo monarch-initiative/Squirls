@@ -90,8 +90,6 @@ import org.monarchinitiative.squirls.cli.cmd.ProgressReporter;
 import org.monarchinitiative.squirls.cli.cmd.SquirlsCommand;
 import org.monarchinitiative.squirls.cli.cmd.SquirlsWorkerThread;
 import org.monarchinitiative.squirls.core.*;
-import org.monarchinitiative.squirls.core.classifier.SquirlsClassifier;
-import org.monarchinitiative.squirls.core.scoring.SplicingAnnotator;
 import org.monarchinitiative.svart.*;
 import org.monarchinitiative.svart.assembly.GenomicAssembly;
 import org.monarchinitiative.svart.assembly.SequenceRole;
@@ -182,16 +180,15 @@ public class PrecalculateCommand extends SquirlsCommand {
         LOGGER.info("Writing variants up to {}bp long", length);
 
         try (ConfigurableApplicationContext context = getContext()) {
-            GenomicAssembly assembly = context.getBean(GenomicAssembly.class);
+            Squirls squirls = getSquirls(context);
+            SquirlsDataService squirlsDataService = squirls.squirlsDataService();
+            GenomicAssembly assembly = squirlsDataService.genomicAssembly();
             List<GenomicRegion> regions = prepareGenomicRegions(assembly);
 
             Map<Integer, List<GenomicRegion>> regionByContig = regions.stream()
                     .collect(Collectors.groupingBy(GenomicRegion::contigId, Collectors.toUnmodifiableList()));
 
 
-            SquirlsDataService squirlsDataService = context.getBean(SquirlsDataService.class);
-            SquirlsClassifier classifier = context.getBean(SquirlsClassifier.class);
-            SplicingAnnotator annotator = context.getBean(SplicingAnnotator.class);
 
             VariantGenerator generator = new VariantGenerator(length);
             VariantContextAdaptor adaptor = new VariantContextAdaptor(writeIndividualPredictions, squirlsDataService);
@@ -219,7 +216,7 @@ public class PrecalculateCommand extends SquirlsCommand {
                     String contigName = assembly.contigById(contigId).name();
                     LOGGER.info("Precalculating scores for {} positions of chromosome {}", NF.format(baseCount), contigName);
 
-                    Precalculation precalculation = Precalculation.of(preprocessed, generator, adaptor, squirlsDataService, annotator, classifier, writer, GRANULARITY, progressReporter);
+                    Precalculation precalculation = Precalculation.of(preprocessed, generator, adaptor, squirlsDataService, squirls.splicingAnnotator(), squirls.squirlsClassifier(), writer, GRANULARITY, progressReporter);
                     pool.submit(precalculation);
                 }
                 pool.shutdown();

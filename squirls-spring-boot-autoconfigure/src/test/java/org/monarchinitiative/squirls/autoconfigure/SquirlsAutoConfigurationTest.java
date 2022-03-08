@@ -77,13 +77,10 @@
 package org.monarchinitiative.squirls.autoconfigure;
 
 import org.junit.jupiter.api.Test;
-import org.monarchinitiative.squirls.core.SquirlsDataService;
-import org.monarchinitiative.squirls.core.VariantSplicingEvaluator;
+import org.monarchinitiative.squirls.core.classifier.SquirlsClassifier;
 import org.monarchinitiative.squirls.core.reference.StrandedSequenceService;
-import org.monarchinitiative.squirls.core.reference.TranscriptModelService;
 import org.monarchinitiative.squirls.core.scoring.SplicingAnnotator;
 import org.monarchinitiative.squirls.initialize.SquirlsProperties;
-import org.monarchinitiative.squirls.initialize.TranscriptSource;
 import org.monarchinitiative.svart.assembly.GenomicAssembly;
 import org.springframework.beans.factory.BeanCreationException;
 
@@ -131,17 +128,11 @@ class SquirlsAutoConfigurationTest extends AbstractAutoConfigurationTest {
         assertThat(genomicAssembly, is(notNullValue()));
         assertThat(genomicAssembly.name(), equalTo("GRCh37.p13"));
 
-        StrandedSequenceService strandedSequenceService = context.getBean("strandedSequenceService", StrandedSequenceService.class);
-        assertThat(strandedSequenceService, is(notNullValue()));
+        assertThat(context.getBean(StrandedSequenceService.class), is(notNullValue()));
 
-        TranscriptModelService transcriptModelService = context.getBean("transcriptModelService", TranscriptModelService.class);
-        assertThat(transcriptModelService, is(notNullValue()));
-
-        SquirlsDataService squirlsDataService = context.getBean("squirlsDataService", SquirlsDataService.class);
-        assertThat(squirlsDataService, is(notNullValue()));
-
-        VariantSplicingEvaluator evaluator = context.getBean("variantSplicingEvaluator", VariantSplicingEvaluator.class);
-        assertThat(evaluator, is(notNullValue()));
+        assertThat(context.getBean(SquirlsClassifier.class), is(notNullValue()));
+        assertThat(context.getBean(SplicingAnnotator.class), is(notNullValue()));
+        assertThat(context.getBean(SplicingAnnotator.class), is(notNullValue()));
     }
 
     @Test
@@ -151,15 +142,13 @@ class SquirlsAutoConfigurationTest extends AbstractAutoConfigurationTest {
                 "squirls.data-version=1710",
                 "squirls.classifier.version=v0.4.4",
                 "squirls.classifier.max-variant-length=50",
-                "squirls.annotator.version=agez",
-                "squirls.transcript-source=REFSEQ"
+                "squirls.annotator.version=agez"
         );
 
         SquirlsProperties properties = context.getBean(SquirlsProperties.class);
         assertThat(properties.getClassifier().getVersion(), is("v0.4.4"));
         assertThat(properties.getClassifier().getMaxVariantLength(), is(50));
         assertThat(properties.getAnnotator().getVersion(), is("agez"));
-        assertThat(properties.getTranscriptSource(), is(TranscriptSource.REFSEQ));
     }
 
     @Test

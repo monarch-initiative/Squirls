@@ -83,9 +83,11 @@ import org.monarchinitiative.sgenes.io.GeneParser;
 import org.monarchinitiative.sgenes.io.GeneParserFactory;
 import org.monarchinitiative.sgenes.io.SerializationFormat;
 import org.monarchinitiative.sgenes.model.Gene;
+import org.monarchinitiative.squirls.core.Squirls;
 import org.monarchinitiative.squirls.core.SquirlsDataService;
 import org.monarchinitiative.squirls.core.VariantSplicingEvaluator;
 import org.monarchinitiative.squirls.core.classifier.SquirlsClassifier;
+import org.monarchinitiative.squirls.core.config.SquirlsOptions;
 import org.monarchinitiative.squirls.core.reference.SplicingPwmData;
 import org.monarchinitiative.squirls.core.reference.StrandedSequenceService;
 import org.monarchinitiative.squirls.core.reference.TranscriptModelService;
@@ -156,12 +158,15 @@ public class SquirlsConfigurationFactory {
 
     private final SquirlsProperties properties;
 
-    public static SquirlsConfigurationFactory of(SquirlsProperties properties) throws MissingSquirlsResourceException, UndefinedSquirlsResourceException {
-        return new SquirlsConfigurationFactory(properties);
+    private final SquirlsOptions options;
+
+    public static SquirlsConfigurationFactory of(SquirlsProperties properties, SquirlsOptions options) throws MissingSquirlsResourceException, UndefinedSquirlsResourceException {
+        return new SquirlsConfigurationFactory(properties, options);
     }
 
-    private SquirlsConfigurationFactory(SquirlsProperties properties) throws MissingSquirlsResourceException, UndefinedSquirlsResourceException {
+    private SquirlsConfigurationFactory(SquirlsProperties properties, SquirlsOptions options) throws MissingSquirlsResourceException, UndefinedSquirlsResourceException {
         this.properties = Objects.requireNonNull(properties, "Squirls properties must not be null");
+        this.options = Objects.requireNonNull(options, "Squirls options must not be null");
         File dataDir = new File(Objects.requireNonNull(properties.getDataDirectory(), "Data directory must not be null"));
         this.resolverMap = Map.copyOf(exploreDataDirectory(dataDir));
     }
@@ -190,18 +195,20 @@ public class SquirlsConfigurationFactory {
         return resolverMap;
     }
 
-    private static Squirls configure(SquirlsDataResolver dataResolver, SquirlsProperties properties) throws IOException, SquirlsResourceException {
+    private static Squirls configure(SquirlsDataResolver dataResolver,
+                                     SquirlsProperties properties,
+                                     SquirlsOptions options) throws IOException, SquirlsResourceException {
         DataSource squirlsDatasource = squirlsDatasource(dataResolver);
 
-        SquirlsDataService squirlsDataService = configureSquirlsDataService(properties, dataResolver);
+        SquirlsDataService squirlsDataService = configureSquirlsDataService(options, dataResolver);
 
         BigWigAccessor phylopBigwigAccessor = new BigWigAccessor(dataResolver.phylopPath());
         SplicingAnnotator splicingAnnotator = configureSplicingAnnotator(properties, squirlsDatasource, phylopBigwigAccessor);
 
         SquirlsClassifier squirlsClassifier = configureSquirlsClassifier(properties, squirlsDatasource);
-        VariantSplicingEvaluator variantSplicingEvaluator = VariantSplicingEvaluator.of(squirlsDataService, splicingAnnotator, squirlsClassifier);
+        VariantSplicingEvaluator variantSplicingEvaluator = VariantSplicingEvaluator.of(squirlsDataService, splicingAnnotator, squirlsClassifier, options.transcriptCategories());
 
-        return new SquirlsImpl(dataResolver.resourceVersion(), squirlsDataService, splicingAnnotator, squirlsClassifier, variantSplicingEvaluator);
+        return Squirls.of(squirlsDataService, splicingAnnotator, squirlsClassifier, variantSplicingEvaluator);
     }
 
     private static DataSource squirlsDatasource(SquirlsDataResolver squirlsDataResolver) {
@@ -217,23 +224,25 @@ public class SquirlsConfigurationFactory {
         return new HikariDataSource(config);
     }
 
-    private static SquirlsDataService configureSquirlsDataService(SquirlsProperties properties,
+    private static SquirlsDataService configureSquirlsDataService(SquirlsOptions options,
                                                                   SquirlsDataResolver dataResolver) throws SquirlsResourceException {
         StrandedSequenceService strandedSequenceService = new FastaStrandedSequenceService(dataResolver.genomeAssemblyReportPath(),
                 dataResolver.genomeFastaPath(),
                 dataResolver.genomeFastaFaiPath(),
                 dataResolver.genomeFastaDictPath());
 
-        TranscriptModelService transcriptModelService = configureTranscriptModelService(properties, strandedSequenceService.genomicAssembly(), dataResolver);
+        TranscriptModelService transcriptModelService = configureTranscriptModelService(options,
+                strandedSequenceService.genomicAssembly(),
+                dataResolver);
 
-        return new SquirlsDataServiceImpl(strandedSequenceService, transcriptModelService);
+        return SquirlsDataService.of(strandedSequenceService, transcriptModelService);
     }
 
-    private static TranscriptModelService configureTranscriptModelService(SquirlsProperties properties,
-                                                                            GenomicAssembly genomicAssembly,
-                                                                            SquirlsDataResolver dataResolver) throws SquirlsResourceException {
+    private static TranscriptModelService configureTranscriptModelService(SquirlsOptions options,
+                                                                          GenomicAssembly genomicAssembly,
+                                                                          SquirlsDataResolver dataResolver) throws SquirlsResourceException {
         Path silentGenesJsonPath;
-        switch (properties.getTranscriptSource()) {
+        switch (options.featureSource()) {
             case REFSEQ:
                 silentGenesJsonPath = dataResolver.refseqJsonPath();
                 break;
@@ -241,7 +250,7 @@ public class SquirlsConfigurationFactory {
                 silentGenesJsonPath = dataResolver.gencodeJsonPath();
                 break;
             default:
-                throw new SquirlsResourceException("Unknown transcript source `" + properties.getTranscriptSource() + "`");
+                throw new SquirlsResourceException("Unknown transcript source `" + options.featureSource() + "`");
         }
 
 
@@ -332,7 +341,7 @@ public class SquirlsConfigurationFactory {
         SquirlsDataResolver resolver = resolverMap.get(resourceVersion);
 
         try {
-            return configure(resolver, properties);
+            return configure(resolver, properties, options);
         } catch (IOException e) {
             throw new SquirlsResourceException(e);
         }

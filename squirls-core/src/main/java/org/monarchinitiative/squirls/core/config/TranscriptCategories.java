@@ -71,91 +71,59 @@
  *
  * version:6-8-18
  *
- * Daniel Danis, Peter N Robinson, 2020
+ * Daniel Danis, Peter N Robinson, 2021
  */
 
-package org.monarchinitiative.squirls.autoconfigure;
+package org.monarchinitiative.squirls.core.config;
 
-import org.monarchinitiative.squirls.initialize.AnnotatorProperties;
-import org.monarchinitiative.squirls.initialize.ClassifierProperties;
-import org.monarchinitiative.squirls.initialize.SquirlsProperties;
-import org.monarchinitiative.squirls.initialize.TranscriptSource;
-import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.boot.context.properties.NestedConfigurationProperty;
+import org.monarchinitiative.sgenes.model.TranscriptEvidence;
+
+import java.util.Set;
 
 /**
- * @author Daniel Danis
+ * Levels of evidence required for the transcript to be included into the analysis.
  */
-@ConfigurationProperties(prefix = "squirls")
-public class SquirlsPropertiesImpl implements SquirlsProperties {
+public enum TranscriptCategories {
 
     /**
-     * Path to directory with reference genome files and splicing database.
+     * Includes {@link TranscriptEvidence#VALIDATED}.
      */
-    private String dataDirectory;
+    VERIFIED(TranscriptEvidence.VALIDATED),
 
     /**
-     * Genome assembly version, choose from {hg19, hg38}.
+     * Includes
+     * <ul>
+     *     <li>{@link TranscriptEvidence#VALIDATED},</li>
+     *     <li>{@link TranscriptEvidence#MANUAL_ANNOTATION}, and</li>
+     *     <li>{@link TranscriptEvidence#KNOWN}</li>
+     * </ul>
      */
-    private String genomeAssembly;
+    MANUAL(TranscriptEvidence.VALIDATED, TranscriptEvidence.MANUAL_ANNOTATION, TranscriptEvidence.KNOWN),
 
     /**
-     * Exomiser-like data version, e.g. `1902`.
+     * Includes
+     * <ul>
+     *     <li>{@link TranscriptEvidence#VALIDATED},</li>
+     *     <li>{@link TranscriptEvidence#MANUAL_ANNOTATION},</li>
+     *     <li>{@link TranscriptEvidence#KNOWN},</li>
+     *     <li>{@link TranscriptEvidence#MODEL}, and</li>
+     *     <li>{@link TranscriptEvidence#AUTOMATED_ANNOTATION}.</li>
+     * </ul>
      */
-    private String dataVersion;
+    AUTOMATIC(TranscriptEvidence.VALIDATED, TranscriptEvidence.MANUAL_ANNOTATION, TranscriptEvidence.KNOWN, TranscriptEvidence.MODEL, TranscriptEvidence.AUTOMATED_ANNOTATION),
 
     /**
-     * Version of the classifier to use.
+     * Includes all {@link TranscriptEvidence} values.
      */
-    @NestedConfigurationProperty // squirls.classifier
-    private ClassifierProperties classifier = new ClassifierPropertiesImpl();
+    ALL(TranscriptEvidence.values());
 
-    @NestedConfigurationProperty // squirls.annotator
-    private AnnotatorProperties annotator = new AnnotatorPropertiesImpl();
+    private final Set<TranscriptEvidence> evidences;
 
-    @Override
-    public String getDataDirectory() {
-        return dataDirectory;
+    TranscriptCategories(TranscriptEvidence... evidences) {
+        this.evidences = Set.of(evidences);
     }
 
-    public void setDataDirectory(String dataDirectory) {
-        this.dataDirectory = dataDirectory;
+    public boolean hasValue(TranscriptEvidence evidence) {
+        return evidences.contains(evidence);
     }
-
-    @Override
-    public String getGenomeAssembly() {
-        return genomeAssembly;
-    }
-
-    public void setGenomeAssembly(String genomeAssembly) {
-        this.genomeAssembly = genomeAssembly;
-    }
-
-    @Override
-    public String getDataVersion() {
-        return dataVersion;
-    }
-
-    public void setDataVersion(String dataVersion) {
-        this.dataVersion = dataVersion;
-    }
-
-    @Override
-    public ClassifierProperties getClassifier() {
-        return classifier;
-    }
-
-    public void setClassifier(ClassifierProperties classifier) {
-        this.classifier = classifier;
-    }
-
-    @Override
-    public AnnotatorProperties getAnnotator() {
-        return annotator;
-    }
-
-    public void setAnnotator(AnnotatorProperties annotator) {
-        this.annotator = annotator;
-    }
-
 }

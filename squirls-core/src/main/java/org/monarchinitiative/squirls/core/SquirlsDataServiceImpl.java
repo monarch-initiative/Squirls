@@ -71,91 +71,73 @@
  *
  * version:6-8-18
  *
- * Daniel Danis, Peter N Robinson, 2020
+ * Daniel Danis, Peter N Robinson, 2021
  */
 
-package org.monarchinitiative.squirls.autoconfigure;
+package org.monarchinitiative.squirls.core;
 
-import org.monarchinitiative.squirls.initialize.AnnotatorProperties;
-import org.monarchinitiative.squirls.initialize.ClassifierProperties;
-import org.monarchinitiative.squirls.initialize.SquirlsProperties;
-import org.monarchinitiative.squirls.initialize.TranscriptSource;
-import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.boot.context.properties.NestedConfigurationProperty;
+import org.monarchinitiative.sgenes.model.Gene;
+import org.monarchinitiative.sgenes.model.Transcript;
+import org.monarchinitiative.squirls.core.reference.StrandedSequence;
+import org.monarchinitiative.squirls.core.reference.StrandedSequenceService;
+import org.monarchinitiative.squirls.core.reference.TranscriptModelService;
+import org.monarchinitiative.svart.assembly.GenomicAssembly;
+import org.monarchinitiative.svart.GenomicRegion;
+
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.stream.Stream;
 
 /**
  * @author Daniel Danis
  */
-@ConfigurationProperties(prefix = "squirls")
-public class SquirlsPropertiesImpl implements SquirlsProperties {
+class SquirlsDataServiceImpl implements SquirlsDataService {
 
-    /**
-     * Path to directory with reference genome files and splicing database.
-     */
-    private String dataDirectory;
+    private final StrandedSequenceService sequenceService;
+    private final TranscriptModelService transcriptModelService;
 
-    /**
-     * Genome assembly version, choose from {hg19, hg38}.
-     */
-    private String genomeAssembly;
-
-    /**
-     * Exomiser-like data version, e.g. `1902`.
-     */
-    private String dataVersion;
-
-    /**
-     * Version of the classifier to use.
-     */
-    @NestedConfigurationProperty // squirls.classifier
-    private ClassifierProperties classifier = new ClassifierPropertiesImpl();
-
-    @NestedConfigurationProperty // squirls.annotator
-    private AnnotatorProperties annotator = new AnnotatorPropertiesImpl();
-
-    @Override
-    public String getDataDirectory() {
-        return dataDirectory;
-    }
-
-    public void setDataDirectory(String dataDirectory) {
-        this.dataDirectory = dataDirectory;
+    SquirlsDataServiceImpl(StrandedSequenceService sequenceService,
+                           TranscriptModelService transcriptModelService) {
+        this.sequenceService = sequenceService;
+        this.transcriptModelService = transcriptModelService;
     }
 
     @Override
-    public String getGenomeAssembly() {
-        return genomeAssembly;
-    }
-
-    public void setGenomeAssembly(String genomeAssembly) {
-        this.genomeAssembly = genomeAssembly;
+    public GenomicAssembly genomicAssembly() {
+        return sequenceService.genomicAssembly();
     }
 
     @Override
-    public String getDataVersion() {
-        return dataVersion;
-    }
-
-    public void setDataVersion(String dataVersion) {
-        this.dataVersion = dataVersion;
+    public StrandedSequence sequenceForRegion(GenomicRegion region) {
+        return sequenceService.sequenceForRegion(region);
     }
 
     @Override
-    public ClassifierProperties getClassifier() {
-        return classifier;
-    }
-
-    public void setClassifier(ClassifierProperties classifier) {
-        this.classifier = classifier;
+    public Stream<? extends Gene> genes() {
+        return transcriptModelService.genes();
     }
 
     @Override
-    public AnnotatorProperties getAnnotator() {
-        return annotator;
+    public List<Gene> overlappingGenes(GenomicRegion query) {
+        return transcriptModelService.overlappingGenes(query);
     }
 
-    public void setAnnotator(AnnotatorProperties annotator) {
-        this.annotator = annotator;
+    @Override
+    public Optional<Transcript> transcriptByAccession(String txAccession) {
+        return transcriptModelService.transcriptByAccession(txAccession);
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        SquirlsDataServiceImpl that = (SquirlsDataServiceImpl) o;
+        return Objects.equals(sequenceService, that.sequenceService) && Objects.equals(transcriptModelService, that.transcriptModelService);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(sequenceService, transcriptModelService);
+    }
 }

@@ -77,11 +77,13 @@
 package org.monarchinitiative.squirls.core.reference;
 
 import org.monarchinitiative.sgenes.model.Gene;
+import org.monarchinitiative.sgenes.model.Spliced;
 import org.monarchinitiative.sgenes.model.Transcript;
 import org.monarchinitiative.svart.GenomicRegion;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -103,8 +105,17 @@ public interface TranscriptModelService {
      * <code>end</code>.
      *
      * @return list with all transcripts that overlap with query interval
+     * @deprecated use {@link #overlappingGenes(GenomicRegion)} to get the overlapping genes and then use
+     * {@link Spliced#transcriptStream()} to get ahold of transcripts. The method will be removed in <em>3.0.0</em>
      */
-    List<Transcript> overlappingTranscripts(GenomicRegion query);
+    @Deprecated(since = "2.0.0", forRemoval = true)
+    default List<Transcript> overlappingTranscripts(GenomicRegion query) {
+        return overlappingGenes(query).stream()
+                .flatMap(Spliced::transcriptStream)
+                .collect(Collectors.toList());
+    }
+
+    List<Gene> overlappingGenes(GenomicRegion query);
 
     /**
      * Fetch transcript by accession ID.
