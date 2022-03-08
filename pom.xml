@@ -28,7 +28,7 @@
         <java.version>11</java.version>
 
         <svart.version>2.0.0-RC1</svart.version>
-        <silent.genes.version>0.2.1-SNAPSHOT</silent.genes.version> <!-- TODO use stable release -->
+        <silent.genes.version>0.2.1</silent.genes.version>
         <vmvt.version>0.9.4</vmvt.version>
         <htsjdk.version>2.23.0</htsjdk.version>
         <jannovar.version>0.35</jannovar.version>
