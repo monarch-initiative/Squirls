@@ -78,7 +78,7 @@ package org.monarchinitiative.squirls.core;
 
 import org.apiguardian.api.API;
 import org.monarchinitiative.squirls.core.classifier.SquirlsClassifier;
-import org.monarchinitiative.squirls.core.config.TranscriptCategories;
+import org.monarchinitiative.squirls.core.config.TranscriptCategory;
 import org.monarchinitiative.squirls.core.scoring.SplicingAnnotator;
 import org.monarchinitiative.svart.GenomicVariant;
 
@@ -91,25 +91,25 @@ import java.util.Set;
 public interface VariantSplicingEvaluator {
 
     /**
-     * @return evaluator with the default {@link TranscriptCategories#MANUAL}.
-     * @deprecated in favor of a static constructor that accepts {@link TranscriptCategories} parameter
+     * @return evaluator with the default {@link TranscriptCategory#MANUAL}.
+     * @deprecated in favor of a static constructor that accepts {@link TranscriptCategory} parameter
      */
     @Deprecated(since = "2.0.0", forRemoval = true)
     static VariantSplicingEvaluator of(SquirlsDataService squirlsDataService,
                                        SplicingAnnotator annotator,
                                        SquirlsClassifier classifier) {
-        return of(squirlsDataService, annotator, classifier, TranscriptCategories.MANUAL);
+        return of(squirlsDataService, annotator, classifier, TranscriptCategory.MANUAL);
     }
 
     /**
-     * @return evaluator to evaluate variants with respect to transcripts that fall into the given {@link TranscriptCategories}
+     * @return evaluator to evaluate variants with respect to transcripts that fall into the given {@link TranscriptCategory}
      * @since 2.0.0
      */
     static VariantSplicingEvaluator of(SquirlsDataService squirlsDataService,
                                        SplicingAnnotator annotator,
                                        SquirlsClassifier classifier,
-                                       TranscriptCategories transcriptCategories) {
-        return VariantSplicingEvaluatorImpl.of(squirlsDataService, annotator, classifier, transcriptCategories);
+                                       TranscriptCategory transcriptCategory) {
+        return VariantSplicingEvaluatorImpl.of(squirlsDataService, annotator, classifier, transcriptCategory);
     }
 
     /**

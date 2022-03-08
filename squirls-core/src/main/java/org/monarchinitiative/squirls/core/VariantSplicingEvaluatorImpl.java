@@ -80,7 +80,7 @@ import org.monarchinitiative.sgenes.model.Gene;
 import org.monarchinitiative.sgenes.model.Transcript;
 import org.monarchinitiative.squirls.core.classifier.SquirlsClassifier;
 import org.monarchinitiative.squirls.core.classifier.SquirlsFeatures;
-import org.monarchinitiative.squirls.core.config.TranscriptCategories;
+import org.monarchinitiative.squirls.core.config.TranscriptCategory;
 import org.monarchinitiative.squirls.core.reference.StrandedSequence;
 import org.monarchinitiative.squirls.core.scoring.SplicingAnnotator;
 import org.monarchinitiative.svart.*;
@@ -105,26 +105,26 @@ class VariantSplicingEvaluatorImpl implements VariantSplicingEvaluator {
     private final SplicingAnnotator annotator;
     private final SquirlsClassifier classifier;
 
-    private final TranscriptCategories transcriptCategories;
+    private final TranscriptCategory transcriptCategory;
 
     static VariantSplicingEvaluatorImpl of(SquirlsDataService squirlsDataService,
                                            SplicingAnnotator annotator,
                                            SquirlsClassifier classifier,
-                                           TranscriptCategories transcriptCategories) {
+                                           TranscriptCategory transcriptCategory) {
         return new VariantSplicingEvaluatorImpl(squirlsDataService,
                 annotator,
                 classifier,
-                transcriptCategories);
+                transcriptCategory);
     }
 
     private VariantSplicingEvaluatorImpl(SquirlsDataService squirlsDataService,
                                          SplicingAnnotator annotator,
                                          SquirlsClassifier classifier,
-                                         TranscriptCategories transcriptCategories) {
+                                         TranscriptCategory transcriptCategory) {
         this.squirlsDataService = Objects.requireNonNull(squirlsDataService, "Squirls data service cannot be null");
         this.annotator = Objects.requireNonNull(annotator, "Splicing Annotator cannot be null");
         this.classifier = Objects.requireNonNull(classifier, "Squirls classifier cannot be null");
-        this.transcriptCategories = Objects.requireNonNull(transcriptCategories, "Transcript categories cannot be null");
+        this.transcriptCategory = Objects.requireNonNull(transcriptCategory, "Transcript category cannot be null");
     }
 
     /**
@@ -164,7 +164,7 @@ class VariantSplicingEvaluatorImpl implements VariantSplicingEvaluator {
         List<? extends Transcript> transcripts = squirlsDataService.overlappingGenes(variant).stream()
                 .flatMap(Gene::transcriptStream)
                 .filter(tx -> tx.evidence()
-                        .map(transcriptCategories::hasValue)
+                        .map(transcriptCategory::hasValue)
                         .orElse(false))
                 .collect(Collectors.toList());
 

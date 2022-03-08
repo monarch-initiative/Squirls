@@ -83,7 +83,7 @@ import java.util.Set;
 /**
  * Levels of evidence required for the transcript to be included into the analysis.
  */
-public enum TranscriptCategories {
+public enum TranscriptCategory {
 
     /**
      * Includes {@link TranscriptEvidence#VALIDATED}.
@@ -119,7 +119,7 @@ public enum TranscriptCategories {
 
     private final Set<TranscriptEvidence> evidences;
 
-    TranscriptCategories(TranscriptEvidence... evidences) {
+    TranscriptCategory(TranscriptEvidence... evidences) {
         this.evidences = Set.of(evidences);
     }
 

@@ -92,7 +92,7 @@ import org.monarchinitiative.squirls.core.SquirlsDataService;
 import org.monarchinitiative.squirls.core.VariantSplicingEvaluator;
 import org.monarchinitiative.squirls.core.classifier.SquirlsClassifier;
 import org.monarchinitiative.squirls.core.config.FeatureSource;
-import org.monarchinitiative.squirls.core.config.TranscriptCategories;
+import org.monarchinitiative.squirls.core.config.TranscriptCategory;
 import org.monarchinitiative.squirls.core.reference.SplicingPwmData;
 import org.monarchinitiative.squirls.core.reference.StrandedSequenceService;
 import org.monarchinitiative.squirls.core.reference.TranscriptModelService;
@@ -128,12 +128,14 @@ public abstract class SquirlsCommand implements Callable<Integer> {
     protected static final Logger LOGGER = LoggerFactory.getLogger(SquirlsCommand.class);
 
     @CommandLine.Option(names = {"--tx-source"},
+            paramLabel = "{GENCODE,REFSEQ}",
             description = "Transcript source to use (default: ${DEFAULT-VALUE})")
     protected FeatureSource featureSource = FeatureSource.REFSEQ;
 
-    @CommandLine.Option(names = {"--tx-categories"},
+    @CommandLine.Option(names = {"--tx-category"},
+            paramLabel = "{VERIFIED,MANUAL,AUTOMATIC,ALL}",
             description = "Transcript categories to use (default: ${DEFAULT-VALUE})")
-    protected TranscriptCategories transcriptCategories = TranscriptCategories.MANUAL;
+    protected TranscriptCategory transcriptCategory = TranscriptCategory.MANUAL;
 
     @CommandLine.Parameters(index = "0",
             paramLabel = "squirls-config.yml",
@@ -169,10 +171,11 @@ public abstract class SquirlsCommand implements Callable<Integer> {
         SplicingAnnotator splicingAnnotator = context.getBean(SplicingAnnotator.class);
         SquirlsClassifier squirlsClassifier = context.getBean(SquirlsClassifier.class);
 
+        LOGGER.info("Using {} transcript category", transcriptCategory);
         VariantSplicingEvaluator evaluator = VariantSplicingEvaluator.of(squirlsDataService,
                 splicingAnnotator,
                 squirlsClassifier,
-                transcriptCategories);
+                transcriptCategory);
         return Squirls.of(squirlsDataService, splicingAnnotator, squirlsClassifier, evaluator);
     }
 
@@ -202,9 +205,11 @@ public abstract class SquirlsCommand implements Callable<Integer> {
         Path genesJsonPath;
         switch (featureSource) {
             case GENCODE:
+                LOGGER.info("Using Gencode transcripts");
                 genesJsonPath = dataResolver.gencodeJsonPath();
                 break;
             case REFSEQ:
+                LOGGER.info("Using RefSeq transcripts");
                 genesJsonPath = dataResolver.refseqJsonPath();
                 break;
             default:

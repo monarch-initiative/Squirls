@@ -84,23 +84,23 @@ import java.util.Objects;
 public class SquirlsOptions {
 
     private final FeatureSource featureSource;
-    private final TranscriptCategories transcriptCategories;
+    private final TranscriptCategory transcriptCategory;
 
-    public static SquirlsOptions of(FeatureSource featureSource, TranscriptCategories transcriptCategories) {
-        return new SquirlsOptions(featureSource, transcriptCategories);
+    public static SquirlsOptions of(FeatureSource featureSource, TranscriptCategory transcriptCategory) {
+        return new SquirlsOptions(featureSource, transcriptCategory);
     }
 
-    private SquirlsOptions(FeatureSource featureSource, TranscriptCategories transcriptCategories) {
+    private SquirlsOptions(FeatureSource featureSource, TranscriptCategory transcriptCategory) {
         this.featureSource = Objects.requireNonNull(featureSource, "Feature source must not be null");
-        this.transcriptCategories = Objects.requireNonNull(transcriptCategories, "Transcript categories must not be null");
+        this.transcriptCategory = Objects.requireNonNull(transcriptCategory, "Transcript categories must not be null");
     }
 
     public FeatureSource featureSource() {
         return featureSource;
     }
 
-    public TranscriptCategories transcriptCategories() {
-        return transcriptCategories;
+    public TranscriptCategory transcriptCategories() {
+        return transcriptCategory;
     }
 
     @Override
@@ -108,19 +108,19 @@ public class SquirlsOptions {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         SquirlsOptions that = (SquirlsOptions) o;
-        return featureSource == that.featureSource && transcriptCategories == that.transcriptCategories;
+        return featureSource == that.featureSource && transcriptCategory == that.transcriptCategory;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(featureSource, transcriptCategories);
+        return Objects.hash(featureSource, transcriptCategory);
     }
 
     @Override
     public String toString() {
         return "SquirlsOptions{" +
                 "featureSource=" + featureSource +
-                ", transcriptCategories=" + transcriptCategories +
+                ", transcriptCategory=" + transcriptCategory +
                 '}';
     }
 }
