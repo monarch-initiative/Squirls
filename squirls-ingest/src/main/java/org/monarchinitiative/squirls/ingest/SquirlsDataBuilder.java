@@ -79,10 +79,6 @@ package org.monarchinitiative.squirls.ingest;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import org.flywaydb.core.Flyway;
-import org.monarchinitiative.sgenes.gtf.io.GtfGeneParser;
-import org.monarchinitiative.sgenes.gtf.io.GtfGeneParserFactory;
-import org.monarchinitiative.sgenes.gtf.model.*;
-import org.monarchinitiative.sgenes.io.json.JsonGeneParser;
 import org.monarchinitiative.squirls.core.SquirlsException;
 import org.monarchinitiative.squirls.core.reference.SplicingParameters;
 import org.monarchinitiative.squirls.core.reference.SplicingPwmData;
@@ -95,28 +91,27 @@ import org.monarchinitiative.squirls.io.SquirlsClassifierVersion;
 import org.monarchinitiative.squirls.io.db.DbClassifierFactory;
 import org.monarchinitiative.squirls.io.db.DbKMerDao;
 import org.monarchinitiative.squirls.io.db.PwmIngestDao;
-import org.monarchinitiative.squirls.io.sequence.FastaStrandedSequenceService;
-import org.monarchinitiative.svart.assembly.GenomicAssembly;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.sql.DataSource;
-import java.io.*;
+import java.io.Closeable;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
-import java.util.zip.GZIPOutputStream;
 
 /**
  * A static class with methods for building splicing database.
  *
- * @see Main for an example usage
  * @author Daniel Danis
+ * @see Main for an example usage
  */
 public class SquirlsDataBuilder {
 
@@ -177,47 +172,6 @@ public class SquirlsDataBuilder {
         return new GenomeAssemblyDownloader(genomeUrl, genomeFastaPath, overwrite);
     }
 
-    private static void ingestSilentGenesTranscripts(Path buildDir,
-                                                     String versionedAssembly,
-                                                     GenomicAssembly assembly,
-                                                     Path refseqGtfPath,
-                                                     Path gencodeGtfPath) throws IOException {
-        // Refseq
-        LOGGER.info("Reading RefSeq genes from {}", refseqGtfPath.toAbsolutePath());
-        GtfGeneParser<RefseqGene> refseqParser = GtfGeneParserFactory.refseqGtfParser(refseqGtfPath, assembly);
-        List<RefseqGene> refseqGenes = refseqParser.stream()
-                .collect(Collectors.toList());
-        LOGGER.info("Found {} genes", refseqGenes.size());
-
-        JsonGeneParser parser = JsonGeneParser.of(assembly);
-        Path refseqOutput = buildDir.resolve(String.format("%s.refseq.json.gz", versionedAssembly));
-        LOGGER.info("Serializing genes to {}", refseqOutput.toAbsolutePath());
-        try (OutputStream os = openForWriting(refseqOutput)) {
-            parser.write(refseqGenes, os);
-        }
-
-        // Gencode
-        LOGGER.info("Reading Gencode genes from {}", gencodeGtfPath.toAbsolutePath());
-        GtfGeneParser<GencodeGene> gencodeParser = GtfGeneParserFactory.gencodeGeneParser(gencodeGtfPath, assembly);
-        List<GencodeGene> gencodeGenes = gencodeParser.stream()
-                .collect(Collectors.toList());
-        LOGGER.info("Read {} genes", gencodeGenes.size());
-
-        Path gencodeOutput = buildDir.resolve(String.format("%s.gencode.json.gz", versionedAssembly));
-        LOGGER.info("Serializing genes to {}", gencodeOutput.toAbsolutePath());
-        try (OutputStream os = openForWriting(gencodeOutput)) {
-            parser.write(gencodeGenes, os);
-        }
-    }
-
-    private static BufferedOutputStream openForWriting(Path output) throws IOException {
-        if (output.toFile().getName().endsWith(".gz")) {
-            return new BufferedOutputStream(new GZIPOutputStream(Files.newOutputStream(output)));
-        } else {
-            return new BufferedOutputStream(Files.newOutputStream(output));
-        }
-    }
-
     /**
      * Store data for hexamer and septamer-dependent methods.
      *
@@ -266,14 +220,15 @@ public class SquirlsDataBuilder {
      *
      * @param buildDir          path to directory where the database file should be stored
      * @param genomeUrl         URL pointing to `tar.gz` file with reference genome
-     * @param refseqGtfUrl      URL pointing to RefSeq genes GTF file. The file may be gzipped
-     * @param gencodeGtfUrl     URL pointing to Gencode genes GTF file. The file may be gzipped
+     * @param refseqUrl         URL pointing to Jannovar RefSeq transcript database
+     * @param ensemblUrl        URL pointing to Jannovar Ensembl transcript database
+     * @param ucscUrl           URL pointing to Jannovar UCSC transcript database
      * @param yamlPath          path to file with splice site definitions
      * @param versionedAssembly a string like `1710_hg19`, etc.
      * @throws SquirlsException if anything goes wrong
      */
     public static void buildDatabase(Path buildDir, URL genomeUrl, URL genomeAssemblyReport,
-                                     URL refseqGtfUrl, URL gencodeGtfUrl,
+                                     URL refseqUrl, URL ensemblUrl, URL ucscUrl,
                                      URL phylopUrl,
                                      Path yamlPath,
                                      Path hexamerPath, Path septamerPath,
@@ -281,28 +236,19 @@ public class SquirlsDataBuilder {
                                      String versionedAssembly) throws SquirlsException {
 
         // 0 - initiate download of reference genome FASTA file & PhyloP bigwig file
-        // this is where the reference genome will be downloaded by the commands below
-        Path genomeFastaPath = buildDir.resolve(String.format("%s.fa", versionedAssembly));
-        Path genomeFastaFaiPath = buildDir.resolve(String.format("%s.fa.fai", versionedAssembly));
-        Path genomeFastaDictPath = buildDir.resolve(String.format("%s.fa.dict", versionedAssembly));
         Path genomeAssemblyReportPath = buildDir.resolve(String.format("%s.assembly_report.txt", versionedAssembly));
         Path phyloPPath = buildDir.resolve(String.format("%s.phylop.bw", versionedAssembly));
-
-        // We need to process gencode & refseq files, hence temporary files
-        Path gencodePath, refseqPath;
-        try {
-            gencodePath = Files.createTempFile("gencode", ".gtf.gz");
-            refseqPath = Files.createTempFile("refseq", ".gtf.gz");
-        } catch (IOException e) {
-            throw new SquirlsException(e);
-        }
+        Path refseqPath = buildDir.resolve(String.format("%s.tx.refseq.ser", versionedAssembly));
+        Path ensemblPath = buildDir.resolve(String.format("%s.tx.ensembl.ser", versionedAssembly));
+        Path ucscPath = buildDir.resolve(String.format("%s.tx.ucsc.ser", versionedAssembly));
 
         ExecutorService es = Executors.newFixedThreadPool(3);
         es.submit(downloadReferenceGenome(genomeUrl, buildDir, versionedAssembly, false));
         es.submit(new UrlResourceDownloader(phylopUrl, phyloPPath, false));
         es.submit(new UrlResourceDownloader(genomeAssemblyReport, genomeAssemblyReportPath, false));
-        es.submit(new UrlResourceDownloader(refseqGtfUrl, refseqPath, true));
-        es.submit(new UrlResourceDownloader(gencodeGtfUrl, gencodePath, true));
+        es.submit(new UrlResourceDownloader(refseqUrl, refseqPath, true));
+        es.submit(new UrlResourceDownloader(ensemblUrl, ensemblPath, true));
+        es.submit(new UrlResourceDownloader(ucscUrl, ucscPath, true));
 
         // 1a - parse YAML with splicing matrices
         SplicingPwmData splicingPwmData;
@@ -364,22 +310,6 @@ public class SquirlsDataBuilder {
             es.shutdownNow();
         }
 
-        // 2f - store reference dictionary and transcripts
-        try (FastaStrandedSequenceService accessor = new FastaStrandedSequenceService(genomeAssemblyReportPath,
-                genomeFastaPath, genomeFastaFaiPath, genomeFastaDictPath)) {
-            GenomicAssembly genomicAssembly = accessor.genomicAssembly();
-
-            ingestSilentGenesTranscripts(buildDir, versionedAssembly, genomicAssembly, refseqPath, gencodePath);
-        } catch (Exception e) {
-            throw new SquirlsException(e);
-        } finally {
-            try {
-                Files.delete(refseqPath);
-                Files.delete(gencodePath);
-            } catch (IOException e) {
-                LOGGER.warn("Unable to delete temporary GTF files");
-            }
-        }
         if (dataSource instanceof Closeable) {
             try {
                 LOGGER.info("Closing database connections");

@@ -21,15 +21,20 @@ classifiers:
 
 ### Public resources
 #
-## GTF with RefSeq transcripts. Try these first:
-#  hg19 - https://ftp.ncbi.nlm.nih.gov/genomes/refseq/vertebrate_mammalian/Homo_sapiens/all_assembly_versions/GCF_000001405.25_GRCh37.p13/GCF_000001405.25_GRCh37.p13_genomic.gtf.gz
-#  hg38 - https://ftp.ncbi.nlm.nih.gov/genomes/refseq/vertebrate_mammalian/Homo_sapiens/annotation_releases/109.20211119/GCF_000001405.39_GRCh38.p13/GCF_000001405.39_GRCh38.p13_genomic.gtf.gz
-refseqGtfUrl:
+## URL of Jannovar v0.35 RefSeq cache. Try these first:
+#  hg19 - https://storage.googleapis.com/ielis/jannovar/hg19_refseq.ser
+#  hg38 - https://storage.googleapis.com/ielis/jannovar/hg38_refseq.ser
+refseqUrl:
 
-## GTF with Gencode transcripts. Try these first:
-#  hg19 - https://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_19/gencode.v19.annotation.gtf.gz
-#  hg38 - https://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_39/gencode.v39.basic.annotation.gtf.gz
-gencodeGtfUrl:
+## URL of Jannovar v0.35 Ensembl cache. Try these first:
+#  hg19 - https://storage.googleapis.com/ielis/jannovar/hg19_ensembl.ser
+#  hg38 - https://storage.googleapis.com/ielis/jannovar/hg38_ensembl.ser
+ensemblUrl:
+
+## URL of Jannovar v0.35 UCSC cache. Try these first:
+#  hg19 - https://storage.googleapis.com/ielis/jannovar/hg19_ucsc.ser
+#  hg38 - https://storage.googleapis.com/ielis/jannovar/hg38_ucsc.ser
+ucscUrl:
 
 ## we expect to find tarball with FASTA files per-chromosome here
 #hg19 - http://hgdownload.soe.ucsc.edu/goldenPath/hg19/bigZips/chromFa.tar.gz

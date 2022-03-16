@@ -189,8 +189,9 @@ public class IngestCommand implements Callable<Integer> {
             URL genomeUrl = new URL(ingestProperties.fastaUrl());
             URL assemblyReportUrl = new URL(ingestProperties.assemblyReportUrl());
             URL phylopUrl = new URL(ingestProperties.phylopUrl());
-            URL refseqGtfUrl = new URL(ingestProperties.refseqGtfUrl());
-            URL gencodeGtfUrl = new URL(ingestProperties.gencodeGtfUrl());
+            URL refseqUrl = new URL(ingestProperties.refseqUrl());
+            URL ensemblUrl = new URL(ingestProperties.ensemblUrl());
+            URL ucscUrl = new URL(ingestProperties.ucscUrl());
 
             String versionedAssembly = getVersionedAssembly(assembly, version);
             Path versionedAssemblyBuildPath = buildDirPath.resolve(versionedAssembly);
@@ -207,7 +208,9 @@ public class IngestCommand implements Callable<Integer> {
 
             // 3 - build database
             SquirlsDataBuilder.buildDatabase(genomeBuildDir,
-                    genomeUrl, assemblyReportUrl, refseqGtfUrl, gencodeGtfUrl, phylopUrl,
+                    genomeUrl, assemblyReportUrl,
+                    refseqUrl, ensemblUrl, ucscUrl,
+                    phylopUrl,
                     Path.of(ingestProperties.splicingInformationContentMatrix()),
                     Path.of(ingestProperties.hexamerTsvPath()),
                     Path.of(ingestProperties.septamerTsvPath()),

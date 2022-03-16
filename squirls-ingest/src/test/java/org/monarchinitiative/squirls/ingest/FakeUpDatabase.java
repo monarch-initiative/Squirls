@@ -105,11 +105,12 @@ public class FakeUpDatabase {
         URL assemblyUrl = new URL("https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/405/GCF_000001405.25_GRCh37.p13/GCF_000001405.25_GRCh37.p13_assembly_report.txt");
         URL phylopUrl = new URL("http://hgdownload.cse.ucsc.edu/goldenpath/hg19/phyloP100way/hg19.100way.phyloP100way.bw");
 
-        Path hg19Dir = DATA_DIR.resolve("gtf").resolve("hg19");
-        URL refseqGtfUrl = hg19Dir.resolve("GCF_000001405.25_GRCh37.p13_genomic.gck_hnf4a_fbn1.gtf.gz").toUri().toURL();
-        URL gencodeGtfUrl = hg19Dir.resolve("gencode.v19.annotation.gck_hnf4a_fbn1.gtf.gz").toUri().toURL();
+        Path hg19Dir = DATA_DIR.resolve("transcripts").resolve("hg19");
+        URL refseqUrl = hg19Dir.resolve("hg19_refseq_small.ser").toUri().toURL();
+        URL ensemblUrl = hg19Dir.resolve("hg19_ensembl_small.ser").toUri().toURL();
+        URL ucscUrl = hg19Dir.resolve("hg19_ucsc_small.ser").toUri().toURL();
 
-        SquirlsDataBuilder.buildDatabase(BUILD_DIR, genomeUrl, assemblyUrl, refseqGtfUrl, gencodeGtfUrl, phylopUrl, SPLICING_IC_MATRIX_PATH,
+        SquirlsDataBuilder.buildDatabase(BUILD_DIR, genomeUrl, assemblyUrl, refseqUrl, ensemblUrl, ucscUrl, phylopUrl, SPLICING_IC_MATRIX_PATH,
                 HEXAMER_TSV_PATH, SEPTAMER_TSV_PATH, TestDataSourceConfig.MODEL_PATHS, "1710_hg19");
     }
 
@@ -119,10 +120,11 @@ public class FakeUpDatabase {
         URL assemblyUrl = new URL("https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/405/GCF_000001405.39_GRCh38.p13/GCF_000001405.39_GRCh38.p13_assembly_report.txt");
         URL phylopUrl = new URL("http://hgdownload.soe.ucsc.edu/goldenPath/hg38/phyloP100way/hg38.phyloP100way.bw");
 
-        Path hg38Dir = DATA_DIR.resolve("gtf").resolve("hg38");
-        URL refseqGtfUrl = hg38Dir.resolve("GCF_000001405.39_GRCh38.p13_genomic.gck_hnf4a_fbn1.gtf.gz").toUri().toURL();
-        URL gencodeGtfUrl = hg38Dir.resolve("gencode.v39.basic.annotation.gck_hnf4a_fbn1.gtf.gz").toUri().toURL();
-        SquirlsDataBuilder.buildDatabase(BUILD_DIR, genomeUrl, assemblyUrl, refseqGtfUrl, gencodeGtfUrl, phylopUrl, SPLICING_IC_MATRIX_PATH,
+        Path hg38Dir = DATA_DIR.resolve("transcripts").resolve("hg38");
+        URL refseqUrl = hg38Dir.resolve("hg38_refseq_small.ser").toUri().toURL();
+        URL ensemblUrl = hg38Dir.resolve("hg38_ensembl_small.ser").toUri().toURL();
+        URL ucscUrl = hg38Dir.resolve("hg38_ucsc_small.ser").toUri().toURL();
+        SquirlsDataBuilder.buildDatabase(BUILD_DIR, genomeUrl, assemblyUrl, refseqUrl, ensemblUrl, ucscUrl, phylopUrl, SPLICING_IC_MATRIX_PATH,
                 HEXAMER_TSV_PATH, SEPTAMER_TSV_PATH, TestDataSourceConfig.MODEL_PATHS, "1710_hg38");
     }
 }

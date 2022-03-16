@@ -85,8 +85,9 @@ public class IngestProperties {
 
 
     private String splicingInformationContentMatrix;
-    private String refseqGtfUrl;
-    private String gencodeGtfUrl;
+    private String refseqUrl;
+    private String ensemblUrl;
+    private String ucscUrl;
     private String hexamerTsvPath;
     private String septamerTsvPath;
     private String fastaUrl;
@@ -110,20 +111,28 @@ public class IngestProperties {
         this.splicingInformationContentMatrix = splicingInformationContentMatrix;
     }
 
-    public String refseqGtfUrl() {
-        return refseqGtfUrl;
+    public String refseqUrl() {
+        return refseqUrl;
     }
 
-    public void setRefseqGtfUrl(String refseqGtfUrl) {
-        this.refseqGtfUrl = refseqGtfUrl;
+    public void setRefseqUrl(String refseqUrl) {
+        this.refseqUrl = refseqUrl;
     }
 
-    public String gencodeGtfUrl() {
-        return gencodeGtfUrl;
+    public String ensemblUrl() {
+        return ensemblUrl;
     }
 
-    public void setGencodeGtfUrl(String gencodeGtfUrl) {
-        this.gencodeGtfUrl = gencodeGtfUrl;
+    public void setEnsemblUrl(String ensemblUrl) {
+        this.ensemblUrl = ensemblUrl;
+    }
+
+    public String ucscUrl() {
+        return ucscUrl;
+    }
+
+    public void setUcscUrl(String ucscUrl) {
+        this.ucscUrl = ucscUrl;
     }
 
     public String hexamerTsvPath() {
