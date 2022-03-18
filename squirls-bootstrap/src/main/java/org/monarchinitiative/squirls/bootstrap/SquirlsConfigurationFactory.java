@@ -107,40 +107,33 @@ import org.slf4j.LoggerFactory;
 import javax.sql.DataSource;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
- * This class prepares {@link Squirls} for given {@link SquirlsResourceVersion}.
+ * This class prepares {@link Squirls} using files in given {@code dataDirectory}, {@link SquirlsProperties} and {@link SquirlsOptions}.
  * <p>
- * To create the factory, you must provide path to the Squirls data directory. The data directory must have
- * the following structure:
+ * The Squirls {@code dataDirectory} is expected to have the following structure:
  * <pre>
  * path/to/squirls/data_directory:
- *  |- 1902_hg19:
- *  |   |- 1902_hg19.assembly_report.txt
- *  |   |- 1902_hg19.fa
- *  |   |- 1902_hg19.fa.dict
- *  |   |- 1902_hg19.fa.fai
- *  |   |- 1902_hg19.phylop.bw
- *  |   \- 1902_hg19_splicing.mv.db
- *  \- 1902_hg38:
- *      |- 1902_hg38.fa
- *      ...
+ *  |- assembly_report.txt
+ *  |- genome.fa
+ *  |- genome.fa.dict
+ *  |- genome.fa.fai
+ *  |- phylop.bw
+ *  |- squirls.mv.db
+ *  |- tx.ensembl.ser
+ *  |- tx.refseq.ser
+ *  \- tx.ucsc.ser
  * </pre>
  * <p>
- * In the example above, <code>path/to/squirls/data_directory</code> should be provided as the path to
- * the Squirls data directory. Then, the factory provides {@link Squirls} for
- * genomes {@link GenomicAssemblyVersion#GRCH37} and {@link GenomicAssemblyVersion#GRCH38}, version <code>1902</code>
- * (February 2019).
+ * In the example above, <code>path/to/squirls/data_directory</code> should be provided as {@code dataDirectory}.
  *
  * <p>
- * Use {@link #supportedResourceVersions()} to get all supported resource versions, and
- * {@link #getSquirls(SquirlsResourceVersion)} to get {@link Squirls} for the particular
- * {@link SquirlsResourceVersion}.
+ * Use {@link #getSquirls()} to get {@link Squirls} instance.
  *
  * @since 2.0.0
  * @author Daniel Danis
@@ -150,53 +143,35 @@ public class SquirlsConfigurationFactory {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SquirlsConfigurationFactory.class);
 
-    private static final Pattern DIR_PATTERN = Pattern.compile("(?<version>\\d{4})_(?<assembly>(hg19|hg38))");
+    private static final Properties PROPERTIES = readProperties();
 
-    private final Map<SquirlsResourceVersion, SquirlsDataResolver> resolverMap;
+    private static final String SQUIRLS_VERSION = PROPERTIES.getProperty("squirls.version", "unknown version");
+
+    private final SquirlsDataResolver dataResolver;
 
     private final SquirlsProperties properties;
 
     private final SquirlsOptions options;
 
-    public static SquirlsConfigurationFactory of(SquirlsProperties properties, SquirlsOptions options) throws MissingSquirlsResourceException, UndefinedSquirlsResourceException {
-        return new SquirlsConfigurationFactory(properties, options);
+    public static SquirlsConfigurationFactory of(Path dataDirectory,
+                                                 SquirlsProperties properties,
+                                                 SquirlsOptions options) throws MissingSquirlsResourceException, UndefinedSquirlsResourceException {
+        return new SquirlsConfigurationFactory(dataDirectory, properties, options);
     }
 
-    private SquirlsConfigurationFactory(SquirlsProperties properties, SquirlsOptions options) throws MissingSquirlsResourceException, UndefinedSquirlsResourceException {
+    private SquirlsConfigurationFactory(Path dataDirectory,
+                                        SquirlsProperties properties,
+                                        SquirlsOptions options) throws MissingSquirlsResourceException, UndefinedSquirlsResourceException {
+        this.dataResolver = SquirlsDataResolver.of(dataDirectory);
         this.properties = Objects.requireNonNull(properties, "Squirls properties must not be null");
         this.options = Objects.requireNonNull(options, "Squirls options must not be null");
-        File dataDir = new File(Objects.requireNonNull(properties.getDataDirectory(), "Data directory must not be null"));
-        this.resolverMap = Map.copyOf(exploreDataDirectory(dataDir));
-    }
-
-    private static Map<SquirlsResourceVersion, SquirlsDataResolver> exploreDataDirectory(File dataDirectory) throws MissingSquirlsResourceException, UndefinedSquirlsResourceException {
-        File[] children = dataDirectory.listFiles();
-        if (children == null)
-            throw new UndefinedSquirlsResourceException("Path `" + dataDirectory.getAbsolutePath() + "` does not point to a directory");
-
-        Map<SquirlsResourceVersion, SquirlsDataResolver> resolverMap = new HashMap<>();
-        for (File child : children) {
-            Matcher matcher = DIR_PATTERN.matcher(child.getName());
-            if (matcher.matches()) {
-                String version = matcher.group("version");
-                GenomicAssemblyVersion assembly = GenomicAssemblyVersion.parseValue(matcher.group("assembly"));
-                SquirlsResourceVersion resourceVersion = SquirlsResourceVersion.of(version, assembly);
-
-                SquirlsDataResolver resolver = new SquirlsDataResolver(dataDirectory.toPath(), resourceVersion);
-                resolverMap.put(resourceVersion, resolver);
-            } else {
-                if (LOGGER.isInfoEnabled())
-                    LOGGER.info("Ignoring folder `{}`", child.getAbsolutePath());
-            }
-        }
-
-        return resolverMap;
     }
 
     private static Squirls configure(SquirlsDataResolver dataResolver,
                                      SquirlsProperties properties,
                                      SquirlsOptions options) throws IOException, SquirlsResourceException {
-        DataSource squirlsDatasource = squirlsDatasource(dataResolver);
+        LOGGER.info("Spooling up Squirls v{} using resources in `{}`", SQUIRLS_VERSION, dataResolver.dataDirectory().toAbsolutePath());
+        DataSource squirlsDatasource = squirlsDatasource(dataResolver.dataSourcePath());
 
         SquirlsDataService squirlsDataService = configureSquirlsDataService(options, dataResolver);
 
@@ -209,9 +184,8 @@ public class SquirlsConfigurationFactory {
         return Squirls.of(squirlsDataService, splicingAnnotator, squirlsClassifier, variantSplicingEvaluator);
     }
 
-    private static DataSource squirlsDatasource(SquirlsDataResolver squirlsDataResolver) {
-        Path datasourcePath = squirlsDataResolver.dataSourcePath();
-        String jdbcUrl = String.format("jdbc:h2:file:%s;ACCESS_MODE_DATA=r", datasourcePath.toFile().getAbsolutePath());
+    private static DataSource squirlsDatasource(Path datasourcePath) {
+        String jdbcUrl = String.format("jdbc:h2:file:%s;ACCESS_MODE_DATA=r", datasourcePath.toAbsolutePath());
         HikariConfig config = new HikariConfig();
         config.setUsername("sa");
         config.setPassword("sa");
@@ -254,7 +228,7 @@ public class SquirlsConfigurationFactory {
                 throw new SquirlsResourceException("Unknown transcript source `" + options.featureSource() + "`");
         }
 
-        return TranscriptModelService.of(readGenes(genomicAssembly, jannovarSerPath));
+        return TranscriptModelService.of(readGenes(genomicAssembly, jannovarSerPath.toAbsolutePath()));
     }
 
     private static List<? extends Gene> readGenes(GenomicAssembly assembly, Path jannovarSerPath) {
@@ -314,11 +288,15 @@ public class SquirlsConfigurationFactory {
         }
     }
 
-    /**
-     * @return set of {@link SquirlsResourceVersion}s available from this factory
-     */
-    public Set<SquirlsResourceVersion> supportedResourceVersions() {
-        return resolverMap.keySet();
+    private static Properties readProperties() {
+        Properties properties = new Properties();
+
+        try (InputStream is = SquirlsConfigurationFactory.class.getResourceAsStream("/squirls.properties")) {
+            properties.load(is);
+        } catch (IOException e) {
+            LOGGER.warn("Error loading properties: {}", e.getMessage());
+        }
+        return properties;
     }
 
     /**
@@ -326,16 +304,9 @@ public class SquirlsConfigurationFactory {
      * @return configuration with
      * @throws SquirlsResourceException in case there are any issues with initialization (e.g. missing files)
      */
-    public Squirls getSquirls(SquirlsResourceVersion resourceVersion) throws SquirlsResourceException {
-        if (!resolverMap.containsKey(resourceVersion)) {
-            throw new SquirlsResourceException("Resource " +
-                    resourceVersion.version() + '_' + resourceVersion.assembly().version() +
-                    "` is not present in `" + properties.getDataDirectory() + '`');
-        }
-        SquirlsDataResolver resolver = resolverMap.get(resourceVersion);
-
+    public Squirls getSquirls() throws SquirlsResourceException {
         try {
-            return configure(resolver, properties, options);
+            return configure(dataResolver, properties, options);
         } catch (IOException e) {
             throw new SquirlsResourceException(e);
         }

@@ -79,7 +79,6 @@ package org.monarchinitiative.squirls.autoconfigure;
 import org.monarchinitiative.squirls.initialize.AnnotatorProperties;
 import org.monarchinitiative.squirls.initialize.ClassifierProperties;
 import org.monarchinitiative.squirls.initialize.SquirlsProperties;
-import org.monarchinitiative.squirls.initialize.TranscriptSource;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.NestedConfigurationProperty;
 

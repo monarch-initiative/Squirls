@@ -79,26 +79,25 @@ package org.monarchinitiative.squirls.initialize;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * This class provides paths to resources, such as path to FASTA file, or splicing transcript database.
  * <p>
- * The paths are provided based on {@code squirlsDataDirectory}, {@code dataVersion}, and {@code genomeAssembly}.
+ * The paths are provided based on {@code squirlsDataDirectory}.
  *
  * @author Daniel Danis
  */
 public class SquirlsDataResolver {
 
-    private final Path squirlsDataDirectory;
-    private final SquirlsResourceVersion resourceVersion;
-    private final String dataVersion;
-    private final String genomeAssembly;
+    private final Path dataDirectory;
 
-    public SquirlsDataResolver(Path squirlsDataDirectory, SquirlsResourceVersion resourceVersion) throws MissingSquirlsResourceException {
-        this.resourceVersion = resourceVersion;
-        this.dataVersion = resourceVersion.version();
-        this.genomeAssembly = resourceVersion.assembly().version();
-        this.squirlsDataDirectory = squirlsDataDirectory.resolve(String.format("%s_%s", dataVersion, genomeAssembly));
+    public static SquirlsDataResolver of(Path dataDirectory) throws MissingSquirlsResourceException {
+        return new SquirlsDataResolver(dataDirectory);
+    }
+
+    private SquirlsDataResolver(Path dataDirectory) throws MissingSquirlsResourceException {
+        this.dataDirectory = Objects.requireNonNull(dataDirectory, "Squirls data directory must not be null");
 
         // now check that we have all files present
         List<Path> paths = List.of(genomeAssemblyReportPath(), genomeFastaPath(), genomeFastaFaiPath(), genomeFastaDictPath(), dataSourceFullPath(), phylopPath(), refseqSerPath(), ensemblSerPath(), ucscSerPath());
@@ -109,39 +108,37 @@ public class SquirlsDataResolver {
         }
     }
 
-    public SquirlsResourceVersion resourceVersion() {
-        return resourceVersion;
+    public Path dataDirectory() {
+        return dataDirectory;
     }
 
     public Path genomeAssemblyReportPath() {
-        return squirlsDataDirectory.resolve(String.format("%s_%s.assembly_report.txt", dataVersion, genomeAssembly));
+        return dataDirectory.resolve("assembly_report.txt");
     }
 
     public Path genomeFastaPath() {
-        return squirlsDataDirectory.resolve(String.format("%s_%s.fa", dataVersion, genomeAssembly));
+        return dataDirectory.resolve("genome.fa");
     }
 
     public Path genomeFastaFaiPath() {
-        return squirlsDataDirectory.resolve(String.format("%s_%s.fa.fai", dataVersion, genomeAssembly));
+        return dataDirectory.resolve("genome.fa.fai");
     }
 
     public Path genomeFastaDictPath() {
-        return squirlsDataDirectory.resolve(String.format("%s_%s.fa.dict", dataVersion, genomeAssembly));
+        return dataDirectory.resolve("genome.fa.dict");
     }
 
     public Path dataSourcePath() {
         // the actual suffix *.mv.db is not being added
-        return squirlsDataDirectory.resolve(String.format("%s_%s.splicing", dataVersion, genomeAssembly))
-                .toAbsolutePath();
+        return dataDirectory.resolve("squirls").toAbsolutePath();
     }
 
     public Path dataSourceFullPath() {
-        return squirlsDataDirectory.resolve(String.format("%s_%s.splicing.mv.db", dataVersion, genomeAssembly))
-                .toAbsolutePath();
+        return dataDirectory.resolve("squirls.mv.db").toAbsolutePath();
     }
 
     public Path phylopPath() {
-        return squirlsDataDirectory.resolve(String.format("%s_%s.phylop.bw", dataVersion, genomeAssembly))
+        return dataDirectory.resolve(String.format("phylop.bw"))
                 .toAbsolutePath();
     }
 
@@ -158,21 +155,20 @@ public class SquirlsDataResolver {
     }
 
     private Path txSerPath(String source) {
-        return squirlsDataDirectory.resolve(String.format("%s_%s.tx.%s.ser", dataVersion, genomeAssembly, source))
-                .toAbsolutePath();
+        return dataDirectory.resolve(String.format("tx.%s.ser", source));
     }
 
     // TODO(2.0.0) - remove
     @Deprecated(forRemoval = true)
     public Path gencodeJsonPath() {
-        return squirlsDataDirectory.resolve(String.format("%s_%s.gencode.json.gz", dataVersion, genomeAssembly))
+        return dataDirectory.resolve(String.format("gencode.json.gz"))
                 .toAbsolutePath();
     }
 
     // TODO(2.0.0) - remove
     @Deprecated(forRemoval = true)
     public Path refseqJsonPath() {
-        return squirlsDataDirectory.resolve(String.format("%s_%s.refseq.json.gz", dataVersion, genomeAssembly))
+        return dataDirectory.resolve(String.format("refseq.json.gz"))
                 .toAbsolutePath();
     }
 

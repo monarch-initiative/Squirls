@@ -161,14 +161,12 @@ public class SquirlsDataBuilder {
 
     /**
      * Download, decompress, and concatenate contigs into a single FASTA file. Then, index the FASTA file.
-     *
      * @param genomeUrl         url pointing to reference genome FASTA file to be downloaded
      * @param buildDir          path to directory where Squirls data files will be created
-     * @param versionedAssembly a string like `1710_hg19`, etc.
      * @param overwrite         overwrite existing FASTA file if true
      */
-    static Runnable downloadReferenceGenome(URL genomeUrl, Path buildDir, String versionedAssembly, boolean overwrite) {
-        Path genomeFastaPath = buildDir.resolve(String.format("%s.fa", versionedAssembly));
+    static Runnable downloadReferenceGenome(URL genomeUrl, Path buildDir, boolean overwrite) {
+        Path genomeFastaPath = buildDir.resolve("genome.fa");
         return new GenomeAssemblyDownloader(genomeUrl, genomeFastaPath, overwrite);
     }
 
@@ -224,7 +222,6 @@ public class SquirlsDataBuilder {
      * @param ensemblUrl        URL pointing to Jannovar Ensembl transcript database
      * @param ucscUrl           URL pointing to Jannovar UCSC transcript database
      * @param yamlPath          path to file with splice site definitions
-     * @param versionedAssembly a string like `1710_hg19`, etc.
      * @throws SquirlsException if anything goes wrong
      */
     public static void buildDatabase(Path buildDir, URL genomeUrl, URL genomeAssemblyReport,
@@ -232,18 +229,17 @@ public class SquirlsDataBuilder {
                                      URL phylopUrl,
                                      Path yamlPath,
                                      Path hexamerPath, Path septamerPath,
-                                     Map<SquirlsClassifierVersion, Path> classifiers,
-                                     String versionedAssembly) throws SquirlsException {
+                                     Map<SquirlsClassifierVersion, Path> classifiers) throws SquirlsException {
 
         // 0 - initiate download of reference genome FASTA file & PhyloP bigwig file
-        Path genomeAssemblyReportPath = buildDir.resolve(String.format("%s.assembly_report.txt", versionedAssembly));
-        Path phyloPPath = buildDir.resolve(String.format("%s.phylop.bw", versionedAssembly));
-        Path refseqPath = buildDir.resolve(String.format("%s.tx.refseq.ser", versionedAssembly));
-        Path ensemblPath = buildDir.resolve(String.format("%s.tx.ensembl.ser", versionedAssembly));
-        Path ucscPath = buildDir.resolve(String.format("%s.tx.ucsc.ser", versionedAssembly));
+        Path genomeAssemblyReportPath = buildDir.resolve("assembly_report.txt");
+        Path phyloPPath = buildDir.resolve("phylop.bw");
+        Path refseqPath = buildDir.resolve("tx.refseq.ser");
+        Path ensemblPath = buildDir.resolve("tx.ensembl.ser");
+        Path ucscPath = buildDir.resolve("tx.ucsc.ser");
 
         ExecutorService es = Executors.newFixedThreadPool(3);
-        es.submit(downloadReferenceGenome(genomeUrl, buildDir, versionedAssembly, false));
+        es.submit(downloadReferenceGenome(genomeUrl, buildDir, false));
         es.submit(new UrlResourceDownloader(phylopUrl, phyloPPath, false));
         es.submit(new UrlResourceDownloader(genomeAssemblyReport, genomeAssemblyReportPath, false));
         es.submit(new UrlResourceDownloader(refseqUrl, refseqPath, true));
@@ -271,7 +267,7 @@ public class SquirlsDataBuilder {
 
         // 2 - create and fill the database
         // 2a - initialize database
-        Path databasePath = buildDir.resolve(String.format("%s.splicing", versionedAssembly));
+        Path databasePath = buildDir.resolve("squirls");
         LOGGER.info("Creating database at `{}`", databasePath);
         DataSource dataSource = makeDataSource(databasePath);
 

@@ -90,6 +90,7 @@ import java.util.concurrent.Callable;
 
 /**
  * @author Daniel Danis
+ * @deprecated we do not use the configuration file anymore. All parameters are in CLI
  */
 @CommandLine.Command(name = "generate-config",
         aliases = {"G"},
@@ -98,6 +99,7 @@ import java.util.concurrent.Callable;
         version = Main.VERSION,
         usageHelpWidth = Main.WIDTH,
         footer = Main.FOOTER)
+@Deprecated(forRemoval = true) // TODO(2.0.0) - remove
 public class GenerateConfigCommand implements Callable<Integer> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(GenerateConfigCommand.class);

@@ -87,33 +87,13 @@ import java.io.File;
  */
 public class SimpleSquirlsProperties implements SquirlsProperties {
 
-    private final String dataDirectory;
-
     private final ClassifierProperties classifierProperties;
 
     private final AnnotatorProperties annotatorProperties;
 
     private SimpleSquirlsProperties(Builder builder) {
-        dataDirectory = builder.dataDirectory;
         classifierProperties = builder.classifierProperties;
         annotatorProperties = builder.annotatorProperties;
-    }
-
-    @Override
-    public String getDataDirectory() {
-        return dataDirectory;
-    }
-
-    @Override
-    @Deprecated
-    public String getGenomeAssembly() {
-        return "";
-    }
-
-    @Override
-    @Deprecated
-    public String getDataVersion() {
-        return "";
     }
 
     @Override
@@ -126,24 +106,17 @@ public class SimpleSquirlsProperties implements SquirlsProperties {
         return annotatorProperties;
     }
 
-    public static Builder builder(File dataDirectory) {
-        return builder(dataDirectory.getAbsolutePath());
-    }
-
-    public static Builder builder(String dataDirectory) {
-        return new Builder(dataDirectory);
+    public static Builder builder() {
+        return new Builder();
     }
 
     public static class Builder {
-
-        private final String dataDirectory;
 
         private ClassifierProperties classifierProperties = new SimpleClassifierProperties();
 
         private AnnotatorProperties annotatorProperties = new SimpleAnnotatorProperties();
 
-        private Builder(String dataDirectory) {
-            this.dataDirectory = dataDirectory;
+        private Builder() {
         }
 
         public Builder classifierProperties(ClassifierProperties classifierProperties) {

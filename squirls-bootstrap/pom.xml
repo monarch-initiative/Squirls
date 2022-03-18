@@ -12,6 +12,15 @@
 
     <artifactId>squirls-bootstrap</artifactId>
 
+    <build>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>true</filtering>
+            </resource>
+        </resources>
+    </build>
+
     <dependencies>
         <dependency>
             <groupId>org.monarchinitiative.squirls</groupId>

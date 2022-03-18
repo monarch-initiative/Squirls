@@ -111,7 +111,7 @@ public class FakeUpDatabase {
         URL ucscUrl = hg19Dir.resolve("hg19_ucsc_small.ser").toUri().toURL();
 
         SquirlsDataBuilder.buildDatabase(BUILD_DIR, genomeUrl, assemblyUrl, refseqUrl, ensemblUrl, ucscUrl, phylopUrl, SPLICING_IC_MATRIX_PATH,
-                HEXAMER_TSV_PATH, SEPTAMER_TSV_PATH, TestDataSourceConfig.MODEL_PATHS, "1710_hg19");
+                HEXAMER_TSV_PATH, SEPTAMER_TSV_PATH, TestDataSourceConfig.MODEL_PATHS);
     }
 
     @Test
@@ -125,6 +125,6 @@ public class FakeUpDatabase {
         URL ensemblUrl = hg38Dir.resolve("hg38_ensembl_small.ser").toUri().toURL();
         URL ucscUrl = hg38Dir.resolve("hg38_ucsc_small.ser").toUri().toURL();
         SquirlsDataBuilder.buildDatabase(BUILD_DIR, genomeUrl, assemblyUrl, refseqUrl, ensemblUrl, ucscUrl, phylopUrl, SPLICING_IC_MATRIX_PATH,
-                HEXAMER_TSV_PATH, SEPTAMER_TSV_PATH, TestDataSourceConfig.MODEL_PATHS, "1710_hg38");
+                HEXAMER_TSV_PATH, SEPTAMER_TSV_PATH, TestDataSourceConfig.MODEL_PATHS);
     }
 }

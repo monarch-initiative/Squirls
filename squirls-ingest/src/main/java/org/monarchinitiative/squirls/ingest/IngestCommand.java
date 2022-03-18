@@ -214,7 +214,7 @@ public class IngestCommand implements Callable<Integer> {
                     Path.of(ingestProperties.splicingInformationContentMatrix()),
                     Path.of(ingestProperties.hexamerTsvPath()),
                     Path.of(ingestProperties.septamerTsvPath()),
-                    classifiers, versionedAssembly);
+                    classifiers);
 
 
             // 4 - calculate SHA256 digest for the resource files

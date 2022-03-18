@@ -141,12 +141,12 @@ public class PrecalculateCommand extends SquirlsCommand {
             description = "Where to write the scores (default: ${DEFAULT-VALUE})")
     public Path outputPath = Path.of("squirls-scores.vcf.gz");
 
-    @CommandLine.Option(names = {"-t", "--n-threads"},
+    @CommandLine.Option(names = {"--threads"},
             paramLabel = "2",
             description = "Process variants on n threads (default: ${DEFAULT-VALUE})")
     public int nThreads = 2;
 
-    @CommandLine.Option(names = {"-l", "--length"},
+    @CommandLine.Option(names = {"-l", "--max-length"},
             description = "Maximum length of generated variants (default: ${DEFAULT-VALUE})")
     public int length = 1;
 
@@ -154,7 +154,7 @@ public class PrecalculateCommand extends SquirlsCommand {
             description = "Write out predictions made with respect to individual transcripts (default: ${DEFAULT-VALUE})")
     public boolean writeIndividualPredictions = false;
 
-    @CommandLine.Parameters(index = "1..*",
+    @CommandLine.Parameters(index = "0..*",
             paramLabel = "chr1:1000-2000",
             description = "Regions to precalculate the scores for")
     public List<String> regions = List.of();

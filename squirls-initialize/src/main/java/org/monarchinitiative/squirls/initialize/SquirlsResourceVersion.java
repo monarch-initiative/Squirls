@@ -81,6 +81,7 @@ import java.util.Objects;
 /**
  * @author Daniel Danis
  */
+@Deprecated(forRemoval = true) // TODO(2.0.0) - remove
 public class SquirlsResourceVersion {
 
     private final String version;

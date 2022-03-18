@@ -128,17 +128,17 @@ public class AnnotateVcfCommand extends AnnotatingSquirlsCommand {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AnnotateVcfCommand.class);
 
-    @CommandLine.Option(names = {"-t", "--n-threads"},
+    @CommandLine.Option(names = {"--threads"},
             paramLabel = "4",
             description = "Process variants using n threads (default: ${DEFAULT-VALUE})")
     public int nThreads = 4;
 
-    @CommandLine.Parameters(index = "1",
+    @CommandLine.Parameters(index = "0",
             paramLabel = "input.vcf",
             description = "Path to input VCF file")
     public Path inputPath;
 
-    @CommandLine.Parameters(index = "2",
+    @CommandLine.Parameters(index = "1",
             paramLabel = "path/to/output",
             description = "Prefix for the output files")
     public String outputPrefix;

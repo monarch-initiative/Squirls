@@ -119,13 +119,7 @@ import java.util.stream.Collectors;
 /**
  * This class assembles Squirls high-level classes from the inputs.
  * <p>
- * The autoconfiguration requires specification of the following properties:
- *     <ul>
- *         <li><code>squirls.data-directory</code></li>
- *         <li><code>squirls.genome-assembly</code></li>
- *         <li><code>squirls.data-version</code></li>
- *     </ul>
- * </p>
+ * The autoconfiguration requires bean <code>Path squirlsDataDirectory</code> that points to Squirls data directory.
  *
  * @deprecated autoconfiguration will be removed in <em>3.0.0</em>. Use <em>bootstrap</em> module instead.
  * @author Daniel Danis
@@ -142,46 +136,6 @@ public class SquirlsAutoConfiguration {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SquirlsAutoConfiguration.class);
 
-    private static final Properties properties = readProperties();
-
-    private static final String SQUIRLS_VERSION = properties.getProperty("squirls.version", "unknown version");
-
-    @Bean
-    @ConditionalOnMissingBean(name = "squirlsDataDirectory")
-    public Path squirlsDataDirectory(SquirlsProperties properties) throws UndefinedSquirlsResourceException {
-        String dataDir = properties.getDataDirectory();
-        if (dataDir == null || dataDir.isEmpty()) {
-            throw new UndefinedSquirlsResourceException("Path to Squirls data directory (`--squirls.data-directory`) is not specified");
-        }
-        Path dataDirPath = Paths.get(dataDir);
-        if (!Files.isDirectory(dataDirPath)) {
-            throw new UndefinedSquirlsResourceException(String.format("Path to Squirls data directory '%s' does not point to real directory", dataDirPath));
-        }
-        LOGGER.info("Spooling up Squirls v{}, {} assembly, and {} data version, using resources in `{}`", SQUIRLS_VERSION, properties.getGenomeAssembly(), properties.getDataVersion(), dataDirPath.toAbsolutePath());
-        return dataDirPath;
-    }
-
-
-    @Bean
-    @ConditionalOnMissingBean(name = "squirlsGenomeAssembly")
-    public String squirlsGenomeAssembly(SquirlsProperties properties) throws UndefinedSquirlsResourceException {
-        String assembly = properties.getGenomeAssembly();
-        if (assembly == null) {
-            throw new UndefinedSquirlsResourceException("Genome assembly (`--squirls.genome-assembly`) is not specified");
-        }
-        return assembly;
-    }
-
-    @Bean
-    @ConditionalOnMissingBean(name = "squirlsDataVersion")
-    public String squirlsDataVersion(SquirlsProperties properties) throws UndefinedSquirlsResourceException {
-        final String dataVersion = properties.getDataVersion();
-        if (dataVersion == null) {
-            throw new UndefinedSquirlsResourceException("Data version (`--squirls.data-version`) is not specified");
-        }
-        return dataVersion;
-    }
-
     @Bean
     public BigWigAccessor phylopBigwigAccessor(SquirlsDataResolver squirlsDataResolver) throws IOException {
         LOGGER.debug("Using phyloP bigwig file at `{}`", squirlsDataResolver.phylopPath());
@@ -189,11 +143,8 @@ public class SquirlsAutoConfiguration {
     }
 
     @Bean
-    public SquirlsDataResolver squirlsDataResolver(Path squirlsDataDirectory,
-                                                   String squirlsGenomeAssembly,
-                                                   String squirlsDataVersion) throws MissingSquirlsResourceException {
-        SquirlsResourceVersion resourceVersion = SquirlsResourceVersion.of(squirlsDataVersion, GenomicAssemblyVersion.parseValue(squirlsGenomeAssembly));
-        return new SquirlsDataResolver(squirlsDataDirectory, resourceVersion);
+    public SquirlsDataResolver squirlsDataResolver(Path squirlsDataDirectory) throws MissingSquirlsResourceException {
+        return SquirlsDataResolver.of(squirlsDataDirectory);
     }
 
 

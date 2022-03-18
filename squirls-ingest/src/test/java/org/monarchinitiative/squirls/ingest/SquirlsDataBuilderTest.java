@@ -78,7 +78,6 @@ package org.monarchinitiative.squirls.ingest;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.monarchinitiative.squirls.ingest.data.GenomeAssemblyDownloaderTest;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -97,12 +96,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 public class SquirlsDataBuilderTest {
 
     private static final Path DATA_DIR = Paths.get("src/test/resources/org/monarchinitiative/squirls/ingest");
-
-    private static final String ASSEMBLY = "hg19";
-
-    private static final String VERSION = "1910";
-
-    private static final String VERSIONED_ASSEMBLY = VERSION + "_" + ASSEMBLY;
 
     private static final URL FASTA_URL = GenomeAssemblyDownloaderTest.class.getResource("shortHg19ChromFa.tar.gz");
     private static final URL ASSEMBLY_REPORT_URL = SquirlsDataBuilderTest.class.getResource("GCF_000001405.25_GRCh37.p13_assembly_report.short.txt");
@@ -126,14 +119,14 @@ public class SquirlsDataBuilderTest {
         // arrange - nothing to be done
 
         // act - download a small reference genome
-        Runnable rgTask = SquirlsDataBuilder.downloadReferenceGenome(FASTA_URL, buildDir, VERSIONED_ASSEMBLY, true);
+        Runnable rgTask = SquirlsDataBuilder.downloadReferenceGenome(FASTA_URL, buildDir, true);
         rgTask.run();
 
         // assert - there should be a FASTA file with index present in the `buildDir`
 
-        assertThat("FASTA file was not generated", buildDir.resolve(String.format("%s.fa", VERSIONED_ASSEMBLY)).toFile().isFile(), is(true));
-        assertThat("FASTA index was not generated", buildDir.resolve(String.format("%s.fa.fai", VERSIONED_ASSEMBLY)).toFile().isFile(), is(true));
-        assertThat("FASTA dictionary was not generated", buildDir.resolve(String.format("%s.fa.dict", VERSIONED_ASSEMBLY)).toFile().isFile(), is(true));
+        assertThat("FASTA file was not generated", buildDir.resolve("genome.fa").toFile().isFile(), is(true));
+        assertThat("FASTA index was not generated", buildDir.resolve("genome.fa.fai").toFile().isFile(), is(true));
+        assertThat("FASTA dictionary was not generated", buildDir.resolve("genome.fa.dict").toFile().isFile(), is(true));
     }
 
     @Test
@@ -147,26 +140,28 @@ public class SquirlsDataBuilderTest {
         Path hexamerPath = DATA_DIR.resolve("parse").resolve("hexamer-scores.tsv");
         Path septamerPath = DATA_DIR.resolve("parse").resolve("septamer-scores.tsv");
 
-        assertThat(Files.isRegularFile(buildDir.resolve("1910_hg19.fa")), is(false));
-        assertThat(Files.isRegularFile(buildDir.resolve("1910_hg19.fa.fai")), is(false));
-        assertThat(Files.isRegularFile(buildDir.resolve("1910_hg19.fa.dict")), is(false));
-        assertThat(Files.isRegularFile(buildDir.resolve("1910_hg19.splicing.mv.db")), is(false));
-        assertThat(Files.isRegularFile(buildDir.resolve("1910_hg19.phylop.bw")), is(false));
-        assertThat(Files.isRegularFile(buildDir.resolve("1910_hg19.tx.refseq.ser")), is(false));
-        assertThat(Files.isRegularFile(buildDir.resolve("1910_hg19.tx.ensembl.ser")), is(false));
-        assertThat(Files.isRegularFile(buildDir.resolve("1910_hg19.tx.ucsc.ser")), is(false));
+        assertThat(Files.isRegularFile(buildDir.resolve("assembly_report.txt")), is(false));
+        assertThat(Files.isRegularFile(buildDir.resolve("genome.fa")), is(false));
+        assertThat(Files.isRegularFile(buildDir.resolve("genome.fa.fai")), is(false));
+        assertThat(Files.isRegularFile(buildDir.resolve("genome.fa.dict")), is(false));
+        assertThat(Files.isRegularFile(buildDir.resolve("squirls.mv.db")), is(false));
+        assertThat(Files.isRegularFile(buildDir.resolve("phylop.bw")), is(false));
+        assertThat(Files.isRegularFile(buildDir.resolve("tx.refseq.ser")), is(false));
+        assertThat(Files.isRegularFile(buildDir.resolve("tx.ensembl.ser")), is(false));
+        assertThat(Files.isRegularFile(buildDir.resolve("tx.ucsc.ser")), is(false));
 
         SquirlsDataBuilder.buildDatabase(buildDir, FASTA_URL, ASSEMBLY_REPORT_URL, refseqUrl, ensemblUrl, ucscUrl,
                 phylopUrl, yamlPath,
-                hexamerPath, septamerPath, TestDataSourceConfig.MODEL_PATHS, VERSIONED_ASSEMBLY);
+                hexamerPath, septamerPath, TestDataSourceConfig.MODEL_PATHS);
 
-        assertThat(Files.isRegularFile(buildDir.resolve("1910_hg19.fa")), is(true));
-        assertThat(Files.isRegularFile(buildDir.resolve("1910_hg19.fa.fai")), is(true));
-        assertThat(Files.isRegularFile(buildDir.resolve("1910_hg19.fa.dict")), is(true));
-        assertThat(Files.isRegularFile(buildDir.resolve("1910_hg19.splicing.mv.db")), is(true));
-        assertThat(Files.isRegularFile(buildDir.resolve("1910_hg19.phylop.bw")), is(true));
-        assertThat(Files.isRegularFile(buildDir.resolve("1910_hg19.tx.refseq.ser")), is(true));
-        assertThat(Files.isRegularFile(buildDir.resolve("1910_hg19.tx.ensembl.ser")), is(true));
-        assertThat(Files.isRegularFile(buildDir.resolve("1910_hg19.tx.ucsc.ser")), is(true));
+        assertThat(Files.isRegularFile(buildDir.resolve("assembly_report.txt")), is(true));
+        assertThat(Files.isRegularFile(buildDir.resolve("genome.fa")), is(true));
+        assertThat(Files.isRegularFile(buildDir.resolve("genome.fa.fai")), is(true));
+        assertThat(Files.isRegularFile(buildDir.resolve("genome.fa.dict")), is(true));
+        assertThat(Files.isRegularFile(buildDir.resolve("squirls.mv.db")), is(true));
+        assertThat(Files.isRegularFile(buildDir.resolve("phylop.bw")), is(true));
+        assertThat(Files.isRegularFile(buildDir.resolve("tx.refseq.ser")), is(true));
+        assertThat(Files.isRegularFile(buildDir.resolve("tx.ensembl.ser")), is(true));
+        assertThat(Files.isRegularFile(buildDir.resolve("tx.ucsc.ser")), is(true));
     }
 }

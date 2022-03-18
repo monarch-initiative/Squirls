@@ -109,7 +109,7 @@ public class AnnotatePosCommand extends AnnotatingSquirlsCommand {
 
     private static final String DELIMITER = "\t";
 
-    @Parameters(arity = "1..*",
+    @Parameters(arity = "0..*",
             paramLabel = "chr3:165504107A>C",
             description = "Nucleotide change(s) to annotate")
     public List<String> rawChanges;

@@ -79,6 +79,7 @@ package org.monarchinitiative.squirls.initialize;
 /**
  * @author Daniel Danis
  */
+@Deprecated(forRemoval = true) // TODO(2.0.0) - remove
 public enum GenomicAssemblyVersion {
     GRCH37("hg19"),
     GRCH38("hg38");

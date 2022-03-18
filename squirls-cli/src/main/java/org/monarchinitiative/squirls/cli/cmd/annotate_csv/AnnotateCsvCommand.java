@@ -127,12 +127,12 @@ public class AnnotateCsvCommand extends AnnotatingSquirlsCommand {
 
     private static boolean notifiedAboutId = false;
 
-    @CommandLine.Parameters(index = "1",
+    @CommandLine.Parameters(index = "0",
             paramLabel = "input.csv",
             description = "Path to the input tabular file")
     public Path inputPath;
 
-    @CommandLine.Parameters(index = "2",
+    @CommandLine.Parameters(index = "1",
             paramLabel = "path/to/output",
             description = "Prefix for the output files")
     public String outputPrefix;
