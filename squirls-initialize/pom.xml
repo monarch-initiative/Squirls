@@ -10,6 +10,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
+    <!-- TODO(3.0.0) - inline the module into bootrstrap after removing autoconfigure-->
     <artifactId>squirls-initialize</artifactId>
 
     <dependencies>

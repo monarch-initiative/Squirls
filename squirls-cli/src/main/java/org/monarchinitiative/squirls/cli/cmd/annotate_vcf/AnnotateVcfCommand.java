@@ -78,6 +78,7 @@ package org.monarchinitiative.squirls.cli.cmd.annotate_vcf;
 
 import de.charite.compbio.jannovar.annotation.VariantAnnotations;
 import de.charite.compbio.jannovar.annotation.VariantAnnotator;
+import de.charite.compbio.jannovar.annotation.builders.AnnotationBuilderOptions;
 import de.charite.compbio.jannovar.data.*;
 import de.charite.compbio.jannovar.reference.Strand;
 import de.charite.compbio.jannovar.reference.*;
@@ -261,8 +262,9 @@ public class AnnotateVcfCommand extends AnnotatingSquirlsCommand {
                     context.getBean(VisualizationContextSelector.class),
                     squirlsDataService));
 
-            ReferenceDictionary rd = createReferenceDictionary(assembly);
-            VariantAnnotator annotator = createVariantAnnotator(rd, squirlsDataService.genes());
+            JannovarData jannovarData = context.getBean(JannovarData.class);
+            ReferenceDictionary rd = jannovarData.getRefDict();
+            VariantAnnotator annotator = new VariantAnnotator(jannovarData.getRefDict(), jannovarData.getChromosomes(), new AnnotationBuilderOptions());
             // annotate the variants
             // TODO: 29. 5. 2020 improve behavior & logging
             //  e.g. report progress in % if variant index and thus count is available
@@ -308,7 +310,6 @@ public class AnnotateVcfCommand extends AnnotatingSquirlsCommand {
                     .settingsData(SettingsData.builder()
                             .inputPath(inputPath.toString())
                             .featureSource(featureSource)
-                            .transcriptCategory(transcriptCategory)
                             .nReported(nVariantsToReport)
                             .build())
                     .analysisStats(progressReporter.getAnalysisStats())

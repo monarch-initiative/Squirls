@@ -90,7 +90,6 @@ import org.monarchinitiative.squirls.cli.writers.AnalysisStats;
 import org.monarchinitiative.squirls.cli.writers.SettingsData;
 import org.monarchinitiative.squirls.cli.writers.WritableSplicingAllele;
 import org.monarchinitiative.squirls.core.config.FeatureSource;
-import org.monarchinitiative.squirls.core.config.TranscriptCategory;
 import org.monarchinitiative.squirls.core.reference.SplicingPwmData;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -157,7 +156,6 @@ public class HtmlResultWriterTest {
                 .settingsData(SettingsData.builder()
                         .inputPath("path/to/Sample_192.vcf")
                         .featureSource(FeatureSource.REFSEQ)
-                        .transcriptCategory(TranscriptCategory.MANUAL)
                         .nReported(100)
                         .build())
                 .addAllVariants(variantData)

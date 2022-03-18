@@ -83,6 +83,7 @@ import java.util.Set;
 /**
  * Levels of evidence required for the transcript to be included into the analysis.
  */
+@Deprecated(forRemoval = true) // TODO(2.0.0) - remove
 public enum TranscriptCategory {
 
     /**
@@ -133,8 +134,8 @@ public enum TranscriptCategory {
                 switch (featureSource) {
                     case REFSEQ:
                         return List.of("WARNING: Use GENCODE transcripts when using VERIFIED transcript category");
-                    case GENCODE:
-                        return List.of("Transcripts located at verified loci");
+//                    case GENCODE:
+//                        return List.of("Transcripts located at verified loci");
                     default:
                         throw new IllegalArgumentException("Unsupported value `" + featureSource + '`');
                 }
@@ -142,9 +143,9 @@ public enum TranscriptCategory {
                 switch (featureSource) {
                     case REFSEQ:
                         return List.of("Known transcripts (NM_, NR_)");
-                    case GENCODE:
-                        return List.of("Transcripts located at verified loci",
-                                "Transcripts located at manually annotated loci");
+//                    case GENCODE:
+//                        return List.of("Transcripts located at verified loci",
+//                                "Transcripts located at manually annotated loci");
                     default:
                         throw new IllegalArgumentException("Unsupported value `" + featureSource + '`');
                 }
@@ -154,10 +155,10 @@ public enum TranscriptCategory {
                     case REFSEQ:
                         return List.of("Known transcripts (NM_, NR_)",
                                 "Model transcripts (XM_, XR_)");
-                    case GENCODE:
-                        return List.of("Transcripts located at verified loci",
-                                "Transcripts located at manually annotated loci",
-                                "Transcripts located at automatically annotated loci");
+//                    case GENCODE:
+//                        return List.of("Transcripts located at verified loci",
+//                                "Transcripts located at manually annotated loci",
+//                                "Transcripts located at automatically annotated loci");
                     default:
                         throw new IllegalArgumentException("Unsupported value `" + featureSource + '`');
                 }

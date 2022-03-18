@@ -79,6 +79,8 @@ package org.monarchinitiative.squirls.cli.cmd.annotate_csv;
 import de.charite.compbio.jannovar.annotation.AnnotationException;
 import de.charite.compbio.jannovar.annotation.VariantAnnotations;
 import de.charite.compbio.jannovar.annotation.VariantAnnotator;
+import de.charite.compbio.jannovar.annotation.builders.AnnotationBuilderOptions;
+import de.charite.compbio.jannovar.data.JannovarData;
 import de.charite.compbio.jannovar.data.ReferenceDictionary;
 import de.charite.compbio.jannovar.reference.GenomePosition;
 import de.charite.compbio.jannovar.reference.GenomeVariant;
@@ -197,8 +199,9 @@ public class AnnotateCsvCommand extends AnnotatingSquirlsCommand {
             SquirlsDataService squirlsDataService = squirls.squirlsDataService();
             GenomicAssembly assembly = squirlsDataService.genomicAssembly();
 
-            ReferenceDictionary rd = createReferenceDictionary(assembly);
-            VariantAnnotator annotator = createVariantAnnotator(rd, squirlsDataService.genes());
+            JannovarData jd = context.getBean(JannovarData.class);
+            ReferenceDictionary rd = jd.getRefDict();
+            VariantAnnotator annotator = new VariantAnnotator(jd.getRefDict(), jd.getChromosomes(), new AnnotationBuilderOptions());
 
             // ensure the fail-fast behavior at the cost of being retrieved far from the usage
             AnalysisResultsWriter analysisResultsWriter = context.getBean(AnalysisResultsWriter.class);

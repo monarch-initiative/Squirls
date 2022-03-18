@@ -182,15 +182,7 @@
 
                   <h3>Transcript definitions</h3>
                   <p>
-                      <em>Squirls</em> used <em><span th:remove="tag" th:text="${settings.getFeatureSource()}">RefSeq</span></em> genes
-                      and evaluated the variants with respect to transcripts from the <em><span th:remove="tag" th:text="${settings.getTranscriptCategory()}">Manual</span></em> transcript category:
-                      <table class="table table-striped">
-                          <tbody>
-                            <tr th:each="definition: ${settings.definitions()}">
-                                <td><span th:remove="tag" th:text="${definition}">Known transcripts (NM_, NR_)</span></td>
-                            </tr>
-                          </tbody>
-                      </table>
+                      <em>Squirls</em> used <em><span th:remove="tag" th:text="${settings.getFeatureSource()}">RefSeq</span></em> genes.
                   </p>
 
                   <h3>Number of reported variants</h3>

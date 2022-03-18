@@ -87,7 +87,6 @@ import org.monarchinitiative.squirls.cli.writers.AnalysisStats;
 import org.monarchinitiative.squirls.cli.writers.SettingsData;
 import org.monarchinitiative.squirls.cli.writers.WritableSplicingAllele;
 import org.monarchinitiative.squirls.core.config.FeatureSource;
-import org.monarchinitiative.squirls.core.config.TranscriptCategory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
@@ -147,7 +146,6 @@ public class TabularResultWriterTest {
                 .settingsData(SettingsData.builder()
                         .nReported(nVariantsToReport)
                         .featureSource(FeatureSource.REFSEQ)
-                        .transcriptCategory(TranscriptCategory.MANUAL)
                         .build())
                 .build();
         writer.write(results, OUTPUT.resolve("output").toString());
@@ -184,7 +182,6 @@ public class TabularResultWriterTest {
                 .settingsData(SettingsData.builder()
                         .nReported(nVariantsToReport)
                         .featureSource(FeatureSource.REFSEQ)
-                        .transcriptCategory(TranscriptCategory.MANUAL)
                         .build())
                 .build();
         writer.write(results, OUTPUT.resolve("output").toString());
@@ -221,7 +218,6 @@ public class TabularResultWriterTest {
                 .settingsData(SettingsData.builder()
                         .nReported(nVariantsToReport)
                         .featureSource(FeatureSource.REFSEQ)
-                        .transcriptCategory(TranscriptCategory.MANUAL)
                         .build())
                 .build();
         writer.write(results, OUTPUT.resolve("output").toString());

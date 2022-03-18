@@ -105,26 +105,20 @@ class VariantSplicingEvaluatorImpl implements VariantSplicingEvaluator {
     private final SplicingAnnotator annotator;
     private final SquirlsClassifier classifier;
 
-    private final TranscriptCategory transcriptCategory;
-
     static VariantSplicingEvaluatorImpl of(SquirlsDataService squirlsDataService,
                                            SplicingAnnotator annotator,
-                                           SquirlsClassifier classifier,
-                                           TranscriptCategory transcriptCategory) {
+                                           SquirlsClassifier classifier) {
         return new VariantSplicingEvaluatorImpl(squirlsDataService,
                 annotator,
-                classifier,
-                transcriptCategory);
+                classifier);
     }
 
     private VariantSplicingEvaluatorImpl(SquirlsDataService squirlsDataService,
                                          SplicingAnnotator annotator,
-                                         SquirlsClassifier classifier,
-                                         TranscriptCategory transcriptCategory) {
+                                         SquirlsClassifier classifier) {
         this.squirlsDataService = Objects.requireNonNull(squirlsDataService, "Squirls data service cannot be null");
         this.annotator = Objects.requireNonNull(annotator, "Splicing Annotator cannot be null");
         this.classifier = Objects.requireNonNull(classifier, "Squirls classifier cannot be null");
-        this.transcriptCategory = Objects.requireNonNull(transcriptCategory, "Transcript category cannot be null");
     }
 
     /**
@@ -163,9 +157,6 @@ class VariantSplicingEvaluatorImpl implements VariantSplicingEvaluator {
          */
         List<? extends Transcript> transcripts = squirlsDataService.overlappingGenes(variant).stream()
                 .flatMap(Gene::transcriptStream)
-                .filter(tx -> tx.evidence()
-                        .map(transcriptCategory::hasValue)
-                        .orElse(false))
                 .collect(Collectors.toList());
 
         if (transcripts.isEmpty()) {

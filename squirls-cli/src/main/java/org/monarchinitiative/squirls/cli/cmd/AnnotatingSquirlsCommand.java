@@ -140,12 +140,4 @@ public abstract class AnnotatingSquirlsCommand extends SquirlsCommand {
                 .build();
     }
 
-    protected static ReferenceDictionary createReferenceDictionary(GenomicAssembly assembly) {
-        return JannovarUtil.createReferenceDictionary(assembly);
-    }
-
-    protected static VariantAnnotator createVariantAnnotator(ReferenceDictionary rd, Stream<? extends Gene> genes) {
-        return JannovarUtil.createVariantAnnotator(rd, genes);
-    }
-
 }

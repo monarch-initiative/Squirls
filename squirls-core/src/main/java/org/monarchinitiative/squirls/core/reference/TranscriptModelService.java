@@ -108,6 +108,7 @@ public interface TranscriptModelService {
      * @deprecated use {@link #overlappingGenes(GenomicRegion)} to get the overlapping genes and then use
      * {@link Spliced#transcriptStream()} to get ahold of transcripts. The method will be removed in <em>3.0.0</em>
      */
+    // TODO(3.0.0) - remove
     @Deprecated(since = "2.0.0", forRemoval = true)
     default List<Transcript> overlappingTranscripts(GenomicRegion query) {
         return overlappingGenes(query).stream()

@@ -116,7 +116,6 @@ public class AnalysisResultsWriterDefault implements AnalysisResultsWriter {
             case HTML:
                 return new HtmlResultWriter(graphicsGenerator);
             case VCFGZ:
-                // TODO(v2) - remove
                 LOGGER.warn("The `vcfgz` output format has been deprecated. Use `--compress -f vcf` to get the results in VCF format");
                 return new VcfResultWriter(true, reportTranscripts);
             case VCF:

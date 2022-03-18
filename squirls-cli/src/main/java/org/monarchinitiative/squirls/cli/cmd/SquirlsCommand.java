@@ -76,6 +76,9 @@
 
 package org.monarchinitiative.squirls.cli.cmd;
 
+import de.charite.compbio.jannovar.data.JannovarData;
+import de.charite.compbio.jannovar.data.JannovarDataSerializer;
+import de.charite.compbio.jannovar.data.SerializationException;
 import org.monarchinitiative.sgenes.jannovar.JannovarParser;
 import org.monarchinitiative.sgenes.model.Gene;
 import org.monarchinitiative.squirls.cli.visualization.SplicingVariantGraphicsGenerator;
@@ -90,14 +93,12 @@ import org.monarchinitiative.squirls.core.SquirlsDataService;
 import org.monarchinitiative.squirls.core.VariantSplicingEvaluator;
 import org.monarchinitiative.squirls.core.classifier.SquirlsClassifier;
 import org.monarchinitiative.squirls.core.config.FeatureSource;
-import org.monarchinitiative.squirls.core.config.TranscriptCategory;
 import org.monarchinitiative.squirls.core.reference.SplicingPwmData;
 import org.monarchinitiative.squirls.core.reference.StrandedSequenceService;
 import org.monarchinitiative.squirls.core.reference.TranscriptModelService;
 import org.monarchinitiative.squirls.core.scoring.SplicingAnnotator;
 import org.monarchinitiative.squirls.initialize.SquirlsDataResolver;
 import org.monarchinitiative.squirls.io.SquirlsResourceException;
-import org.monarchinitiative.svart.assembly.GenomicAssembly;
 import org.monarchinitiative.vmvt.core.VmvtGenerator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -111,7 +112,6 @@ import picocli.CommandLine;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
 
@@ -128,11 +128,6 @@ public abstract class SquirlsCommand implements Callable<Integer> {
             paramLabel = "{REFSEQ,UCSC,ENSEMBL}",
             description = "Transcript source to use (default: ${DEFAULT-VALUE})")
     protected FeatureSource featureSource = FeatureSource.REFSEQ;
-
-    @CommandLine.Option(names = {"--tx-category"},
-            paramLabel = "{VERIFIED,MANUAL,AUTOMATIC,ALL}",
-            description = "Transcript categories to use (default: ${DEFAULT-VALUE})")
-    protected TranscriptCategory transcriptCategory = TranscriptCategory.MANUAL;
 
     @CommandLine.Parameters(index = "0",
             paramLabel = "squirls-config.yml",
@@ -162,17 +157,20 @@ public abstract class SquirlsCommand implements Callable<Integer> {
 
     protected Squirls getSquirls(ConfigurableApplicationContext context) throws SquirlsResourceException {
         StrandedSequenceService strandedSequenceService = context.getBean(StrandedSequenceService.class);
-        TranscriptModelService transcriptService = prepareTranscriptModelService(strandedSequenceService, context.getBean(SquirlsDataResolver.class));
+        JannovarData jannovarData = context.getBean(JannovarData.class);
+
+        JannovarParser parser = JannovarParser.of(jannovarData, strandedSequenceService.genomicAssembly());
+        List<Gene> genes = parser.stream()
+                .collect(Collectors.toUnmodifiableList());
+        TranscriptModelService transcriptService = TranscriptModelService.of(genes);
         SquirlsDataService squirlsDataService = SquirlsDataService.of(strandedSequenceService, transcriptService);
 
         SplicingAnnotator splicingAnnotator = context.getBean(SplicingAnnotator.class);
         SquirlsClassifier squirlsClassifier = context.getBean(SquirlsClassifier.class);
 
-        LOGGER.info("Using {} transcript category", transcriptCategory);
         VariantSplicingEvaluator evaluator = VariantSplicingEvaluator.of(squirlsDataService,
                 splicingAnnotator,
-                squirlsClassifier,
-                transcriptCategory);
+                squirlsClassifier);
         return Squirls.of(squirlsDataService, splicingAnnotator, squirlsClassifier, evaluator);
     }
 
@@ -197,37 +195,25 @@ public abstract class SquirlsCommand implements Callable<Integer> {
         return new VmvtGenerator();
     }
 
-    private TranscriptModelService prepareTranscriptModelService(StrandedSequenceService strandedSequenceService,
-                                                                 SquirlsDataResolver dataResolver) throws SquirlsResourceException {
+    @Bean
+    public JannovarData jannovarData(SquirlsDataResolver squirlsDataResolver) throws SerializationException {
         Path transcriptSerPath;
         switch (featureSource) {
-            case GENCODE:
-                LOGGER.warn("Gencode transcripts are discontinued. Falling back to RefSeq transcripts");
-                transcriptSerPath = dataResolver.refseqSerPath();
-                break;
             case REFSEQ:
-                transcriptSerPath = dataResolver.refseqSerPath();
+                transcriptSerPath = squirlsDataResolver.refseqSerPath();
                 break;
             case ENSEMBL:
-                transcriptSerPath = dataResolver.ensemblSerPath();
+                transcriptSerPath = squirlsDataResolver.ensemblSerPath();
                 break;
             case UCSC:
-                transcriptSerPath = dataResolver.ucscSerPath();
+                transcriptSerPath = squirlsDataResolver.ucscSerPath();
                 break;
             default:
-                LOGGER.warn("Unknown transcript source {}. Falling back to RefSeq transcripts", featureSource);
-                transcriptSerPath = dataResolver.refseqSerPath();
+                LOGGER.warn("Unknown transcript source `{}`. Falling back to RefSeq transcripts", featureSource);
+                transcriptSerPath = squirlsDataResolver.refseqSerPath();
                 break;
         }
-
-        return TranscriptModelService.of(readGenes(strandedSequenceService.genomicAssembly(), transcriptSerPath));
+        return new JannovarDataSerializer(transcriptSerPath.toAbsolutePath().toString()).load();
     }
 
-    private static List<? extends Gene> readGenes(GenomicAssembly assembly, Path transcriptSerPath) throws SquirlsResourceException {
-        Objects.requireNonNull(assembly, "Assembly must not be null");
-        Objects.requireNonNull(transcriptSerPath, "Path to transcript database must not be null");
-
-        JannovarParser parser = JannovarParser.of(transcriptSerPath, assembly);
-        return parser.stream().collect(Collectors.toUnmodifiableList());
-    }
 }

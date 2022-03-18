@@ -127,14 +127,17 @@ import java.util.stream.Collectors;
  *     </ul>
  * </p>
  *
+ * @deprecated autoconfiguration will be removed in <em>3.0.0</em>. Use <em>bootstrap</em> module instead.
  * @author Daniel Danis
  * @see SquirlsProperties
  */
+// TODO(3.0.0) - remove
 @Configuration
 @EnableConfigurationProperties({
         SquirlsPropertiesImpl.class,
         ClassifierPropertiesImpl.class,
         AnnotatorPropertiesImpl.class})
+@Deprecated(forRemoval = true, since = "2.0.0")
 public class SquirlsAutoConfiguration {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SquirlsAutoConfiguration.class);

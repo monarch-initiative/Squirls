@@ -80,25 +80,7 @@ package org.monarchinitiative.squirls.core.config;
  * Source of genes and transcripts.
  */
 public enum FeatureSource {
-    @Deprecated(forRemoval = true)
-    GENCODE,
     REFSEQ,
     ENSEMBL,
     UCSC;
-
-    @Override
-    public String toString() {
-        switch (this) {
-            case REFSEQ:
-                return "RefSeq";
-            case GENCODE:
-                return "Gencode";
-            case ENSEMBL:
-                return "Ensembl";
-            case UCSC:
-                return "UCSC";
-            default:
-                return "";
-        }
-    }
 }

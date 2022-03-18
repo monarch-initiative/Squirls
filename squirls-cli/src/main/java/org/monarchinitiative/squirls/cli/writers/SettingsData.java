@@ -77,7 +77,6 @@
 package org.monarchinitiative.squirls.cli.writers;
 
 import org.monarchinitiative.squirls.core.config.FeatureSource;
-import org.monarchinitiative.squirls.core.config.TranscriptCategory;
 
 import java.util.List;
 
@@ -100,15 +99,11 @@ public class SettingsData {
      * One of the supported {@link FeatureSource}s.
      */
     private final FeatureSource featureSource;
-    private final TranscriptCategory transcriptCategory;
-    private final List<String> definitions;
 
     private SettingsData(Builder builder) {
         inputPath = builder.inputPath;
         nReported = builder.nReported;
         featureSource = builder.featureSource;
-        transcriptCategory = builder.transcriptCategory;
-        definitions = builder.definitions;
     }
 
     public static Builder builder() {
@@ -118,14 +113,6 @@ public class SettingsData {
 
     public FeatureSource getFeatureSource() {
         return featureSource;
-    }
-
-    public TranscriptCategory getTranscriptCategory() {
-        return transcriptCategory;
-    }
-
-    public List<String> definitions() {
-        return definitions;
     }
 
     public String getInputPath() {
@@ -140,8 +127,6 @@ public class SettingsData {
         private String inputPath = "";
         private int nReported;
         private FeatureSource featureSource;
-        private TranscriptCategory transcriptCategory;
-        private List<String> definitions;
 
         private Builder() {
         }
@@ -161,15 +146,9 @@ public class SettingsData {
             return this;
         }
 
-        public Builder transcriptCategory(TranscriptCategory transcriptCategory) {
-            this.transcriptCategory = transcriptCategory;
-            return this;
-        }
-
         public SettingsData build() {
-            if (transcriptCategory == null || featureSource == null)
+            if (featureSource == null)
                 throw new IllegalStateException("Transcript category and feature source must be set");
-            this.definitions = transcriptCategory.definitions(featureSource);
             return new SettingsData(this);
         }
     }

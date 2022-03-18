@@ -139,7 +139,7 @@ public class VariantSplicingEvaluatorImplTest {
     @BeforeEach
     public void setUp() {
         when(squirlsDataService.genomicAssembly()).thenReturn(assembly);
-        evaluator = VariantSplicingEvaluatorImpl.of(squirlsDataService, annotator, classifier, TranscriptCategory.ALL);
+        evaluator = VariantSplicingEvaluatorImpl.of(squirlsDataService, annotator, classifier);
     }
 
     @Test

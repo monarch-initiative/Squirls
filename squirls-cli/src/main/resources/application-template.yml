@@ -20,8 +20,6 @@ squirls:
   genome-assembly:
   # Exomiser-like data version (1902 in examples above)
   data-version:
-  # Transcript source - choose from {GENCODE, REFSEQ}
-  #transcript-source: GENCODE
 
   #classifier:
   #  Which classifier to use

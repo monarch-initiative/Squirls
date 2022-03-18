@@ -80,7 +80,6 @@ import org.junit.jupiter.api.Test;
 import org.monarchinitiative.squirls.core.Squirls;
 import org.monarchinitiative.squirls.core.config.FeatureSource;
 import org.monarchinitiative.squirls.core.config.SquirlsOptions;
-import org.monarchinitiative.squirls.core.config.TranscriptCategory;
 import org.monarchinitiative.squirls.initialize.GenomicAssemblyVersion;
 import org.monarchinitiative.squirls.initialize.SquirlsResourceVersion;
 import org.monarchinitiative.squirls.io.SquirlsResourceException;
@@ -95,7 +94,7 @@ public class SquirlsFactoryTest {
 
     private static final File RESOURCES_PATH = new File("src/test/resources/data");
 
-    private static final SquirlsOptions OPTIONS = SquirlsOptions.of(FeatureSource.REFSEQ, TranscriptCategory.MANUAL);
+    private static final SquirlsOptions OPTIONS = SquirlsOptions.of(FeatureSource.REFSEQ);
 
     private static final SimpleSquirlsProperties PROPERTIES = SimpleSquirlsProperties.builder(RESOURCES_PATH)
             .annotatorProperties(new SimpleAnnotatorProperties())

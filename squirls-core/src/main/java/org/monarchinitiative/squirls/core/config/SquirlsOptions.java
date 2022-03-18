@@ -84,23 +84,17 @@ import java.util.Objects;
 public class SquirlsOptions {
 
     private final FeatureSource featureSource;
-    private final TranscriptCategory transcriptCategory;
 
-    public static SquirlsOptions of(FeatureSource featureSource, TranscriptCategory transcriptCategory) {
-        return new SquirlsOptions(featureSource, transcriptCategory);
+    public static SquirlsOptions of(FeatureSource featureSource) {
+        return new SquirlsOptions(featureSource);
     }
 
-    private SquirlsOptions(FeatureSource featureSource, TranscriptCategory transcriptCategory) {
+    private SquirlsOptions(FeatureSource featureSource) {
         this.featureSource = Objects.requireNonNull(featureSource, "Feature source must not be null");
-        this.transcriptCategory = Objects.requireNonNull(transcriptCategory, "Transcript categories must not be null");
     }
 
     public FeatureSource featureSource() {
         return featureSource;
-    }
-
-    public TranscriptCategory transcriptCategories() {
-        return transcriptCategory;
     }
 
     @Override
@@ -108,19 +102,18 @@ public class SquirlsOptions {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         SquirlsOptions that = (SquirlsOptions) o;
-        return featureSource == that.featureSource && transcriptCategory == that.transcriptCategory;
+        return featureSource == that.featureSource;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(featureSource, transcriptCategory);
+        return Objects.hash(featureSource);
     }
 
     @Override
     public String toString() {
         return "SquirlsOptions{" +
                 "featureSource=" + featureSource +
-                ", transcriptCategory=" + transcriptCategory +
                 '}';
     }
 }

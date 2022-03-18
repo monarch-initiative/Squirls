@@ -90,26 +90,10 @@ import java.util.Set;
 @API(status = API.Status.STABLE, since = "1.0.0")
 public interface VariantSplicingEvaluator {
 
-    /**
-     * @return evaluator with the default {@link TranscriptCategory#MANUAL}.
-     * @deprecated in favor of a static constructor that accepts {@link TranscriptCategory} parameter
-     */
-    @Deprecated(since = "2.0.0", forRemoval = true)
     static VariantSplicingEvaluator of(SquirlsDataService squirlsDataService,
                                        SplicingAnnotator annotator,
                                        SquirlsClassifier classifier) {
-        return of(squirlsDataService, annotator, classifier, TranscriptCategory.MANUAL);
-    }
-
-    /**
-     * @return evaluator to evaluate variants with respect to transcripts that fall into the given {@link TranscriptCategory}
-     * @since 2.0.0
-     */
-    static VariantSplicingEvaluator of(SquirlsDataService squirlsDataService,
-                                       SplicingAnnotator annotator,
-                                       SquirlsClassifier classifier,
-                                       TranscriptCategory transcriptCategory) {
-        return VariantSplicingEvaluatorImpl.of(squirlsDataService, annotator, classifier, transcriptCategory);
+        return VariantSplicingEvaluatorImpl.of(squirlsDataService, annotator, classifier);
     }
 
     /**

@@ -204,7 +204,7 @@ public class SquirlsConfigurationFactory {
         SplicingAnnotator splicingAnnotator = configureSplicingAnnotator(properties, squirlsDatasource, phylopBigwigAccessor);
 
         SquirlsClassifier squirlsClassifier = configureSquirlsClassifier(properties, squirlsDatasource);
-        VariantSplicingEvaluator variantSplicingEvaluator = VariantSplicingEvaluator.of(squirlsDataService, splicingAnnotator, squirlsClassifier, options.transcriptCategories());
+        VariantSplicingEvaluator variantSplicingEvaluator = VariantSplicingEvaluator.of(squirlsDataService, splicingAnnotator, squirlsClassifier);
 
         return Squirls.of(squirlsDataService, splicingAnnotator, squirlsClassifier, variantSplicingEvaluator);
     }

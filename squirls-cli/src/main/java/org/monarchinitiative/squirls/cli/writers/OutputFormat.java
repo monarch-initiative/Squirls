@@ -84,7 +84,11 @@ public enum OutputFormat {
 
     HTML("html"),
     VCF("vcf"),
-    @Deprecated
+    /**
+     * @deprecated use {@link #VCF} and <code>--compress</code> CLI option to get compressed VCF output
+     */
+    // TODO(3.0.0) - remove
+    @Deprecated(forRemoval = true, since = "2.0.0")
     VCFGZ("vcf.gz"),
     CSV("csv"),
     TSV("tsv");
