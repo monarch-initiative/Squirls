@@ -22,10 +22,6 @@
             <artifactId>snakeyaml</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.monarchinitiative.sgenes</groupId>
-            <artifactId>silent-genes-io</artifactId>
-        </dependency>
-        <dependency>
             <groupId>com.github.samtools</groupId>
             <artifactId>htsjdk</artifactId>
         </dependency>

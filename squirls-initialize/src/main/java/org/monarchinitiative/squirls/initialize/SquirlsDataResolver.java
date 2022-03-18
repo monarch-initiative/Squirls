@@ -101,7 +101,7 @@ public class SquirlsDataResolver {
         this.squirlsDataDirectory = squirlsDataDirectory.resolve(String.format("%s_%s", dataVersion, genomeAssembly));
 
         // now check that we have all files present
-        List<Path> paths = List.of(genomeAssemblyReportPath(), genomeFastaPath(), genomeFastaFaiPath(), genomeFastaDictPath(), dataSourceFullPath(), phylopPath(), gencodeJsonPath(), refseqJsonPath());
+        List<Path> paths = List.of(genomeAssemblyReportPath(), genomeFastaPath(), genomeFastaFaiPath(), genomeFastaDictPath(), dataSourceFullPath(), phylopPath(), refseqSerPath(), ensemblSerPath(), ucscSerPath());
         for (Path path : paths) {
             if (!(Files.isRegularFile(path) && Files.isReadable(path))) {
                 throw new MissingSquirlsResourceException(String.format("The file `%s` is missing in SQUIRLS directory", path.toFile().getName()));
@@ -145,11 +145,32 @@ public class SquirlsDataResolver {
                 .toAbsolutePath();
     }
 
+    public Path refseqSerPath() {
+        return txSerPath("refseq");
+    }
+
+    public Path ensemblSerPath() {
+        return txSerPath("ensembl");
+    }
+
+    public Path ucscSerPath() {
+        return txSerPath("ucsc");
+    }
+
+    private Path txSerPath(String source) {
+        return squirlsDataDirectory.resolve(String.format("%s_%s.tx.%s.ser", dataVersion, genomeAssembly, source))
+                .toAbsolutePath();
+    }
+
+    // TODO(2.0.0) - remove
+    @Deprecated(forRemoval = true)
     public Path gencodeJsonPath() {
         return squirlsDataDirectory.resolve(String.format("%s_%s.gencode.json.gz", dataVersion, genomeAssembly))
                 .toAbsolutePath();
     }
 
+    // TODO(2.0.0) - remove
+    @Deprecated(forRemoval = true)
     public Path refseqJsonPath() {
         return squirlsDataDirectory.resolve(String.format("%s_%s.refseq.json.gz", dataVersion, genomeAssembly))
                 .toAbsolutePath();

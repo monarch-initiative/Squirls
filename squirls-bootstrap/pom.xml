@@ -18,6 +18,10 @@
             <artifactId>squirls-initialize</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.monarchinitiative.sgenes</groupId>
+            <artifactId>silent-genes-jannovar</artifactId>
+        </dependency>
 
         <dependency>
             <groupId>com.h2database</groupId>

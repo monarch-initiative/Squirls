@@ -86,6 +86,10 @@
             <artifactId>vmvt-core</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.monarchinitiative.sgenes</groupId>
+            <artifactId>silent-genes-jannovar</artifactId>
+        </dependency>
+        <dependency>
             <groupId>de.charite.compbio</groupId>
             <artifactId>jannovar-core</artifactId>
         </dependency>

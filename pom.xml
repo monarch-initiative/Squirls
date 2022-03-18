@@ -28,7 +28,7 @@
         <java.version>11</java.version>
 
         <svart.version>2.0.0-RC1</svart.version>
-        <silent.genes.version>0.2.1</silent.genes.version>
+        <silent.genes.version>0.2.2</silent.genes.version>
         <vmvt.version>0.9.4</vmvt.version>
         <htsjdk.version>2.23.0</htsjdk.version>
         <jannovar.version>0.35</jannovar.version>
@@ -84,12 +84,7 @@
             </dependency>
             <dependency>
                 <groupId>org.monarchinitiative.sgenes</groupId>
-                <artifactId>silent-genes-io</artifactId>
-                <version>${silent.genes.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.monarchinitiative.sgenes</groupId>
-                <artifactId>silent-genes-gtf</artifactId>
+                <artifactId>silent-genes-jannovar</artifactId>
                 <version>${silent.genes.version}</version>
             </dependency>
 
@@ -207,6 +202,15 @@
     <build>
         <pluginManagement>
             <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <version>3.8.1</version>
+                    <configuration>
+                        <source>${java.version}</source>
+                        <target>${java.version}</target>
+                    </configuration>
+                </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-surefire-plugin</artifactId>

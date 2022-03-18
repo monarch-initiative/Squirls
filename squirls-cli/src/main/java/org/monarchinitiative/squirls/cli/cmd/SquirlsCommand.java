@@ -76,9 +76,7 @@
 
 package org.monarchinitiative.squirls.cli.cmd;
 
-import org.monarchinitiative.sgenes.io.GeneParser;
-import org.monarchinitiative.sgenes.io.GeneParserFactory;
-import org.monarchinitiative.sgenes.io.SerializationFormat;
+import org.monarchinitiative.sgenes.jannovar.JannovarParser;
 import org.monarchinitiative.sgenes.model.Gene;
 import org.monarchinitiative.squirls.cli.visualization.SplicingVariantGraphicsGenerator;
 import org.monarchinitiative.squirls.cli.visualization.panel.PanelGraphicsGenerator;
@@ -110,7 +108,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import picocli.CommandLine;
 
-import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
@@ -128,7 +125,7 @@ public abstract class SquirlsCommand implements Callable<Integer> {
     protected static final Logger LOGGER = LoggerFactory.getLogger(SquirlsCommand.class);
 
     @CommandLine.Option(names = {"--tx-source"},
-            paramLabel = "{GENCODE,REFSEQ}",
+            paramLabel = "{REFSEQ,UCSC,ENSEMBL}",
             description = "Transcript source to use (default: ${DEFAULT-VALUE})")
     protected FeatureSource featureSource = FeatureSource.REFSEQ;
 
@@ -202,34 +199,35 @@ public abstract class SquirlsCommand implements Callable<Integer> {
 
     private TranscriptModelService prepareTranscriptModelService(StrandedSequenceService strandedSequenceService,
                                                                  SquirlsDataResolver dataResolver) throws SquirlsResourceException {
-        Path genesJsonPath;
+        Path transcriptSerPath;
         switch (featureSource) {
             case GENCODE:
-                LOGGER.info("Using Gencode transcripts");
-                genesJsonPath = dataResolver.gencodeJsonPath();
+                LOGGER.warn("Gencode transcripts are discontinued. Falling back to RefSeq transcripts");
+                transcriptSerPath = dataResolver.refseqSerPath();
                 break;
             case REFSEQ:
-                LOGGER.info("Using RefSeq transcripts");
-                genesJsonPath = dataResolver.refseqJsonPath();
+                transcriptSerPath = dataResolver.refseqSerPath();
+                break;
+            case ENSEMBL:
+                transcriptSerPath = dataResolver.ensemblSerPath();
+                break;
+            case UCSC:
+                transcriptSerPath = dataResolver.ucscSerPath();
                 break;
             default:
-                throw new RuntimeException("Unknown feature source!"); // TODO - improve
+                LOGGER.warn("Unknown transcript source {}. Falling back to RefSeq transcripts", featureSource);
+                transcriptSerPath = dataResolver.refseqSerPath();
+                break;
         }
 
-        return TranscriptModelService.of(readGenes(strandedSequenceService.genomicAssembly(), genesJsonPath));
+        return TranscriptModelService.of(readGenes(strandedSequenceService.genomicAssembly(), transcriptSerPath));
     }
 
-    private static List<? extends Gene> readGenes(GenomicAssembly assembly, Path jsonPath) throws SquirlsResourceException {
+    private static List<? extends Gene> readGenes(GenomicAssembly assembly, Path transcriptSerPath) throws SquirlsResourceException {
         Objects.requireNonNull(assembly, "Assembly must not be null");
-        Objects.requireNonNull(jsonPath, "Genes JSON path must not be null");
+        Objects.requireNonNull(transcriptSerPath, "Path to transcript database must not be null");
 
-        GeneParserFactory parserFactory = GeneParserFactory.of(assembly);
-        GeneParser parser = parserFactory.forFormat(SerializationFormat.JSON);
-
-        try {
-            return parser.read(jsonPath);
-        } catch (IOException e) {
-            throw new SquirlsResourceException("Error occurred while reading file `" + jsonPath.toAbsolutePath() + "`", e);
-        }
+        JannovarParser parser = JannovarParser.of(transcriptSerPath, assembly);
+        return parser.stream().collect(Collectors.toUnmodifiableList());
     }
 }

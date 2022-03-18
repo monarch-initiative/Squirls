@@ -79,9 +79,7 @@ package org.monarchinitiative.squirls.bootstrap;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import org.apiguardian.api.API;
-import org.monarchinitiative.sgenes.io.GeneParser;
-import org.monarchinitiative.sgenes.io.GeneParserFactory;
-import org.monarchinitiative.sgenes.io.SerializationFormat;
+import org.monarchinitiative.sgenes.jannovar.JannovarParser;
 import org.monarchinitiative.sgenes.model.Gene;
 import org.monarchinitiative.squirls.core.Squirls;
 import org.monarchinitiative.squirls.core.SquirlsDataService;
@@ -144,10 +142,10 @@ import java.util.stream.Collectors;
  * {@link #getSquirls(SquirlsResourceVersion)} to get {@link Squirls} for the particular
  * {@link SquirlsResourceVersion}.
  *
- * @since 1.0.1
+ * @since 2.0.0
  * @author Daniel Danis
  */
-@API(status = API.Status.STABLE, since = "1.0.1")
+@API(status = API.Status.STABLE, since = "2.0.0")
 public class SquirlsConfigurationFactory {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SquirlsConfigurationFactory.class);
@@ -241,34 +239,30 @@ public class SquirlsConfigurationFactory {
     private static TranscriptModelService configureTranscriptModelService(SquirlsOptions options,
                                                                           GenomicAssembly genomicAssembly,
                                                                           SquirlsDataResolver dataResolver) throws SquirlsResourceException {
-        Path silentGenesJsonPath;
+        Path jannovarSerPath;
         switch (options.featureSource()) {
             case REFSEQ:
-                silentGenesJsonPath = dataResolver.refseqJsonPath();
+                jannovarSerPath = dataResolver.refseqSerPath();
                 break;
-            case GENCODE:
-                silentGenesJsonPath = dataResolver.gencodeJsonPath();
+            case ENSEMBL:
+                jannovarSerPath = dataResolver.ensemblSerPath();
+                break;
+            case UCSC:
+                jannovarSerPath = dataResolver.ucscSerPath();
                 break;
             default:
                 throw new SquirlsResourceException("Unknown transcript source `" + options.featureSource() + "`");
         }
 
-
-        return TranscriptModelService.of(readGenes(genomicAssembly, silentGenesJsonPath));
+        return TranscriptModelService.of(readGenes(genomicAssembly, jannovarSerPath));
     }
 
-    private static List<? extends Gene> readGenes(GenomicAssembly assembly, Path jsonPath) throws SquirlsResourceException {
+    private static List<? extends Gene> readGenes(GenomicAssembly assembly, Path jannovarSerPath) {
         Objects.requireNonNull(assembly, "Assembly must not be null");
-        Objects.requireNonNull(jsonPath, "Genes JSON path must not be null");
 
-        GeneParserFactory parserFactory = GeneParserFactory.of(assembly);
-        GeneParser parser = parserFactory.forFormat(SerializationFormat.JSON);
-
-        try {
-            return parser.read(jsonPath);
-        } catch (IOException e) {
-            throw new SquirlsResourceException("Error occurred while reading file `" + jsonPath.toAbsolutePath() + "`", e);
-        }
+        JannovarParser parser = JannovarParser.of(jannovarSerPath, assembly);
+        return parser.stream()
+                .collect(Collectors.toUnmodifiableList());
     }
 
     private static SplicingAnnotator configureSplicingAnnotator(SquirlsProperties properties,

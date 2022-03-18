@@ -78,13 +78,13 @@ package org.monarchinitiative.squirls.ingest;
 
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-import org.monarchinitiative.sgenes.gtf.io.GtfGeneParser;
-import org.monarchinitiative.sgenes.gtf.io.GtfGeneParserFactory;
-import org.monarchinitiative.sgenes.gtf.model.GencodeGene;
-import org.monarchinitiative.sgenes.gtf.model.RefseqGene;
-import org.monarchinitiative.sgenes.io.GeneParser;
-import org.monarchinitiative.sgenes.io.GeneParserFactory;
-import org.monarchinitiative.sgenes.io.SerializationFormat;
+//import org.monarchinitiative.sgenes.gtf.io.GtfGeneParser;
+//import org.monarchinitiative.sgenes.gtf.io.GtfGeneParserFactory;
+//import org.monarchinitiative.sgenes.gtf.model.GencodeGene;
+//import org.monarchinitiative.sgenes.gtf.model.RefseqGene;
+//import org.monarchinitiative.sgenes.io.GeneParser;
+//import org.monarchinitiative.sgenes.io.GeneParserFactory;
+//import org.monarchinitiative.sgenes.io.SerializationFormat;
 import org.monarchinitiative.svart.assembly.GenomicAssemblies;
 import org.monarchinitiative.svart.assembly.GenomicAssembly;
 
@@ -108,29 +108,29 @@ public class PrepareJsonFilesTest {
     private static final Path GENCODE_JSON_PATH = Path.of("");
     // Provide the path to the hg19 RefSeq GTF file
     private static final Path REFSEQ_JSON_PATH = Path.of("");
-
-    private static final GeneParser GENE_PARSER = GeneParserFactory.of(ASSEMBLY).forFormat(SerializationFormat.JSON);
-
-    @Test
-    public void gencode() throws Exception {
-        GtfGeneParser<GencodeGene> parser = GtfGeneParserFactory.gencodeGeneParser(GENCODE_JSON_PATH, ASSEMBLY);
-
-        List<GencodeGene> genes = parser.stream()
-                .filter(g -> SYMBOLS.contains(g.symbol()))
-                .collect(Collectors.toList());
-        Path destination = Path.of("1710_hg19.gencode.json.gz");
-        GENE_PARSER.write(genes, destination);
-    }
-
-    @Test
-    public void refseq() throws Exception{
-        GtfGeneParser<RefseqGene> parser = GtfGeneParserFactory.refseqGtfParser(REFSEQ_JSON_PATH, ASSEMBLY);
-
-        List<RefseqGene> genes = parser.stream()
-                .filter(g -> SYMBOLS.contains(g.symbol()))
-                .collect(Collectors.toList());
-        Path destination = Path.of("1710_hg19.refseq.json.gz");
-        GENE_PARSER.write(genes, destination);
-    }
+//
+//    private static final GeneParser GENE_PARSER = GeneParserFactory.of(ASSEMBLY).forFormat(SerializationFormat.JSON);
+//
+//    @Test
+//    public void gencode() throws Exception {
+//        GtfGeneParser<GencodeGene> parser = GtfGeneParserFactory.gencodeGeneParser(GENCODE_JSON_PATH, ASSEMBLY);
+//
+//        List<GencodeGene> genes = parser.stream()
+//                .filter(g -> SYMBOLS.contains(g.symbol()))
+//                .collect(Collectors.toList());
+//        Path destination = Path.of("1710_hg19.gencode.json.gz");
+//        GENE_PARSER.write(genes, destination);
+//    }
+//
+//    @Test
+//    public void refseq() throws Exception{
+//        GtfGeneParser<RefseqGene> parser = GtfGeneParserFactory.refseqGtfParser(REFSEQ_JSON_PATH, ASSEMBLY);
+//
+//        List<RefseqGene> genes = parser.stream()
+//                .filter(g -> SYMBOLS.contains(g.symbol()))
+//                .collect(Collectors.toList());
+//        Path destination = Path.of("1710_hg19.refseq.json.gz");
+//        GENE_PARSER.write(genes, destination);
+//    }
 
 }
