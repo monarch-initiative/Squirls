@@ -182,7 +182,11 @@
 
                   <h3>Transcript definitions</h3>
                   <p>
-                      <em>Squirls</em> used <em><span th:remove="tag" th:text="${settings.getFeatureSource()}">RefSeq</span></em> genes.
+                      Squirls uses
+                      <a href="https://github.com/charite/jannovar/">Jannovar</a>
+                      library to perform functional annotation of variants
+                      with respect to genes and transcripts.
+                      The analysis used transcript definitions provided by <em><span th:remove="tag" th:text="${settings.getFeatureSource()}">RefSeq</span></em>.
                   </p>
 
                   <h3>Number of reported variants</h3>

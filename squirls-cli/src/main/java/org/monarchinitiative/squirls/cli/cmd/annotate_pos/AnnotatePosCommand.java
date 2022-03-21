@@ -163,8 +163,8 @@ public class AnnotatePosCommand extends AnnotatingSquirlsCommand {
             }
             System.out.println();
         } catch (SquirlsResourceException e) {
-            e.printStackTrace();
-            // TODO - handle
+            LOGGER.error("Error occurred: {}", e.getMessage(), e);
+            return 1;
         }
 
         return 0;

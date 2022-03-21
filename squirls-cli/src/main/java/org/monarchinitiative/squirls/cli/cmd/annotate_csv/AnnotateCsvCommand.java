@@ -125,7 +125,7 @@ public class AnnotateCsvCommand extends AnnotatingSquirlsCommand {
 
     private static final List<String> EXPECTED_HEADER = List.of("CHROM", "POS", "REF", "ALT");
 
-    private static boolean notifiedAboutId = false;
+    private static boolean NOTIFIED_ABOUT_MISSING_VARIANT_ID = false;
 
     @CommandLine.Parameters(index = "0",
             paramLabel = "input.csv",
@@ -157,10 +157,10 @@ public class AnnotateCsvCommand extends AnnotatingSquirlsCommand {
         if (record.isSet("ID")) {
             id = record.get("ID");
         } else {
-            if (!notifiedAboutId) {
-                // TODO(v2) - fail upon missing ID
-                LOGGER.warn("Missing variant ID. The ID will become mandatory column in next major release (v2)");
-                notifiedAboutId = true;
+            if (!NOTIFIED_ABOUT_MISSING_VARIANT_ID) {
+                // TODO(v3.0.0) - fail upon missing ID
+                LOGGER.warn("Missing variant ID. The ID will become a mandatory column in v3.0.0");
+                NOTIFIED_ABOUT_MISSING_VARIANT_ID = true;
             }
             id = "";
         }
@@ -256,16 +256,16 @@ public class AnnotateCsvCommand extends AnnotatingSquirlsCommand {
                     .analysisStats(AnalysisStats.of(allVariants, allVariants, annotatedAlleleCount))
                     .settingsData(SettingsData.builder()
                             .inputPath(inputPath.toAbsolutePath().toString())
-//                            .transcriptDb(jannovarDataPath.toAbsolutePath().toString()) // TODO - get path to transcript file
+                            .featureSource(featureSource)
                             .nReported(nVariantsToReport)
                             .build())
                     .addAllVariants(annotated)
                     .build();
 
             analysisResultsWriter.writeResults(results, prepareOutputOptions(outputPrefix));
-        } catch (SquirlsResourceException e) {
-            e.printStackTrace();
-            // TODO - handle
+        } catch (Exception e) {
+            LOGGER.error("Error occurred: {}", e.getMessage(), e);
+            return 1;
         }
 
         return 0;
