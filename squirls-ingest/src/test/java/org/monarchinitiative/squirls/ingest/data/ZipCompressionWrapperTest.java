@@ -82,11 +82,11 @@ import org.apache.commons.compress.archivers.zip.ZipArchiveInputStream;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.condition.DisabledIfSystemProperty;
+import org.junit.jupiter.api.condition.DisabledOnOs;
+import org.junit.jupiter.api.condition.OS;
 import org.monarchinitiative.squirls.ingest.TestDataSourceConfig;
 
 import java.io.File;
-import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -96,10 +96,10 @@ import java.util.List;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 
-@DisabledIfSystemProperty(named = "os.name", matches = "*win.*")
+@DisabledOnOs(OS.WINDOWS)
 public class ZipCompressionWrapperTest {
 
-    private static final Path TMP_DIR = Paths.get(".");
+    private static final Path TMP_DIR = Paths.get("");
 
     private File zipPath;
 
