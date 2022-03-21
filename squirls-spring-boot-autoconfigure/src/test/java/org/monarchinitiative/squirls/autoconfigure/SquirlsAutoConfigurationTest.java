@@ -143,9 +143,10 @@ class SquirlsAutoConfigurationTest extends AbstractAutoConfigurationTest {
 
     @Test
     void testProvidedPathDoesNotPointToDirectory() {
+        Path rocketPath = TEST_DATA.resolve("rocket");
         Throwable thrown = assertThrows(BeanCreationException.class,
-                () -> load(SquirlsAutoConfiguration.class, "squirls.data-directory=" + TEST_DATA + "/rocket"));
-        assertThat(thrown.getMessage(), containsString("Path to Squirls data directory 'src/test/resources/data/rocket' does not point to real directory"));
+                () -> load(SquirlsAutoConfiguration.class, "squirls.data-directory=" + rocketPath));
+        assertThat(thrown.getMessage(), containsString(String.format("Path to Squirls data directory '%s' does not point to real directory", rocketPath)));
 
     }
 
