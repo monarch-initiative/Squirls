@@ -4,6 +4,13 @@
 
 - `Squirls`
   - add `squirls-bootstrap` to quickly bootstrap Squirls even without Spring
+  - simplify setup by including Jannovar transcript databases in the resource ZIP file
+- `squirls-cli`
+  - add `ID` to `csv` input, store `id` into tabular output files
+  - validate that alleles match `[ACGTacgt]+` regexp in `annotate-csv`
+- `squirls-core`
+  - use *Svart* `v2.0.0` to represent variants, genomic regions, and the other genomic coordinates
+  - use *SilentGenes* `v0.2.3` to represent genes and transcripts
 
 ## ✈ v1.0.0
 - `squirls-cli`
