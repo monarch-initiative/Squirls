@@ -134,7 +134,7 @@ public class PrecalculateCommand extends SquirlsCommand {
     private static final Pattern REGION_PATTERN = Pattern.compile("^(?<contig>[\\w._]+):(?<start>\\d+)-(?<end>\\d+)$");
 
     @CommandLine.Option(names = {"-i", "--input"},
-            description = "Path to BED file with definitions of query regions")
+            description = "Path to the BED file with definitions of query regions")
     public Path inputFilePath;
 
     @CommandLine.Option(names = {"-o", "--output"},

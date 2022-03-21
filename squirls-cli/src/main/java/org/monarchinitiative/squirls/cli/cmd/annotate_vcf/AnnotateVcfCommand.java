@@ -135,7 +135,7 @@ public class AnnotateVcfCommand extends AnnotatingSquirlsCommand {
 
     @CommandLine.Parameters(index = "0",
             paramLabel = "input.vcf",
-            description = "Path to input VCF file")
+            description = "Path to the input VCF file")
     public Path inputPath;
 
     @CommandLine.Parameters(index = "1",
