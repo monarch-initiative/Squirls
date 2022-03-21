@@ -90,7 +90,7 @@ import static org.hamcrest.Matchers.is;
 
 public class UrlResourceDownloaderTest {
 
-    private static final Path PARENT = Path.of(".");
+    private static final Path PARENT = Path.of("");
 
     private File destination;
 
@@ -110,7 +110,7 @@ public class UrlResourceDownloaderTest {
 
     @Test
     public void download() throws Exception {
-        URL source = new URL("file://" + TestDataSourceConfig.BASE_FOLDER.resolve("data").resolve("funky.txt").toAbsolutePath().toString());
+        URL source = TestDataSourceConfig.BASE_FOLDER.resolve("data").resolve("funky.txt").toUri().toURL();
         UrlResourceDownloader downloader = new UrlResourceDownloader(source, destination.toPath());
 
         assertThat(destination.exists(), is(false));
