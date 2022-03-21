@@ -242,9 +242,6 @@ public abstract class SquirlsCommand implements Callable<Integer> {
 
     @Bean
     public Path squirlsDataDirectory() throws UndefinedSquirlsResourceException {
-        if (!Files.isDirectory(DATA_DIRECTORY)) {
-            throw new UndefinedSquirlsResourceException(String.format("Path to Squirls data directory '%s' does not point to real directory", DATA_DIRECTORY));
-        }
         LOGGER.info("Spooling up Squirls v{} using resources in {}", SQUIRLS_VERSION, DATA_DIRECTORY.toAbsolutePath());
 
         return DATA_DIRECTORY;

@@ -103,6 +103,7 @@ public abstract class AbstractAutoConfigurationTest {
     protected void load(Class<?> config, String... environment) {
         AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext();
         ctx.register(config);
+        ctx.register(TestConfiguration.class);
         TestPropertyValues.of(environment)
                 .applyTo(ctx);
         ctx.refresh();

@@ -105,12 +105,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.sql.DataSource;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;
 import java.util.*;
-import java.util.regex.Matcher;
 import java.util.stream.Collectors;
 
 /**
@@ -156,13 +154,13 @@ public class SquirlsConfigurationFactory {
     public static SquirlsConfigurationFactory of(Path dataDirectory,
                                                  SquirlsProperties properties,
                                                  SquirlsOptions options) throws MissingSquirlsResourceException, UndefinedSquirlsResourceException {
-        return new SquirlsConfigurationFactory(dataDirectory, properties, options);
+        SquirlsDataResolver squirlsDataResolver = SquirlsDataResolver.of(dataDirectory);
+        return new SquirlsConfigurationFactory(squirlsDataResolver, properties, options);
     }
 
-    private SquirlsConfigurationFactory(Path dataDirectory,
-                                        SquirlsProperties properties,
+    private SquirlsConfigurationFactory(SquirlsDataResolver squirlsDataResolver, SquirlsProperties properties,
                                         SquirlsOptions options) throws MissingSquirlsResourceException, UndefinedSquirlsResourceException {
-        this.dataResolver = SquirlsDataResolver.of(dataDirectory);
+        this.dataResolver = Objects.requireNonNull(squirlsDataResolver, "Squirls data resolver must not be null");
         this.properties = Objects.requireNonNull(properties, "Squirls properties must not be null");
         this.options = Objects.requireNonNull(options, "Squirls options must not be null");
     }

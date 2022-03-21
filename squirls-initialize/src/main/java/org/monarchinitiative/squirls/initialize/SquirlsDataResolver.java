@@ -99,6 +99,9 @@ public class SquirlsDataResolver {
     private SquirlsDataResolver(Path dataDirectory) throws MissingSquirlsResourceException {
         this.dataDirectory = Objects.requireNonNull(dataDirectory, "Squirls data directory must not be null");
 
+        if (!Files.isDirectory(dataDirectory))
+            throw new MissingSquirlsResourceException("Path to Squirls data directory '" + dataDirectory + "' does not point to real directory");
+
         // now check that we have all files present
         List<Path> paths = List.of(genomeAssemblyReportPath(), genomeFastaPath(), genomeFastaFaiPath(), genomeFastaDictPath(), dataSourceFullPath(), phylopPath(), refseqSerPath(), ensemblSerPath(), ucscSerPath());
         for (Path path : paths) {
