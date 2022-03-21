@@ -39,10 +39,14 @@ After running the command above, the `build-dir` should have a similar structure
 ```
 build-dir
   \- 2005_hg19
-    |- 2005_hg19.fa
-    |- 2005_hg19.fa.dict
-    |- 2005_hg19.fa.fai
-    \- 2005_hg19_splicing.mv.db
+    |- assembly_report.txt    
+    |- genome.fa
+    |- genome.fa.dict
+    |- genome.fa.fai
+    |- squirls.mv.db
+    |- tx.ensembl.ser
+    |- tx.refseq.ser
+    \- tx.ucsc.ser
 ``` 
 
 ## How to build the resource files within another software
