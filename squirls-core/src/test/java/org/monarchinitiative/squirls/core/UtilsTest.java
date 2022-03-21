@@ -166,8 +166,6 @@ import static org.hamcrest.Matchers.equalTo;
 
 public class UtilsTest {
 
-
-
     @ParameterizedTest
     @CsvSource({
             "2,  1,2,3",

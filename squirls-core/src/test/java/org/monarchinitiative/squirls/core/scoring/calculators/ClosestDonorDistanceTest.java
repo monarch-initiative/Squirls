@@ -132,5 +132,4 @@ public class ClosestDonorDistanceTest extends CalculatorTestBase {
         GenomicVariant zeroBased = GenomicVariant.of(contig, "", Strand.POSITIVE, CoordinateSystem.zeroBased(), pos - 1, "g", "a").withStrand(txOnNegativeStrand.strand());
         assertThat(scorer.score(zeroBased, txOnNegativeStrand, sequence), is(closeTo(expected, EPSILON)));
     }
-
 }

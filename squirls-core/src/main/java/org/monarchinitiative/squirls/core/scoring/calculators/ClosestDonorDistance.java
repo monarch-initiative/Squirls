@@ -111,6 +111,4 @@ public class ClosestDonorDistance implements FeatureCalculator {
 
         return Utils.getDiff(variant, closestPosition.get());
     }
-
-
 }
