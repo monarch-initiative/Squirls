@@ -90,11 +90,13 @@ import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
 import org.monarchinitiative.squirls.cli.Main;
 import org.monarchinitiative.squirls.cli.cmd.AnnotatingSquirlsCommand;
+import org.monarchinitiative.squirls.cli.visualization.selector.VisualizationContextSelector;
 import org.monarchinitiative.squirls.cli.writers.*;
 import org.monarchinitiative.squirls.core.*;
-import org.monarchinitiative.squirls.io.SquirlsResourceException;
+import org.monarchinitiative.squirls.core.reference.SplicingPwmData;
 import org.monarchinitiative.svart.*;
 import org.monarchinitiative.svart.assembly.GenomicAssembly;
+import org.monarchinitiative.vmvt.core.VmvtGenerator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ConfigurableApplicationContext;
@@ -204,7 +206,10 @@ public class AnnotateCsvCommand extends AnnotatingSquirlsCommand {
             VariantAnnotator annotator = new VariantAnnotator(jd.getRefDict(), jd.getChromosomes(), new AnnotationBuilderOptions());
 
             // ensure the fail-fast behavior at the cost of being retrieved far from the usage
-            AnalysisResultsWriter analysisResultsWriter = context.getBean(AnalysisResultsWriter.class);
+            AnalysisResultsWriter analysisResultsWriter = analysisResultsWriter(splicingVariantGraphicsGenerator(context.getBean(VmvtGenerator.class),
+                    context.getBean(SplicingPwmData.class),
+                    context.getBean(VisualizationContextSelector.class),
+                    squirlsDataService));
 
             int allVariants = 0;
             int annotatedAlleleCount = 0;

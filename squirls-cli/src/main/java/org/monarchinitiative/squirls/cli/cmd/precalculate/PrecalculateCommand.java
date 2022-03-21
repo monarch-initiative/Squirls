@@ -137,6 +137,14 @@ public class PrecalculateCommand extends SquirlsCommand {
             description = "Path to the BED file with definitions of query regions")
     public Path inputFilePath;
 
+    @CommandLine.Option(names = {"--individual"},
+            description = "Write out predictions made with respect to individual transcripts (default: ${DEFAULT-VALUE})")
+    public boolean writeIndividualPredictions = false;
+
+    @CommandLine.Option(names = {"-l", "--max-length"},
+            description = "Maximum length of generated variants (default: ${DEFAULT-VALUE})")
+    public int length = 1;
+
     @CommandLine.Option(names = {"-o", "--output"},
             description = "Where to write the scores (default: ${DEFAULT-VALUE})")
     public Path outputPath = Path.of("squirls-scores.vcf.gz");
@@ -145,14 +153,6 @@ public class PrecalculateCommand extends SquirlsCommand {
             paramLabel = "2",
             description = "Process variants on n threads (default: ${DEFAULT-VALUE})")
     public int nThreads = 2;
-
-    @CommandLine.Option(names = {"-l", "--max-length"},
-            description = "Maximum length of generated variants (default: ${DEFAULT-VALUE})")
-    public int length = 1;
-
-    @CommandLine.Option(names = {"--individual"},
-            description = "Write out predictions made with respect to individual transcripts (default: ${DEFAULT-VALUE})")
-    public boolean writeIndividualPredictions = false;
 
     @CommandLine.Parameters(index = "0..*",
             paramLabel = "chr1:1000-2000",

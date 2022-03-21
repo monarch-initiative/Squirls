@@ -103,19 +103,15 @@ import org.monarchinitiative.squirls.io.SquirlsResourceException;
 import org.monarchinitiative.vmvt.core.VmvtGenerator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import picocli.CommandLine;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -241,9 +237,8 @@ public abstract class SquirlsCommand implements Callable<Integer> {
     }
 
     @Bean
-    public Path squirlsDataDirectory() throws UndefinedSquirlsResourceException {
+    public Path squirlsDataDirectory() {
         LOGGER.info("Spooling up Squirls v{} using resources in {}", SQUIRLS_VERSION, DATA_DIRECTORY.toAbsolutePath());
-
         return DATA_DIRECTORY;
     }
 }

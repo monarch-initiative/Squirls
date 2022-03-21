@@ -117,7 +117,6 @@ public class AnnotatePosCommand extends AnnotatingSquirlsCommand {
     @Override
     public Integer call() {
         try (ConfigurableApplicationContext context = getContext()) {
-            rawChanges.remove(0); // path to the config file
             LOGGER.info("Changes: {}", rawChanges);
             Squirls squirls = getSquirls(context);
             GenomicAssembly assembly = squirls.squirlsDataService().genomicAssembly();
