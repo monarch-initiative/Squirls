@@ -120,5 +120,4 @@ Glossary
 .. _Ke et al., 2018: https://pubmed.ncbi.nlm.nih.gov/29242188
 .. _Gooding et al., 2006: https://pubmed.ncbi.nlm.nih.gov/16507133
 .. _Wimmer et al., 2020: https://pubmed.ncbi.nlm.nih.gov/32126153
-.. TODO - update the manuscript link
-.. _Squirls manuscript:  https://www.biorxiv.org/content/10.1101/2021.01.28.428499v1
+.. _Squirls manuscript:  https://doi.org/10.1016/j.ajhg.2021.06.014
