@@ -91,6 +91,9 @@ import java.util.Map;
 
 @Configuration
 public class TestDataSourceConfig {
+
+    public static final Path BASE_FOLDER = Path.of("src/test/resources/org/monarchinitiative/squirls/core");
+
     /**
      * @return in-memory database for testing
      */
@@ -136,13 +139,13 @@ public class TestDataSourceConfig {
 
     @Bean
     public Map<String, Double> hexamerMap() throws IOException {
-        Path path = Paths.get(TestDataSourceConfig.class.getResource("hexamer-scores-full.tsv").getPath());
+        Path path = BASE_FOLDER.resolve("hexamer-scores-full.tsv");
         return new FileKMerParser(path).getKmerMap();
     }
 
     @Bean
     public Map<String, Double> septamerMap() throws IOException {
-        Path path = Paths.get(TestDataSourceConfig.class.getResource("septamer-scores.tsv").getPath());
+        Path path = BASE_FOLDER.resolve("septamer-scores.tsv");
         return new FileKMerParser(path).getKmerMap();
     }
 }
