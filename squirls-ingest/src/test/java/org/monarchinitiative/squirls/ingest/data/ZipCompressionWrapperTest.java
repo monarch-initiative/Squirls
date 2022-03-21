@@ -82,8 +82,10 @@ import org.apache.commons.compress.archivers.zip.ZipArchiveInputStream;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.monarchinitiative.squirls.ingest.TestDataSourceConfig;
 
 import java.io.File;
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -95,7 +97,7 @@ import static org.hamcrest.Matchers.*;
 
 public class ZipCompressionWrapperTest {
 
-    private static final Path TMP_DIR = Paths.get(ZipCompressionWrapperTest.class.getResource("").getPath());
+    private static final Path TMP_DIR = Paths.get(".");
 
     private File zipPath;
 
@@ -115,7 +117,8 @@ public class ZipCompressionWrapperTest {
 
     @Test
     public void addResource() throws Exception {
-        File funkyFile = new File(ZipCompressionWrapperTest.class.getResource("funky.txt").getFile());
+        File funkyFile = TestDataSourceConfig.BASE_FOLDER.resolve("data").resolve("funky.txt").toFile();
+//        File funkyFile = new File(ZipCompressionWrapperTest.class.getResource("funky.txt").getFile());
 
         try (ZipCompressionWrapper compressor = new ZipCompressionWrapper(zipPath)) {
             compressor.addResource(funkyFile, "something.txt");

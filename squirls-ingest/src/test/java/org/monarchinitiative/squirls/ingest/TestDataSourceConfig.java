@@ -92,6 +92,8 @@ import java.util.Map;
 @Configuration
 public class TestDataSourceConfig {
 
+    public static final Path BASE_FOLDER = Path.of("src/test/resources/org/monarchinitiative/squirls/ingest");
+
     public static final Map<SquirlsClassifierVersion, Path> MODEL_PATHS = Map.of(
             SquirlsClassifierVersion.v0_4_4, Paths.get("src/test/resources/org/monarchinitiative/squirls/ingest/example_model.v0.4.4.yaml"),
             SquirlsClassifierVersion.v0_4_6, Paths.get("src/test/resources/org/monarchinitiative/squirls/ingest/ensemble.lr.rf.v0.4.6.yaml"));
