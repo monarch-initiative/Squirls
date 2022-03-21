@@ -160,19 +160,4 @@ public class SquirlsDataResolver {
     private Path txSerPath(String source) {
         return dataDirectory.resolve(String.format("tx.%s.ser", source));
     }
-
-    // TODO(2.0.0) - remove
-    @Deprecated(forRemoval = true)
-    public Path gencodeJsonPath() {
-        return dataDirectory.resolve(String.format("gencode.json.gz"))
-                .toAbsolutePath();
-    }
-
-    // TODO(2.0.0) - remove
-    @Deprecated(forRemoval = true)
-    public Path refseqJsonPath() {
-        return dataDirectory.resolve(String.format("refseq.json.gz"))
-                .toAbsolutePath();
-    }
-
 }

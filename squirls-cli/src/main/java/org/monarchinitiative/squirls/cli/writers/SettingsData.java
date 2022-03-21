@@ -147,8 +147,6 @@ public class SettingsData {
         }
 
         public SettingsData build() {
-            if (featureSource == null)
-                throw new IllegalStateException("Transcript category and feature source must be set");
             return new SettingsData(this);
         }
     }

@@ -80,11 +80,7 @@ import org.junit.jupiter.api.Test;
 import org.monarchinitiative.squirls.core.Squirls;
 import org.monarchinitiative.squirls.core.config.FeatureSource;
 import org.monarchinitiative.squirls.core.config.SquirlsOptions;
-import org.monarchinitiative.squirls.initialize.GenomicAssemblyVersion;
-import org.monarchinitiative.squirls.initialize.SquirlsResourceVersion;
-import org.monarchinitiative.squirls.io.SquirlsResourceException;
 
-import java.io.File;
 import java.nio.file.Path;
 
 import static org.hamcrest.Matchers.*;
