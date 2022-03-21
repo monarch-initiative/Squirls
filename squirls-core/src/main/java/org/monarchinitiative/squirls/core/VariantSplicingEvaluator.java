@@ -105,6 +105,7 @@ public interface VariantSplicingEvaluator {
      * Configure the {@link SquirlsDataService} to provide only the relevant transcripts instead. The method will be
      * removed in the release v3.0.0
      */
+    // TODO(3.0.0) - remove
     @Deprecated(since = "2.0.0", forRemoval = true)
     default SquirlsResult evaluate(GenomicVariant variant, Set<String> txIds) {
         return evaluate(variant);
