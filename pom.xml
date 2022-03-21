@@ -76,7 +76,6 @@
                 <artifactId>svart</artifactId>
                 <version>${svart.version}</version>
             </dependency>
-
             <dependency>
                 <groupId>org.monarchinitiative.sgenes</groupId>
                 <artifactId>silent-genes-model</artifactId>
