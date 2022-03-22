@@ -79,6 +79,7 @@ package org.monarchinitiative.squirls.ingest.data;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.monarchinitiative.squirls.ingest.TestDataSourceConfig;
 
 import java.io.File;
 import java.net.URL;
@@ -89,12 +90,13 @@ import static org.hamcrest.Matchers.is;
 
 public class UrlResourceDownloaderTest {
 
+    private static final Path PARENT = Path.of("");
+
     private File destination;
 
     @BeforeEach
     public void setUp() {
-        final Path parent = Path.of(UrlResourceDownloaderTest.class.getResource(".").getPath());
-        this.destination = parent.resolve("copy.txt").toFile();
+        this.destination = PARENT.resolve("copy.txt").toFile();
     }
 
     @AfterEach
@@ -108,7 +110,7 @@ public class UrlResourceDownloaderTest {
 
     @Test
     public void download() throws Exception {
-        URL source = UrlResourceDownloaderTest.class.getResource("funky.txt");
+        URL source = TestDataSourceConfig.BASE_FOLDER.resolve("data").resolve("funky.txt").toUri().toURL();
         UrlResourceDownloader downloader = new UrlResourceDownloader(source, destination.toPath());
 
         assertThat(destination.exists(), is(false));

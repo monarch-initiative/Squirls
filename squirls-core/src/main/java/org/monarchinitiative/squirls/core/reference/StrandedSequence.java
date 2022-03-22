@@ -76,6 +76,7 @@
 
 package org.monarchinitiative.squirls.core.reference;
 
+import org.monarchinitiative.sgenes.model.Located;
 import org.monarchinitiative.svart.*;
 import org.monarchinitiative.svart.util.Seq;
 
@@ -84,24 +85,30 @@ import java.util.Objects;
 /**
  * @author Daniel Danis
  */
-public class StrandedSequence extends BaseGenomicRegion<StrandedSequence> {
+public class StrandedSequence implements Located {
 
+    private final GenomicRegion region;
     private final String sequence;
 
-    protected StrandedSequence(Contig contig, Strand strand, CoordinateSystem coordinateSystem, Position startPosition, Position endPosition, String sequence) {
-        super(contig, strand, coordinateSystem, startPosition, endPosition);
-        this.sequence = sequence;
-        if (length() != sequence.length()) {
-            throw new IllegalArgumentException("Sequence length " + sequence.length() + " does not match length of the region " + length());
+    public static StrandedSequence of(GenomicRegion region, String sequence) {
+        return new StrandedSequence(region, sequence);
+    }
+
+    public static StrandedSequence of(Contig contig, Strand strand, Coordinates coordinates, String sequence) {
+        return new StrandedSequence(GenomicRegion.of(contig, strand, coordinates), sequence);
+    }
+
+    private StrandedSequence(GenomicRegion region, String sequence) {
+        this.region = Objects.requireNonNull(region, "Region must not be null");
+        this.sequence = Objects.requireNonNull(sequence, "Sequence must not be null");
+        if (region.length() != sequence.length()) {
+            throw new IllegalArgumentException("Sequence length " + sequence.length() + " does not match length of the region " + region.length());
         }
     }
 
-    public static StrandedSequence of(GenomicRegion region, String sequence) {
-        return of(region.contig(), region.strand(), region.coordinateSystem(), region.startPosition(), region.endPosition(), sequence);
-    }
-
-    public static StrandedSequence of(Contig contig, Strand strand, CoordinateSystem coordinateSystem, Position startPosition, Position endPosition, String sequence) {
-        return new StrandedSequence(contig, strand, coordinateSystem, startPosition, endPosition, sequence);
+    @Override
+    public GenomicRegion location() {
+        return region;
     }
 
     public String sequence() {
@@ -113,44 +120,42 @@ public class StrandedSequence extends BaseGenomicRegion<StrandedSequence> {
      * @return string with sequence that corresponds to <code>query</code> region or <code>null</code> if at least one
      * base from the <code>region</code> is not available
      */
-    public String subsequence(final GenomicRegion query) {
-        if (contains(query)) {
-            GenomicRegion queryOnStrand = query.withStrand(strand()).toZeroBased();
-            // when slicing a sequence, we always use 0-based coordinates - that's why we pre-calculate `start`
-            // field in the constructor
-            String seq = sequence.substring(
-                    queryOnStrand.start() - startWithCoordinateSystem(CoordinateSystem.zeroBased()),
-                    queryOnStrand.end() - startWithCoordinateSystem(CoordinateSystem.zeroBased()));
-            return query.strand() == strand()
+    public String subsequence(GenomicRegion query) {
+        if (region.contains(query)) {
+            String seq = subsequence(CoordinateSystem.zeroBased(),
+                    query.startOnStrandWithCoordinateSystem(region.strand(), CoordinateSystem.zeroBased()),
+                    query.endOnStrandWithCoordinateSystem(region.strand(), CoordinateSystem.zeroBased())
+            );
+            return query.strand() == region.strand()
                     ? seq
                     : Seq.reverseComplement(seq);
         }
         return null;
     }
 
-    @Override
-    protected StrandedSequence newRegionInstance(Contig contig, Strand strand, CoordinateSystem coordinateSystem, Position start, Position end) {
-        return new StrandedSequence(contig, strand, coordinateSystem, start, end, strand == strand() ? sequence : Seq.reverseComplement(sequence));
+    public String subsequence(CoordinateSystem coordinateSystem, int start, int end) {
+        int regionStart = region.startWithCoordinateSystem(coordinateSystem);
+        return sequence.substring(start - regionStart, end - regionStart);
     }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        if (!super.equals(o)) return false;
         StrandedSequence that = (StrandedSequence) o;
-        return Objects.equals(sequence, that.sequence);
+        return Objects.equals(region, that.region) && Objects.equals(sequence, that.sequence);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), sequence);
+        return Objects.hash(region, sequence);
     }
 
     @Override
     public String toString() {
         return "StrandedSequence{" +
-                "sequence='" + sequence + '\'' +
-                "} " + super.toString();
+                "region=" + region +
+                ", sequence='" + sequence + '\'' +
+                '}';
     }
 }

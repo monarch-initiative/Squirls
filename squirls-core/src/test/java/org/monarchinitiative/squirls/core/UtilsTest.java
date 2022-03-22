@@ -154,11 +154,15 @@ package org.monarchinitiative.squirls.core;
 
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.monarchinitiative.svart.*;
+import org.monarchinitiative.svart.assembly.AssignedMoleculeType;
+import org.monarchinitiative.svart.assembly.SequenceRole;
 
 import java.util.List;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
 
 public class UtilsTest {
 
@@ -171,7 +175,9 @@ public class UtilsTest {
     })
     public void testArgmaxWithComparator(int expected, int one, int two, int three) {
         List<Integer> vals = List.of(one, two, three);
-        final int argmax = Utils.argmax(vals, Integer::compare);
+
+        int argmax = Utils.argmax(vals, Integer::compare);
+
         assertThat(argmax, is(expected));
     }
 
@@ -184,7 +190,29 @@ public class UtilsTest {
     })
     public void testArgmaxWithComparable(int expected, int one, int two, int three) {
         List<Integer> vals = List.of(one, two, three);
-        final int argmax = Utils.argmax(vals);
+        int argmax = Utils.argmax(vals);
         assertThat(argmax, is(expected));
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+            // donor site position in txOnPositiveStrand
+            "1200,  1199,  -2",
+            "1200,  1200,  -1",
+            "1200,  1201,   1",
+            "1200,  1202,   2",
+            // acceptor site position in txOnPositiveStrand
+            "1400,  1399,  -2",
+            "1400,  1400,  -1",
+            "1400,  1401,   1",
+            "1400,  1402,   2",
+    })
+    public void getDiff(int spliceSitePosition, int variantPosition, int expected) {
+        Contig contig = Contig.of(1, "1", SequenceRole.ASSEMBLED_MOLECULE, "1", AssignedMoleculeType.CHROMOSOME, 10_000, "", "", "");
+        GenomicRegion variantRegion = GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.oneBased(), variantPosition, variantPosition);
+
+        int actual = Utils.getDiff(variantRegion, spliceSitePosition);
+
+        assertThat(actual, equalTo(expected));
     }
 }

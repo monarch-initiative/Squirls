@@ -78,7 +78,7 @@ package org.monarchinitiative.squirls.cli.visualization;
 
 import de.charite.compbio.jannovar.annotation.VariantAnnotations;
 import org.monarchinitiative.squirls.core.SquirlsResult;
-import org.monarchinitiative.svart.Variant;
+import org.monarchinitiative.svart.GenomicVariant;
 
 import java.util.Objects;
 
@@ -87,13 +87,13 @@ import java.util.Objects;
  */
 class SimpleVisualizableVariantAllele implements VisualizableVariantAllele {
 
-    private final Variant variant;
+    private final GenomicVariant variant;
 
     private final VariantAnnotations annotations;
 
     private final SquirlsResult squirlsResult;
 
-    SimpleVisualizableVariantAllele(Variant variant, VariantAnnotations annotations, SquirlsResult squirlsResult) {
+    SimpleVisualizableVariantAllele(GenomicVariant variant, VariantAnnotations annotations, SquirlsResult squirlsResult) {
         this.variant = variant;
         this.annotations = annotations;
         this.squirlsResult = squirlsResult;
@@ -110,7 +110,7 @@ class SimpleVisualizableVariantAllele implements VisualizableVariantAllele {
     }
 
     @Override
-    public Variant variant() {
+    public GenomicVariant variant() {
         return variant;
     }
 

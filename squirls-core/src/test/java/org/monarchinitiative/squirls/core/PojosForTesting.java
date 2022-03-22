@@ -76,10 +76,10 @@
 
 package org.monarchinitiative.squirls.core;
 
+import org.monarchinitiative.sgenes.model.*;
 import org.monarchinitiative.squirls.core.reference.DoubleMatrix;
 import org.monarchinitiative.squirls.core.reference.SplicingParameters;
 import org.monarchinitiative.squirls.core.reference.StrandedSequence;
-import org.monarchinitiative.squirls.core.reference.TranscriptModel;
 import org.monarchinitiative.svart.*;
 
 import java.util.List;
@@ -95,7 +95,7 @@ public class PojosForTesting {
 
     public static StrandedSequence getSequenceIntervalForTranscriptWithThreeExons(Contig contig) {
         return StrandedSequence.of(
-                GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(), Position.of(900), Position.of(2100)),
+                GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(), 900, 2100),
                 // upstream 100bp
                 "AAACAGGTTAATCGCCACGACATAGTAGTATTTAGAGTTACTAGTAAGCCTGATGCCACT" + // 960
                         "ACACAATTCTAGCTTTTCTCAGAGCCCCGCCCCCGGCTCC" + // 1000
@@ -135,53 +135,78 @@ public class PojosForTesting {
                         "GTGGCTCTGTGGGCCTGTAGTTTTTACGTGCTTTTAGTGT");
     }
 
-    public static TranscriptModel getTranscriptWithThreeExons(Contig contig) {
-        return TranscriptModel.coding(
-                contig, Strand.POSITIVE, CoordinateSystem.zeroBased(), 1000, 2000, 1100, 1900,
-                "THREE_EXON", "HGVS_SYMBOL",
+    public static Transcript getTranscriptWithThreeExons(Contig contig) {
+        return Transcript.of(
+                TranscriptIdentifier.of("TX3", "3_EXONS", null),
+                GenomicRegion.of(contig, Strand.POSITIVE, Coordinates.of(CoordinateSystem.zeroBased(), 1000, 2000)),
                 List.of(
-                        GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(), 1000, 1200),
-                        GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(), 1400, 1600),
-                        GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(), 1800, 2000)
-                ));
+                        Coordinates.of(CoordinateSystem.zeroBased(), 1000, 1200),
+                        Coordinates.of(CoordinateSystem.zeroBased(), 1400, 1600),
+                        Coordinates.of(CoordinateSystem.zeroBased(), 1800, 2000)
+                ),
+                Coordinates.of(CoordinateSystem.zeroBased(), 1100, 1900),
+                TranscriptMetadata.of(null));
     }
 
-    public static TranscriptModel getTranscriptWithSingleExon(Contig contig) {
-        return TranscriptModel.coding(
-                contig, Strand.POSITIVE, CoordinateSystem.zeroBased(), 1000, 2000, 1100, 1900,
-                "SINGLE_EXON", "HGVS_SYMBOL",
-                List.of(GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(), 1000, 2000)));
-    }
-
-    public static TranscriptModel getTranscriptWithThreeExonsOnRevStrand(Contig contig) {
-        return TranscriptModel.coding(
-                contig, Strand.NEGATIVE, CoordinateSystem.zeroBased(), 1000, 2000, 1100, 1900,
-                "THREE_EXON", "HGVS_SYMBOL",
+    public static Transcript getTranscriptWithSingleExon(Contig contig) {
+        return Transcript.of(
+                TranscriptIdentifier.of("TX1", "1_EXON", null),
+                GenomicRegion.of(contig, Strand.POSITIVE, Coordinates.of(CoordinateSystem.zeroBased(), 1000, 2000)),
                 List.of(
-                        GenomicRegion.of(contig, Strand.NEGATIVE, CoordinateSystem.zeroBased(), 1000, 1200),
-                        GenomicRegion.of(contig, Strand.NEGATIVE, CoordinateSystem.zeroBased(), 1400, 1600),
-                        GenomicRegion.of(contig, Strand.NEGATIVE, CoordinateSystem.zeroBased(), 1800, 2000)
-                ));
+                        Coordinates.of(CoordinateSystem.zeroBased(), 1000, 2000)
+                ),
+                Coordinates.of(CoordinateSystem.zeroBased(), 1100, 1900),
+                TranscriptMetadata.of(null));
     }
 
+    /**
+     * @return the transcript with the same coordinates as {@link #getTranscriptWithThreeExons(Contig)},
+     * but with the opposite direction and on {@link Strand#NEGATIVE}.
+     */
+    public static Transcript getTranscriptWithThreeExonsOnRevStrand(Contig contig) {
+        return Transcript.of(
+                TranscriptIdentifier.of("TX3_REV", "3_EXONS_REV", null),
+                GenomicRegion.of(contig, Strand.POSITIVE, Coordinates.of(CoordinateSystem.zeroBased(), 1000, 2000)).withStrand(Strand.NEGATIVE),
+                List.of(
+                        Coordinates.of(CoordinateSystem.zeroBased(), 1800, 2000).invert(contig),
+                        Coordinates.of(CoordinateSystem.zeroBased(), 1400, 1600).invert(contig),
+                        Coordinates.of(CoordinateSystem.zeroBased(), 1000, 1200).invert(contig)
+                ),
+                Coordinates.of(CoordinateSystem.zeroBased(), 1100, 1900).invert(contig),
+                TranscriptMetadata.of(null));
+    }
 
     /**
      * Get a real transcript corresponding to <em>SURF2</em> <em>NM_017503.5</em>.
      *
      * @return transcript
      */
-    public static TranscriptModel surf2_NM_017503_5(Contig contig) {
-        return TranscriptModel.coding(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(),
-                136_223_425, 136_228_034, 136_223_425, 136_228_034, "NM_017503.5", "SURF2",
+    public static Transcript surf2_NM_017503_5(Contig contig) {
+        return Transcript.of(
+                TranscriptIdentifier.of("NM_017503.5", "SURF2", null),
+                GenomicRegion.of(contig, Strand.POSITIVE, Coordinates.of(CoordinateSystem.zeroBased(), 136_223_425, 136_228_034)),
                 List.of(
-                        GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(), 136_223_425, 136_223_546),
-                        GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(), 136_223_789, 136_223_944),
-                        GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(), 136_224_586, 136_224_690),
-                        GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(), 136_226_825, 136_227_005),
-                        GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(), 136_227_140, 136_227_310),
-                        GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(), 136_227_931, 136_228_034)));
+                        Coordinates.of(CoordinateSystem.zeroBased(), 136_223_425, 136_223_546),
+                        Coordinates.of(CoordinateSystem.zeroBased(), 136_223_789, 136_223_944),
+                        Coordinates.of(CoordinateSystem.zeroBased(), 136_224_586, 136_224_690),
+                        Coordinates.of(CoordinateSystem.zeroBased(), 136_226_825, 136_227_005),
+                        Coordinates.of(CoordinateSystem.zeroBased(), 136_227_140, 136_227_310),
+                        Coordinates.of(CoordinateSystem.zeroBased(), 136_227_931, 136_228_034)
+                ),
+                Coordinates.of(CoordinateSystem.zeroBased(), 136_223_425, 136_228_034),
+                TranscriptMetadata.of(TranscriptEvidence.KNOWN));
     }
 
+    /**
+     * Get <em>SURF2</em> gene containing <em>NM_017503.5</em> transcript.
+     *
+     * @return transcript
+     */
+    public static Gene surf2(Contig contig) {
+        return Gene.of(GeneIdentifier.of("SURF1", "SURF1", "HGNC:11474", "NCBIGene:6834"),
+                GenomicRegion.of(contig, Strand.POSITIVE, Coordinates.of(CoordinateSystem.zeroBased(), 136_223_425, 136_228_034)),
+                List.of(surf2_NM_017503_5(contig)));
+    }
 
     public static SplicingParameters makeFakeSplicingParameters() {
         return SplicingParameters.of(2, 3, 4, 5);

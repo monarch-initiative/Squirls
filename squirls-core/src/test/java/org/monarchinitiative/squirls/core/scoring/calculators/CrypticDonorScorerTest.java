@@ -80,9 +80,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.monarchinitiative.svart.CoordinateSystem;
-import org.monarchinitiative.svart.Position;
 import org.monarchinitiative.svart.Strand;
-import org.monarchinitiative.svart.Variant;
+import org.monarchinitiative.svart.GenomicVariant;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -104,8 +103,8 @@ public class CrypticDonorScorerTest extends CalculatorTestBase {
             "1196, C, T, 0.3526",
     })
     public void score(int pos, String ref, String alt, double expected) {
-        Variant variant = Variant.of(contig,"", Strand.POSITIVE, CoordinateSystem.zeroBased(), Position.of(pos), ref, alt);
-        assertThat(scorer.score(variant, tx, sequence), is(closeTo(expected, EPSILON)));
+        GenomicVariant variant = GenomicVariant.of(contig,"", Strand.POSITIVE, CoordinateSystem.zeroBased(), pos, ref, alt);
+        assertThat(scorer.score(variant, txOnPositiveStrand, sequence), is(closeTo(expected, EPSILON)));
     }
 
 }

@@ -80,12 +80,9 @@ package org.monarchinitiative.squirls.autoconfigure;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import org.monarchinitiative.squirls.autoconfigure.exception.InvalidSquirlsResourceException;
-import org.monarchinitiative.squirls.core.SquirlsDataService;
-import org.monarchinitiative.squirls.core.VariantSplicingEvaluator;
 import org.monarchinitiative.squirls.core.classifier.SquirlsClassifier;
 import org.monarchinitiative.squirls.core.reference.SplicingPwmData;
 import org.monarchinitiative.squirls.core.reference.StrandedSequenceService;
-import org.monarchinitiative.squirls.core.reference.TranscriptModelService;
 import org.monarchinitiative.squirls.core.scoring.AGEZSplicingAnnotator;
 import org.monarchinitiative.squirls.core.scoring.DenseSplicingAnnotator;
 import org.monarchinitiative.squirls.core.scoring.SplicingAnnotator;
@@ -95,14 +92,12 @@ import org.monarchinitiative.squirls.initialize.UndefinedSquirlsResourceExceptio
 import org.monarchinitiative.squirls.io.ClassifierFactory;
 import org.monarchinitiative.squirls.io.CorruptedPwmException;
 import org.monarchinitiative.squirls.io.SquirlsClassifierVersion;
-import org.monarchinitiative.squirls.io.SquirlsResourceException;
 import org.monarchinitiative.squirls.io.db.DbClassifierFactory;
 import org.monarchinitiative.squirls.io.db.DbKMerDao;
 import org.monarchinitiative.squirls.io.db.DbSplicingPositionalWeightMatrixParser;
-import org.monarchinitiative.squirls.io.db.TranscriptModelServiceDb;
 import org.monarchinitiative.squirls.io.sequence.FastaStrandedSequenceService;
 import org.monarchinitiative.squirls.io.sequence.InvalidFastaFileException;
-import org.monarchinitiative.svart.GenomicAssembly;
+import org.monarchinitiative.svart.assembly.GenomicAssembly;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -117,88 +112,39 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Collection;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Properties;
+import java.util.*;
 import java.util.stream.Collectors;
 
 
 /**
  * This class assembles Squirls high-level classes from the inputs.
  * <p>
- * The autoconfiguration requires specification of the following properties:
- *     <ul>
- *         <li><code>squirls.data-directory</code></li>
- *         <li><code>squirls.genome-assembly</code></li>
- *         <li><code>squirls.data-version</code></li>
- *     </ul>
- * </p>
+ * The autoconfiguration requires bean <code>Path squirlsDataDirectory</code> that points to Squirls data directory.
  *
+ * @deprecated autoconfiguration will be removed in <em>3.0.0</em>. Use <em>bootstrap</em> module instead.
  * @author Daniel Danis
  * @see SquirlsProperties
  */
+// TODO(3.0.0) - remove
 @Configuration
 @EnableConfigurationProperties({
         SquirlsPropertiesImpl.class,
         ClassifierPropertiesImpl.class,
         AnnotatorPropertiesImpl.class})
+@Deprecated(forRemoval = true, since = "2.0.0")
 public class SquirlsAutoConfiguration {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SquirlsAutoConfiguration.class);
 
-    private static final Properties properties = readProperties();
-
-    private static final String SQUIRLS_VERSION = properties.getProperty("squirls.version", "unknown version");
-
-    @Bean
-    @ConditionalOnMissingBean(name = "squirlsDataDirectory")
-    public Path squirlsDataDirectory(SquirlsProperties properties) throws UndefinedSquirlsResourceException {
-        String dataDir = properties.getDataDirectory();
-        if (dataDir == null || dataDir.isEmpty()) {
-            throw new UndefinedSquirlsResourceException("Path to Squirls data directory (`--squirls.data-directory`) is not specified");
-        }
-        Path dataDirPath = Paths.get(dataDir);
-        if (!Files.isDirectory(dataDirPath)) {
-            throw new UndefinedSquirlsResourceException(String.format("Path to Squirls data directory '%s' does not point to real directory", dataDirPath));
-        }
-        if (LOGGER.isInfoEnabled()) LOGGER.info("Spooling up Squirls v{} using resources in `{}`", SQUIRLS_VERSION, dataDirPath.toAbsolutePath());
-        return dataDirPath;
-    }
-
-
-    @Bean
-    @ConditionalOnMissingBean(name = "squirlsGenomeAssembly")
-    public String squirlsGenomeAssembly(SquirlsProperties properties) throws UndefinedSquirlsResourceException {
-        String assembly = properties.getGenomeAssembly();
-        if (assembly == null) {
-            throw new UndefinedSquirlsResourceException("Genome assembly (`--squirls.genome-assembly`) is not specified");
-        }
-        return assembly;
-    }
-
-    @Bean
-    @ConditionalOnMissingBean(name = "squirlsDataVersion")
-    public String squirlsDataVersion(SquirlsProperties properties) throws UndefinedSquirlsResourceException {
-        final String dataVersion = properties.getDataVersion();
-        if (dataVersion == null) {
-            throw new UndefinedSquirlsResourceException("Data version (`--squirls.data-version`) is not specified");
-        }
-        return dataVersion;
-    }
-
     @Bean
     public BigWigAccessor phylopBigwigAccessor(SquirlsDataResolver squirlsDataResolver) throws IOException {
-        if (LOGGER.isDebugEnabled()) LOGGER.debug("Using phyloP bigwig file at `{}`", squirlsDataResolver.phylopPath());
+        LOGGER.debug("Using phyloP bigwig file at `{}`", squirlsDataResolver.phylopPath());
         return new BigWigAccessor(squirlsDataResolver.phylopPath());
     }
 
     @Bean
-    public SquirlsDataResolver squirlsDataResolver(Path squirlsDataDirectory,
-                                                   String squirlsGenomeAssembly,
-                                                   String squirlsDataVersion) throws MissingSquirlsResourceException {
-        SquirlsResourceVersion resourceVersion = SquirlsResourceVersion.of(squirlsDataVersion, GenomicAssemblyVersion.parseValue(squirlsGenomeAssembly));
-        return new SquirlsDataResolver(squirlsDataDirectory, resourceVersion);
+    public SquirlsDataResolver squirlsDataResolver(Path squirlsDataDirectory) throws MissingSquirlsResourceException {
+        return SquirlsDataResolver.of(squirlsDataDirectory);
     }
 
 
@@ -213,23 +159,6 @@ public class SquirlsAutoConfiguration {
     @Bean
     public GenomicAssembly genomicAssembly(StrandedSequenceService strandedSequenceService) {
         return strandedSequenceService.genomicAssembly();
-    }
-
-    @Bean
-    public TranscriptModelService transcriptModelService(DataSource squirlsDatasource, GenomicAssembly genomicAssembly) throws SquirlsResourceException {
-        return new TranscriptModelServiceDb(squirlsDatasource, genomicAssembly);
-    }
-
-    @Bean
-    public SquirlsDataService squirlsDataService(TranscriptModelService transcriptModelService, StrandedSequenceService strandedSequenceService) {
-        return new SquirlsDataServiceImpl(strandedSequenceService, transcriptModelService);
-    }
-
-    @Bean
-    public VariantSplicingEvaluator variantSplicingEvaluator(SquirlsDataService squirlsDataService,
-                                                             SplicingAnnotator splicingAnnotator,
-                                                             SquirlsClassifier squirlsClassifier) {
-        return VariantSplicingEvaluator.of(squirlsDataService, splicingAnnotator, squirlsClassifier);
     }
 
     @Bean
@@ -249,7 +178,7 @@ public class SquirlsAutoConfiguration {
             String msg = String.format("Classifier version `%s` is not available, choose one from %s",
                     clfVersion,
                     avail.stream().map(Objects::toString).sorted().collect(Collectors.joining(", ", "{", "}")));
-            if (LOGGER.isErrorEnabled()) LOGGER.error(msg);
+            LOGGER.error(msg);
             throw new UndefinedSquirlsResourceException(msg);
         }
 
@@ -321,7 +250,7 @@ public class SquirlsAutoConfiguration {
         try (InputStream is = SquirlsAutoConfiguration.class.getResourceAsStream("/squirls.properties")) {
             properties.load(is);
         } catch (IOException e) {
-            if (LOGGER.isWarnEnabled()) LOGGER.warn("Error loading properties: {}", e.getMessage());
+            LOGGER.warn("Error loading properties: {}", e.getMessage());
         }
         return properties;
     }

@@ -1,5 +1,5 @@
-CHROM,POS,REF,ALT
-chr9,136224694,A,T
-chr3,52676065,CA,C
-chr3,165504107,A,C
-chr17,41199691,TGGC,T
+CHROM,ID,POS,REF,ALT
+chr9,SURF2_donor_4bp_downstream_exon3,136224694,A,T
+chr3,PBRM1_acceptor_5bp_upstream_exon,52676065,CA,C
+chr3,BCHE_acceptor_8bp_upstream,165504107,A,C
+chr17,BRCA1_frameshift_deletion_exon21,41199691,TGGC,T

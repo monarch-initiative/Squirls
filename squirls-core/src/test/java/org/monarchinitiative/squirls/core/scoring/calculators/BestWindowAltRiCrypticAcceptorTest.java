@@ -79,9 +79,8 @@ package org.monarchinitiative.squirls.core.scoring.calculators;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.monarchinitiative.svart.CoordinateSystem;
-import org.monarchinitiative.svart.Position;
 import org.monarchinitiative.svart.Strand;
-import org.monarchinitiative.svart.Variant;
+import org.monarchinitiative.svart.GenomicVariant;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -100,13 +99,13 @@ public class BestWindowAltRiCrypticAcceptorTest extends CalculatorTestBase {
 
     @Test
     public void snpUpstreamFromAcceptorSite() {
-        Variant variant = Variant.of(contig, "", Strand.POSITIVE, CoordinateSystem.zeroBased(), Position.of(1374), "c", "g");
-        assertThat(scorer.score(variant, tx, sequence), is(closeTo(2.0423, EPSILON)));
+        GenomicVariant variant = GenomicVariant.of(contig, "", Strand.POSITIVE, CoordinateSystem.zeroBased(), 1374, "c", "g");
+        assertThat(scorer.score(variant, txOnPositiveStrand, sequence), is(closeTo(2.0423, EPSILON)));
     }
 
     @Test
     public void notEnoughSequence() {
-        Variant variant = Variant.of(contig, "", Strand.POSITIVE, CoordinateSystem.zeroBased(), Position.of(1374), "c", "g");
-        assertThat(scorer.score(variant, tx, sequenceOnOtherChrom), is(notANumber()));
+        GenomicVariant variant = GenomicVariant.of(contig, "", Strand.POSITIVE, CoordinateSystem.zeroBased(), 1374, "c", "g");
+        assertThat(scorer.score(variant, txOnPositiveStrand, sequenceOnOtherChrom), is(notANumber()));
     }
 }

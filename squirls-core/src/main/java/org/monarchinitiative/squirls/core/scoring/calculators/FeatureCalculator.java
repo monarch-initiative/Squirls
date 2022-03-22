@@ -76,9 +76,9 @@
 
 package org.monarchinitiative.squirls.core.scoring.calculators;
 
+import org.monarchinitiative.sgenes.model.Transcript;
 import org.monarchinitiative.squirls.core.reference.StrandedSequence;
-import org.monarchinitiative.squirls.core.reference.TranscriptModel;
-import org.monarchinitiative.svart.Variant;
+import org.monarchinitiative.svart.GenomicVariant;
 
 /**
  * @author Daniel Danis
@@ -94,5 +94,5 @@ public interface FeatureCalculator {
      * @param sequence   FASTA sequence for the calculation
      * @return feature value
      */
-    double score(Variant variant, TranscriptModel transcript, StrandedSequence sequence);
+    double score(GenomicVariant variant, Transcript transcript, StrandedSequence sequence);
 }

@@ -78,10 +78,10 @@ package org.monarchinitiative.squirls.autoconfigure;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.monarchinitiative.squirls.initialize.GenomicAssemblyVersion;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.monarchinitiative.squirls.initialize.MissingSquirlsResourceException;
 import org.monarchinitiative.squirls.initialize.SquirlsDataResolver;
-import org.monarchinitiative.squirls.initialize.SquirlsResourceVersion;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -91,39 +91,45 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-class SquirlsDataResolverTest {
+public class SquirlsDataResolverTest {
     private static final Path TEST_DATA = Paths.get("src/test/resources/data");
 
     private SquirlsDataResolver resolver;
 
     @BeforeEach
-    void setUp() throws Exception {
-        resolver = new SquirlsDataResolver(TEST_DATA, SquirlsResourceVersion.of("1710", GenomicAssemblyVersion.GRCH37));
+    public void setUp() throws Exception {
+        resolver = SquirlsDataResolver.of(TEST_DATA);
     }
 
     @Test
-    void getFastaStuff() {
-        Path versionedAssemblyDataDirPath = TEST_DATA.resolve("1710_hg19");
-        assertThat(resolver.genomeAssemblyReportPath(), is(versionedAssemblyDataDirPath.resolve("1710_hg19.assembly_report.txt")));
-        assertThat(resolver.genomeFastaPath(), is(versionedAssemblyDataDirPath.resolve("1710_hg19.fa")));
-        assertThat(resolver.genomeFastaFaiPath(), is(versionedAssemblyDataDirPath.resolve("1710_hg19.fa.fai")));
-        assertThat(resolver.genomeFastaDictPath(), is(versionedAssemblyDataDirPath.resolve("1710_hg19.fa.dict")));
+    public void getFastaStuff() {
+        assertThat(resolver.genomeAssemblyReportPath(), is(TEST_DATA.resolve("assembly_report.txt")));
+        assertThat(resolver.genomeFastaPath(), is(TEST_DATA.resolve("genome.fa")));
+        assertThat(resolver.genomeFastaFaiPath(), is(TEST_DATA.resolve("genome.fa.fai")));
+        assertThat(resolver.genomeFastaDictPath(), is(TEST_DATA.resolve("genome.fa.dict")));
     }
 
     @Test
-    void getDatasourcePath() {
-        assertThat(resolver.dataSourcePath().toFile().getName(), is("1710_hg19.splicing"));
+    public void getDatasourcePath() {
+        assertThat(resolver.dataSourcePath().toFile().getName(), is("squirls"));
     }
 
     @Test
     public void getPhylopPath() {
-        assertThat(resolver.phylopPath().toFile().getName(), is("1710_hg19.phylop.bw"));
+        assertThat(resolver.phylopPath().toFile().getName(), is("phylop.bw"));
+    }
+
+    @Test
+    public void transcriptDatabases() {
+        assertThat(resolver.ensemblSerPath(), is(TEST_DATA.resolve("tx.ensembl.ser")));
+        assertThat(resolver.refseqSerPath(), is(TEST_DATA.resolve("tx.refseq.ser")));
+        assertThat(resolver.ucscSerPath(), is(TEST_DATA.resolve("tx.ucsc.ser")));
     }
 
     @Test
     public void throwsAnExceptionWhenResourceIsMissing() {
         MissingSquirlsResourceException thrown = assertThrows(MissingSquirlsResourceException.class,
-                () -> new SquirlsDataResolver(Paths.get("src/test/resources"), SquirlsResourceVersion.of("1710", GenomicAssemblyVersion.GRCH37)));
-        assertThat(thrown.getMessage(), containsString("The file `1710_hg19.assembly_report.txt` is missing in SQUIRLS directory"));
+                () -> SquirlsDataResolver.of(Paths.get("src/test/resources")));
+        assertThat(thrown.getMessage(), containsString("The file `assembly_report.txt` is missing in SQUIRLS directory"));
     }
 }

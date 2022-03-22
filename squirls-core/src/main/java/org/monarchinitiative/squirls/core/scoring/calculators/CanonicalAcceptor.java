@@ -76,11 +76,12 @@
 
 package org.monarchinitiative.squirls.core.scoring.calculators;
 
+import org.monarchinitiative.sgenes.model.Transcript;
 import org.monarchinitiative.squirls.core.Utils;
 import org.monarchinitiative.squirls.core.reference.*;
 import org.monarchinitiative.squirls.core.scoring.calculators.ic.SplicingInformationContentCalculator;
 import org.monarchinitiative.svart.GenomicRegion;
-import org.monarchinitiative.svart.Variant;
+import org.monarchinitiative.svart.GenomicVariant;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -99,7 +100,7 @@ public class CanonicalAcceptor extends BaseFeatureCalculator {
     }
 
     @Override
-    protected double score(Variant variant, SplicingLocationData locationData, TranscriptModel tx, StrandedSequence sequence) {
+    protected double score(GenomicVariant variant, SplicingLocationData locationData, Transcript tx, StrandedSequence sequence) {
         if (locationData.getPosition() == SplicingLocationData.SplicingPosition.ACCEPTOR) {
             return locationData.getAcceptorRegion()
                     .map(acceptor -> score(variant, acceptor, sequence))
@@ -109,7 +110,7 @@ public class CanonicalAcceptor extends BaseFeatureCalculator {
     }
 
 
-    private double score(Variant variant, GenomicRegion acceptor, StrandedSequence sequence) {
+    private double score(GenomicVariant variant, GenomicRegion acceptor, StrandedSequence sequence) {
         if (!acceptor.overlapsWith(variant)) {
             // shortcut - if variant does not affect the donor site
             return 0;
@@ -118,7 +119,7 @@ public class CanonicalAcceptor extends BaseFeatureCalculator {
         String acceptorSiteSnippet = sequence.subsequence(acceptor);
         if (acceptorSiteSnippet == null) {
             if (LOGGER.isDebugEnabled())
-                LOGGER.debug("Unable to create wt snippets for variant `{}` using interval `{}`", variant, Utils.formatAsRegion(sequence));
+                LOGGER.debug("Unable to create wt snippets for variant `{}` using interval `{}`", variant, Utils.formatAsRegion(sequence.location()));
             return Double.NaN;
         }
         double refScore = calculator.getSpliceAcceptorScore(acceptorSiteSnippet);
@@ -132,7 +133,7 @@ public class CanonicalAcceptor extends BaseFeatureCalculator {
 
         if (acceptorSiteWithAltAllele == null) {
             if (LOGGER.isDebugEnabled())
-                LOGGER.debug("Unable to create alt snippets for variant `{}` using interval `{}`", variant, Utils.formatAsRegion(sequence));
+                LOGGER.debug("Unable to create alt snippets for variant `{}` using interval `{}`", variant, Utils.formatAsRegion(sequence.location()));
             return Double.NaN;
         }
 

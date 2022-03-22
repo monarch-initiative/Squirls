@@ -76,7 +76,6 @@
 
 package org.monarchinitiative.squirls.cli;
 
-import org.monarchinitiative.squirls.cli.cmd.GenerateConfigCommand;
 import org.monarchinitiative.squirls.cli.cmd.annotate_csv.AnnotateCsvCommand;
 import org.monarchinitiative.squirls.cli.cmd.annotate_pos.AnnotatePosCommand;
 import org.monarchinitiative.squirls.cli.cmd.annotate_vcf.AnnotateVcfCommand;
@@ -118,7 +117,6 @@ public class Main implements Callable<Integer> {
         Locale.setDefault(Locale.US);
         CommandLine cline = new CommandLine(new Main())
                 .setColorScheme(COLOR_SCHEME)
-                .addSubcommand("generate-config", new GenerateConfigCommand())
                 .addSubcommand("annotate-pos", new AnnotatePosCommand())
                 .addSubcommand("annotate-csv", new AnnotateCsvCommand())
                 .addSubcommand("annotate-vcf", new AnnotateVcfCommand())

@@ -37,29 +37,14 @@ the ``squirls-bootstrap`` as a dependency, e.g. by adding the following into the
   </dependency>
 
 .. note::
-  Replace ``${project.version}`` placeholder with an actual Squirls release, i.e. ``1.0.1``.
+  Replace ``${project.version}`` placeholder with an actual Squirls release, i.e. ``2.0.0``.
 
-The programmatic initialization of Squirls is very straightforward.
-To kick the tires, get ready to provide:
+The programmatic initialization of Squirls is very straightforward::
 
-* ``squirls.data-directory``,
-* ``squirls.genome-assembly``, and
-* ``squirls.data-version``,
-
-as described in the :ref:`mandatory-parameters-ref` section.
-
-First, create ``SquirlsProperties`` using the builder, and instantiate ``SquirlsConfigurationFactory``::
-
-  File dataDirectory = ... ; // path to Squirls data directory, i.e. `/project/joe/squirls_resources`
-  SquirlsProperties squirlsProperties = SimpleSquirlsProperties.builder(dataDirectory).build();
-  SquirlsConfigurationFactory squirlsFactory = SquirlsConfigurationFactory.of(squirlsProperties);
-
-Next, get ``Squirls`` instance for given ``squirls.genome-assembly`` and ``squirls.data-version``::
-
-  GenomicAssemblyVersion genomicAssemblyVersion = GenomicAssemblyVersion.GRCH38;
-  String dataVersion = "1902";
-
-  Squirls squirls = squirlsFactory.getSquirls(SquirlsResourceVersion.of(dataVersion, genomicAssemblyVersion));
+  Path dataDirectory = ... ; // path to Squirls data directory
+  SquirlsProperties squirlsProperties = SimpleSquirlsProperties.builder().build();
+  SquirlsOptions squirlsOptions = SquirlsOptions.of(FeatureSource.REFSEQ); // ENSEMBL and UCSC are available too
+  SquirlsConfigurationFactory squirlsFactory = SquirlsConfigurationFactory.of(dataDirectory, squirlsProperties, squirlsOptions);
 
 ``Squirls`` provides high-level API for access to the reference genome, to calculate the splice features, and the Squirls
 score for given variant.
@@ -87,6 +72,9 @@ Spring Boot application
 Squirls includes a ``squirls-spring-boot-starter`` module for including Squirls into an application that uses Spring boot framework.
 Using the starter requires even less lines of code than using ``squirls-bootstrap``.
 
+.. warning::
+  The Spring Boot module is deprecated and will be removed in ``v3.0.0``. Use the ``squirls-bootstrap`` module instead.
+
 To use Squirls in a Spring boot app, add the following dependency into your ``pom.xml``::
 
   <dependency>
@@ -95,20 +83,19 @@ To use Squirls in a Spring boot app, add the following dependency into your ``po
     <version>${project.version}</version>
   </dependency>
 
-After adding the dependency, Spring configures Squirls beans, as long as the following environment properties are set
-to the appropriate values:
+After adding the dependency, Spring configures Squirls beans, as long as you define the following ``\@Bean``
+in your ``@Configuration`` class::
 
-- ``squirls.data-directory``
-- ``squirls.genome-assembly``
-- ``squirls.data-version``
+  @Bean
+  public Path squirlsDataDirectory() {
+    return Paths.get("path/to/squirls/data");
+  }
 
-Squirls beans include several high-level objects:
+``squirls-spring-boot-starter`` provides several high-level ``@Bean``\ s:
 
 * ``SquirlsDataService`` to get transcripts that overlap with given coordinates, to fetch reference genome sequence, etc.
-* ``SplicingAnnotator`` to calculate splice features for variant
+* ``SplicingAnnotator`` to calculate splice features for a variant
 * ``SquirlsClassifier`` to calculate Squirls score given splice features, and
-* ``VariantSplicingEvaluator`` to perform all described above within a single method call.
+* ``VariantSplicingEvaluator`` to perform everything described above within a single method call.
 
-See the ``squirls-cli`` module for a real-world example how to use Squirls as a library.
-
-.. _Svart: https://github.com/exomiser/svart
+``squirls-cli`` shows an example how to use ``squirls-spring-boot-starter``.

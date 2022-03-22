@@ -87,12 +87,13 @@ import de.charite.compbio.jannovar.reference.Strand;
 import htsjdk.variant.variantcontext.Allele;
 import htsjdk.variant.variantcontext.VariantContext;
 import htsjdk.variant.variantcontext.VariantContextBuilder;
+import org.monarchinitiative.sgenes.model.Transcript;
 import org.monarchinitiative.squirls.core.PartialPrediction;
 import org.monarchinitiative.squirls.core.Prediction;
 import org.monarchinitiative.squirls.core.SquirlsTxResult;
 import org.monarchinitiative.squirls.core.reference.StrandedSequence;
-import org.monarchinitiative.squirls.core.reference.TranscriptModel;
 import org.monarchinitiative.svart.*;
+import org.monarchinitiative.svart.assembly.GenomicAssembly;
 import org.monarchinitiative.vmvt.core.VmvtGenerator;
 
 import java.util.*;
@@ -143,12 +144,13 @@ public class VariantsForTesting {
 
     private TestVariant makeEvaluation(Contig contig,
                                        String chrom,
+                                       String id,
                                        int pos,
                                        String variantId,
                                        String ref,
                                        String alt,
                                        Set<String> seqIds,
-                                       Collection<TranscriptModel> transcripts,
+                                       Collection<Transcript> transcripts,
                                        StrandedSequence si,
                                        double pathogenicity,
                                        String featurePayload,
@@ -176,8 +178,8 @@ public class VariantsForTesting {
                 .map(line -> line.split("="))
                 .collect(Collectors.toMap(v -> v[0], v -> Double.parseDouble(v[1])));
 
-        TranscriptModel st = transcripts.stream().min(Comparator.comparing(TranscriptModel::accessionId)).orElseThrow();
-        Variant variant = Variant.of(contig, "", org.monarchinitiative.svart.Strand.POSITIVE, CoordinateSystem.oneBased(), Position.of(pos), ref, alt);
+        Transcript st = transcripts.stream().min(Comparator.comparing(Transcript::accession)).orElseThrow();
+        GenomicVariant variant = GenomicVariant.of(contig, id, org.monarchinitiative.svart.Strand.POSITIVE, CoordinateSystem.oneBased(), pos, ref, alt);
 
         /*
         Prepare test object
@@ -186,8 +188,8 @@ public class VariantsForTesting {
 
 
         Set<SquirlsTxResult> txResults = new HashSet<>();
-        for (TranscriptModel transcript : transcripts) {
-            SquirlsTxResultSimple squirlsTxResult = new SquirlsTxResultSimple(transcript.accessionId(),
+        for (Transcript transcript : transcripts) {
+            SquirlsTxResultSimple squirlsTxResult = new SquirlsTxResultSimple(transcript.accession(),
                     Prediction.of(PartialPrediction.of("fake", pathogenicity, FAKE_THRESHOLD)),
                     featureMap);
             txResults.add(squirlsTxResult);
@@ -230,7 +232,6 @@ public class VariantsForTesting {
          */
         String chrom = "13";
         Contig contig = genomicAssembly.contigByName(chrom);
-        int chr = 13;
         int pos = 32_930_748;
         String variantId = "BRCA2_donor_2bp_downstream_exon15_quid";
         String ref = "T", alt = "G";
@@ -238,7 +239,7 @@ public class VariantsForTesting {
         double pathogenicity = 0.95;
 
         StrandedSequence si = Sequences.getBrca2Exon15Sequence(contig);
-        Collection<TranscriptModel> transcripts = Transcripts.brca2Transcripts(contig);
+        Collection<Transcript> transcripts = Transcripts.brca2Transcripts(contig);
         String featurePayload = "acceptor_offset=184.0\n" +
                 "alt_ri_best_window_acceptor=6.24199227902568\n" +
                 "alt_ri_best_window_donor=1.6462531025600458\n" +
@@ -275,7 +276,7 @@ public class VariantsForTesting {
 
         // *************************************************************************************************************
 
-        return makeEvaluation(contig, chrom, pos, variantId, ref, alt, seqIds, transcripts, si, pathogenicity, featurePayload, ruler, primary, secondary, "Canonical donor");
+        return makeEvaluation(contig, chrom, "BRCA2DonorExon15plus2QUID", pos, variantId, ref, alt, seqIds, transcripts, si, pathogenicity, featurePayload, ruler, primary, secondary, "Canonical donor");
     }
 
     /**
@@ -294,7 +295,6 @@ public class VariantsForTesting {
          */
         String chrom = "1";
         Contig contig = genomicAssembly.contigByName(chrom);
-        int chr = 1;
         int pos = 21_894_739;
         String variantId = "ALPL_donor_exon7_minus2";
         String ref = "A", alt = "G";
@@ -302,7 +302,7 @@ public class VariantsForTesting {
         double pathogenicity = 0.94;
 
         StrandedSequence si = Sequences.getAlplExon7Sequence(contig);
-        Collection<TranscriptModel> transcripts = Transcripts.alplTranscripts(contig);
+        Collection<Transcript> transcripts = Transcripts.alplTranscripts(contig);
         String featurePayload = "acceptor_offset=143.0\n" +
                 "alt_ri_best_window_acceptor=-3.06184416990555\n" +
                 "alt_ri_best_window_donor=2.4205699538253014\n" +
@@ -332,7 +332,7 @@ public class VariantsForTesting {
 
         // *************************************************************************************************************
 
-        return makeEvaluation(contig, chrom, pos, variantId, ref, alt, seqIds, transcripts, si, pathogenicity, featurePayload, ruler, primary, secondary, "Canonical donor");
+        return makeEvaluation(contig, chrom, "ALPLDonorExon7Minus2", pos, variantId, ref, alt, seqIds, transcripts, si, pathogenicity, featurePayload, ruler, primary, secondary, "Canonical donor");
     }
 
     /**
@@ -351,7 +351,6 @@ public class VariantsForTesting {
          */
         String chrom = "11";
         Contig contig = genomicAssembly.contigByName(chrom);
-        int chr = 11;
         int pos = 5_248_162;
         String variantId = "HBB_donor_3bp_upstream_exon1";
         String ref = "G", alt = "A";
@@ -359,7 +358,7 @@ public class VariantsForTesting {
         double pathogenicity = 0.93;
 
         StrandedSequence si = Sequences.getHbbExon1Sequence(contig);
-        Collection<TranscriptModel> transcripts = Transcripts.hbbTranscripts(contig);
+        Collection<Transcript> transcripts = Transcripts.hbbTranscripts(contig);
         String featurePayload = "acceptor_offset=-133.0\n" +
                 "alt_ri_best_window_acceptor=-1.781069482220321\n" +
                 "alt_ri_best_window_donor=6.324680776661294\n" +
@@ -396,7 +395,7 @@ public class VariantsForTesting {
 
         // *************************************************************************************************************
 
-        return makeEvaluation(contig, chrom, pos, variantId, ref, alt, seqIds, transcripts, si, pathogenicity, featurePayload, ruler, primary, secondary, "Cryptic donor");
+        return makeEvaluation(contig, chrom, "HBBcodingExon1UpstreamCrypticInCanonical", pos, variantId, ref, alt, seqIds, transcripts, si, pathogenicity, featurePayload, ruler, primary, secondary, "Cryptic donor");
     }
 
     /**
@@ -415,7 +414,6 @@ public class VariantsForTesting {
          */
         String chrom = "11";
         Contig contig = genomicAssembly.contigByName(chrom);
-        int chr = 11;
         int pos = 5_248_173;
         String variantId = "HBB_donor_14bp_upstream_exon1";
         String ref = "C", alt = "T";
@@ -423,7 +421,7 @@ public class VariantsForTesting {
         double pathogenicity = 0.92;
 
         StrandedSequence si = Sequences.getHbbExon1Sequence(contig);
-        Collection<TranscriptModel> transcripts = Transcripts.hbbTranscripts(contig);
+        Collection<Transcript> transcripts = Transcripts.hbbTranscripts(contig);
         String featurePayload = "acceptor_offset=-144.0\n" +
                 "alt_ri_best_window_acceptor=-1.679406754820472\n" +
                 "alt_ri_best_window_donor=8.331467886352396\n" +
@@ -460,7 +458,7 @@ public class VariantsForTesting {
 
         // *************************************************************************************************************
 
-        return makeEvaluation(contig, chrom, pos, variantId, ref, alt, seqIds, transcripts, si, pathogenicity, featurePayload, ruler, primary, secondary, "Cryptic donor");
+        return makeEvaluation(contig, chrom, "HBBcodingExon1UpstreamCryptic", pos, variantId, ref, alt, seqIds, transcripts, si, pathogenicity, featurePayload, ruler, primary, secondary, "Cryptic donor");
     }
 
     /**
@@ -479,7 +477,6 @@ public class VariantsForTesting {
          */
         String chrom = "12";
         Contig contig = genomicAssembly.contigByName(chrom);
-        int chr = 12;
         int pos = 6_132_066;
         String variantId = "VWF_acceptor_2bp_upstream_exon26_quid";
         String ref = "T", alt = "C";
@@ -487,7 +484,7 @@ public class VariantsForTesting {
         double pathogenicity = 0.91;
 
         StrandedSequence si = Sequences.getVwfExon26Sequence(contig);
-        Collection<TranscriptModel> transcripts = Transcripts.vwfTranscripts(contig);
+        Collection<Transcript> transcripts = Transcripts.vwfTranscripts(contig);
         String featurePayload = "acceptor_offset=-2.0\n" +
                 "alt_ri_best_window_acceptor=3.648124750022908\n" +
                 "alt_ri_best_window_donor=-8.032751156095085\n" +
@@ -524,7 +521,7 @@ public class VariantsForTesting {
 
         // *************************************************************************************************************
 
-        return makeEvaluation(contig, chrom, pos, variantId, ref, alt, seqIds, transcripts, si, pathogenicity, featurePayload, logo, primary, secondary, "Canonical acceptor");
+        return makeEvaluation(contig, chrom, "VWFAcceptorExon26minus2QUID", pos, variantId, ref, alt, seqIds, transcripts, si, pathogenicity, featurePayload, logo, primary, secondary, "Canonical acceptor");
     }
 
     /**
@@ -543,7 +540,6 @@ public class VariantsForTesting {
          */
         String chrom = "16";
         Contig contig = genomicAssembly.contigByName(chrom);
-        int chr = 16;
         int pos = 2_110_668;
         String variantId = "TSC2_acceptor-3_exon11";
         String ref = "C", alt = "G";
@@ -551,7 +547,7 @@ public class VariantsForTesting {
         double pathogenicity = 0.90;
 
         StrandedSequence si = Sequences.getTsc2Exon11Sequence(contig);
-        Collection<TranscriptModel> transcripts = Transcripts.tsc2Transcripts(contig);
+        Collection<Transcript> transcripts = Transcripts.tsc2Transcripts(contig);
         String featurePayload = "acceptor_offset=-3.0\n" +
                 "alt_ri_best_window_acceptor=-2.95580052736842\n" +
                 "alt_ri_best_window_donor=-1.9417000079717732\n" +
@@ -581,7 +577,7 @@ public class VariantsForTesting {
 
         // *************************************************************************************************************
 
-        return makeEvaluation(contig, chrom, pos, variantId, ref, alt, seqIds, transcripts, si, pathogenicity, featurePayload, logo, primary, secondary, "Cryptic acceptor");
+        return makeEvaluation(contig, chrom, "TSC2AcceptorExon11Minus3", pos, variantId, ref, alt, seqIds, transcripts, si, pathogenicity, featurePayload, logo, primary, secondary, "Cryptic acceptor");
     }
 
 
@@ -601,7 +597,6 @@ public class VariantsForTesting {
          */
         String chrom = "X";
         Contig contig = genomicAssembly.contigByName(chrom);
-        int chr = 23;
         int pos = 107_849_964;
         String variantId = "COL4A5_acceptor-8_exon29";
         String ref = "T", alt = "A";
@@ -609,7 +604,7 @@ public class VariantsForTesting {
         double pathogenicity = 0.89;
 
         StrandedSequence si = Sequences.getCol4a5Exon29Sequence(contig);
-        Collection<TranscriptModel> transcripts = Transcripts.col4a5Transcripts(contig);
+        Collection<Transcript> transcripts = Transcripts.col4a5Transcripts(contig);
 
         String featurePayload = "acceptor_offset=-8.0\n" +
                 "alt_ri_best_window_acceptor=4.2276385348389045\n" +
@@ -647,7 +642,7 @@ public class VariantsForTesting {
 
         // *************************************************************************************************************
 
-        return makeEvaluation(contig, chrom, pos, variantId, ref, alt, seqIds, transcripts, si, pathogenicity, featurePayload, ruler, primary, secondary, "Cryptic acceptor");
+        return makeEvaluation(contig, chrom, "COL4A5AcceptorExon11Minus8", pos, variantId, ref, alt, seqIds, transcripts, si, pathogenicity, featurePayload, ruler, primary, secondary, "Cryptic acceptor");
     }
 
     /**
@@ -666,7 +661,6 @@ public class VariantsForTesting {
          */
         String chrom = "19";
         Contig contig = genomicAssembly.contigByName(chrom);
-        int chr = 19;
         int pos = 39_075_603;
         String variantId = "RYR1_coding_21bp_downstream_exon102";
         String ref = "C", alt = "G";
@@ -674,7 +668,7 @@ public class VariantsForTesting {
         double pathogenicity = 0.88;
 
         StrandedSequence si = Sequences.getRyr1Exon102Sequence(contig);
-        Collection<TranscriptModel> transcripts = Transcripts.ryr1Transcripts(contig);
+        Collection<Transcript> transcripts = Transcripts.ryr1Transcripts(contig);
         String featurePayload = "acceptor_offset=21.0\n" +
                 "alt_ri_best_window_acceptor=8.15014683108099\n" +
                 "alt_ri_best_window_donor=7.955283012714299\n" +
@@ -712,7 +706,7 @@ public class VariantsForTesting {
 
         // *************************************************************************************************************
 
-        return makeEvaluation(contig, chrom, pos, variantId, ref, alt, seqIds, transcripts, si, pathogenicity, featurePayload, ruler, primary, secondary, "Cryptic acceptor");
+        return makeEvaluation(contig, chrom, "RYR1codingExon102crypticAcceptor", pos, variantId, ref, alt, seqIds, transcripts, si, pathogenicity, featurePayload, ruler, primary, secondary, "Cryptic acceptor");
     }
 
 
@@ -732,7 +726,6 @@ public class VariantsForTesting {
          */
         String chrom = "17";
         Contig contig = genomicAssembly.contigByName(chrom);
-        int chr = 17;
         int pos = 29_527_461;
         String variantId = "NF1_coding_22bp_downstream_from_acceptor_exon9";
         String ref = "C", alt = "T";
@@ -740,7 +733,7 @@ public class VariantsForTesting {
         double pathogenicity = 0.87;
 
         StrandedSequence si = Sequences.getNf1Exon9Sequence(contig);
-        Collection<TranscriptModel> transcripts = Transcripts.nf1Transcripts(contig);
+        Collection<Transcript> transcripts = Transcripts.nf1Transcripts(contig);
         String featurePayload = "acceptor_offset=22.0\n" +
                 "alt_ri_best_window_acceptor=-1.0318475740969986\n" +
                 "alt_ri_best_window_donor=-2.8493547798837007\n" +
@@ -785,7 +778,7 @@ public class VariantsForTesting {
 
         // *************************************************************************************************************
 
-        return makeEvaluation(contig, chrom, pos, variantId, ref, alt, seqIds, transcripts, si, pathogenicity, featurePayload, ruler, primary, secondary, "Splicing regulatory elements");
+        return makeEvaluation(contig, chrom, "NF1codingExon9coding_SRE", pos, variantId, ref, alt, seqIds, transcripts, si, pathogenicity, featurePayload, ruler, primary, secondary, "Splicing regulatory elements");
     }
 
 }

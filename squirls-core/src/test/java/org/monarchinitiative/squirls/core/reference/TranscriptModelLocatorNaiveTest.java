@@ -80,9 +80,12 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.monarchinitiative.sgenes.model.Transcript;
 import org.monarchinitiative.squirls.core.PojosForTesting;
 import org.monarchinitiative.squirls.core.TestDataSourceConfig;
 import org.monarchinitiative.svart.*;
+import org.monarchinitiative.svart.assembly.AssignedMoleculeType;
+import org.monarchinitiative.svart.assembly.SequenceRole;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.util.Optional;
@@ -99,11 +102,7 @@ public class TranscriptModelLocatorNaiveTest {
     private TranscriptModelLocatorNaive locator;
 
     private static GenomicRegion makeSnpRegion(int pos) {
-        return makeRegion(pos, pos);
-    }
-
-    private static GenomicRegion makeRegion(int begin, int end) {
-        return GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.oneBased(), Position.of(begin), Position.of(end));
+        return GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.oneBased(), pos, pos);
     }
 
     @BeforeEach
@@ -114,8 +113,8 @@ public class TranscriptModelLocatorNaiveTest {
     @Test
     public void onDifferentContig() {
         Contig contig = Contig.of(33, "12", SequenceRole.ASSEMBLED_MOLECULE, "12", AssignedMoleculeType.CHROMOSOME, 10_000, "", "", "");
-        GenomicRegion variant = GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(), Position.of(999), Position.of(1000));
-        TranscriptModel txOnPositiveStrand = PojosForTesting.getTranscriptWithThreeExons(contig);
+        GenomicRegion variant = GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(), 999, 1000);
+        Transcript txOnPositiveStrand = PojosForTesting.getTranscriptWithThreeExons(contig);
 
         SplicingLocationData data = locator.locate(variant, txOnPositiveStrand);
         assertThat(data, is(SplicingLocationData.outside()));
@@ -149,7 +148,7 @@ public class TranscriptModelLocatorNaiveTest {
                                           SplicingLocationData.SplicingPosition position, int exonIdx, int intronIdx,
                                           boolean donorIsPresent, int donorStart, int donorEnd,
                                           boolean acceptorIsPresent, int acceptorStart, int acceptorEnd) {
-        TranscriptModel txOnPositiveStrand = PojosForTesting.getTranscriptWithThreeExons(contig);
+        Transcript txOnPositiveStrand = PojosForTesting.getTranscriptWithThreeExons(contig);
 
         SplicingLocationData data = locator.locate(makeSnpRegion(pos), txOnPositiveStrand);
 
@@ -175,32 +174,32 @@ public class TranscriptModelLocatorNaiveTest {
     @ParameterizedTest
     @CsvSource({
             //                1000-1200    1400-1600    1800-2000     (NEGATIVE)
-            "9001,     OUTSIDE,  -1, -1,     false,   -1,   -1,     false,    -1,   -1",
-            "9000,        EXON,   0, -1,      true, 1197, 1206,     false,    -1,   -1",
-            "8804,        EXON,   0, -1,      true, 1197, 1206,     false,    -1,   -1",
-            "8803,       DONOR,   0,  0,      true, 1197, 1206,     false,    -1,   -1",
-            "8795,       DONOR,   0,  0,      true, 1197, 1206,     false,    -1,   -1",
-            "8794,      INTRON,  -1,  0,      true, 1197, 1206,      true,  1375, 1402",
-            "8626,      INTRON,  -1,  0,      true, 1197, 1206,      true,  1375, 1402",
-            "8625,    ACCEPTOR,   1,  0,      true, 1597, 1606,      true,  1375, 1402",
-            "8599,    ACCEPTOR,   1,  0,      true, 1597, 1606,      true,  1375, 1402",
-            "8598,        EXON,   1, -1,      true, 1597, 1606,      true,  1375, 1402",
-            "8404,        EXON,   1, -1,      true, 1597, 1606,      true,  1375, 1402",
-            "8403,       DONOR,   1,  1,      true, 1597, 1606,      true,  1375, 1402",
-            "8395,       DONOR,   1,  1,      true, 1597, 1606,      true,  1375, 1402",
-            "8394,      INTRON,  -1,  1,      true, 1597, 1606,      true,  1775, 1802",
-            "8226,      INTRON,  -1,  1,      true, 1597, 1606,      true,  1775, 1802",
-            "8225,    ACCEPTOR,   2,  1,     false,   -1,   -1,      true,  1775, 1802",
-            "8199,    ACCEPTOR,   2,  1,     false,   -1,   -1,      true,  1775, 1802",
-            "8198,        EXON,   2, -1,     false,   -1,   -1,      true,  1775, 1802",
-            "8001,        EXON,   2, -1,     false,   -1,   -1,      true,  1775, 1802",
-            "8000,     OUTSIDE,  -1, -1,     false,   -1,   -1,      false,   -1,   -1",
+            "2001,     OUTSIDE,  -1, -1,     false,   -1,   -1,     false,    -1,   -1",
+            "2000,        EXON,   0, -1,      true, 8197, 8206,     false,    -1,   -1",
+            "1804,        EXON,   0, -1,      true, 8197, 8206,     false,    -1,   -1",
+            "1803,       DONOR,   0,  0,      true, 8197, 8206,     false,    -1,   -1",
+            "1795,       DONOR,   0,  0,      true, 8197, 8206,     false,    -1,   -1",
+            "1794,      INTRON,  -1,  0,      true, 8197, 8206,      true,  8375, 8402",
+            "1626,      INTRON,  -1,  0,      true, 8197, 8206,      true,  8375, 8402",
+            "1625,    ACCEPTOR,   1,  0,      true, 8597, 8606,      true,  8375, 8402",
+            "1599,    ACCEPTOR,   1,  0,      true, 8597, 8606,      true,  8375, 8402",
+            "1598,        EXON,   1, -1,      true, 8597, 8606,      true,  8375, 8402",
+            "1404,        EXON,   1, -1,      true, 8597, 8606,      true,  8375, 8402",
+            "1403,       DONOR,   1,  1,      true, 8597, 8606,      true,  8375, 8402",
+            "1395,       DONOR,   1,  1,      true, 8597, 8606,      true,  8375, 8402",
+            "1394,      INTRON,  -1,  1,      true, 8597, 8606,      true,  8775, 8802",
+            "1226,      INTRON,  -1,  1,      true, 8597, 8606,      true,  8775, 8802",
+            "1225,    ACCEPTOR,   2,  1,     false,   -1,   -1,      true,  8775, 8802",
+            "1199,    ACCEPTOR,   2,  1,     false,   -1,   -1,      true,  8775, 8802",
+            "1198,        EXON,   2, -1,     false,   -1,   -1,      true,  8775, 8802",
+            "1001,        EXON,   2, -1,     false,   -1,   -1,      true,  8775, 8802",
+            "1000,     OUTSIDE,  -1, -1,     false,   -1,   -1,      false,   -1,   -1",
     })
     public void locate_txOnNegativeStrand(int pos,
                                           SplicingLocationData.SplicingPosition position, int exonIdx, int intronIdx,
                                           boolean donorIsPresent, int donorStart, int donorEnd,
                                           boolean acceptorIsPresent, int acceptorStart, int acceptorEnd) {
-        TranscriptModel txOnNegativeStrand = PojosForTesting.getTranscriptWithThreeExonsOnRevStrand(contig);
+        Transcript txOnNegativeStrand = PojosForTesting.getTranscriptWithThreeExonsOnRevStrand(contig);
 
         SplicingLocationData data = locator.locate(makeSnpRegion(pos), txOnNegativeStrand);
 
@@ -233,7 +232,7 @@ public class TranscriptModelLocatorNaiveTest {
                                                 SplicingLocationData.SplicingPosition position,
                                                 int exonIdx, int intronIdx,
                                                 boolean donorIsPresent, boolean acceptorIsPresent) {
-        TranscriptModel se = PojosForTesting.getTranscriptWithSingleExon(contig);
+        Transcript se = PojosForTesting.getTranscriptWithSingleExon(contig);
 
         SplicingLocationData data = locator.locate(makeSnpRegion(pos), se);
 

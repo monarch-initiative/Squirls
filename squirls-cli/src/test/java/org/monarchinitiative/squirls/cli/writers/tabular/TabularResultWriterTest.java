@@ -86,6 +86,7 @@ import org.monarchinitiative.squirls.cli.writers.AnalysisResults;
 import org.monarchinitiative.squirls.cli.writers.AnalysisStats;
 import org.monarchinitiative.squirls.cli.writers.SettingsData;
 import org.monarchinitiative.squirls.cli.writers.WritableSplicingAllele;
+import org.monarchinitiative.squirls.core.config.FeatureSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
@@ -144,6 +145,7 @@ public class TabularResultWriterTest {
                 .analysisStats(AnalysisStats.of(10, 8, 7))
                 .settingsData(SettingsData.builder()
                         .nReported(nVariantsToReport)
+                        .featureSource(FeatureSource.REFSEQ)
                         .build())
                 .build();
         writer.write(results, OUTPUT.resolve("output").toString());
@@ -159,9 +161,9 @@ public class TabularResultWriterTest {
         }
 
         assertThat(lines, hasSize(nVariantsToReport + 1)); // + header line
-        assertThat(lines, hasItem("chrom\tpos\tref\talt\tgene_symbol\ttx_accession\tinterpretation\tsquirls_score"));
-        assertThat(lines, hasItem("13\t32930748\tT\tG\tBRCA2\tNM_000059.3\tpathogenic\t0.95"));
-        assertThat(lines, hasItem("1\t21894739\tA\tG\tALPL\tNM_000478.4\tpathogenic\t0.94"));
+        assertThat(lines, hasItem("id\tchrom\tpos\tref\talt\tgene_symbol\ttx_accession\tinterpretation\tsquirls_score"));
+        assertThat(lines, hasItem("BRCA2DonorExon15plus2QUID\t13\t32930748\tT\tG\tBRCA2\tNM_000059.3\tpathogenic\t0.95"));
+        assertThat(lines, hasItem("ALPLDonorExon7Minus2\t1\t21894739\tA\tG\tALPL\tNM_000478.4\tpathogenic\t0.94"));
     }
 
     @Test
@@ -179,6 +181,7 @@ public class TabularResultWriterTest {
                 .analysisStats(AnalysisStats.of(10, 8, 7))
                 .settingsData(SettingsData.builder()
                         .nReported(nVariantsToReport)
+                        .featureSource(FeatureSource.REFSEQ)
                         .build())
                 .build();
         writer.write(results, OUTPUT.resolve("output").toString());
@@ -194,9 +197,9 @@ public class TabularResultWriterTest {
         }
 
         assertThat(lines, hasSize(nVariantsToReport + 1)); // + header line
-        assertThat(lines, hasItem("chrom\tpos\tref\talt\tgene_symbol\ttx_accession\tinterpretation\tsquirls_score\tsquirls_features"));
-        assertThat(lines, hasItem("13\t32930748\tT\tG\tBRCA2\tNM_000059.3\tpathogenic\t0.95\tNM_000059.3[exon_length=182.0|wt_ri_donor=10.244297856891256|creates_yag_in_agez=0.0|septamer=2.1036|s_strength_diff_acceptor=0.0|ppt_is_truncated=0.0|canonical_donor=9.945443836377912|cryptic_acceptor=-2.5219544938459935|intron_length=41552.0|s_strength_diff_donor=0.0|yag_at_acceptor_minus_three=0.0|alt_ri_best_window_acceptor=6.24199227902568|cryptic_donor=1.3473990820467006|creates_ag_in_agez=0.0|canonical_acceptor=0.0|donor_offset=2.0|phylop=4.010000228881836|alt_ri_best_window_donor=1.6462531025600458|hexamer=1.8216685|acceptor_offset=184.0|wt_ri_acceptor=8.763946772871673]"));
-        assertThat(lines, hasItem("1\t21894739\tA\tG\tALPL\tNM_000478.4\tpathogenic\t0.94\tNM_000478.4[exon_length=144.0|wt_ri_donor=4.867617848006766|creates_yag_in_agez=0.0|septamer=-0.8844000000000001|s_strength_diff_acceptor=0.0|ppt_is_truncated=0.0|canonical_donor=2.447047894181465|cryptic_acceptor=-12.4905210874462|intron_length=2057.0|s_strength_diff_donor=0.0|yag_at_acceptor_minus_three=0.0|alt_ri_best_window_acceptor=-3.06184416990555|cryptic_donor=0.0|creates_ag_in_agez=0.0|canonical_acceptor=0.0|donor_offset=-2.0|phylop=3.5|alt_ri_best_window_donor=2.4205699538253014|hexamer=-1.4957907|acceptor_offset=143.0|wt_ri_acceptor=9.42867691754065]"));
+        assertThat(lines, hasItem("id\tchrom\tpos\tref\talt\tgene_symbol\ttx_accession\tinterpretation\tsquirls_score\tsquirls_features"));
+        assertThat(lines, hasItem("BRCA2DonorExon15plus2QUID\t13\t32930748\tT\tG\tBRCA2\tNM_000059.3\tpathogenic\t0.95\tNM_000059.3[exon_length=182.0|wt_ri_donor=10.244297856891256|creates_yag_in_agez=0.0|septamer=2.1036|s_strength_diff_acceptor=0.0|ppt_is_truncated=0.0|canonical_donor=9.945443836377912|cryptic_acceptor=-2.5219544938459935|intron_length=41552.0|s_strength_diff_donor=0.0|yag_at_acceptor_minus_three=0.0|alt_ri_best_window_acceptor=6.24199227902568|cryptic_donor=1.3473990820467006|creates_ag_in_agez=0.0|canonical_acceptor=0.0|donor_offset=2.0|phylop=4.010000228881836|alt_ri_best_window_donor=1.6462531025600458|hexamer=1.8216685|acceptor_offset=184.0|wt_ri_acceptor=8.763946772871673]"));
+        assertThat(lines, hasItem("ALPLDonorExon7Minus2\t1\t21894739\tA\tG\tALPL\tNM_000478.4\tpathogenic\t0.94\tNM_000478.4[exon_length=144.0|wt_ri_donor=4.867617848006766|creates_yag_in_agez=0.0|septamer=-0.8844000000000001|s_strength_diff_acceptor=0.0|ppt_is_truncated=0.0|canonical_donor=2.447047894181465|cryptic_acceptor=-12.4905210874462|intron_length=2057.0|s_strength_diff_donor=0.0|yag_at_acceptor_minus_three=0.0|alt_ri_best_window_acceptor=-3.06184416990555|cryptic_donor=0.0|creates_ag_in_agez=0.0|canonical_acceptor=0.0|donor_offset=-2.0|phylop=3.5|alt_ri_best_window_donor=2.4205699538253014|hexamer=-1.4957907|acceptor_offset=143.0|wt_ri_acceptor=9.42867691754065]"));
     }
 
     @Test
@@ -214,6 +217,7 @@ public class TabularResultWriterTest {
                 .analysisStats(AnalysisStats.of(10, 8, 7))
                 .settingsData(SettingsData.builder()
                         .nReported(nVariantsToReport)
+                        .featureSource(FeatureSource.REFSEQ)
                         .build())
                 .build();
         writer.write(results, OUTPUT.resolve("output").toString());
@@ -229,8 +233,8 @@ public class TabularResultWriterTest {
         }
 
         assertThat(lines, hasSize(nVariantsToReport + 1)); // + header line
-        assertThat(lines, hasItem("chrom\tpos\tref\talt\tgene_symbol\ttx_accession\tinterpretation\tsquirls_score\ttranscripts"));
-        assertThat(lines, hasItem("13\t32930748\tT\tG\tBRCA2\tNM_000059.3\tpathogenic\t0.95\tNM_000059.3=0.95"));
-        assertThat(lines, hasItem("1\t21894739\tA\tG\tALPL\tNM_000478.4\tpathogenic\t0.94\tNM_000478.4=0.94"));
+        assertThat(lines, hasItem("id\tchrom\tpos\tref\talt\tgene_symbol\ttx_accession\tinterpretation\tsquirls_score\ttranscripts"));
+        assertThat(lines, hasItem("BRCA2DonorExon15plus2QUID\t13\t32930748\tT\tG\tBRCA2\tNM_000059.3\tpathogenic\t0.95\tNM_000059.3=0.95"));
+        assertThat(lines, hasItem("ALPLDonorExon7Minus2\t1\t21894739\tA\tG\tALPL\tNM_000478.4\tpathogenic\t0.94\tNM_000478.4=0.94"));
     }
 }

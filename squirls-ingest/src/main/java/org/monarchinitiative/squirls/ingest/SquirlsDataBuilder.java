@@ -82,22 +82,15 @@ import org.flywaydb.core.Flyway;
 import org.monarchinitiative.squirls.core.SquirlsException;
 import org.monarchinitiative.squirls.core.reference.SplicingParameters;
 import org.monarchinitiative.squirls.core.reference.SplicingPwmData;
-import org.monarchinitiative.squirls.core.reference.TranscriptModel;
 import org.monarchinitiative.squirls.ingest.data.GenomeAssemblyDownloader;
 import org.monarchinitiative.squirls.ingest.data.UrlResourceDownloader;
 import org.monarchinitiative.squirls.ingest.parse.FileKMerParser;
 import org.monarchinitiative.squirls.ingest.parse.InputStreamBasedPositionalWeightMatrixParser;
-import org.monarchinitiative.squirls.ingest.transcripts.JannovarDataManager;
-import org.monarchinitiative.squirls.ingest.transcripts.TranscriptsIngestRunner;
 import org.monarchinitiative.squirls.io.SplicingPositionalWeightMatrixParser;
 import org.monarchinitiative.squirls.io.SquirlsClassifierVersion;
-import org.monarchinitiative.squirls.io.SquirlsResourceException;
 import org.monarchinitiative.squirls.io.db.DbClassifierFactory;
 import org.monarchinitiative.squirls.io.db.DbKMerDao;
 import org.monarchinitiative.squirls.io.db.PwmIngestDao;
-import org.monarchinitiative.squirls.io.db.TranscriptModelServiceDb;
-import org.monarchinitiative.squirls.io.sequence.FastaStrandedSequenceService;
-import org.monarchinitiative.svart.GenomicAssembly;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -108,7 +101,6 @@ import java.io.InputStream;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
@@ -118,8 +110,8 @@ import java.util.concurrent.TimeUnit;
 /**
  * A static class with methods for building splicing database.
  *
- * @see Main for an example usage
  * @author Daniel Danis
+ * @see Main for an example usage
  */
 public class SquirlsDataBuilder {
 
@@ -169,26 +161,13 @@ public class SquirlsDataBuilder {
 
     /**
      * Download, decompress, and concatenate contigs into a single FASTA file. Then, index the FASTA file.
-     *
      * @param genomeUrl         url pointing to reference genome FASTA file to be downloaded
      * @param buildDir          path to directory where Squirls data files will be created
-     * @param versionedAssembly a string like `1710_hg19`, etc.
      * @param overwrite         overwrite existing FASTA file if true
      */
-    static Runnable downloadReferenceGenome(URL genomeUrl, Path buildDir, String versionedAssembly, boolean overwrite) {
-        Path genomeFastaPath = buildDir.resolve(String.format("%s.fa", versionedAssembly));
+    static Runnable downloadReferenceGenome(URL genomeUrl, Path buildDir, boolean overwrite) {
+        Path genomeFastaPath = buildDir.resolve("genome.fa");
         return new GenomeAssemblyDownloader(genomeUrl, genomeFastaPath, overwrite);
-    }
-
-    /**
-     * Store the transcripts in the database.
-     */
-    static void ingestTranscripts(DataSource dataSource,
-                                  GenomicAssembly genomicAssembly,
-                                  Collection<TranscriptModel> transcripts) throws SquirlsResourceException {
-        TranscriptModelServiceDb transcriptIngestDao = new TranscriptModelServiceDb(dataSource, genomicAssembly);
-        TranscriptsIngestRunner transcriptsIngestRunner = new TranscriptsIngestRunner(transcriptIngestDao, transcripts);
-        transcriptsIngestRunner.run();
     }
 
     /**
@@ -238,35 +217,36 @@ public class SquirlsDataBuilder {
      * Build the database given inputs.
      *
      * @param buildDir          path to directory where the database file should be stored
-     * @param genomeUrl         url pointing to `tar.gz` file with reference genome
-     * @param jannovarDbDir     path to directory with Jannovar serialized files
+     * @param genomeUrl         URL pointing to `tar.gz` file with reference genome
+     * @param refseqUrl         URL pointing to Jannovar RefSeq transcript database
+     * @param ensemblUrl        URL pointing to Jannovar Ensembl transcript database
+     * @param ucscUrl           URL pointing to Jannovar UCSC transcript database
      * @param yamlPath          path to file with splice site definitions
-     * @param versionedAssembly a string like `1710_hg19`, etc.
      * @throws SquirlsException if anything goes wrong
      */
-    public static void buildDatabase(Path buildDir, URL genomeUrl, URL genomeAssemblyReport, URL phylopUrl, Path jannovarDbDir, Path yamlPath,
+    public static void buildDatabase(Path buildDir, URL genomeUrl, URL genomeAssemblyReport,
+                                     URL refseqUrl, URL ensemblUrl, URL ucscUrl,
+                                     URL phylopUrl,
+                                     Path yamlPath,
                                      Path hexamerPath, Path septamerPath,
-                                     Map<SquirlsClassifierVersion, Path> classifiers,
-                                     String versionedAssembly) throws SquirlsException {
+                                     Map<SquirlsClassifierVersion, Path> classifiers) throws SquirlsException {
 
         // 0 - initiate download of reference genome FASTA file & PhyloP bigwig file
-        // this is where the reference genome will be downloaded by the commands below
-        Path genomeFastaPath = buildDir.resolve(String.format("%s.fa", versionedAssembly));
-        Path genomeFastaFaiPath = buildDir.resolve(String.format("%s.fa.fai", versionedAssembly));
-        Path genomeFastaDictPath = buildDir.resolve(String.format("%s.fa.dict", versionedAssembly));
-        Path genomeAssemblyReportPath = buildDir.resolve(String.format("%s.assembly_report.txt", versionedAssembly));
-        Path phyloPPath = buildDir.resolve(String.format("%s.phylop.bw", versionedAssembly));
+        Path genomeAssemblyReportPath = buildDir.resolve("assembly_report.txt");
+        Path phyloPPath = buildDir.resolve("phylop.bw");
+        Path refseqPath = buildDir.resolve("tx.refseq.ser");
+        Path ensemblPath = buildDir.resolve("tx.ensembl.ser");
+        Path ucscPath = buildDir.resolve("tx.ucsc.ser");
 
         ExecutorService es = Executors.newFixedThreadPool(3);
-        es.submit(downloadReferenceGenome(genomeUrl, buildDir, versionedAssembly, false));
+        es.submit(downloadReferenceGenome(genomeUrl, buildDir, false));
         es.submit(new UrlResourceDownloader(phylopUrl, phyloPPath, false));
         es.submit(new UrlResourceDownloader(genomeAssemblyReport, genomeAssemblyReportPath, false));
+        es.submit(new UrlResourceDownloader(refseqUrl, refseqPath, true));
+        es.submit(new UrlResourceDownloader(ensemblUrl, ensemblPath, true));
+        es.submit(new UrlResourceDownloader(ucscUrl, ucscPath, true));
 
-        // 1 - deserialize Jannovar transcript databases
-        LOGGER.info("Loading transcripts from Jannovar transcript databases located in `{}`", jannovarDbDir);
-        JannovarDataManager manager = JannovarDataManager.fromDirectory(jannovarDbDir);
-
-        // 2a - parse YAML with splicing matrices
+        // 1a - parse YAML with splicing matrices
         SplicingPwmData splicingPwmData;
         try (InputStream is = Files.newInputStream(yamlPath)) {
             SplicingPositionalWeightMatrixParser parser = new InputStreamBasedPositionalWeightMatrixParser(is);
@@ -275,9 +255,9 @@ public class SquirlsDataBuilder {
             throw new SquirlsException(e);
         }
 
-        // 2b - parse k-mer maps
-        final Map<String, Double> hexamerMap;
-        final Map<String, Double> septamerMap;
+        // 1b - parse k-mer maps
+        Map<String, Double> hexamerMap;
+        Map<String, Double> septamerMap;
         try {
             hexamerMap = new FileKMerParser(hexamerPath).getKmerMap();
             septamerMap = new FileKMerParser(septamerPath).getKmerMap();
@@ -285,25 +265,25 @@ public class SquirlsDataBuilder {
             throw new SquirlsException(e);
         }
 
-        // 3 - create and fill the database
-        // 3a - initialize database
-        Path databasePath = buildDir.resolve(String.format("%s.splicing", versionedAssembly));
+        // 2 - create and fill the database
+        // 2a - initialize database
+        Path databasePath = buildDir.resolve("squirls");
         LOGGER.info("Creating database at `{}`", databasePath);
         DataSource dataSource = makeDataSource(databasePath);
 
-        // 3b - apply migrations
+        // 2b - apply migrations
         final int i = applyMigrations(dataSource);
         LOGGER.info("Applied {} migrations", i);
 
-        // 3c - store PWM data
+        // 2c - store PWM data
         LOGGER.info("Inserting PWMs");
         processPwms(dataSource, splicingPwmData);
 
-        // 3d - store k-mer maps
+        // 2d - store k-mer maps
         LOGGER.info("Inserting k-mer maps");
         processKmers(dataSource, hexamerMap, septamerMap);
 
-        // 3e - store classifier
+        // 2e - store classifier
         try {
             LOGGER.info("Inserting classifiers");
             Map<SquirlsClassifierVersion, byte[]> clfData = readClassifiers(classifiers);
@@ -322,26 +302,16 @@ public class SquirlsDataBuilder {
             }
             System.out.print('\n');
         } catch (InterruptedException e) {
-            if (LOGGER.isWarnEnabled()) LOGGER.warn("Interrupting the download");
+            LOGGER.warn("Interrupting the download");
             es.shutdownNow();
         }
 
-        // 3f - store reference dictionary and transcripts
-        try (FastaStrandedSequenceService accessor = new FastaStrandedSequenceService(genomeAssemblyReportPath,
-                genomeFastaPath, genomeFastaFaiPath, genomeFastaDictPath)) {
-            GenomicAssembly genomicAssembly = accessor.genomicAssembly();
-
-            if (LOGGER.isInfoEnabled()) LOGGER.info("Inserting transcripts");
-            ingestTranscripts(dataSource, genomicAssembly, manager.getAllTranscriptModels(genomicAssembly));
-        } catch (Exception e) {
-            throw new SquirlsException(e);
-        }
         if (dataSource instanceof Closeable) {
             try {
-                if (LOGGER.isInfoEnabled()) LOGGER.info("Closing database connections");
+                LOGGER.info("Closing database connections");
                 ((Closeable) dataSource).close();
             } catch (IOException e) {
-                if (LOGGER.isWarnEnabled()) LOGGER.warn("Could not close the datasource");
+                LOGGER.warn("Could not close the datasource");
             }
         }
     }

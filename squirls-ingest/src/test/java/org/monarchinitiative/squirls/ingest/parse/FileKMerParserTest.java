@@ -77,6 +77,7 @@
 package org.monarchinitiative.squirls.ingest.parse;
 
 import org.junit.jupiter.api.Test;
+import org.monarchinitiative.squirls.ingest.TestDataSourceConfig;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -88,10 +89,11 @@ import static org.hamcrest.Matchers.hasEntry;
 
 public class FileKMerParserTest {
 
+    private static final Path BASE_DIR = TestDataSourceConfig.BASE_FOLDER.resolve("parse");
 
     @Test
     public void theFileIsParsed() throws Exception {
-        Path path = Paths.get(FileKMerParserTest.class.getResource("good-septamers.tsv").getPath());
+        Path path = BASE_DIR.resolve("good-septamers.tsv");
         FileKMerParser parser = new FileKMerParser(path);
 
         Map<String, Double> septamerMap = parser.getKmerMap();
@@ -102,7 +104,7 @@ public class FileKMerParserTest {
 
     @Test
     public void corruptLinesAreIgnored() throws Exception {
-        Path path = Paths.get(FileKMerParserTest.class.getResource("invalid-septamers.tsv").getPath());
+        Path path = BASE_DIR.resolve("invalid-septamers.tsv");
         FileKMerParser parser = new FileKMerParser(path);
 
         Map<String, Double> septamerMap = parser.getKmerMap();
@@ -113,7 +115,7 @@ public class FileKMerParserTest {
 
     @Test
     public void hexamersAreParsed() throws Exception {
-        Path path = Paths.get(FileKMerParserTest.class.getResource("hexamer-scores.tsv").getPath());
+        Path path = BASE_DIR.resolve("hexamer-scores.tsv");
         FileKMerParser parser = new FileKMerParser(path);
 
         Map<String, Double> kmerMap = parser.getKmerMap();

@@ -76,10 +76,12 @@
 
 package org.monarchinitiative.squirls.core.scoring.calculators;
 
+import org.monarchinitiative.sgenes.model.Transcript;
 import org.monarchinitiative.squirls.core.reference.*;
 import org.monarchinitiative.squirls.core.scoring.calculators.ic.SplicingInformationContentCalculator;
+import org.monarchinitiative.svart.Coordinates;
 import org.monarchinitiative.svart.GenomicRegion;
-import org.monarchinitiative.svart.Variant;
+import org.monarchinitiative.svart.GenomicVariant;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -109,7 +111,7 @@ public class SStrengthDiffDonor implements FeatureCalculator {
     }
 
     @Override
-    public double score(Variant variant, TranscriptModel transcript, StrandedSequence sequence) {
+    public double score(GenomicVariant variant, Transcript transcript, StrandedSequence sequence) {
         SplicingLocationData locationData = locator.locate(variant, transcript);
         switch (locationData.getPosition()) {
             case EXON:
@@ -117,8 +119,8 @@ public class SStrengthDiffDonor implements FeatureCalculator {
                 int exonIdx = locationData.getExonIdx();
                 if (transcript.exons().size() - exonIdx > 2) {
                     // the current exon is NOT the last or the second last exon of the transcript
-                    GenomicRegion thisExon = transcript.exons().get(exonIdx);
-                    GenomicRegion thisDonor = generator.makeDonorInterval(thisExon);
+                    Coordinates thisExon = transcript.exons().get(exonIdx);
+                    GenomicRegion thisDonor = generator.makeDonorInterval(transcript.contig(), transcript.strand(), thisExon);
                     double thisDonorScore;
                     try {
                         String thisDonorSiteSnippet = generator.getDonorSiteWithAltAllele(thisDonor, variant, sequence);
@@ -130,8 +132,8 @@ public class SStrengthDiffDonor implements FeatureCalculator {
                         thisDonorScore = 0;
                     }
 
-                    GenomicRegion nextExon = transcript.exons().get(exonIdx + 1);
-                    GenomicRegion nextDonor = generator.makeDonorInterval(nextExon);
+                    Coordinates nextExon = transcript.exons().get(exonIdx + 1);
+                    GenomicRegion nextDonor = generator.makeDonorInterval(transcript.contig(), transcript.strand(), nextExon);
                     double nextDonorScore;
                     try {
                         String nextDonorSiteSnippet = generator.getDonorSiteWithAltAllele(nextDonor, variant, sequence);

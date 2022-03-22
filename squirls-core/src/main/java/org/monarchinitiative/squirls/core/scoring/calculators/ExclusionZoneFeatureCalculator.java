@@ -76,11 +76,11 @@
 
 package org.monarchinitiative.squirls.core.scoring.calculators;
 
+import org.monarchinitiative.sgenes.model.Transcript;
 import org.monarchinitiative.squirls.core.reference.AlleleGenerator;
 import org.monarchinitiative.squirls.core.reference.StrandedSequence;
-import org.monarchinitiative.squirls.core.reference.TranscriptModel;
 import org.monarchinitiative.squirls.core.reference.TranscriptModelLocator;
-import org.monarchinitiative.svart.Variant;
+import org.monarchinitiative.svart.GenomicVariant;
 
 import java.util.regex.Pattern;
 
@@ -155,7 +155,7 @@ public class ExclusionZoneFeatureCalculator extends BaseAgezCalculator {
      * sufficient nucleotide sequence
      */
     @Override
-    public double score(Variant variant, TranscriptModel transcript, StrandedSequence sequence) {
+    public double score(GenomicVariant variant, Transcript transcript, StrandedSequence sequence) {
         if (!overlapsWithAgezRegion(variant, transcript)) {
             return 0.;
         }

@@ -78,13 +78,13 @@ package org.monarchinitiative.squirls.cli.data;
 
 import de.charite.compbio.jannovar.annotation.VariantAnnotations;
 import htsjdk.variant.variantcontext.VariantContext;
+import org.monarchinitiative.sgenes.model.Transcript;
 import org.monarchinitiative.squirls.cli.writers.WritableSplicingAllele;
 import org.monarchinitiative.squirls.core.SquirlsResult;
 import org.monarchinitiative.squirls.core.VariantOnTranscript;
 import org.monarchinitiative.squirls.core.classifier.SquirlsFeatures;
 import org.monarchinitiative.squirls.core.reference.StrandedSequence;
-import org.monarchinitiative.squirls.core.reference.TranscriptModel;
-import org.monarchinitiative.svart.Variant;
+import org.monarchinitiative.svart.GenomicVariant;
 
 import java.util.Map;
 import java.util.Objects;
@@ -109,9 +109,9 @@ public class TestVariant implements WritableSplicingAllele, SquirlsFeatures, Var
      */
     private final VariantContext base;
 
-    private final Variant variant;
+    private final GenomicVariant variant;
 
-    private final TranscriptModel tx;
+    private final Transcript tx;
 
     private final StrandedSequence si;
 
@@ -129,7 +129,7 @@ public class TestVariant implements WritableSplicingAllele, SquirlsFeatures, Var
      */
     private String graphics;
 
-    TestVariant(VariantContext base, Variant variant, TranscriptModel tx, StrandedSequence si, Map<String, Double> features) {
+    TestVariant(VariantContext base, GenomicVariant variant, Transcript tx, StrandedSequence si, Map<String, Double> features) {
         this.base = base;
         this.variant = variant;
         this.tx = tx;
@@ -169,12 +169,12 @@ public class TestVariant implements WritableSplicingAllele, SquirlsFeatures, Var
     }
 
     @Override
-    public Variant variant() {
+    public GenomicVariant variant() {
         return variant;
     }
 
     @Override
-    public TranscriptModel transcript() {
+    public Transcript transcript() {
         return tx;
     }
 

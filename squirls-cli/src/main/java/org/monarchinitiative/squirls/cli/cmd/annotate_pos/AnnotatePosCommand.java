@@ -80,7 +80,9 @@ package org.monarchinitiative.squirls.cli.cmd.annotate_pos;
 import org.monarchinitiative.squirls.cli.Main;
 import org.monarchinitiative.squirls.cli.cmd.AnnotatingSquirlsCommand;
 import org.monarchinitiative.squirls.core.*;
+import org.monarchinitiative.squirls.io.SquirlsResourceException;
 import org.monarchinitiative.svart.*;
+import org.monarchinitiative.svart.assembly.GenomicAssembly;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ConfigurableApplicationContext;
@@ -107,7 +109,7 @@ public class AnnotatePosCommand extends AnnotatingSquirlsCommand {
 
     private static final String DELIMITER = "\t";
 
-    @Parameters(arity = "1..*",
+    @Parameters(arity = "0..*",
             paramLabel = "chr3:165504107A>C",
             description = "Nucleotide change(s) to annotate")
     public List<String> rawChanges;
@@ -115,11 +117,10 @@ public class AnnotatePosCommand extends AnnotatingSquirlsCommand {
     @Override
     public Integer call() {
         try (ConfigurableApplicationContext context = getContext()) {
-            rawChanges.remove(0); // path to the config file
             LOGGER.info("Changes: {}", rawChanges);
-            SquirlsDataService squirlsDataService = context.getBean(SquirlsDataService.class);
-            GenomicAssembly assembly = squirlsDataService.genomicAssembly();
-            VariantSplicingEvaluator splicingEvaluator = context.getBean(VariantSplicingEvaluator.class);
+            Squirls squirls = getSquirls(context);
+            GenomicAssembly assembly = squirls.squirlsDataService().genomicAssembly();
+
 
             // parse changes (input)
             List<VariantChange> changes = rawChanges.stream()
@@ -138,8 +139,8 @@ public class AnnotatePosCommand extends AnnotatingSquirlsCommand {
                     continue;
                 }
 
-                Variant variant = Variant.of(contig, "", Strand.POSITIVE, CoordinateSystem.oneBased(), Position.of(change.getPos()), change.getRef(), change.getAlt());
-                SquirlsResult squirlsResult = splicingEvaluator.evaluate(variant);
+                GenomicVariant variant = GenomicVariant.of(contig, "", Strand.POSITIVE, CoordinateSystem.oneBased(), change.getPos(), change.getRef(), change.getAlt());
+                SquirlsResult squirlsResult = squirls.variantSplicingEvaluator().evaluate(variant);
                 List<String> columns = new ArrayList<>();
 
                 // variant
@@ -160,6 +161,9 @@ public class AnnotatePosCommand extends AnnotatingSquirlsCommand {
                 System.out.println(String.join(DELIMITER, columns));
             }
             System.out.println();
+        } catch (SquirlsResourceException e) {
+            LOGGER.error("Error occurred: {}", e.getMessage(), e);
+            return 1;
         }
 
         return 0;

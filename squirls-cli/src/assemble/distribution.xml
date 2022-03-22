@@ -88,8 +88,9 @@
             <filtered>true</filtered>
             <includes>
                 <include>README.md</include>
-                <include>LICENSE.txt</include>
+                <include>LICENSE</include>
                 <include>CHANGELOG.md</include>
+                <include>legal/**</include>
             </includes>
         </fileSet>
         <fileSet>

@@ -79,31 +79,39 @@ package org.monarchinitiative.squirls.io.sequence;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledOnOs;
+import org.junit.jupiter.api.condition.EnabledOnOs;
+import org.junit.jupiter.api.condition.OS;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.monarchinitiative.squirls.core.reference.StrandedSequence;
 import org.monarchinitiative.svart.*;
+import org.monarchinitiative.svart.assembly.GenomicAssembly;
 import org.monarchinitiative.svart.parsers.GenomicAssemblyParser;
 
+import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 
+@DisabledOnOs(OS.WINDOWS)
 public class FastaStrandedSequenceServiceTest {
 
-    private static final GenomicAssembly GENOMIC_ASSEMBLY = GenomicAssemblyParser.parseAssembly(Paths.get("src/test/resources/org/monarchinitiative/squirls/io/sequence/small_hg19.assembly_report.txt"));
+    private static final Path TEST_BASE = Paths.get("src/test/resources/org/monarchinitiative/squirls/io/sequence");
+
+    private static final GenomicAssembly GENOMIC_ASSEMBLY = GenomicAssemblyParser.parseAssembly(TEST_BASE.resolve("small_hg19.assembly_report.txt"));
 
     private FastaStrandedSequenceService sequenceService;
 
 
     @BeforeEach
     public void setUp() throws Exception {
-        String prefix = "src/test/resources/org/monarchinitiative/squirls/io/sequence/";
-        sequenceService = new FastaStrandedSequenceService(Paths.get(prefix + "small_hg19.assembly_report.txt"),
-                Paths.get(prefix + "small_hg19.fa"),
-                Paths.get(prefix + "small_hg19.fa.fai"),
-                Paths.get(prefix + "small_hg19.fa.dict"));
+        sequenceService = new FastaStrandedSequenceService(
+                TEST_BASE.resolve("small_hg19.assembly_report.txt"),
+                TEST_BASE.resolve("small_hg19.fa"),
+                TEST_BASE.resolve("small_hg19.fa.fai"),
+                TEST_BASE.resolve("small_hg19.fa.dict"));
     }
 
     @AfterEach
@@ -113,29 +121,19 @@ public class FastaStrandedSequenceServiceTest {
 
     @ParameterizedTest
     @CsvSource({
-            "1, POSITIVE,    LEFT_OPEN,  0, 5,    tcctg",
-            "2, POSITIVE,    LEFT_OPEN,  0, 5,    TGGGG",
-            "1, NEGATIVE,    LEFT_OPEN,  0, 5,    attcc",
-            "2, NEGATIVE,    LEFT_OPEN,  0, 5,    TCCTT",
+            "1, POSITIVE,   ZERO_BASED,  0, 5,    tcctg",
+            "2, POSITIVE,   ZERO_BASED,  0, 5,    TGGGG",
+            "1, NEGATIVE,   ZERO_BASED,  0, 5,    attcc",
+            "2, NEGATIVE,   ZERO_BASED,  0, 5,    TCCTT",
 
-            "1, POSITIVE, FULLY_CLOSED,  1, 5,    tcctg",
-            "2, POSITIVE, FULLY_CLOSED,  1, 5,    TGGGG",
-            "1, NEGATIVE, FULLY_CLOSED,  1, 5,    attcc",
-            "2, NEGATIVE, FULLY_CLOSED,  1, 5,    TCCTT",
-
-            "1, POSITIVE,   RIGHT_OPEN,  1, 6,    tcctg",
-            "2, POSITIVE,   RIGHT_OPEN,  1, 6,    TGGGG",
-            "1, NEGATIVE,   RIGHT_OPEN,  1, 6,    attcc",
-            "2, NEGATIVE,   RIGHT_OPEN,  1, 6,    TCCTT",
-
-            "1, POSITIVE,   FULLY_OPEN,  0, 6,    tcctg",
-            "2, POSITIVE,   FULLY_OPEN,  0, 6,    TGGGG",
-            "1, NEGATIVE,   FULLY_OPEN,  0, 6,    attcc",
-            "2, NEGATIVE,   FULLY_OPEN,  0, 6,    TCCTT",
+            "1, POSITIVE,    ONE_BASED,  1, 5,    tcctg",
+            "2, POSITIVE,    ONE_BASED,  1, 5,    TGGGG",
+            "1, NEGATIVE,    ONE_BASED,  1, 5,    attcc",
+            "2, NEGATIVE,    ONE_BASED,  1, 5,    TCCTT",
     })
     public void sequenceForRegion(String contig, Strand strand, CoordinateSystem coordinateSystem, int start, int end,
                                   String expectedSequence) {
-        GenomicRegion query = GenomicRegion.of(GENOMIC_ASSEMBLY.contigByName(contig), strand, coordinateSystem, Position.of(start), Position.of(end));
+        GenomicRegion query = GenomicRegion.of(GENOMIC_ASSEMBLY.contigByName(contig), strand, coordinateSystem, start, end);
         StrandedSequence sequence = sequenceService.sequenceForRegion(query);
 
         assertThat(sequence.contig(), equalTo(query.contig()));

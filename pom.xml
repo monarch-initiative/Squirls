@@ -27,7 +27,8 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <java.version>11</java.version>
 
-        <svart.version>1.0.0</svart.version>
+        <svart.version>2.0.0-RC1</svart.version>
+        <silent.genes.version>0.2.3</silent.genes.version>
         <vmvt.version>0.9.4</vmvt.version>
         <htsjdk.version>2.23.0</htsjdk.version>
         <jannovar.version>0.35</jannovar.version>
@@ -75,6 +76,16 @@
                 <artifactId>svart</artifactId>
                 <version>${svart.version}</version>
             </dependency>
+            <dependency>
+                <groupId>org.monarchinitiative.sgenes</groupId>
+                <artifactId>silent-genes-model</artifactId>
+                <version>${silent.genes.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.monarchinitiative.sgenes</groupId>
+                <artifactId>silent-genes-jannovar</artifactId>
+                <version>${silent.genes.version}</version>
+            </dependency>
 
             <!-- VMVT is a library for visualisation of variant impact on splice donor/acceptor sites in form of
         SVG images. -->
@@ -103,21 +114,6 @@
                 <groupId>de.charite.compbio</groupId>
                 <artifactId>jannovar-core</artifactId>
                 <version>${jannovar.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>de.charite.compbio</groupId>
-                <artifactId>jannovar-htsjdk</artifactId>
-                <version>${jannovar.version}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.testng</groupId>
-                        <artifactId>testng</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>com.github.samtools</groupId>
-                        <artifactId>htsjdk</artifactId>
-                    </exclusion>
-                </exclusions>
             </dependency>
             <dependency>
                 <groupId>com.h2database</groupId>
@@ -205,6 +201,15 @@
     <build>
         <pluginManagement>
             <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <version>3.8.1</version>
+                    <configuration>
+                        <source>${java.version}</source>
+                        <target>${java.version}</target>
+                    </configuration>
+                </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-surefire-plugin</artifactId>

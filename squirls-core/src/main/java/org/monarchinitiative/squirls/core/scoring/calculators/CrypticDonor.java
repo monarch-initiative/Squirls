@@ -76,11 +76,12 @@
 
 package org.monarchinitiative.squirls.core.scoring.calculators;
 
+import org.monarchinitiative.sgenes.model.Transcript;
 import org.monarchinitiative.squirls.core.reference.*;
 import org.monarchinitiative.squirls.core.Utils;
 import org.monarchinitiative.squirls.core.scoring.calculators.ic.SplicingInformationContentCalculator;
 import org.monarchinitiative.svart.GenomicRegion;
-import org.monarchinitiative.svart.Variant;
+import org.monarchinitiative.svart.GenomicVariant;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -104,7 +105,7 @@ public class CrypticDonor extends BaseFeatureCalculator {
     }
 
     @Override
-    protected double score(Variant variant, SplicingLocationData locationData, TranscriptModel transcript, StrandedSequence sequence) {
+    protected double score(GenomicVariant variant, SplicingLocationData locationData, Transcript transcript, StrandedSequence sequence) {
         switch (locationData.getPosition()) {
             case EXON:
             case INTRON:
@@ -121,13 +122,13 @@ public class CrypticDonor extends BaseFeatureCalculator {
     }
 
 
-    private double score(Variant variant, GenomicRegion donor, StrandedSequence sequence) {
+    private double score(GenomicVariant variant, GenomicRegion donor, StrandedSequence sequence) {
         // prepare snippet for sliding window with alt allele
         String donorNeighborSnippet = generator.getDonorNeighborSnippet(variant, sequence, variant.alt());
         if (donorNeighborSnippet == null) {
             if (LOGGER.isWarnEnabled())
                 LOGGER.warn("Unable to create sliding window snippet +- {}bp for variant `{}` using sequence `{}`",
-                        padding, variant, Utils.formatAsRegion(sequence));
+                        padding, variant, Utils.formatAsRegion(sequence.location()));
             return Double.NaN;
         }
         double crypticMaxScore = Utils.slidingWindow(donorNeighborSnippet, calculator.getSplicingParameters().getDonorLength())
@@ -149,7 +150,7 @@ public class CrypticDonor extends BaseFeatureCalculator {
         if (donorSnippet == null) {
             if (LOGGER.isWarnEnabled())
                 LOGGER.warn("Unable to create donor snippet at `{}` for variant `{}` using sequence `{}`",
-                        donor, variant, Utils.formatAsRegion(sequence));
+                        donor, variant, Utils.formatAsRegion(sequence.location()));
             return Double.NaN;
         }
 

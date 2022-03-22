@@ -81,9 +81,8 @@ import org.junit.jupiter.api.Test;
 import org.monarchinitiative.squirls.core.SimpleAnnotatableSquirlsFeatures;
 import org.monarchinitiative.squirls.core.classifier.SquirlsFeatures;
 import org.monarchinitiative.svart.CoordinateSystem;
-import org.monarchinitiative.svart.Position;
 import org.monarchinitiative.svart.Strand;
-import org.monarchinitiative.svart.Variant;
+import org.monarchinitiative.svart.GenomicVariant;
 
 import java.util.List;
 
@@ -104,7 +103,7 @@ public class RichSplicingAnnotatorTest extends BaseSplicingAnnotatorTest {
 
     @Test
     public void firstExonDonor() {
-        Variant variant = Variant.of(contig, "", Strand.POSITIVE, CoordinateSystem.zeroBased(), Position.of(1199), "G", "A");
+        GenomicVariant variant = GenomicVariant.of(contig, "", Strand.POSITIVE, CoordinateSystem.zeroBased(), 1199, "G", "A");
 
         SimpleAnnotatableSquirlsFeatures ann = new SimpleAnnotatableSquirlsFeatures(variant, st, sequence);
         SquirlsFeatures features = annotator.annotate(ann);
@@ -116,7 +115,7 @@ public class RichSplicingAnnotatorTest extends BaseSplicingAnnotatorTest {
 
     @Test
     public void secondExonDonor() {
-        Variant variant = Variant.of(contig, "", Strand.POSITIVE, CoordinateSystem.zeroBased(), Position.of(1599), "C", "A");
+        GenomicVariant variant = GenomicVariant.of(contig, "", Strand.POSITIVE, CoordinateSystem.zeroBased(), 1599, "C", "A");
         when(accessor.getScores(variant)).thenReturn(List.of(.12345F));
 
         SquirlsFeatures features = annotator.annotate(new SimpleAnnotatableSquirlsFeatures(variant, st, sequence));

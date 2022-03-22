@@ -76,30 +76,27 @@
 
 package org.monarchinitiative.squirls.cli.cmd.annotate_csv;
 
-import de.charite.compbio.jannovar.annotation.Annotation;
 import de.charite.compbio.jannovar.annotation.AnnotationException;
 import de.charite.compbio.jannovar.annotation.VariantAnnotations;
 import de.charite.compbio.jannovar.annotation.VariantAnnotator;
 import de.charite.compbio.jannovar.annotation.builders.AnnotationBuilderOptions;
 import de.charite.compbio.jannovar.data.JannovarData;
-import de.charite.compbio.jannovar.data.JannovarDataSerializer;
 import de.charite.compbio.jannovar.data.ReferenceDictionary;
-import de.charite.compbio.jannovar.data.SerializationException;
 import de.charite.compbio.jannovar.reference.GenomePosition;
 import de.charite.compbio.jannovar.reference.GenomeVariant;
 import de.charite.compbio.jannovar.reference.PositionType;
-import de.charite.compbio.jannovar.reference.TranscriptModel;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
 import org.monarchinitiative.squirls.cli.Main;
 import org.monarchinitiative.squirls.cli.cmd.AnnotatingSquirlsCommand;
+import org.monarchinitiative.squirls.cli.visualization.selector.VisualizationContextSelector;
 import org.monarchinitiative.squirls.cli.writers.*;
-import org.monarchinitiative.squirls.core.SquirlsDataService;
-import org.monarchinitiative.squirls.core.SquirlsException;
-import org.monarchinitiative.squirls.core.SquirlsResult;
-import org.monarchinitiative.squirls.core.VariantSplicingEvaluator;
+import org.monarchinitiative.squirls.core.*;
+import org.monarchinitiative.squirls.core.reference.SplicingPwmData;
 import org.monarchinitiative.svart.*;
+import org.monarchinitiative.svart.assembly.GenomicAssembly;
+import org.monarchinitiative.vmvt.core.VmvtGenerator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ConfigurableApplicationContext;
@@ -109,7 +106,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
-import java.util.stream.Collectors;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * @author Daniel Danis
@@ -125,29 +123,30 @@ public class AnnotateCsvCommand extends AnnotatingSquirlsCommand {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AnnotateCsvCommand.class);
 
+    private static final Pattern BASES = Pattern.compile("[ACGT]+", Pattern.CASE_INSENSITIVE);
+
     private static final List<String> EXPECTED_HEADER = List.of("CHROM", "POS", "REF", "ALT");
 
-    @CommandLine.Parameters(index = "1",
-            paramLabel = "hg38_refseq.ser",
-            description = "Path to Jannovar transcript database")
-    public Path jannovarDataPath;
+    private static boolean NOTIFIED_ABOUT_MISSING_VARIANT_ID = false;
 
-    @CommandLine.Parameters(index = "2",
+    @CommandLine.Parameters(index = "0",
             paramLabel = "input.csv",
             description = "Path to the input tabular file")
     public Path inputPath;
 
-    @CommandLine.Parameters(index = "3",
+    @CommandLine.Parameters(index = "1",
             paramLabel = "path/to/output",
             description = "Prefix for the output files")
     public String outputPrefix;
 
-    private static Variant parseCsvRecord(GenomicAssembly assembly, CSVRecord record) throws SquirlsException {
+    private static GenomicVariant parseCsvRecord(GenomicAssembly assembly, CSVRecord record) throws SquirlsException {
+        // parse contig
         String chrom = record.get("CHROM");
         Contig contig = assembly.contigByName(chrom);
         if (contig.isUnknown())
             throw new SquirlsException("Unknown contig `" + chrom + "` in record `" + record + "`");
 
+        // parse position
         int pos;
         try {
             pos = Integer.parseInt(record.get("POS"));
@@ -155,12 +154,34 @@ public class AnnotateCsvCommand extends AnnotatingSquirlsCommand {
             throw new SquirlsException("Invalid pos `" + record.get("POS") + " in record `" + record + "`", e);
         }
 
+        // parse id (optional)
+        String id;
+        if (record.isSet("ID")) {
+            id = record.get("ID");
+        } else {
+            if (!NOTIFIED_ABOUT_MISSING_VARIANT_ID) {
+                // TODO(v3.0.0) - fail upon missing ID
+                LOGGER.warn("Missing variant ID. The ID will become a mandatory column in v3.0.0");
+                NOTIFIED_ABOUT_MISSING_VARIANT_ID = true;
+            }
+            id = "";
+        }
+
+        // parse & validate alleles
         String ref = record.get("REF");
         String alt = record.get("ALT");
-        return Variant.of(contig, "", Strand.POSITIVE, CoordinateSystem.oneBased(), Position.of(pos), ref, alt);
+        Matcher refMatcher = BASES.matcher(ref);
+        if (!refMatcher.matches())
+            throw new SquirlsException("Invalid REF allele `" + ref + "` in record `" + record + '`');
+
+        Matcher altMatcher = BASES.matcher(alt);
+        if (!altMatcher.matches())
+            throw new SquirlsException("Invalid ALT allele `" + alt + "` in record `" + record + '`');
+
+        return GenomicVariant.of(contig, id, Strand.POSITIVE, CoordinateSystem.oneBased(), pos, ref, alt);
     }
 
-    private static VariantAnnotations annotateWithJannovar(VariantAnnotator annotator, ReferenceDictionary rd, Variant variant) throws AnnotationException, RuntimeException {
+    private static VariantAnnotations annotateWithJannovar(VariantAnnotator annotator, ReferenceDictionary rd, GenomicVariant variant) throws AnnotationException, RuntimeException {
         Integer contigId = rd.getContigNameToID().get(variant.contigName());
         if (contigId == null)
             throw new AnnotationException("Unknown contig " + variant.contigName());
@@ -175,22 +196,20 @@ public class AnnotateCsvCommand extends AnnotatingSquirlsCommand {
     public Integer call() {
         LOGGER.info("Reading variants from `{}`", inputPath.toAbsolutePath());
 
-        JannovarData jd;
-        try {
-            LOGGER.info("Loading transcript database from `{}`", jannovarDataPath.toAbsolutePath());
-            jd = new JannovarDataSerializer(jannovarDataPath.toAbsolutePath().toString()).load();
-        } catch (SerializationException e) {
-            LOGGER.error("Unable to deserialize jannovar transcript database: {}", e.getMessage());
-            return 1;
-        }
-
         try (ConfigurableApplicationContext context = getContext()) {
+            Squirls squirls = getSquirls(context);
+            SquirlsDataService squirlsDataService = squirls.squirlsDataService();
+            GenomicAssembly assembly = squirlsDataService.genomicAssembly();
+
+            JannovarData jd = context.getBean(JannovarData.class);
+            ReferenceDictionary rd = jd.getRefDict();
             VariantAnnotator annotator = new VariantAnnotator(jd.getRefDict(), jd.getChromosomes(), new AnnotationBuilderOptions());
-            VariantSplicingEvaluator evaluator = context.getBean(VariantSplicingEvaluator.class);
-            SquirlsDataService dataService = context.getBean(SquirlsDataService.class);
-            GenomicAssembly assembly = dataService.genomicAssembly();
+
             // ensure the fail-fast behavior at the cost of being retrieved far from the usage
-            AnalysisResultsWriter analysisResultsWriter = context.getBean(AnalysisResultsWriter.class);
+            AnalysisResultsWriter analysisResultsWriter = analysisResultsWriter(splicingVariantGraphicsGenerator(context.getBean(VmvtGenerator.class),
+                    context.getBean(SplicingPwmData.class),
+                    context.getBean(VisualizationContextSelector.class),
+                    squirlsDataService));
 
             int allVariants = 0;
             int annotatedAlleleCount = 0;
@@ -208,7 +227,7 @@ public class AnnotateCsvCommand extends AnnotatingSquirlsCommand {
                 for (CSVRecord record : parser) {
                     allVariants++;
 
-                    Variant variant;
+                    GenomicVariant variant;
                     try {
                         variant = parseCsvRecord(assembly, record);
                     } catch (SquirlsException e) {
@@ -219,19 +238,14 @@ public class AnnotateCsvCommand extends AnnotatingSquirlsCommand {
 
                     VariantAnnotations annotations;
                     try {
-                        annotations = annotateWithJannovar(annotator, jd.getRefDict(), variant);
+                        annotations = annotateWithJannovar(annotator, rd, variant);
                     } catch (AnnotationException | RuntimeException e) {
                         if (LOGGER.isWarnEnabled())
                             LOGGER.warn("line #{}: {}", record.getRecordNumber(), e.getMessage());
                         continue;
                     }
 
-                    Set<String> txAccessionIds = annotations.getAnnotations().stream()
-                            .map(Annotation::getTranscript)
-                            .map(TranscriptModel::getAccession)
-                            .collect(Collectors.toUnmodifiableSet());
-
-                    SquirlsResult squirlsResult = evaluator.evaluate(variant, txAccessionIds);
+                    SquirlsResult squirlsResult = squirls.variantSplicingEvaluator().evaluate(variant);
 
                     WritableSplicingAllele allele = WritableSplicingAlleleDefault.of(variant, annotations, squirlsResult);
                     annotated.add(allele);
@@ -247,13 +261,16 @@ public class AnnotateCsvCommand extends AnnotatingSquirlsCommand {
                     .analysisStats(AnalysisStats.of(allVariants, allVariants, annotatedAlleleCount))
                     .settingsData(SettingsData.builder()
                             .inputPath(inputPath.toAbsolutePath().toString())
-                            .transcriptDb(jannovarDataPath.toAbsolutePath().toString())
+                            .featureSource(featureSource)
                             .nReported(nVariantsToReport)
                             .build())
                     .addAllVariants(annotated)
                     .build();
 
             analysisResultsWriter.writeResults(results, prepareOutputOptions(outputPrefix));
+        } catch (Exception e) {
+            LOGGER.error("Error occurred: {}", e.getMessage(), e);
+            return 1;
         }
 
         return 0;

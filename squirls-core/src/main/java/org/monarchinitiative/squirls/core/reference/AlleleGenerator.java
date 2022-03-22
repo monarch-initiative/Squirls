@@ -133,23 +133,21 @@ public class AlleleGenerator {
     private static GenomicRegion makeGenomicRegionWithLength(Contig contig, Strand strand, int start, int length) {
         if (length < 0)
             throw new IllegalArgumentException("Cannot make a region with negative length");
-        return GenomicRegion.of(contig, strand, CS, Position.of(start), Position.of(start + length));
+        return GenomicRegion.of(contig, strand, CS, start, start + length);
     }
 
     /**
-     * @param exon a region that represents an exon
      * @return interval of splice donor site
      */
-    public GenomicRegion makeDonorInterval(GenomicRegion exon) {
-        return splicingParameters.makeDonorRegion(exon);
+    public GenomicRegion makeDonorInterval(Contig contig, Strand strand, Coordinates exon) {
+        return splicingParameters.makeDonorRegion(contig, strand, exon);
     }
 
     /**
-     * @param exon a region that represents an exon
      * @return interval of splice acceptor site
      */
-    public GenomicRegion makeAcceptorInterval(GenomicRegion exon) {
-        return splicingParameters.makeAcceptorRegion(exon);
+    public GenomicRegion makeAcceptorInterval(Contig contig, Strand strand, Coordinates exon) {
+        return splicingParameters.makeAcceptorRegion(contig, strand, exon);
     }
 
     /**
@@ -160,7 +158,7 @@ public class AlleleGenerator {
      * @param sequence sequence to use for creating snippet
      * @return nucleotide snippet for splice donor site or <code>null</code> if wrong input is provided
      */
-    public String getDonorSiteWithAltAllele(GenomicRegion donor, Variant variant, StrandedSequence sequence) throws SpliceSiteDeletedException {
+    public String getDonorSiteWithAltAllele(GenomicRegion donor, GenomicVariant variant, StrandedSequence sequence) throws SpliceSiteDeletedException {
         String result; // this method creates the result String in 5' --> 3' direction
 
         if (donor.contigId() != variant.contigId() || donor.contigId() != sequence.contigId()) {
@@ -198,7 +196,7 @@ public class AlleleGenerator {
                 if (seq == null) {
                     if (LOGGER.isWarnEnabled())
                         LOGGER.warn("Not enough of fasta sequence provided for variant `{}` - sequence: `{}`, required: `{}`",
-                                variant, Utils.formatAsRegion(sequence), interval);
+                                variant, Utils.formatAsRegion(sequence.location()), interval);
                     return null;
                 }
                 result = seq + result;
@@ -213,7 +211,7 @@ public class AlleleGenerator {
             if (seq == null) {
                 if (LOGGER.isWarnEnabled())
                     LOGGER.warn("Not enough of fasta sequence provided for variant `{}` - sequence: `{}`, required: `{}`",
-                            variant, Utils.formatAsRegion(sequence), interval);
+                            variant, Utils.formatAsRegion(sequence.location()), interval);
                 return null;
             }
             result = seq + alt;
@@ -231,7 +229,7 @@ public class AlleleGenerator {
         if (seq == null) {
             if (LOGGER.isWarnEnabled())
                 LOGGER.warn("Not enough of fasta sequence provided for variant `{}` - sequence: `{}`, required: `{}`",
-                        variant, Utils.formatAsRegion(sequence), interval);
+                        variant, Utils.formatAsRegion(sequence.location()), interval);
             return null;
         }
         result += seq;
@@ -248,7 +246,7 @@ public class AlleleGenerator {
      * @param sequence sequence to use for creating snippet
      * @return nucleotide snippet for splice acceptor site or <code>null</code> if wrong input is provided
      */
-    public String getAcceptorSiteWithAltAllele(GenomicRegion acceptor, Variant variant, StrandedSequence sequence) throws SpliceSiteDeletedException {
+    public String getAcceptorSiteWithAltAllele(GenomicRegion acceptor, GenomicVariant variant, StrandedSequence sequence) throws SpliceSiteDeletedException {
         String result = ""; // this method creates the result String in 3' --> 5' direction
 
         if (acceptor.contigId() != variant.contigId() || acceptor.contigId() != sequence.contigId()) {
@@ -286,7 +284,7 @@ public class AlleleGenerator {
                 if (seq == null) {
                     if (LOGGER.isWarnEnabled())
                         LOGGER.warn("Not enough of fasta sequence provided for variant `{}` - sequence: `{}`, required: `{}`",
-                                variant, Utils.formatAsRegion(sequence), interval);
+                                variant, Utils.formatAsRegion(sequence.location()), interval);
                     return null;
                 }
                 result = result + seq;
@@ -299,7 +297,7 @@ public class AlleleGenerator {
                 if (seq == null) {
                     if (LOGGER.isWarnEnabled())
                         LOGGER.warn("Not enough of fasta sequence provided for variant `{}` - sequence: `{}`, required: `{}`",
-                                variant, Utils.formatAsRegion(sequence), interval);
+                                variant, Utils.formatAsRegion(sequence.location()), interval);
                     return null;
                 }
                 result = alt + seq;

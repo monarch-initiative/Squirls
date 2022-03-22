@@ -186,9 +186,12 @@ public class IngestCommand implements Callable<Integer> {
 
 
             // 1 - create build folder
-            URL genomeUrl = new URL(ingestProperties.getFastaUrl());
+            URL genomeUrl = new URL(ingestProperties.fastaUrl());
             URL assemblyReportUrl = new URL(ingestProperties.assemblyReportUrl());
-            URL phylopUrl = new URL(ingestProperties.getPhylopUrl());
+            URL phylopUrl = new URL(ingestProperties.phylopUrl());
+            URL refseqUrl = new URL(ingestProperties.refseqUrl());
+            URL ensemblUrl = new URL(ingestProperties.ensemblUrl());
+            URL ucscUrl = new URL(ingestProperties.ucscUrl());
 
             String versionedAssembly = getVersionedAssembly(assembly, version);
             Path versionedAssemblyBuildPath = buildDirPath.resolve(versionedAssembly);
@@ -197,20 +200,21 @@ public class IngestCommand implements Callable<Integer> {
 
 
             // 2 - read classifier data
-            Map<SquirlsClassifierVersion, Path> classifiers = ingestProperties.getClassifiers().stream()
+            Map<SquirlsClassifierVersion, Path> classifiers = ingestProperties.classifiers().stream()
                     .collect(Collectors.toMap(
-                            clfData -> SquirlsClassifierVersion.parseString(clfData.getVersion()),
-                            clfData -> Paths.get(clfData.getClassifierPath())));
+                            clfData -> SquirlsClassifierVersion.parseString(clfData.version()),
+                            clfData -> Paths.get(clfData.classifierPath())));
 
 
             // 3 - build database
             SquirlsDataBuilder.buildDatabase(genomeBuildDir,
-                    genomeUrl, assemblyReportUrl, phylopUrl,
-                    Path.of(ingestProperties.getJannovarTranscriptDbDir()),
-                    Path.of(ingestProperties.getSplicingInformationContentMatrix()),
-                    Path.of(ingestProperties.getHexamerTsvPath()),
-                    Path.of(ingestProperties.getSeptamerTsvPath()),
-                    classifiers, versionedAssembly);
+                    genomeUrl, assemblyReportUrl,
+                    refseqUrl, ensemblUrl, ucscUrl,
+                    phylopUrl,
+                    Path.of(ingestProperties.splicingInformationContentMatrix()),
+                    Path.of(ingestProperties.hexamerTsvPath()),
+                    Path.of(ingestProperties.septamerTsvPath()),
+                    classifiers);
 
 
             // 4 - calculate SHA256 digest for the resource files
@@ -227,7 +231,7 @@ public class IngestCommand implements Callable<Integer> {
             }
 
             // write digests to a file
-            Path digestFilePath = genomeBuildDir.resolve(versionedAssembly + ".sha256");
+            Path digestFilePath = genomeBuildDir.resolve("checksum.sha256");
             LOGGER.info("Storing the digest into `{}`", digestFilePath);
             try (BufferedWriter digestWriter = Files.newBufferedWriter(digestFilePath)) {
                 for (File resource : fileToDigest.keySet()) {
@@ -252,6 +256,7 @@ public class IngestCommand implements Callable<Integer> {
             LOGGER.error("Error: {}", e.getMessage());
             return 1;
         }
+        LOGGER.info("Done!");
         return 0;
     }
 }

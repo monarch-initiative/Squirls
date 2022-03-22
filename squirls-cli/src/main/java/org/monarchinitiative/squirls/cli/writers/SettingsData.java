@@ -76,6 +76,10 @@
 
 package org.monarchinitiative.squirls.cli.writers;
 
+import org.monarchinitiative.squirls.core.config.FeatureSource;
+
+import java.util.List;
+
 /**
  * @author Daniel Danis
  */
@@ -92,14 +96,14 @@ public class SettingsData {
     private final int nReported;
 
     /**
-     * One of the supported transcript databases: {refseq, ucsc, ensembl}.
+     * One of the supported {@link FeatureSource}s.
      */
-    private final String transcriptDb;
+    private final FeatureSource featureSource;
 
     private SettingsData(Builder builder) {
         inputPath = builder.inputPath;
         nReported = builder.nReported;
-        transcriptDb = builder.transcriptDb;
+        featureSource = builder.featureSource;
     }
 
     public static Builder builder() {
@@ -107,10 +111,9 @@ public class SettingsData {
     }
 
 
-    public String getTranscriptDb() {
-        return transcriptDb;
+    public FeatureSource getFeatureSource() {
+        return featureSource;
     }
-
 
     public String getInputPath() {
         return inputPath;
@@ -120,18 +123,10 @@ public class SettingsData {
         return nReported;
     }
 
-
-    public String getYamlRepresentation() {
-        return new StringBuilder()
-                .append("Input VCF path: ").append(inputPath).append(System.lineSeparator())
-                .append("Jannovar transcript database: ").append(transcriptDb).append(System.lineSeparator())
-                .toString();
-    }
-
     public static final class Builder {
         private String inputPath = "";
         private int nReported;
-        private String transcriptDb = "";
+        private FeatureSource featureSource;
 
         private Builder() {
         }
@@ -146,8 +141,8 @@ public class SettingsData {
             return this;
         }
 
-        public Builder transcriptDb(String transcriptDb) {
-            this.transcriptDb = transcriptDb;
+        public Builder featureSource(FeatureSource featureSource) {
+            this.featureSource = featureSource;
             return this;
         }
 

@@ -76,12 +76,12 @@
 
 package org.monarchinitiative.squirls.core.scoring;
 
+import org.monarchinitiative.sgenes.model.Transcript;
 import org.monarchinitiative.squirls.core.VariantOnTranscript;
 import org.monarchinitiative.squirls.core.classifier.SquirlsFeatures;
 import org.monarchinitiative.squirls.core.reference.StrandedSequence;
-import org.monarchinitiative.squirls.core.reference.TranscriptModel;
 import org.monarchinitiative.squirls.core.scoring.calculators.FeatureCalculator;
-import org.monarchinitiative.svart.Variant;
+import org.monarchinitiative.svart.GenomicVariant;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -99,10 +99,10 @@ abstract class AbstractSplicingAnnotator implements SplicingAnnotator {
 
     @Override
     public SquirlsFeatures annotate(VariantOnTranscript data) {
-        TranscriptModel transcript = data.transcript();
+        Transcript transcript = data.transcript();
 
         // all variant-related calculations must be done on transcript's strand and coordinate system
-        Variant variant = data.variant().withStrand(transcript.strand()).withCoordinateSystem(transcript.coordinateSystem());
+        GenomicVariant variant = data.variant().withStrand(transcript.strand()).withCoordinateSystem(transcript.coordinateSystem());
         StrandedSequence sequence = data.sequence();
 
         Map<String, Double> features = new HashMap<>(calculatorMap.size());

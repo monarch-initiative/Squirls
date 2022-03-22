@@ -76,10 +76,11 @@
 
 package org.monarchinitiative.squirls.core.scoring.calculators;
 
+import org.monarchinitiative.sgenes.model.Transcript;
+import org.monarchinitiative.squirls.core.Utils;
 import org.monarchinitiative.squirls.core.reference.StrandedSequence;
-import org.monarchinitiative.squirls.core.reference.TranscriptModel;
-import org.monarchinitiative.svart.Position;
-import org.monarchinitiative.svart.Variant;
+import org.monarchinitiative.svart.CoordinateSystem;
+import org.monarchinitiative.svart.GenomicVariant;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -94,20 +95,20 @@ public class ClosestAcceptorDistance implements FeatureCalculator {
     private static final Logger LOGGER = LoggerFactory.getLogger(ClosestAcceptorDistance.class);
 
     @Override
-    public double score(Variant variant, TranscriptModel transcript, StrandedSequence sequence) {
+    public double score(GenomicVariant variant, Transcript transcript, StrandedSequence sequence) {
         // find the closest acceptor site
-        Optional<Position> closestPosition = transcript.introns().stream()
-                .map(intron -> intron.toZeroBased().endPosition())
-                .min(Comparator.comparingInt(border -> Math.abs(border.distanceToRegion(variant))));
+        Optional<Integer> closestPosition = transcript.exons().stream()
+                .map(exon -> exon.startWithCoordinateSystem(CoordinateSystem.zeroBased()))
+                .min(Comparator.comparingInt(border -> Math.abs(Utils.distanceToRegion(border, variant.coordinates(), CoordinateSystem.zeroBased()))));
 
         if (closestPosition.isEmpty()) {
             // This happens only if the transcript has no introns. We should not assess such transcripts in
             // the first place, since there is no splicing there.
             if (LOGGER.isWarnEnabled())
-                LOGGER.warn("Transcript with 0 introns {} passed here", transcript.accessionId());
+                LOGGER.warn("Transcript with 0 introns {} passed here", transcript.accession());
             return Double.NaN;
         }
 
-        return DistanceUtils.getDiff(variant, closestPosition.get());
+        return Utils.getDiff(variant, closestPosition.get());
     }
 }

@@ -81,6 +81,8 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.monarchinitiative.squirls.core.reference.StrandedSequence;
 import org.monarchinitiative.svart.*;
+import org.monarchinitiative.svart.assembly.AssignedMoleculeType;
+import org.monarchinitiative.svart.assembly.SequenceRole;
 
 import java.util.List;
 
@@ -107,7 +109,7 @@ public class VariantGeneratorTest {
         StrandedSequence sequence = StrandedSequence.of(region, "ACGTACGT");
 
         VariantGenerator generator = new VariantGenerator(depth);
-        List<Variant> variants = generator.generate(sequence);
+        List<GenomicVariant> variants = generator.generate(sequence);
 
         assertThat(variants, hasSize(size));
     }

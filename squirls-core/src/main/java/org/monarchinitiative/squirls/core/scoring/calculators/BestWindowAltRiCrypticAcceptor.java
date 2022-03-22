@@ -76,12 +76,12 @@
 
 package org.monarchinitiative.squirls.core.scoring.calculators;
 
+import org.monarchinitiative.sgenes.model.Transcript;
 import org.monarchinitiative.squirls.core.reference.AlleleGenerator;
 import org.monarchinitiative.squirls.core.reference.StrandedSequence;
-import org.monarchinitiative.squirls.core.reference.TranscriptModel;
 import org.monarchinitiative.squirls.core.Utils;
 import org.monarchinitiative.squirls.core.scoring.calculators.ic.SplicingInformationContentCalculator;
-import org.monarchinitiative.svart.Variant;
+import org.monarchinitiative.svart.GenomicVariant;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -111,7 +111,7 @@ public class BestWindowAltRiCrypticAcceptor implements FeatureCalculator {
      * @return feature value
      */
     @Override
-    public double score(Variant variant, TranscriptModel transcript, StrandedSequence sequence) {
+    public double score(GenomicVariant variant, Transcript transcript, StrandedSequence sequence) {
         String acceptorNeighborSnippet = generator.getAcceptorNeighborSnippet(variant, sequence, variant.alt());
 
         if (acceptorNeighborSnippet == null) {

@@ -79,14 +79,20 @@ package org.monarchinitiative.squirls.cli.cmd;
 import org.monarchinitiative.squirls.cli.writers.*;
 import picocli.CommandLine;
 
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 /**
  * @author Daniel Danis
  */
 public abstract class AnnotatingSquirlsCommand extends SquirlsCommand {
+
+    @CommandLine.Option(names = {"--all-transcripts"},
+            description = "Report Squirls predictions for all overlapping transcripts (default: ${DEFAULT-VALUE})")
+    public boolean reportAllTranscripts = false;
+
+    @CommandLine.Option(names = {"--compress"},
+            description = "Compress the output (default: ${DEFAULT-VALUE})")
+    public boolean compress = false;
 
     @CommandLine.Option(names = {"-f", "--output-format"},
             paramLabel = "html",
@@ -98,17 +104,14 @@ public abstract class AnnotatingSquirlsCommand extends SquirlsCommand {
             description = "N most pathogenic variants to include into HTML report (default: ${DEFAULT-VALUE})")
     public int nVariantsToReport = 100;
 
-    @CommandLine.Option(names = {"--compress"},
-            description = "Compress the output (default: ${DEFAULT-VALUE})")
-    public boolean compress = false;
-
-    @CommandLine.Option(names = {"--all-transcripts"},
-            description = "Report Squirls predictions for all overlapping transcripts (default: ${DEFAULT-VALUE})")
-    public boolean reportAllTranscripts = false;
-
     @CommandLine.Option(names = {"--report-features"},
             description = "Report Squirls feature values (default: ${DEFAULT-VALUE})")
     public boolean reportFeatures = false;
+
+    @CommandLine.Option(names = {"--threads"},
+            paramLabel = "2",
+            description = "Process variants using n threads (default: ${DEFAULT-VALUE})")
+    public int nThreads = 2;
 
     /**
      * Parse input argument that specifies the desired output formats into a collection of {@link OutputFormat}s.

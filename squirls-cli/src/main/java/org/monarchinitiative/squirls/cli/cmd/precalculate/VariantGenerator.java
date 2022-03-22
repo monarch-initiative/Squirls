@@ -108,8 +108,8 @@ public class VariantGenerator {
         this.maxLength = maxLength;
     }
 
-    public List<Variant> generate(StrandedSequence sequence) {
-        List<Variant> variants = new LinkedList<>();
+    public List<GenomicVariant> generate(StrandedSequence sequence) {
+        List<GenomicVariant> variants = new LinkedList<>();
 
         String seq = sequence.sequence();
         Contig contig = sequence.contig();
@@ -117,7 +117,6 @@ public class VariantGenerator {
         for (int i = 0, pos = sequence.startWithCoordinateSystem(CoordinateSystem.oneBased());
              i < seq.length();
              i++, pos++) {
-            Position position = Position.of(pos);
             String refBase = seq.substring(i, i + 1);
             if (refBase.equalsIgnoreCase("N"))
                 continue;
@@ -125,17 +124,17 @@ public class VariantGenerator {
                 if (altBase.equalsIgnoreCase(refBase))
                     continue;
                 // SNV
-                variants.add(Variant.of(contig, ID, sequence.strand(), CoordinateSystem.oneBased(), position, refBase, altBase));
+                variants.add(GenomicVariant.of(contig, ID, sequence.strand(), CoordinateSystem.oneBased(), pos, refBase, altBase));
             }
             // INSERTIONS up to given length
-            variants.addAll(generateInsertions(contig, sequence.strand(), CoordinateSystem.oneBased(), position, refBase, refBase, maxLength));
+            variants.addAll(generateInsertions(contig, sequence.strand(), CoordinateSystem.oneBased(), pos, refBase, refBase, maxLength));
 
             // DELETIONS
             int j = i + 1;
             int max = Math.min(i + maxLength, seq.length());
             while (j <= max) {
                 String refBases = seq.substring(i, j);
-                variants.add(Variant.of(contig, ID, sequence.strand(), CoordinateSystem.oneBased(), position, refBases, ""));
+                variants.add(GenomicVariant.of(contig, ID, sequence.strand(), CoordinateSystem.oneBased(), pos, refBases, ""));
                 j++;
             }
         }
@@ -143,16 +142,16 @@ public class VariantGenerator {
         return variants;
     }
 
-    private static List<Variant> generateInsertions(Contig contig, Strand strand, CoordinateSystem coordinateSystem,
-                                                    Position pos, String ref, String alt, int level) {
+    private static List<GenomicVariant> generateInsertions(Contig contig, Strand strand, CoordinateSystem coordinateSystem,
+                                                    int pos, String ref, String alt, int level) {
         if (alt.length() == level)
             return List.of();
 
-        List<Variant> variants = new LinkedList<>();
+        List<GenomicVariant> variants = new LinkedList<>();
 
         for (String base : BASES) {
             String extendedAltAllele = alt + base;
-            Variant variant = Variant.of(contig, ID, strand, coordinateSystem, pos, ref, extendedAltAllele);
+            GenomicVariant variant = GenomicVariant.of(contig, ID, strand, coordinateSystem, pos, ref, extendedAltAllele);
             variants.add(variant);
             variants.addAll(generateInsertions(contig, strand, coordinateSystem, pos, ref, extendedAltAllele, level));
         }

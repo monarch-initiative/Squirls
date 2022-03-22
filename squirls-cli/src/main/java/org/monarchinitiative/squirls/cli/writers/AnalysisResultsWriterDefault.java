@@ -84,8 +84,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.text.NumberFormat;
 
 public class AnalysisResultsWriterDefault implements AnalysisResultsWriter {
+
+    private static final NumberFormat NF = NumberFormat.getInstance();
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AnalysisResultsWriterDefault.class);
 
@@ -97,6 +100,7 @@ public class AnalysisResultsWriterDefault implements AnalysisResultsWriter {
 
     @Override
     public void writeResults(AnalysisResults results, OutputOptions options) {
+        LOGGER.info("Writing {} most deleterious variants", NF.format(results.getSettingsData().getNReported()));
         for (OutputFormat format : options.outputFormats()) {
             ResultWriter writer = resultWriterForFormat(format, options.compress(), options.reportFeatures(), options.reportAllTranscripts());
             try {
@@ -112,7 +116,6 @@ public class AnalysisResultsWriterDefault implements AnalysisResultsWriter {
             case HTML:
                 return new HtmlResultWriter(graphicsGenerator);
             case VCFGZ:
-                // TODO - remove in the next release
                 LOGGER.warn("The `vcfgz` output format has been deprecated. Use `--compress -f vcf` to get the results in VCF format");
                 return new VcfResultWriter(true, reportTranscripts);
             case VCF:

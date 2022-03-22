@@ -77,14 +77,21 @@
 package org.monarchinitiative.squirls.core.scoring.calculators;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.monarchinitiative.sgenes.model.Transcript;
 import org.monarchinitiative.squirls.core.PojosForTesting;
 import org.monarchinitiative.squirls.core.TestDataSourceConfig;
 import org.monarchinitiative.squirls.core.reference.*;
 import org.monarchinitiative.squirls.core.scoring.calculators.ic.SplicingInformationContentCalculator;
 import org.monarchinitiative.svart.*;
+import org.monarchinitiative.svart.assembly.AssignedMoleculeType;
+import org.monarchinitiative.svart.assembly.SequenceRole;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
+/**
+ * Setup for calculator testing. See <code>src/test/resources/test_transcript_ruler.png</code> for a depiction of the
+ * transcript location with respect to the <em>contig</em>.
+ */
 @SpringBootTest(classes = TestDataSourceConfig.class)
 public class CalculatorTestBase {
 
@@ -104,7 +111,8 @@ public class CalculatorTestBase {
     @Autowired
     public TranscriptModelLocator locator;
 
-    protected TranscriptModel tx;
+    protected Transcript txOnPositiveStrand;
+    protected Transcript txOnNegativeStrand;
 
     protected StrandedSequence sequence;
 
@@ -113,7 +121,8 @@ public class CalculatorTestBase {
 
     @BeforeEach
     public void setUp() throws Exception {
-        tx = PojosForTesting.getTranscriptWithThreeExons(contig);
+        txOnPositiveStrand = PojosForTesting.getTranscriptWithThreeExons(contig);
+        txOnNegativeStrand = PojosForTesting.getTranscriptWithThreeExonsOnRevStrand(contig);
         sequence = PojosForTesting.getSequenceIntervalForTranscriptWithThreeExons(contig);
         Contig other = Contig.of(44, "44", SequenceRole.ASSEMBLED_MOLECULE, "44", AssignedMoleculeType.CHROMOSOME, 100_000, "", "", "");
         sequenceOnOtherChrom = StrandedSequence.of(GenomicRegion.of(other, Strand.POSITIVE, CoordinateSystem.zeroBased(), 0, 4), "ACGT");

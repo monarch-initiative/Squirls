@@ -76,12 +76,13 @@
 
 package org.monarchinitiative.squirls.core.scoring.calculators;
 
+import org.monarchinitiative.sgenes.model.Transcript;
 import org.monarchinitiative.squirls.core.reference.SplicingLocationData;
-import org.monarchinitiative.squirls.core.reference.TranscriptModel;
 import org.monarchinitiative.squirls.core.reference.TranscriptModelLocator;
+import org.monarchinitiative.svart.CoordinateSystem;
+import org.monarchinitiative.svart.Coordinates;
 import org.monarchinitiative.svart.GenomicRegion;
-import org.monarchinitiative.svart.Position;
-import org.monarchinitiative.svart.Variant;
+import org.monarchinitiative.svart.GenomicVariant;
 
 /**
  * @author Daniel Danis
@@ -99,21 +100,21 @@ abstract class BaseAgezCalculator implements FeatureCalculator {
         this.agezEnd = agezEnd;
     }
 
-    boolean overlapsWithAgezRegion(Variant variant, TranscriptModel transcript) {
+    boolean overlapsWithAgezRegion(GenomicVariant variant, Transcript transcript) {
         SplicingLocationData locationData = locator.locate(variant, transcript);
 
         GenomicRegion agezInterval = null;
         switch (locationData.getPosition()) {
             case ACCEPTOR:
-                GenomicRegion exon = transcript.exons().get(locationData.getExonIdx());
-                Position exonStart = exon.startPosition();
-                agezInterval = GenomicRegion.of(exon.contig(), exon.strand(), exon.coordinateSystem(), exonStart.shift(agezBegin), exonStart.shift(agezEnd));
+                Coordinates exon = transcript.exons().get(locationData.getExonIdx());
+                int exonStart = exon.start();
+                agezInterval = GenomicRegion.of(transcript.contig(), transcript.strand(), exon.coordinateSystem(), exonStart + agezBegin, exonStart + agezEnd);
                 break;
             case INTRON:
-                GenomicRegion intron = transcript.introns().get(locationData.getIntronIdx());
-                Position intronEnd = intron.endPosition();
-                agezInterval = GenomicRegion.of(intron.contig(), intron.strand(), intron.coordinateSystem(),
-                        intronEnd.shift(agezBegin), intronEnd.shift(agezEnd));
+                Coordinates intron = transcript.introns().get(locationData.getIntronIdx());
+                int intronEnd = intron.endWithCoordinateSystem(CoordinateSystem.zeroBased());
+                agezInterval = GenomicRegion.of(transcript.contig(), transcript.strand(), intron.coordinateSystem(),
+                        intronEnd + agezBegin, intronEnd + agezEnd);
                 break;
             default:
                 break;

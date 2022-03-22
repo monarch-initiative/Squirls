@@ -131,11 +131,10 @@ class RegionUtils {
 
         while (previous + maxLength < end) {
             int current = previous + maxLength;
-            results.add(GenomicRegion.of(region.contig(), region.strand(), CoordinateSystem.zeroBased(),
-                    Position.of(previous), Position.of(current)));
+            results.add(GenomicRegion.of(region.contig(), region.strand(), CoordinateSystem.zeroBased(), previous, current));
             previous = current;
         }
-        results.add(GenomicRegion.of(region.contig(), region.strand(), CoordinateSystem.zeroBased(), Position.of(previous), Position.of(end)));
+        results.add(GenomicRegion.of(region.contig(), region.strand(), CoordinateSystem.zeroBased(), previous, end));
 
         return results;
     }

@@ -90,9 +90,9 @@ import org.monarchinitiative.squirls.core.SquirlsDataService;
 import org.monarchinitiative.squirls.core.VariantOnTranscript;
 import org.monarchinitiative.squirls.core.reference.StrandedSequence;
 import org.monarchinitiative.svart.CoordinateSystem;
-import org.monarchinitiative.svart.GenomicAssembly;
 import org.monarchinitiative.svart.GenomicRegion;
 import org.monarchinitiative.svart.Strand;
+import org.monarchinitiative.svart.assembly.GenomicAssembly;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.BufferedWriter;

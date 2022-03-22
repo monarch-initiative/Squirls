@@ -79,7 +79,7 @@ package org.monarchinitiative.squirls.core;
 import org.apiguardian.api.API;
 import org.monarchinitiative.squirls.core.classifier.SquirlsClassifier;
 import org.monarchinitiative.squirls.core.scoring.SplicingAnnotator;
-import org.monarchinitiative.svart.Variant;
+import org.monarchinitiative.svart.GenomicVariant;
 
 import java.util.Set;
 
@@ -92,7 +92,7 @@ public interface VariantSplicingEvaluator {
     static VariantSplicingEvaluator of(SquirlsDataService squirlsDataService,
                                        SplicingAnnotator annotator,
                                        SquirlsClassifier classifier) {
-        return VariantSplicingEvaluatorDefault.of(squirlsDataService, annotator, classifier);
+        return VariantSplicingEvaluatorImpl.of(squirlsDataService, annotator, classifier);
     }
 
     /**
@@ -101,15 +101,21 @@ public interface VariantSplicingEvaluator {
      *
      * @param txIds set of transcript accession IDs with respect to which the variant should be evaluated
      * @return splicing prediction data
+     * @deprecated the evaluation with respect to specific transcript accessions should not be used.
+     * Configure the {@link SquirlsDataService} to provide only the relevant transcripts instead. The method will be
+     * removed in the release v3.0.0
      */
-    SquirlsResult evaluate(Variant variant, Set<String> txIds);
+    // TODO(3.0.0) - remove
+    @Deprecated(since = "2.0.0", forRemoval = true)
+    default SquirlsResult evaluate(GenomicVariant variant, Set<String> txIds) {
+        return evaluate(variant);
+    }
 
     /**
      * Calculate splicing scores for given variant with respect to all transcripts the variant overlaps with.
      *
      * @return map with splicing pathogenicity data mapped to transcript accession id
      */
-    default SquirlsResult evaluate(Variant variant) {
-        return evaluate(variant, Set.of());
-    }
+    SquirlsResult evaluate(GenomicVariant variant);
+
 }

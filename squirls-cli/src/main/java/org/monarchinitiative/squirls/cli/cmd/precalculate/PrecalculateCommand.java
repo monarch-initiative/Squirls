@@ -90,9 +90,9 @@ import org.monarchinitiative.squirls.cli.cmd.ProgressReporter;
 import org.monarchinitiative.squirls.cli.cmd.SquirlsCommand;
 import org.monarchinitiative.squirls.cli.cmd.SquirlsWorkerThread;
 import org.monarchinitiative.squirls.core.*;
-import org.monarchinitiative.squirls.core.classifier.SquirlsClassifier;
-import org.monarchinitiative.squirls.core.scoring.SplicingAnnotator;
 import org.monarchinitiative.svart.*;
+import org.monarchinitiative.svart.assembly.GenomicAssembly;
+import org.monarchinitiative.svart.assembly.SequenceRole;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ConfigurableApplicationContext;
@@ -134,27 +134,27 @@ public class PrecalculateCommand extends SquirlsCommand {
     private static final Pattern REGION_PATTERN = Pattern.compile("^(?<contig>[\\w._]+):(?<start>\\d+)-(?<end>\\d+)$");
 
     @CommandLine.Option(names = {"-i", "--input"},
-            description = "Path to BED file with definitions of query regions")
+            description = "Path to the BED file with definitions of query regions")
     public Path inputFilePath;
-
-    @CommandLine.Option(names = {"-o", "--output"},
-            description = "Where to write the scores (default: ${DEFAULT-VALUE})")
-    public Path outputPath = Path.of("squirls-scores.vcf.gz");
-
-    @CommandLine.Option(names = {"-t", "--n-threads"},
-            paramLabel = "2",
-            description = "Process variants on n threads (default: ${DEFAULT-VALUE})")
-    public int nThreads = 2;
-
-    @CommandLine.Option(names = {"-l", "--length"},
-            description = "Maximum length of generated variants (default: ${DEFAULT-VALUE})")
-    public int length = 1;
 
     @CommandLine.Option(names = {"--individual"},
             description = "Write out predictions made with respect to individual transcripts (default: ${DEFAULT-VALUE})")
     public boolean writeIndividualPredictions = false;
 
-    @CommandLine.Parameters(index = "1..*",
+    @CommandLine.Option(names = {"-l", "--max-length"},
+            description = "Maximum length of generated variants (default: ${DEFAULT-VALUE})")
+    public int length = 1;
+
+    @CommandLine.Option(names = {"-o", "--output"},
+            description = "Where to write the scores (default: ${DEFAULT-VALUE})")
+    public Path outputPath = Path.of("squirls-scores.vcf.gz");
+
+    @CommandLine.Option(names = {"--threads"},
+            paramLabel = "2",
+            description = "Process variants on n threads (default: ${DEFAULT-VALUE})")
+    public int nThreads = 2;
+
+    @CommandLine.Parameters(index = "0..*",
             paramLabel = "chr1:1000-2000",
             description = "Regions to precalculate the scores for")
     public List<String> regions = List.of();
@@ -180,16 +180,15 @@ public class PrecalculateCommand extends SquirlsCommand {
         LOGGER.info("Writing variants up to {}bp long", length);
 
         try (ConfigurableApplicationContext context = getContext()) {
-            GenomicAssembly assembly = context.getBean(GenomicAssembly.class);
+            Squirls squirls = getSquirls(context);
+            SquirlsDataService squirlsDataService = squirls.squirlsDataService();
+            GenomicAssembly assembly = squirlsDataService.genomicAssembly();
             List<GenomicRegion> regions = prepareGenomicRegions(assembly);
 
             Map<Integer, List<GenomicRegion>> regionByContig = regions.stream()
                     .collect(Collectors.groupingBy(GenomicRegion::contigId, Collectors.toUnmodifiableList()));
 
 
-            SquirlsDataService squirlsDataService = context.getBean(SquirlsDataService.class);
-            SquirlsClassifier classifier = context.getBean(SquirlsClassifier.class);
-            SplicingAnnotator annotator = context.getBean(SplicingAnnotator.class);
 
             VariantGenerator generator = new VariantGenerator(length);
             VariantContextAdaptor adaptor = new VariantContextAdaptor(writeIndividualPredictions, squirlsDataService);
@@ -217,7 +216,7 @@ public class PrecalculateCommand extends SquirlsCommand {
                     String contigName = assembly.contigById(contigId).name();
                     LOGGER.info("Precalculating scores for {} positions of chromosome {}", NF.format(baseCount), contigName);
 
-                    Precalculation precalculation = Precalculation.of(preprocessed, generator, adaptor, squirlsDataService, annotator, classifier, writer, GRANULARITY, progressReporter);
+                    Precalculation precalculation = Precalculation.of(preprocessed, generator, adaptor, squirlsDataService, squirls.splicingAnnotator(), squirls.squirlsClassifier(), writer, GRANULARITY, progressReporter);
                     pool.submit(precalculation);
                 }
                 pool.shutdown();

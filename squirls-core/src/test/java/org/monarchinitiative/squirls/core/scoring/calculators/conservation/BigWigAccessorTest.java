@@ -79,6 +79,7 @@ package org.monarchinitiative.squirls.core.scoring.calculators.conservation;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.monarchinitiative.squirls.core.TestDataSourceConfig;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -95,7 +96,7 @@ public class BigWigAccessorTest {
     /**
      * Small bigWig file containing phyloP scores for region chr9:100,000-101,000 (0-based).
      */
-    private static final Path BW_PATH = Paths.get(BigWigAccessorTest.class.getResource("small.bw").getPath());
+    private static final Path BW_PATH = TestDataSourceConfig.BASE_FOLDER.resolve("scoring").resolve("calculators").resolve("conservation").resolve("small.bw");
 
     private BigWigAccessor dao;
 

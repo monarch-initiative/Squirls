@@ -82,9 +82,8 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.monarchinitiative.squirls.core.scoring.calculators.conservation.BigWigAccessor;
 import org.monarchinitiative.svart.CoordinateSystem;
-import org.monarchinitiative.svart.Position;
 import org.monarchinitiative.svart.Strand;
-import org.monarchinitiative.svart.Variant;
+import org.monarchinitiative.svart.GenomicVariant;
 
 import java.util.List;
 
@@ -113,8 +112,8 @@ public class BigWigTest extends CalculatorTestBase {
     }
 
     @Test
-    public void annotate() throws Exception {
-        Variant variant = Variant.of(contig, "", Strand.POSITIVE, CoordinateSystem.zeroBased(), Position.of(1201), "t", "g");
+    public void annotate() {
+        GenomicVariant variant = GenomicVariant.of(contig, "", Strand.POSITIVE, CoordinateSystem.zeroBased(), 1201, "t", "g");
         when(accessor.getScores(variant)).thenReturn(List.of(6.03700F));
 
         double score = annotator.score(variant, null, null);
@@ -123,8 +122,8 @@ public class BigWigTest extends CalculatorTestBase {
     }
 
     @Test
-    public void annotateDeletion() throws Exception {
-        Variant variant = Variant.of(contig, "", Strand.POSITIVE, CoordinateSystem.zeroBased(), Position.of(1201), "CTGT", "C");
+    public void annotateDeletion() {
+        GenomicVariant variant = GenomicVariant.of(contig, "", Strand.POSITIVE, CoordinateSystem.zeroBased(), 1201, "CTGT", "C");
         when(accessor.getScores(variant)).thenReturn(List.of(.459F, -1.851F, -1.181F));
 
         final double score = annotator.score(variant, null, null);
@@ -137,8 +136,8 @@ public class BigWigTest extends CalculatorTestBase {
     }
 
     @Test
-    public void annotateVariantWhenDataIsNotAvailable() throws Exception {
-        Variant variant = Variant.of(contig, "", Strand.POSITIVE, CoordinateSystem.zeroBased(), Position.of(9_000), "G", "C");
+    public void annotateVariantWhenDataIsNotAvailable() {
+        GenomicVariant variant = GenomicVariant.of(contig, "", Strand.POSITIVE, CoordinateSystem.zeroBased(), 9_000, "G", "C");
         when(accessor.getScores(variant)).thenReturn(List.of());
 
         assertThat(annotator.score(variant, null, null), is(notANumber()));

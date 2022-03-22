@@ -12,6 +12,12 @@
     <artifactId>squirls-cli</artifactId>
 
     <build>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>true</filtering>
+            </resource>
+        </resources>
         <plugins>
             <plugin>
                 <groupId>org.springframework.boot</groupId>
@@ -80,8 +86,12 @@
             <artifactId>vmvt-core</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.monarchinitiative.sgenes</groupId>
+            <artifactId>silent-genes-jannovar</artifactId>
+        </dependency>
+        <dependency>
             <groupId>de.charite.compbio</groupId>
-            <artifactId>jannovar-htsjdk</artifactId>
+            <artifactId>jannovar-core</artifactId>
         </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>

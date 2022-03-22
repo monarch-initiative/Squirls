@@ -76,25 +76,47 @@
 
 package org.monarchinitiative.squirls.core.reference;
 
+import org.monarchinitiative.sgenes.model.Gene;
+import org.monarchinitiative.sgenes.model.Spliced;
+import org.monarchinitiative.sgenes.model.Transcript;
 import org.monarchinitiative.svart.GenomicRegion;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * @author Daniel Danis
  */
 public interface TranscriptModelService {
 
-    List<String> getTranscriptAccessionIds();
+    static TranscriptModelService of(List<? extends Gene> genes) {
+        return TranscriptModelServiceImpl.of(genes);
+    }
+
+    /**
+     * @return all genes
+     */
+    Stream<? extends Gene> genes();
 
     /**
      * Fetch transcripts that overlap with query interval specified by <code>contig</code>, <code>begin</code>, and
      * <code>end</code>.
      *
      * @return list with all transcripts that overlap with query interval
+     * @deprecated use {@link #overlappingGenes(GenomicRegion)} to get the overlapping genes and then use
+     * {@link Spliced#transcriptStream()} to get ahold of transcripts. The method will be removed in <em>3.0.0</em>
      */
-        List<TranscriptModel> overlappingTranscripts(GenomicRegion query);
+    // TODO(3.0.0) - remove
+    @Deprecated(since = "2.0.0", forRemoval = true)
+    default List<Transcript> overlappingTranscripts(GenomicRegion query) {
+        return overlappingGenes(query).stream()
+                .flatMap(Spliced::transcriptStream)
+                .collect(Collectors.toList());
+    }
+
+    List<Gene> overlappingGenes(GenomicRegion query);
 
     /**
      * Fetch transcript by accession ID.
@@ -102,5 +124,11 @@ public interface TranscriptModelService {
      * @param txAccession transcript accession ID, e.g. `NM_004004.2`
      * @return {@link Optional} with transcript data. The optional is empty if no such transcript is present in the database
      */
-    Optional<TranscriptModel> transcriptByAccession(String txAccession);
+    Optional<Transcript> transcriptByAccession(String txAccession);
+
+    default Stream<String> getTranscriptAccessions() {
+        return genes()
+                .flatMap(Gene::transcriptStream)
+                .map(Transcript::accession);
+    }
 }

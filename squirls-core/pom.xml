@@ -17,6 +17,10 @@
             <artifactId>svart</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.monarchinitiative.sgenes</groupId>
+            <artifactId>silent-genes-model</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.apiguardian</groupId>
             <artifactId>apiguardian-api</artifactId>
         </dependency>
@@ -30,6 +34,12 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-jpa</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.monarchinitiative.sgenes</groupId>
+            <artifactId>silent-genes-simple</artifactId>
+            <version>${silent.genes.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>

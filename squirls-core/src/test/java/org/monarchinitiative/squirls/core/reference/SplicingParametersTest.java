@@ -80,6 +80,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.monarchinitiative.squirls.core.TestDataSourceConfig;
 import org.monarchinitiative.svart.*;
+import org.monarchinitiative.svart.assembly.AssignedMoleculeType;
+import org.monarchinitiative.svart.assembly.SequenceRole;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -98,7 +100,7 @@ public class SplicingParametersTest {
     @Test
     public void makeDonorRegion() {
         Contig contig = Contig.of(1, "1", SequenceRole.ASSEMBLED_MOLECULE, "1", AssignedMoleculeType.CHROMOSOME, 100, "", "", "");
-        GenomicRegion exon = GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(), Position.of(5), Position.of(10));
+        GenomicRegion exon = GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(), 5, 10);
 
         GenomicRegion donor = parameters.makeDonorRegion(exon);
         assertThat(donor.contig(), equalTo(contig));
@@ -111,7 +113,7 @@ public class SplicingParametersTest {
     @Test
     public void makeAcceptorRegion() {
         Contig contig = Contig.of(1, "1", SequenceRole.ASSEMBLED_MOLECULE, "1", AssignedMoleculeType.CHROMOSOME, 100, "", "", "");
-        GenomicRegion exon = GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(), Position.of(10), Position.of(20));
+        GenomicRegion exon = GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(), 10, 20);
 
         GenomicRegion donor = parameters.makeAcceptorRegion(exon);
         assertThat(donor.contig(), equalTo(contig));

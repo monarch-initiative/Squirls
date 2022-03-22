@@ -77,13 +77,11 @@
 package org.monarchinitiative.squirls.autoconfigure;
 
 import org.junit.jupiter.api.Test;
-import org.monarchinitiative.squirls.core.SquirlsDataService;
-import org.monarchinitiative.squirls.core.VariantSplicingEvaluator;
+import org.monarchinitiative.squirls.core.classifier.SquirlsClassifier;
 import org.monarchinitiative.squirls.core.reference.StrandedSequenceService;
-import org.monarchinitiative.squirls.core.reference.TranscriptModelService;
 import org.monarchinitiative.squirls.core.scoring.SplicingAnnotator;
 import org.monarchinitiative.squirls.initialize.SquirlsProperties;
-import org.monarchinitiative.svart.GenomicAssembly;
+import org.monarchinitiative.svart.assembly.GenomicAssembly;
 import org.springframework.beans.factory.BeanCreationException;
 
 import java.nio.file.Path;
@@ -100,20 +98,12 @@ class SquirlsAutoConfigurationTest extends AbstractAutoConfigurationTest {
      */
     @Test
     void testAllPropertiesSupplied() {
-        load(SquirlsAutoConfiguration.class, "squirls.data-directory=" + TEST_DATA,
-                "squirls.genome-assembly=hg19",
-                "squirls.data-version=1710");
+        load(SquirlsAutoConfiguration.class, "squirls.data-directory=" + TEST_DATA);
         /*
          * Data we expect to get from the user
          */
         Path threesDataDirectory = context.getBean("squirlsDataDirectory", Path.class);
         assertThat(threesDataDirectory.getFileName(), equalTo(Paths.get("data")));
-
-        String squirlsGenomeAssembly = context.getBean("squirlsGenomeAssembly", String.class);
-        assertThat(squirlsGenomeAssembly, is("hg19"));
-
-        String squirlsDataVersion = context.getBean("squirlsDataVersion", String.class);
-        assertThat(squirlsDataVersion, is("1710"));
 
         /*
          * Optional - default values
@@ -130,24 +120,16 @@ class SquirlsAutoConfigurationTest extends AbstractAutoConfigurationTest {
         assertThat(genomicAssembly, is(notNullValue()));
         assertThat(genomicAssembly.name(), equalTo("GRCh37.p13"));
 
-        StrandedSequenceService strandedSequenceService = context.getBean("strandedSequenceService", StrandedSequenceService.class);
-        assertThat(strandedSequenceService, is(notNullValue()));
+        assertThat(context.getBean(StrandedSequenceService.class), is(notNullValue()));
 
-        TranscriptModelService transcriptModelService = context.getBean("transcriptModelService", TranscriptModelService.class);
-        assertThat(transcriptModelService, is(notNullValue()));
-
-        SquirlsDataService squirlsDataService = context.getBean("squirlsDataService", SquirlsDataService.class);
-        assertThat(squirlsDataService, is(notNullValue()));
-
-        VariantSplicingEvaluator evaluator = context.getBean("variantSplicingEvaluator", VariantSplicingEvaluator.class);
-        assertThat(evaluator, is(notNullValue()));
+        assertThat(context.getBean(SquirlsClassifier.class), is(notNullValue()));
+        assertThat(context.getBean(SplicingAnnotator.class), is(notNullValue()));
+        assertThat(context.getBean(SplicingAnnotator.class), is(notNullValue()));
     }
 
     @Test
     void testOptionalProperties() {
         load(SquirlsAutoConfiguration.class, "squirls.data-directory=" + TEST_DATA,
-                "squirls.genome-assembly=hg19",
-                "squirls.data-version=1710",
                 "squirls.classifier.version=v0.4.4",
                 "squirls.classifier.max-variant-length=50",
                 "squirls.annotator.version=agez"
@@ -160,48 +142,18 @@ class SquirlsAutoConfigurationTest extends AbstractAutoConfigurationTest {
     }
 
     @Test
-    void testMissingDataDirectory() {
-        Throwable thrown = assertThrows(BeanCreationException.class, () -> load(SquirlsAutoConfiguration.class,
-                "squirls.genome-assembly=hg19",
-                "squirls.data-version=1710"));
-        assertThat(thrown.getMessage(), containsString("Path to Squirls data directory (`--squirls.data-directory`) is not specified"));
-    }
-
-    @Test
     void testProvidedPathDoesNotPointToDirectory() {
-        Throwable thrown = assertThrows(BeanCreationException.class, () -> load(SquirlsAutoConfiguration.class,
-                "squirls.data-directory=" + TEST_DATA + "/rocket",
-                "squirls.genome-assembly=hg19",
-                "squirls.data-version=1710"));
-        assertThat(thrown.getMessage(), containsString("Path to Squirls data directory 'src/test/resources/data/rocket' does not point to real directory"));
+        Path rocketPath = TEST_DATA.resolve("rocket");
+        Throwable thrown = assertThrows(BeanCreationException.class,
+                () -> load(SquirlsAutoConfiguration.class, "squirls.data-directory=" + rocketPath));
+        assertThat(thrown.getMessage(), containsString(String.format("Path to Squirls data directory '%s' does not point to real directory", rocketPath)));
 
-    }
-
-    @Test
-    void testMissingGenomeAssembly() {
-        Throwable thrown = assertThrows(BeanCreationException.class, () -> load(SquirlsAutoConfiguration.class,
-                "squirls.data-directory=" + TEST_DATA,
-//                "squirls.genome-assembly=hg19",
-                "squirls.data-version=1710"));
-        assertThat(thrown.getMessage(), containsString("Genome assembly (`--squirls.genome-assembly`) is not specified"));
-    }
-
-    @Test
-    void testMissingDataVersion() {
-        Throwable thrown = assertThrows(BeanCreationException.class, () -> load(SquirlsAutoConfiguration.class,
-                "squirls.data-directory=" + TEST_DATA,
-                "squirls.genome-assembly=hg19"
-//                "squirls.data-version=1710",
-        ));
-        assertThat(thrown.getMessage(), containsString("Data version (`--squirls.data-version`) is not specified"));
     }
 
     @Test
     void testNonExistingClassifier() {
         Throwable thrown = assertThrows(BeanCreationException.class, () -> load(SquirlsAutoConfiguration.class,
                 "squirls.data-directory=" + TEST_DATA,
-                "squirls.genome-assembly=hg19",
-                "squirls.data-version=1710",
                 "squirls.classifier.version=v0.0.0"));
         assertThat(thrown.getMessage(), containsString("Classifier with version v0.0.0 has never been used in Squirls"));
     }
@@ -210,8 +162,6 @@ class SquirlsAutoConfigurationTest extends AbstractAutoConfigurationTest {
     void testNonPresentClassifier() {
         Throwable thrown = assertThrows(BeanCreationException.class, () -> load(SquirlsAutoConfiguration.class,
                 "squirls.data-directory=" + TEST_DATA,
-                "squirls.genome-assembly=hg19",
-                "squirls.data-version=1710",
                 "squirls.classifier.version=v0.4.1"));
         assertThat(thrown.getMessage(), containsString("Classifier version `v0_4_1` is not available, choose one from {v0_4_4, v0_4_6}"));
     }
@@ -220,8 +170,6 @@ class SquirlsAutoConfigurationTest extends AbstractAutoConfigurationTest {
     void testNonExistingSplicingAnnotator() {
         Throwable thrown = assertThrows(BeanCreationException.class, () -> load(SquirlsAutoConfiguration.class,
                 "squirls.data-directory=" + TEST_DATA,
-                "squirls.genome-assembly=hg19",
-                "squirls.data-version=1710",
                 "squirls.annotator.version=non-existing"));
         assertThat(thrown.getMessage(), containsString("invalid 'squirls.annotator.version' property value: `non-existing`"));
     }

@@ -85,8 +85,7 @@ import org.monarchinitiative.squirls.core.reference.StrandedSequence;
 import org.monarchinitiative.squirls.core.reference.StrandedSequenceService;
 import org.monarchinitiative.svart.CoordinateSystem;
 import org.monarchinitiative.svart.GenomicRegion;
-import org.monarchinitiative.svart.Position;
-import org.monarchinitiative.svart.Variant;
+import org.monarchinitiative.svart.GenomicVariant;
 
 import java.text.NumberFormat;
 import java.util.List;
@@ -95,7 +94,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
- * Format {@link Variant} and {@link SquirlsResult} into {@link VariantContext}.
+ * Format {@link GenomicVariant} and {@link SquirlsResult} into {@link VariantContext}.
  */
 class VariantContextAdaptor {
 
@@ -123,7 +122,7 @@ class VariantContextAdaptor {
     }
 
 
-    Optional<VariantContext> mapToVariantContext(Variant variant, SquirlsResult result) {
+    Optional<VariantContext> mapToVariantContext(GenomicVariant variant, SquirlsResult result) {
         if (result.isEmpty())
             return Optional.empty();
 
@@ -133,7 +132,7 @@ class VariantContextAdaptor {
             GenomicRegion region = GenomicRegion.of(variant.contig(), variant.strand(), CoordinateSystem.zeroBased(), start, start + 1);
             StrandedSequence seq = sequenceService.sequenceForRegion(region);
             int st = start + CoordinateSystem.zeroBased().startDelta(variant.coordinateSystem());
-            variant = Variant.of(variant.contig(), variant.id(), variant.strand(), variant.coordinateSystem(), Position.of(st), seq.sequence() + variant.ref(), seq.sequence());
+            variant = GenomicVariant.of(variant.contig(), variant.id(), variant.strand(), variant.coordinateSystem(), st, seq.sequence() + variant.ref(), seq.sequence());
         }
 
         List<Allele> alleles = List.of(Allele.create(variant.ref(), true), Allele.create(variant.alt(), false));

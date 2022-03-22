@@ -81,11 +81,20 @@ package org.monarchinitiative.squirls.initialize;
  */
 public interface SquirlsProperties {
 
-    String getDataDirectory();
+    @Deprecated(forRemoval = true)
+    default String getDataDirectory() {
+        return "";
+    }
 
-    String getGenomeAssembly();
+    @Deprecated(forRemoval = true)
+    default String getGenomeAssembly() {
+        return "";
+    }
 
-    String getDataVersion();
+    @Deprecated(forRemoval = true)
+    default String getDataVersion() {
+        return "";
+    }
 
     ClassifierProperties getClassifier();
 

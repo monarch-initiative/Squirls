@@ -76,9 +76,9 @@
 
 package org.monarchinitiative.squirls.core;
 
+import org.monarchinitiative.sgenes.model.Transcript;
 import org.monarchinitiative.squirls.core.reference.StrandedSequence;
-import org.monarchinitiative.squirls.core.reference.TranscriptModel;
-import org.monarchinitiative.svart.Variant;
+import org.monarchinitiative.svart.GenomicVariant;
 
 import java.util.Objects;
 
@@ -87,27 +87,27 @@ import java.util.Objects;
  */
 class VariantOnTranscriptDefault implements VariantOnTranscript {
 
-    private final Variant variant;
-    private final TranscriptModel transcript;
+    private final GenomicVariant variant;
+    private final Transcript transcript;
     private final StrandedSequence sequence;
 
-    private VariantOnTranscriptDefault(Variant variant, TranscriptModel transcript, StrandedSequence sequence) {
+    private VariantOnTranscriptDefault(GenomicVariant variant, Transcript transcript, StrandedSequence sequence) {
         this.variant = variant;
         this.transcript = transcript;
         this.sequence = sequence;
     }
 
-    static VariantOnTranscriptDefault of(Variant variant, TranscriptModel transcript, StrandedSequence sequence) {
+    static VariantOnTranscriptDefault of(GenomicVariant variant, Transcript transcript, StrandedSequence sequence) {
         return new VariantOnTranscriptDefault(variant, transcript, sequence);
     }
 
     @Override
-    public Variant variant() {
+    public GenomicVariant variant() {
         return variant;
     }
 
     @Override
-    public TranscriptModel transcript() {
+    public Transcript transcript() {
         return transcript;
     }
 

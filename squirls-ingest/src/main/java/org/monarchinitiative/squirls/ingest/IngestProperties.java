@@ -77,7 +77,6 @@
 package org.monarchinitiative.squirls.ingest;
 
 import java.util.List;
-import java.util.Objects;
 
 /**
  * @author Daniel Danis
@@ -86,7 +85,9 @@ public class IngestProperties {
 
 
     private String splicingInformationContentMatrix;
-    private String jannovarTranscriptDbDir;
+    private String refseqUrl;
+    private String ensemblUrl;
+    private String ucscUrl;
     private String hexamerTsvPath;
     private String septamerTsvPath;
     private String fastaUrl;
@@ -94,7 +95,7 @@ public class IngestProperties {
     private String phylopUrl;
     private List<ClassifierData> classifiers;
 
-    public List<ClassifierData> getClassifiers() {
+    public List<ClassifierData> classifiers() {
         return classifiers;
     }
 
@@ -102,7 +103,7 @@ public class IngestProperties {
         this.classifiers = classifiers;
     }
 
-    public String getSplicingInformationContentMatrix() {
+    public String splicingInformationContentMatrix() {
         return splicingInformationContentMatrix;
     }
 
@@ -110,15 +111,31 @@ public class IngestProperties {
         this.splicingInformationContentMatrix = splicingInformationContentMatrix;
     }
 
-    public String getJannovarTranscriptDbDir() {
-        return jannovarTranscriptDbDir;
+    public String refseqUrl() {
+        return refseqUrl;
     }
 
-    public void setJannovarTranscriptDbDir(String jannovarTranscriptDbDir) {
-        this.jannovarTranscriptDbDir = jannovarTranscriptDbDir;
+    public void setRefseqUrl(String refseqUrl) {
+        this.refseqUrl = refseqUrl;
     }
 
-    public String getHexamerTsvPath() {
+    public String ensemblUrl() {
+        return ensemblUrl;
+    }
+
+    public void setEnsemblUrl(String ensemblUrl) {
+        this.ensemblUrl = ensemblUrl;
+    }
+
+    public String ucscUrl() {
+        return ucscUrl;
+    }
+
+    public void setUcscUrl(String ucscUrl) {
+        this.ucscUrl = ucscUrl;
+    }
+
+    public String hexamerTsvPath() {
         return hexamerTsvPath;
     }
 
@@ -126,7 +143,7 @@ public class IngestProperties {
         this.hexamerTsvPath = hexamerTsvPath;
     }
 
-    public String getSeptamerTsvPath() {
+    public String septamerTsvPath() {
         return septamerTsvPath;
     }
 
@@ -134,7 +151,7 @@ public class IngestProperties {
         this.septamerTsvPath = septamerTsvPath;
     }
 
-    public String getFastaUrl() {
+    public String fastaUrl() {
         return fastaUrl;
     }
 
@@ -150,7 +167,7 @@ public class IngestProperties {
         this.assemblyReportUrl = assemblyReportUrl;
     }
 
-    public String getPhylopUrl() {
+    public String phylopUrl() {
         return phylopUrl;
     }
 
@@ -158,38 +175,11 @@ public class IngestProperties {
         this.phylopUrl = phylopUrl;
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        IngestProperties that = (IngestProperties) o;
-        return Objects.equals(splicingInformationContentMatrix, that.splicingInformationContentMatrix) && Objects.equals(jannovarTranscriptDbDir, that.jannovarTranscriptDbDir) && Objects.equals(hexamerTsvPath, that.hexamerTsvPath) && Objects.equals(septamerTsvPath, that.septamerTsvPath) && Objects.equals(fastaUrl, that.fastaUrl) && Objects.equals(assemblyReportUrl, that.assemblyReportUrl) && Objects.equals(phylopUrl, that.phylopUrl) && Objects.equals(classifiers, that.classifiers);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(splicingInformationContentMatrix, jannovarTranscriptDbDir, hexamerTsvPath, septamerTsvPath, fastaUrl, assemblyReportUrl, phylopUrl, classifiers);
-    }
-
-    @Override
-    public String toString() {
-        return "IngestProperties{" +
-                "splicingInformationContentMatrix='" + splicingInformationContentMatrix + '\'' +
-                ", jannovarTranscriptDbDir='" + jannovarTranscriptDbDir + '\'' +
-                ", hexamerTsvPath='" + hexamerTsvPath + '\'' +
-                ", septamerTsvPath='" + septamerTsvPath + '\'' +
-                ", fastaUrl='" + fastaUrl + '\'' +
-                ", assemblyReportUrl='" + assemblyReportUrl + '\'' +
-                ", phylopUrl='" + phylopUrl + '\'' +
-                ", classifiers=" + classifiers +
-                '}';
-    }
-
     public static class ClassifierData {
         private String version;
         private String classifierPath;
 
-        public String getVersion() {
+        public String version() {
             return version;
         }
 
@@ -197,7 +187,7 @@ public class IngestProperties {
             this.version = version;
         }
 
-        public String getClassifierPath() {
+        public String classifierPath() {
             return classifierPath;
         }
 

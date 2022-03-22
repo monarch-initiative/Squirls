@@ -9,3 +9,5 @@ Most users should download the latest Squirls distribution ZIP file from
 the [Releases page](https://github.com/TheJacksonLaboratory/Squirls/releases).
 
 Please consult the Read the docs site for [detailed documentation](https://squirls.readthedocs.io/en/latest).
+
+Check out Squirls manuscript in [The American Journal of Human Genetics](https://doi.org/10.1016/j.ajhg.2021.06.014).

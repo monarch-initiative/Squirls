@@ -12,11 +12,24 @@
 
     <artifactId>squirls-bootstrap</artifactId>
 
+    <build>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>true</filtering>
+            </resource>
+        </resources>
+    </build>
+
     <dependencies>
         <dependency>
             <groupId>org.monarchinitiative.squirls</groupId>
             <artifactId>squirls-initialize</artifactId>
             <version>${project.parent.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.monarchinitiative.sgenes</groupId>
+            <artifactId>silent-genes-jannovar</artifactId>
         </dependency>
 
         <dependency>
