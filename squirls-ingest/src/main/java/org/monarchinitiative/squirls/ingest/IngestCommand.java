@@ -231,7 +231,7 @@ public class IngestCommand implements Callable<Integer> {
             }
 
             // write digests to a file
-            Path digestFilePath = genomeBuildDir.resolve(versionedAssembly + ".sha256");
+            Path digestFilePath = genomeBuildDir.resolve("checksum.sha256");
             LOGGER.info("Storing the digest into `{}`", digestFilePath);
             try (BufferedWriter digestWriter = Files.newBufferedWriter(digestFilePath)) {
                 for (File resource : fileToDigest.keySet()) {
