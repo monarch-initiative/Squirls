@@ -1,0 +1,3 @@
+#!/bin/sh
+SQUIRLS_JAR=/opt/squirls/squirls-cli-2.0.0.jar
+java -jar ${SQUIRLS_JAR} ${@}
