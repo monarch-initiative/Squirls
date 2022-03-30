@@ -91,7 +91,7 @@ class VariantChange {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(VariantChange.class);
 
-    private static final Pattern VARIANT_PATTERN = Pattern.compile("(?<contig>(chr)?([\\d]{1,2}|X|Y|M])):(?<position>\\d+)(?<ref>[ACGTacgt]+)>(?<alt>[ACGTacgt]+)");
+    private static final Pattern VARIANT_PATTERN = Pattern.compile("(?<contig>(chr)?([\\d]{1,2}|X|Y|M])):(g\\.)?(?<position>\\d+)(?<ref>[ACGTacgt]+)>(?<alt>[ACGTacgt]+)");
     private final String contig;
     private final int pos;
     private final String ref, alt;

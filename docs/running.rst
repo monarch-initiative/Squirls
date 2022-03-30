@@ -47,6 +47,9 @@ The easiest way to quickly calculate Squirls scores for a couple of variants is 
   Do not forget to surround the variants with double quotes (``"chr9:136224694A>T"`` and *not* ``chr9:136224694A>T``)
   to prevent interpretation of the ``>`` as a shell operator.
 
+.. note::
+  Both ``"chr1:12345A>T"`` and ``"chr1:g.12345A>T"`` notations are supported.
+
 The command above generates the following terminal output::
 
   ...
