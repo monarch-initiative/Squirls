@@ -76,7 +76,8 @@
 
 package org.monarchinitiative.squirls.cli.cmd.annotate_pos;
 
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 import java.util.Optional;
 
@@ -85,48 +86,25 @@ import static org.hamcrest.MatcherAssert.assertThat;
 
 public class VariantChangeTest {
 
-    @Test
-    void parseSnp() {
-        String payload = "chr1:123C>T";
-        final Optional<VariantChange> varchop = VariantChange.fromString(payload);
+    @ParameterizedTest
+    @CsvSource({
+            "         chr1:123C>T,        chr1,       123,   C,  T, chr1:123C>T",
+            "           Y:123C>CT,        chrY,       123,   C, CT, chrY:123C>CT",
+            "       chrX:123CCT>C,        chrX,       123, CCT,  C, chrX:123CCT>C",
+            "     chrX:g.123CCT>C,        chrX,       123, CCT,  C, chrX:123CCT>C",
+            "chr11:g.130473249G>A,       chr11, 130473249,   G,  A, chr11:130473249G>A"
+    })
+    public void parse(String payload, String contig, int pos, String ref, String alt, String variantChange) {
+        Optional<VariantChange> varchop = VariantChange.fromString(payload);
 
         assertThat(varchop.isPresent(), is(true));
-        final VariantChange ch = varchop.get();
+        VariantChange ch = varchop.get();
 
-        assertThat(ch.getContig(), is("chr1"));
-        assertThat(ch.getPos(), is(123));
-        assertThat(ch.getRef(), is("C"));
-        assertThat(ch.getAlt(), is("T"));
-        assertThat(ch.getVariantChange(), is("chr1:123C>T"));
+        assertThat(ch.getContig(), is(contig));
+        assertThat(ch.getPos(), is(pos));
+        assertThat(ch.getRef(), is(ref));
+        assertThat(ch.getAlt(), is(alt));
+        assertThat(ch.getVariantChange(), is(variantChange));
     }
 
-    @Test
-    void parseInsertion() {
-        String payload = "Y:123C>CT";
-        final Optional<VariantChange> varchop = VariantChange.fromString(payload);
-
-        assertThat(varchop.isPresent(), is(true));
-        final VariantChange ch = varchop.get();
-
-        assertThat(ch.getContig(), is("chrY"));
-        assertThat(ch.getPos(), is(123));
-        assertThat(ch.getRef(), is("C"));
-        assertThat(ch.getAlt(), is("CT"));
-        assertThat(ch.getVariantChange(), is("chrY:123C>CT"));
-    }
-
-    @Test
-    void parseDeletion() {
-        String payload = "chrX:123CCT>C";
-        final Optional<VariantChange> varchop = VariantChange.fromString(payload);
-
-        assertThat(varchop.isPresent(), is(true));
-        final VariantChange ch = varchop.get();
-
-        assertThat(ch.getContig(), is("chrX"));
-        assertThat(ch.getPos(), is(123));
-        assertThat(ch.getRef(), is("CCT"));
-        assertThat(ch.getAlt(), is("C"));
-        assertThat(ch.getVariantChange(), is("chrX:123CCT>C"));
-    }
 }
