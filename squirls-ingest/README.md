@@ -11,11 +11,13 @@ There are two commands that need to be run in order to build the resource files 
 
 ### Generate a config file
 
-We need to generate and fill the config file first. If you do not have some resources, download a resource bundle from
-[here](https://exomiser-threes.s3.amazonaws.com/threes-build-resources.zip).
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.6395954.svg)](https://doi.org/10.5281/zenodo.6395954)
+
+We need to generate and fill the config file first. The config file requires paths/URLs to public resources 
+and the resources generated in Squirls project that are hosted on Zenodo.
 
 ```bash
-java -jar squirls-ingest-1.0.4.jar generate-config config.yml
+java -jar squirls-ingest.jar generate-config config.yml
 ``` 
 
 Then, open the `config.yml` file and provide the required information.
@@ -25,7 +27,7 @@ Then, open the `config.yml` file and provide the required information.
 Having the config file ready, we can build the resource directory.
 
 ```bash
-java -jar squirls-ingest-1.0.4.jar ingest -c config.yml --assembly hg19 --db-version 2005 --build-dir path/to/build-dir 
+java -jar squirls-ingest.jar ingest -c config.yml --assembly hg19 --db-version 2005 --build-dir path/to/build-dir 
 ```
 
 where

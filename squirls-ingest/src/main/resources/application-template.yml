@@ -3,18 +3,24 @@
 ########################################################################################################################
 ### Zenodo resources
 #
-## path to YML file with definitions of splice sites
+## path to YML file with definitions of splice sites. Try this first:
+# https://zenodo.org/record/6395954/files/splicing-information-content-matrix.yaml?download=1
 splicingInformationContentMatrix:
 
-## path to TSV file with ESRSeq (hexamer) scores
+## path to TSV file with ESRSeq (hexamer) scores. Try this first:
+# https://zenodo.org/record/6395954/files/hexamer-scores.tsv?download=1
 hexamerTsvPath:
 
-## path to TSV file with SMS (septamer) scores
+## path to TSV file with SMS (septamer) scores. Try this first:
+# https://zenodo.org/record/6395954/files/septamer-scores.tsv?download=1
 septamerTsvPath:
 
 classifiers:
   # a list of classifiers to ingest
   # an unique version ID, e.g. `v1`
+  # Try these first:
+  #  https://zenodo.org/record/6395954/files/ensemble.lr.rf.v0.4.4.yaml?download=1
+  #  https://zenodo.org/record/6395954/files/ensemble.lr.rf.v0.4.6.yaml?download=1
   - version:
     # path to YML file with classifier data
     classifierPath:

@@ -136,9 +136,9 @@ public class SquirlsDataBuilderTest {
         URL refseqUrl = hg19Dir.resolve("hg19_refseq_small.ser").toUri().toURL();
         URL ensemblUrl = hg19Dir.resolve("hg19_ensembl_small.ser").toUri().toURL();
         URL ucscUrl = hg19Dir.resolve("hg19_ucsc_small.ser").toUri().toURL();
-        Path yamlPath = DATA_DIR.resolve("parse").resolve("spliceSites.yaml");
-        Path hexamerPath = DATA_DIR.resolve("parse").resolve("hexamer-scores.tsv");
-        Path septamerPath = DATA_DIR.resolve("parse").resolve("septamer-scores.tsv");
+        URL yamlPath = DATA_DIR.resolve("parse").resolve("spliceSites.yaml").toUri().toURL();
+        URL hexamerPath = DATA_DIR.resolve("parse").resolve("hexamer-scores.tsv").toUri().toURL();
+        URL septamerPath = DATA_DIR.resolve("parse").resolve("septamer-scores.tsv").toUri().toURL();
 
         assertThat(Files.isRegularFile(buildDir.resolve("assembly_report.txt")), is(false));
         assertThat(Files.isRegularFile(buildDir.resolve("genome.fa")), is(false));

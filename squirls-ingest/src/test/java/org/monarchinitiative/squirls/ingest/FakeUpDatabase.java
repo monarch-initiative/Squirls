@@ -79,6 +79,7 @@ package org.monarchinitiative.squirls.ingest;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -94,10 +95,20 @@ public class FakeUpDatabase {
     private static final Path DATA_DIR = Paths.get("src/test/resources/org/monarchinitiative/squirls/ingest");
     private static final Path TX_DIR = DATA_DIR.resolve("transcripts");
 
-    private static final Path SPLICING_IC_MATRIX_PATH = DATA_DIR.resolve("parse").resolve("spliceSites.yaml");
+    private static final URL SPLICING_IC_MATRIX_PATH;
+    private static final URL HEXAMER_TSV_PATH;
+    private static final URL SEPTAMER_TSV_PATH;
+    static {
+        try {
+            SPLICING_IC_MATRIX_PATH = DATA_DIR.resolve("parse").resolve("spliceSites.yaml").toUri().toURL();
+            HEXAMER_TSV_PATH = DATA_DIR.resolve("hexamer-scores.tsv").toUri().toURL();
+            SEPTAMER_TSV_PATH = DATA_DIR.resolve("septamer-scores.tsv").toUri().toURL();
+        } catch (MalformedURLException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
-    private static final Path HEXAMER_TSV_PATH = DATA_DIR.resolve("hexamer-scores.tsv");
-    private static final Path SEPTAMER_TSV_PATH = DATA_DIR.resolve("septamer-scores.tsv");
+
 
     @Test
     public void makeHg19Database() throws Exception {

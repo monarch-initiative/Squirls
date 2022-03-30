@@ -91,10 +91,10 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
@@ -192,6 +192,9 @@ public class IngestCommand implements Callable<Integer> {
             URL refseqUrl = new URL(ingestProperties.refseqUrl());
             URL ensemblUrl = new URL(ingestProperties.ensemblUrl());
             URL ucscUrl = new URL(ingestProperties.ucscUrl());
+            URL spliceMatrixUrl = new URL(ingestProperties.splicingInformationContentMatrix());
+            URL hexamerUrl = new URL(ingestProperties.hexamerTsvPath());
+            URL septamerUrl = new URL(ingestProperties.septamerTsvPath());
 
             String versionedAssembly = getVersionedAssembly(assembly, version);
             Path versionedAssemblyBuildPath = buildDirPath.resolve(versionedAssembly);
@@ -200,10 +203,16 @@ public class IngestCommand implements Callable<Integer> {
 
 
             // 2 - read classifier data
-            Map<SquirlsClassifierVersion, Path> classifiers = ingestProperties.classifiers().stream()
+            Map<SquirlsClassifierVersion, URL> classifiers = ingestProperties.classifiers().stream()
                     .collect(Collectors.toMap(
                             clfData -> SquirlsClassifierVersion.parseString(clfData.version()),
-                            clfData -> Paths.get(clfData.classifierPath())));
+                            clfData -> {
+                                try {
+                                    return new URL(clfData.classifierPath());
+                                } catch (MalformedURLException e) {
+                                    throw new RuntimeException(e);
+                                }
+                            }));
 
 
             // 3 - build database
@@ -211,9 +220,9 @@ public class IngestCommand implements Callable<Integer> {
                     genomeUrl, assemblyReportUrl,
                     refseqUrl, ensemblUrl, ucscUrl,
                     phylopUrl,
-                    Path.of(ingestProperties.splicingInformationContentMatrix()),
-                    Path.of(ingestProperties.hexamerTsvPath()),
-                    Path.of(ingestProperties.septamerTsvPath()),
+                    spliceMatrixUrl,
+                    hexamerUrl,
+                    septamerUrl,
                     classifiers);
 
 
