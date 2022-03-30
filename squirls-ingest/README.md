@@ -11,6 +11,8 @@ There are two commands that need to be run in order to build the resource files 
 
 ### Generate a config file
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.6395954.svg)](https://doi.org/10.5281/zenodo.6395954)
+
 We need to generate and fill the config file first. The config file requires paths/URLs to public resources 
 and the resources generated in Squirls project that are hosted on Zenodo.
 
