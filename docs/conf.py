@@ -20,13 +20,13 @@
 # -- Project information -----------------------------------------------------
 
 project = 'Squirls'
-copyright = '2021, Daniel Danis, Peter N Robinson'
+copyright = '2022, Daniel Danis, Peter N Robinson'
 author = 'Daniel Danis, Peter N Robinson'
 
 # The short X.Y version
-version = '1.0'
+version = '2.0'
 # The full version, including alpha/beta/rc tags
-release = 'v1.0.1-SNAPSHOT'
+release = 'v2.0.0'
 
 
 # -- General configuration ---------------------------------------------------
