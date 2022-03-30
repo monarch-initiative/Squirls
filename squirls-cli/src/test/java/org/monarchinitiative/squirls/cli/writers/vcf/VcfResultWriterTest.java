@@ -157,7 +157,7 @@ public class VcfResultWriterTest {
         Path output = OUTPUT.resolve("output");
 
         VcfResultWriter writer = new VcfResultWriter(true, true);
-        writer.write(results, output.toString());
+        writer.write(results, output);
 
         Path realOutputFile = Path.of(output + ".vcf.gz");
         assertThat(realOutputFile.toFile().isFile(), equalTo(true));
@@ -189,7 +189,7 @@ public class VcfResultWriterTest {
         Path output = OUTPUT.resolve("output");
 
         VcfResultWriter writer = new VcfResultWriter(false, true);
-        writer.write(results, output.toString());
+        writer.write(results, output);
 
         Path realOutputFile = Path.of(output + ".vcf");
         assertThat(realOutputFile.toFile().isFile(), equalTo(true));

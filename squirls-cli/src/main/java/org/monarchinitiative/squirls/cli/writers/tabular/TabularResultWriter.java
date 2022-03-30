@@ -151,8 +151,8 @@ public class TabularResultWriter implements ResultWriter {
     }
 
     @Override
-    public void write(AnalysisResults results, String prefix) throws IOException {
-        String output = prefix + '.' + fileExtension + (compress ? ".gz" : "");
+    public void write(AnalysisResults results, Path prefix) throws IOException {
+        String output = prefix.toAbsolutePath().toString() + '.' + fileExtension + (compress ? ".gz" : "");
         Path outputPath = Paths.get(output);
         LOGGER.info("Writing tabular output to `{}`", outputPath);
 

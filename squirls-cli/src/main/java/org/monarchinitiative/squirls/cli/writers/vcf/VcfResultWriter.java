@@ -215,10 +215,10 @@ public class VcfResultWriter implements ResultWriter {
     }
 
     @Override
-    public void write(AnalysisResults results, String prefix) throws IOException {
+    public void write(AnalysisResults results, Path prefix) throws IOException {
         Path inputVcfPath = Paths.get(results.getSettingsData().getInputPath());
         String extension = compress ? OutputFormat.VCF.getFileExtension() + ".gz" : OutputFormat.VCF.getFileExtension();
-        Path outputPath = Paths.get(prefix + '.' + extension);
+        Path outputPath = Paths.get(prefix.toAbsolutePath().toString() + '.' + extension);
         LOGGER.info("Writing VCF output to `{}`", outputPath);
 
         VCFHeader header = prepareVcfHeader(inputVcfPath);

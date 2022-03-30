@@ -135,9 +135,9 @@ public class AnnotateCsvCommand extends AnnotatingSquirlsCommand {
     public Path inputPath;
 
     @CommandLine.Parameters(index = "1",
-            paramLabel = "path/to/output",
+            paramLabel = "output",
             description = "Prefix for the output files")
-    public String outputPrefix;
+    public Path outputPrefix = Path.of("output");
 
     private static GenomicVariant parseCsvRecord(GenomicAssembly assembly, CSVRecord record) throws SquirlsException {
         // parse contig

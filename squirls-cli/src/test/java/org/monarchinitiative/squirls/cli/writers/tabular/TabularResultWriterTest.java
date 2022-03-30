@@ -148,7 +148,7 @@ public class TabularResultWriterTest {
                         .featureSource(FeatureSource.REFSEQ)
                         .build())
                 .build();
-        writer.write(results, OUTPUT.resolve("output").toString());
+        writer.write(results, OUTPUT.resolve("output"));
 
         // the file must exist
         Path expectedOutputFilePath = Paths.get("target/test-classes/tabular_output/output.tsv");
@@ -184,7 +184,7 @@ public class TabularResultWriterTest {
                         .featureSource(FeatureSource.REFSEQ)
                         .build())
                 .build();
-        writer.write(results, OUTPUT.resolve("output").toString());
+        writer.write(results, OUTPUT.resolve("output"));
 
         // the file must exist
         Path expectedOutputFilePath = Paths.get("target/test-classes/tabular_output/output.tsv.gz");
@@ -220,7 +220,7 @@ public class TabularResultWriterTest {
                         .featureSource(FeatureSource.REFSEQ)
                         .build())
                 .build();
-        writer.write(results, OUTPUT.resolve("output").toString());
+        writer.write(results, OUTPUT.resolve("output"));
 
         // the file must exist
         Path expectedOutputFilePath = Paths.get("target/test-classes/tabular_output/output.tsv");

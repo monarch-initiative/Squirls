@@ -80,6 +80,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.nio.file.Path;
 
 /**
  * Implementors write {@link AnalysisResults} in different formats.
@@ -89,5 +90,5 @@ public interface ResultWriter {
 
     Logger LOGGER = LoggerFactory.getLogger(ResultWriter.class);
 
-    void write(AnalysisResults results, String prefix) throws IOException;
+    void write(AnalysisResults results, Path prefix) throws IOException;
 }

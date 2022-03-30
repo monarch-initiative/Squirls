@@ -130,13 +130,13 @@ public class AnnotateVcfCommand extends AnnotatingSquirlsCommand {
 
     @CommandLine.Parameters(index = "0",
             paramLabel = "input.vcf",
-            description = "Path to the input VCF file")
+            description = "Path to the input VCF file.")
     public Path inputPath;
 
     @CommandLine.Parameters(index = "1",
-            paramLabel = "path/to/output",
-            description = "Prefix for the output files")
-    public String outputPrefix;
+            paramLabel = "output",
+            description = "Prefix for the output files.")
+    public Path outputPrefix = Path.of("output");
 
     private static Function<VariantContext, Collection<VariantContext>> meltToSingleAltVariants() {
         return vc -> {
@@ -312,7 +312,7 @@ public class AnnotateVcfCommand extends AnnotatingSquirlsCommand {
                     .build();
 
             analysisResultsWriter.writeResults(results, prepareOutputOptions(outputPrefix));
-        } catch (SquirlsResourceException e) {
+        } catch (Exception e) {
             LOGGER.error("Error: ", e);
             return 1;
         }
