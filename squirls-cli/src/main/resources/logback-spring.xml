@@ -1,7 +1,29 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
 <configuration>
-    <include resource="org/springframework/boot/logging/logback/base.xml"/>
+    <property name="pattern" value="%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"/>
+
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>INFO</level>
+        </filter>
+        <encoder>
+            <pattern>${pattern}</pattern>
+        </encoder>
+    </appender>
+
+    <appender name="FILE" class="ch.qos.logback.core.FileAppender">
+        <file>squirls.log</file>
+        <append>false</append>
+        <encoder>
+            <pattern>${pattern}</pattern>
+        </encoder>
+    </appender>
+    <logger name="org.monarchinitiative.squirls" level="DEBUG">
+        <appender-ref ref="FILE"/>
+    </logger>
     <logger name="com.zaxxer.hikari" level="WARN"/>
     <logger name="de.charite.compbio.jannovar" level="WARN"/>
+    <root level="DEBUG">
+        <appender-ref ref="STDOUT"/>
+    </root>
 </configuration>
