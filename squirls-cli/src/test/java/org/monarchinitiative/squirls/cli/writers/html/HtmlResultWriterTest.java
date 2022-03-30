@@ -160,6 +160,6 @@ public class HtmlResultWriterTest {
                         .build())
                 .addAllVariants(variantData)
                 .build();
-        resultWriter.write(results, OUTPATH.toString());
+        resultWriter.write(results, OUTPATH);
     }
 }

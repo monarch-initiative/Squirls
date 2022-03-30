@@ -79,6 +79,9 @@ package org.monarchinitiative.squirls.cli.cmd;
 import org.monarchinitiative.squirls.cli.writers.*;
 import picocli.CommandLine;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.*;
 
 /**
@@ -130,7 +133,16 @@ public abstract class AnnotatingSquirlsCommand extends SquirlsCommand {
         return formats;
     }
 
-    protected OutputOptions prepareOutputOptions(String outputPrefix) {
+    protected OutputOptions prepareOutputOptions(Path outputPrefix) throws IOException {
+        // Ensure the parent folders exist or explode.
+        if (Files.isDirectory(outputPrefix)) {
+            LOGGER.warn("Provided output prefix points to an existing directory. Results will be stored at {}/squirls*", outputPrefix.toAbsolutePath());
+            outputPrefix = outputPrefix.resolve("squirls");
+        }
+        Path parent = outputPrefix.getParent();
+        if (!Files.isDirectory(parent))
+            Files.createDirectories(parent);
+
         return OutputOptions.builder()
                 .setOutputPrefix(outputPrefix)
                 .addOutputFormats(parseOutputFormats(outputFormats))

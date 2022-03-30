@@ -71,9 +71,9 @@ To annotate more than just a few variant positions, it may be more convenient to
 Let's run the ``annotate-csv`` command to annotate four variants stored in the `example.csv`_ file
 (an example CSV file with 4 variants stored in Squirls repository)::
 
-  java -jar squirls-cli.jar annotate-csv -d $SQUIRLS_DATA example.csv output
+  java -jar squirls-cli.jar annotate-csv -d $SQUIRLS_DATA example.csv path/to/output/file
 
-Squirls reads the variants and stores the scores into ``output.html`` file. The *HTML* is the default output format,
+Squirls reads the variants and stores the scores into ``path/to/output/file.html`` file. The *HTML* is the default output format,
 see :ref:`rstoutputformats` section for more details.
 
 Mandatory arguments
@@ -109,9 +109,9 @@ The aim of this command is to annotate variants in a VCF file and to store the r
 
 To annotate variants in the `example.vcf`_ file (an example VCF file with 6 variants stored in Squirls repository), run::
 
-  $ java -jar squirls-cli.jar annotate-vcf -d $SQUIRLS_DATA example.vcf output
+  $ java -jar squirls-cli.jar annotate-vcf -d $SQUIRLS_DATA example.vcf path/to/output/file
 
-After the annotation, the results are stored at ``output.html``.
+After the annotation, the results are stored at ``path/to/output/file.html``.
 
 Mandatory arguments
 ~~~~~~~~~~~~~~~~~~~

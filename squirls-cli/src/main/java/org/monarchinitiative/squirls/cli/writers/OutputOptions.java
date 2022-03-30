@@ -76,6 +76,7 @@
 
 package org.monarchinitiative.squirls.cli.writers;
 
+import java.nio.file.Path;
 import java.util.*;
 
 /**
@@ -87,7 +88,7 @@ public class OutputOptions {
     private final boolean reportFeatures;
     private final boolean reportAllTranscripts;
     private final Set<OutputFormat> outputFormats;
-    private final String outputPrefix;
+    private final Path outputPrefix;
 
     private OutputOptions(Builder builder) {
         this.compress = builder.compress;
@@ -117,7 +118,7 @@ public class OutputOptions {
         return outputFormats;
     }
 
-    public String outputPrefix() {
+    public Path outputPrefix() {
         return outputPrefix;
     }
 
@@ -151,7 +152,7 @@ public class OutputOptions {
         private boolean compress = false;
         private boolean reportFeatures = false;
         private boolean reportAllTranscripts = false;
-        private String outputPrefix = "output";
+        private Path outputPrefix = Path.of("output");
 
         private Builder() {
         }
@@ -171,7 +172,7 @@ public class OutputOptions {
             return this;
         }
 
-        public Builder setOutputPrefix(String outputPrefix) {
+        public Builder setOutputPrefix(Path outputPrefix) {
             this.outputPrefix = outputPrefix;
             return this;
         }
