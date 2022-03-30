@@ -98,7 +98,6 @@ import org.monarchinitiative.squirls.core.reference.StrandedSequenceService;
 import org.monarchinitiative.squirls.core.reference.TranscriptModelService;
 import org.monarchinitiative.squirls.core.scoring.SplicingAnnotator;
 import org.monarchinitiative.squirls.initialize.SquirlsDataResolver;
-import org.monarchinitiative.squirls.initialize.UndefinedSquirlsResourceException;
 import org.monarchinitiative.squirls.io.SquirlsResourceException;
 import org.monarchinitiative.vmvt.core.VmvtGenerator;
 import org.slf4j.Logger;

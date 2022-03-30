@@ -186,16 +186,23 @@ public class AnnotateVcfCommand extends AnnotatingSquirlsCommand {
                 }
 
                 // Squirls scores
-                GenomicVariant variant;
+
                 SquirlsResult squirlsResult;
                 Contig contig = contigMap.getOrDefault(contigName, Contig.unknown());
-                if (contig.equals(Contig.unknown()) || variantAnnotations.getHighestImpactEffect().isOffTranscript()) {
+                if (contig.isUnknown())
+                    continue;
+
+                GenomicVariant variant = GenomicVariant.of(contig,
+                        vc.getID(),
+                        org.monarchinitiative.svart.Strand.POSITIVE,
+                        CoordinateSystem.oneBased(),
+                        vc.getStart(),
+                        vc.getReference().getDisplayString(),
+                        allele.getDisplayString());
+                if (variantAnnotations.getHighestImpactEffect().isOffTranscript()) {
                     // don't bother with annotating an off-exome variant
-                    variant = null; // TODO - should not be set to null, as it will trigger NPE in L#207
                     squirlsResult = SquirlsResult.empty();
                 } else {
-                    variant = GenomicVariant.of(contig, vc.getID(), org.monarchinitiative.svart.Strand.POSITIVE, CoordinateSystem.oneBased(),
-                            vc.getStart(), vc.getReference().getDisplayString(), allele.getDisplayString());
                     squirlsResult = evaluator.evaluate(variant);
                 }
 
