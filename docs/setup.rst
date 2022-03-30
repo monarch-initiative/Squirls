@@ -55,7 +55,7 @@ As an alternative to using prebuilt Squirls JAR file, the Squirls JAR file can a
 
 Run the following commands to download Squirls source code from GitHub repository and to build Squirls JAR file::
 
-  $ git https://github.com/TheJacksonLaboratory/Squirls
+  $ git clone https://github.com/TheJacksonLaboratory/Squirls
   $ cd Squirls
   $ ./mvnw package
 
