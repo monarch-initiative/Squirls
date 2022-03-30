@@ -85,6 +85,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import javax.sql.DataSource;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Map;
@@ -94,9 +96,17 @@ public class TestDataSourceConfig {
 
     public static final Path BASE_FOLDER = Path.of("src/test/resources/org/monarchinitiative/squirls/ingest");
 
-    public static final Map<SquirlsClassifierVersion, Path> MODEL_PATHS = Map.of(
-            SquirlsClassifierVersion.v0_4_4, Paths.get("src/test/resources/org/monarchinitiative/squirls/ingest/example_model.v0.4.4.yaml"),
-            SquirlsClassifierVersion.v0_4_6, Paths.get("src/test/resources/org/monarchinitiative/squirls/ingest/ensemble.lr.rf.v0.4.6.yaml"));
+    public static final Map<SquirlsClassifierVersion, URL> MODEL_PATHS = createModelUrls();
+
+    private static Map<SquirlsClassifierVersion, URL> createModelUrls() {
+        try {
+            return Map.of(
+                    SquirlsClassifierVersion.v0_4_4, Paths.get("src/test/resources/org/monarchinitiative/squirls/ingest/example_model.v0.4.4.yaml").toUri().toURL(),
+                    SquirlsClassifierVersion.v0_4_6, Paths.get("src/test/resources/org/monarchinitiative/squirls/ingest/ensemble.lr.rf.v0.4.6.yaml").toUri().toURL());
+        } catch (MalformedURLException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     @Bean
     public SplicingPwmData splicingPwmData() {

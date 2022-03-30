@@ -96,6 +96,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.sql.DataSource;
 import java.io.Closeable;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -221,15 +222,15 @@ public class SquirlsDataBuilder {
      * @param refseqUrl         URL pointing to Jannovar RefSeq transcript database
      * @param ensemblUrl        URL pointing to Jannovar Ensembl transcript database
      * @param ucscUrl           URL pointing to Jannovar UCSC transcript database
-     * @param yamlPath          path to file with splice site definitions
+     * @param yamlUrl          path to file with splice site definitions
      * @throws SquirlsException if anything goes wrong
      */
     public static void buildDatabase(Path buildDir, URL genomeUrl, URL genomeAssemblyReport,
                                      URL refseqUrl, URL ensemblUrl, URL ucscUrl,
                                      URL phylopUrl,
-                                     Path yamlPath,
-                                     Path hexamerPath, Path septamerPath,
-                                     Map<SquirlsClassifierVersion, Path> classifiers) throws SquirlsException {
+                                     URL yamlUrl,
+                                     URL hexamerUrl, URL septamerUrl,
+                                     Map<SquirlsClassifierVersion, URL> classifierUrls) throws SquirlsException {
 
         // 0 - initiate download of reference genome FASTA file & PhyloP bigwig file
         Path genomeAssemblyReportPath = buildDir.resolve("assembly_report.txt");
@@ -245,6 +246,42 @@ public class SquirlsDataBuilder {
         es.submit(new UrlResourceDownloader(refseqUrl, refseqPath, true));
         es.submit(new UrlResourceDownloader(ensemblUrl, ensemblPath, true));
         es.submit(new UrlResourceDownloader(ucscUrl, ucscPath, true));
+
+        Path yamlPath, hexamerPath, septamerPath;
+        Map<SquirlsClassifierVersion, Path> classifiers;
+        try {
+            File yamlTempFile = File.createTempFile("squirls-information-content-matrix", ".yml");
+            yamlTempFile.deleteOnExit();
+            yamlPath = yamlTempFile.toPath();
+            es.submit(new UrlResourceDownloader(yamlUrl, yamlPath, true));
+
+            File hexamerTempFile = File.createTempFile("squirls-hexamer-scores", ".tsv");
+            hexamerTempFile.deleteOnExit();
+            hexamerPath = hexamerTempFile.toPath();
+            es.submit(new UrlResourceDownloader(hexamerUrl, hexamerPath, true));
+
+            File septamerTempFile = File.createTempFile("squirls-septamer-scores", ".tsv");
+            septamerTempFile.deleteOnExit();
+            septamerPath = septamerTempFile.toPath();
+            es.submit(new UrlResourceDownloader(septamerUrl, septamerPath, true));
+
+            // classifiers
+            classifiers = downloadClassifiers(es, classifierUrls);
+        } catch (IOException e) {
+            throw new SquirlsException(e);
+        }
+
+        // now wait until all the downloads complete
+        try {
+            es.shutdown();
+            while (!es.awaitTermination(5, TimeUnit.SECONDS)) {
+                System.out.print('.');
+            }
+            System.out.print('\n');
+        } catch (InterruptedException e) {
+            LOGGER.warn("Interrupting the download");
+            es.shutdownNow();
+        }
 
         // 1a - parse YAML with splicing matrices
         SplicingPwmData splicingPwmData;
@@ -294,18 +331,6 @@ public class SquirlsDataBuilder {
             throw new SquirlsException(e);
         }
 
-        // now wait until all the downloads complete
-        try {
-            es.shutdown();
-            while (!es.awaitTermination(5, TimeUnit.SECONDS)) {
-                System.out.print('.');
-            }
-            System.out.print('\n');
-        } catch (InterruptedException e) {
-            LOGGER.warn("Interrupting the download");
-            es.shutdownNow();
-        }
-
         if (dataSource instanceof Closeable) {
             try {
                 LOGGER.info("Closing database connections");
@@ -314,6 +339,23 @@ public class SquirlsDataBuilder {
                 LOGGER.warn("Could not close the datasource");
             }
         }
+    }
+
+    private static Map<SquirlsClassifierVersion, Path> downloadClassifiers(ExecutorService es, Map<SquirlsClassifierVersion, URL> classifierUrls) throws IOException {
+        Map<SquirlsClassifierVersion, Path> paths = new HashMap<>(classifierUrls.size());
+
+        for (Map.Entry<SquirlsClassifierVersion, URL> e : classifierUrls.entrySet()) {
+            SquirlsClassifierVersion key = e.getKey();
+            File clfFile = File.createTempFile(String.format("squirls-clf-%s.%s.%s", key.major(), key.minor(), key.patch()), ".yml");
+            clfFile.deleteOnExit();
+
+            Path clfPath = clfFile.toPath();
+            es.submit(new UrlResourceDownloader(e.getValue(), clfPath, true));
+
+            paths.put(key, clfPath);
+        }
+
+        return paths;
     }
 
 }
