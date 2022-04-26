@@ -85,10 +85,7 @@ import org.junit.jupiter.api.Test;
 import org.monarchinitiative.squirls.cli.TestDataSourceConfig;
 import org.monarchinitiative.squirls.cli.data.VariantsForTesting;
 import org.monarchinitiative.squirls.cli.visualization.SplicingVariantGraphicsGenerator;
-import org.monarchinitiative.squirls.cli.writers.AnalysisResults;
-import org.monarchinitiative.squirls.cli.writers.AnalysisStats;
-import org.monarchinitiative.squirls.cli.writers.SettingsData;
-import org.monarchinitiative.squirls.cli.writers.WritableSplicingAllele;
+import org.monarchinitiative.squirls.cli.writers.*;
 import org.monarchinitiative.squirls.core.config.FeatureSource;
 import org.monarchinitiative.squirls.core.reference.SplicingPwmData;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -103,7 +100,7 @@ import java.util.Set;
 @SpringBootTest(classes = TestDataSourceConfig.class)
 public class HtmlResultWriterTest {
 
-    private static final Path OUTPATH = Paths.get("target/Sample192");
+    private static final Path OUTPATH = Paths.get("target");
 
     @Autowired
     public SplicingPwmData splicingPwmData;
@@ -160,6 +157,7 @@ public class HtmlResultWriterTest {
                         .build())
                 .addAllVariants(variantData)
                 .build();
-        resultWriter.write(results, OUTPATH);
+        OutputOptions outputOptions = OutputOptions.builder().setOutputDirectory(OUTPATH).setPrefix("Sample192").build();
+        resultWriter.write(results, outputOptions);
     }
 }

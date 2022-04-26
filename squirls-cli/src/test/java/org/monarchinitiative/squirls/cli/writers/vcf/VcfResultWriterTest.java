@@ -88,10 +88,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.monarchinitiative.squirls.cli.TestDataSourceConfig;
 import org.monarchinitiative.squirls.cli.data.VariantsForTesting;
-import org.monarchinitiative.squirls.cli.writers.AnalysisResults;
-import org.monarchinitiative.squirls.cli.writers.AnalysisStats;
-import org.monarchinitiative.squirls.cli.writers.SettingsData;
-import org.monarchinitiative.squirls.cli.writers.WritableSplicingAllele;
+import org.monarchinitiative.squirls.cli.writers.*;
 import org.monarchinitiative.squirls.core.config.FeatureSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -154,12 +151,11 @@ public class VcfResultWriterTest {
                         .build())
                 .build();
 
-        Path output = OUTPUT.resolve("output");
-
         VcfResultWriter writer = new VcfResultWriter(true, true);
-        writer.write(results, output);
+        OutputOptions outputOptions = OutputOptions.builder().setOutputDirectory(OUTPUT).setPrefix("output").build();
+        writer.write(results, outputOptions);
 
-        Path realOutputFile = Path.of(output + ".vcf.gz");
+        Path realOutputFile = OUTPUT.resolve("output.vcf.gz");
         assertThat(realOutputFile.toFile().isFile(), equalTo(true));
 
         List<String> lines;
@@ -186,12 +182,11 @@ public class VcfResultWriterTest {
                         .build())
                 .build();
 
-        Path output = OUTPUT.resolve("output");
-
         VcfResultWriter writer = new VcfResultWriter(false, true);
-        writer.write(results, output);
+        OutputOptions outputOptions = OutputOptions.builder().setOutputDirectory(OUTPUT).setPrefix("output").build();
+        writer.write(results, outputOptions);
 
-        Path realOutputFile = Path.of(output + ".vcf");
+        Path realOutputFile = OUTPUT.resolve("output.vcf");
         assertThat(realOutputFile.toFile().isFile(), equalTo(true));
 
         List<String> lines;

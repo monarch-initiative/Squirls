@@ -79,6 +79,7 @@ package org.monarchinitiative.squirls.cli.cmd;
 import org.monarchinitiative.squirls.cli.writers.*;
 import picocli.CommandLine;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -96,6 +97,10 @@ public abstract class AnnotatingSquirlsCommand extends SquirlsCommand {
     @CommandLine.Option(names = {"--compress"},
             description = "Compress the output (default: ${DEFAULT-VALUE})")
     public boolean compress = false;
+
+    @CommandLine.Option(names = {"--out-dir"},
+            description = "Path to folder where to write the output files (default: current working directory).")
+    public Path outDir = Path.of("");
 
     @CommandLine.Option(names = {"-f", "--output-format"},
             paramLabel = "html",
@@ -133,18 +138,22 @@ public abstract class AnnotatingSquirlsCommand extends SquirlsCommand {
         return formats;
     }
 
-    protected OutputOptions prepareOutputOptions(Path outputPrefix) throws IOException {
-        // Ensure the parent folders exist or explode.
-        if (Files.isDirectory(outputPrefix)) {
-            LOGGER.warn("Provided output prefix points to an existing directory. Results will be stored at {}/squirls*", outputPrefix.toAbsolutePath());
-            outputPrefix = outputPrefix.resolve("squirls");
+    protected OutputOptions prepareOutputOptions(String prefix) throws IOException {
+        if (prefix.contains(File.separator)) {
+            // +1 to exclude the separator
+            prefix = prefix.substring(prefix.lastIndexOf(File.separator)+1);
+            LOGGER.warn("The prefix '{}' contains the file separator character '{}'. The CLI has changed, please provide the path to the output directory using the `--out-dir` option. Using the last part of the string as the prefix '{}'.", prefix, File.separator, prefix);
         }
-        Path parent = outputPrefix.getParent();
-        if (!Files.isDirectory(parent))
-            Files.createDirectories(parent);
+
+        // Ensure the parent folders exist or explode.
+        if (!Files.isDirectory(outDir)) {
+            LOGGER.info("The output directory {} does not exist. Creating the missing directories.", outDir.toAbsolutePath());
+            Files.createDirectories(outDir);
+        }
 
         return OutputOptions.builder()
-                .setOutputPrefix(outputPrefix)
+                .setOutputDirectory(outDir)
+                .setPrefix(prefix)
                 .addOutputFormats(parseOutputFormats(outputFormats))
                 .setCompress(compress)
                 .setReportFeatures(reportFeatures)

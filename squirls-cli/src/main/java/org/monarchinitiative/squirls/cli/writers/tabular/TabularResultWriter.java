@@ -80,6 +80,7 @@ import org.apache.commons.compress.compressors.gzip.GzipCompressorOutputStream;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
 import org.monarchinitiative.squirls.cli.writers.AnalysisResults;
+import org.monarchinitiative.squirls.cli.writers.OutputOptions;
 import org.monarchinitiative.squirls.cli.writers.ResultWriter;
 import org.monarchinitiative.squirls.cli.writers.WritableSplicingAllele;
 import org.monarchinitiative.squirls.core.SquirlsResult;
@@ -92,7 +93,6 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.LinkedList;
@@ -151,9 +151,8 @@ public class TabularResultWriter implements ResultWriter {
     }
 
     @Override
-    public void write(AnalysisResults results, Path prefix) throws IOException {
-        String output = prefix.toAbsolutePath().toString() + '.' + fileExtension + (compress ? ".gz" : "");
-        Path outputPath = Paths.get(output);
+    public void write(AnalysisResults results, OutputOptions outputOptions) throws IOException {
+        Path outputPath = outputOptions.outputDirectory().resolve(outputOptions.prefix() + '.' + fileExtension + (compress ? ".gz" : ""));
         LOGGER.info("Writing tabular output to `{}`", outputPath);
 
         List<String> header = new ArrayList<>(

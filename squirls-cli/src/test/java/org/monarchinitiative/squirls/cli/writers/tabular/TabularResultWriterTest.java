@@ -82,10 +82,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.monarchinitiative.squirls.cli.TestDataSourceConfig;
 import org.monarchinitiative.squirls.cli.data.VariantsForTesting;
-import org.monarchinitiative.squirls.cli.writers.AnalysisResults;
-import org.monarchinitiative.squirls.cli.writers.AnalysisStats;
-import org.monarchinitiative.squirls.cli.writers.SettingsData;
-import org.monarchinitiative.squirls.cli.writers.WritableSplicingAllele;
+import org.monarchinitiative.squirls.cli.writers.*;
 import org.monarchinitiative.squirls.core.config.FeatureSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -148,7 +145,8 @@ public class TabularResultWriterTest {
                         .featureSource(FeatureSource.REFSEQ)
                         .build())
                 .build();
-        writer.write(results, OUTPUT.resolve("output"));
+        OutputOptions outputOptions = OutputOptions.builder().setOutputDirectory(OUTPUT).setPrefix("output").build();
+        writer.write(results, outputOptions);
 
         // the file must exist
         Path expectedOutputFilePath = Paths.get("target/test-classes/tabular_output/output.tsv");
@@ -184,7 +182,8 @@ public class TabularResultWriterTest {
                         .featureSource(FeatureSource.REFSEQ)
                         .build())
                 .build();
-        writer.write(results, OUTPUT.resolve("output"));
+        OutputOptions outputOptions = OutputOptions.builder().setOutputDirectory(OUTPUT).setPrefix("output").build();
+        writer.write(results, outputOptions);
 
         // the file must exist
         Path expectedOutputFilePath = Paths.get("target/test-classes/tabular_output/output.tsv.gz");
@@ -220,7 +219,8 @@ public class TabularResultWriterTest {
                         .featureSource(FeatureSource.REFSEQ)
                         .build())
                 .build();
-        writer.write(results, OUTPUT.resolve("output"));
+        OutputOptions outputOptions = OutputOptions.builder().setOutputDirectory(OUTPUT).setPrefix("output").build();
+        writer.write(results, outputOptions);
 
         // the file must exist
         Path expectedOutputFilePath = Paths.get("target/test-classes/tabular_output/output.tsv");
