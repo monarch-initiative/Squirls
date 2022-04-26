@@ -88,14 +88,16 @@ public class OutputOptions {
     private final boolean reportFeatures;
     private final boolean reportAllTranscripts;
     private final Set<OutputFormat> outputFormats;
-    private final Path outputPrefix;
+    private final Path outputDirectory;
+    private final String prefix;
 
     private OutputOptions(Builder builder) {
         this.compress = builder.compress;
         this.reportFeatures = builder.reportFeatures;
         this.reportAllTranscripts = builder.reportAllTranscripts;
         this.outputFormats = Set.copyOf(builder.outputFormats);
-        this.outputPrefix = Objects.requireNonNull(builder.outputPrefix);
+        this.outputDirectory = Objects.requireNonNull(builder.outputDirectory);
+        this.prefix = Objects.requireNonNull(builder.prefix);
     }
 
     public static Builder builder() {
@@ -118,21 +120,12 @@ public class OutputOptions {
         return outputFormats;
     }
 
-    public Path outputPrefix() {
-        return outputPrefix;
+    public Path outputDirectory() {
+        return outputDirectory;
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        OutputOptions that = (OutputOptions) o;
-        return compress == that.compress && reportFeatures == that.reportFeatures && reportAllTranscripts == that.reportAllTranscripts && Objects.equals(outputFormats, that.outputFormats) && Objects.equals(outputPrefix, that.outputPrefix);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(compress, reportFeatures, reportAllTranscripts, outputFormats, outputPrefix);
+    public String prefix() {
+        return prefix;
     }
 
     @Override
@@ -142,7 +135,8 @@ public class OutputOptions {
                 ", reportFeatures=" + reportFeatures +
                 ", reportAllTranscripts=" + reportAllTranscripts +
                 ", outputFormats=" + outputFormats +
-                ", outputPrefix='" + outputPrefix + '\'' +
+                ", outputDirectory=" + outputDirectory +
+                ", prefix='" + prefix + '\'' +
                 '}';
     }
 
@@ -152,7 +146,8 @@ public class OutputOptions {
         private boolean compress = false;
         private boolean reportFeatures = false;
         private boolean reportAllTranscripts = false;
-        private Path outputPrefix = Path.of("output");
+        private Path outputDirectory;
+        private String prefix;
 
         private Builder() {
         }
@@ -172,8 +167,13 @@ public class OutputOptions {
             return this;
         }
 
-        public Builder setOutputPrefix(Path outputPrefix) {
-            this.outputPrefix = outputPrefix;
+        public Builder setOutputDirectory(Path outputDirectory) {
+            this.outputDirectory = outputDirectory;
+            return this;
+        }
+
+        public Builder setPrefix(String prefix) {
+            this.prefix = prefix;
             return this;
         }
 

@@ -86,10 +86,7 @@ import htsjdk.variant.variantcontext.writer.Options;
 import htsjdk.variant.variantcontext.writer.VariantContextWriter;
 import htsjdk.variant.variantcontext.writer.VariantContextWriterBuilder;
 import htsjdk.variant.vcf.*;
-import org.monarchinitiative.squirls.cli.writers.AnalysisResults;
-import org.monarchinitiative.squirls.cli.writers.OutputFormat;
-import org.monarchinitiative.squirls.cli.writers.ResultWriter;
-import org.monarchinitiative.squirls.cli.writers.WritableSplicingAllele;
+import org.monarchinitiative.squirls.cli.writers.*;
 import org.monarchinitiative.squirls.core.SquirlsResult;
 import org.monarchinitiative.squirls.core.SquirlsTxResult;
 import org.monarchinitiative.svart.CoordinateSystem;
@@ -215,10 +212,10 @@ public class VcfResultWriter implements ResultWriter {
     }
 
     @Override
-    public void write(AnalysisResults results, Path prefix) throws IOException {
+    public void write(AnalysisResults results, OutputOptions outputOptions) throws IOException {
         Path inputVcfPath = Paths.get(results.getSettingsData().getInputPath());
         String extension = compress ? OutputFormat.VCF.getFileExtension() + ".gz" : OutputFormat.VCF.getFileExtension();
-        Path outputPath = Paths.get(prefix.toAbsolutePath().toString() + '.' + extension);
+        Path outputPath = outputOptions.outputDirectory().resolve(outputOptions.prefix() + '.' + extension);
         LOGGER.info("Writing VCF output to `{}`", outputPath);
 
         VCFHeader header = prepareVcfHeader(inputVcfPath);
