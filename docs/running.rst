@@ -65,6 +65,8 @@ Squirls reports scores in four columns:
 - maximum Squirls pathogenicity prediction rounded up to 3 significant digits
 - Squirls pathogenicity predictions calculated for each transcript the variant overlaps with
 
+.. note::
+  The options ``--output-format``, ``--n-variants-to-report``, ``--out-dir``, ``--report-features`` are ignored.
 
 ``annotate-csv`` - Annotate variant positions stored in a CSV file
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -74,9 +76,9 @@ To annotate more than just a few variant positions, it may be more convenient to
 Let's run the ``annotate-csv`` command to annotate four variants stored in the `example.csv`_ file
 (an example CSV file with 4 variants stored in Squirls repository)::
 
-  java -jar squirls-cli.jar annotate-csv -d $SQUIRLS_DATA example.csv path/to/output/file
+  java -jar squirls-cli.jar annotate-csv -d $SQUIRLS_DATA example.csv output
 
-Squirls reads the variants and stores the scores into ``path/to/output/file.html`` file. The *HTML* is the default output format,
+Squirls reads the variants and stores the scores into ``output.html`` file. The *HTML* is the default output format,
 see :ref:`rstoutputformats` section for more details.
 
 Mandatory arguments
@@ -100,6 +102,7 @@ In addition to the mandatory arguments, Squirls allows to fine tune the annotati
   in all output formats. Default: ``html``
 * ``-n, --n-variants-to-report`` - number of most pathogenic variants to include in *HTML* report. The option has
   no effect on *VCF* output format. Default: ``100``
+* ``--out-dir`` - path to folder where to write the output files. Default: current working directory
 * ``--report-features`` - include Squirls features into the output. Default: ``false``
 * ``-t | --transcript-source`` - transcript source to use. Choose one of ``{REFSEQ, ENSEMBL, UCSC}``. Default: ``REFSEQ``
 * ``--threads`` - process variants on *n* threads. Default: ``2``
@@ -137,6 +140,7 @@ In addition to the mandatory arguments, Squirls allows to fine tune the annotati
   in all output formats. Default: ``html``
 * ``-n, --n-variants-to-report`` - number of most pathogenic variants to include in *HTML* report. The option has
   no effect on *VCF* output format. Default: ``100``
+* ``--out-dir`` - path to folder where to write the output files. Default: current working directory
 * ``--report-features`` - include Squirls features into the output. Default: ``false``
 * ``-t | --transcript-source`` - transcript source to use. Choose one of ``{REFSEQ, ENSEMBL, UCSC}``. Default: ``REFSEQ``
 * ``--threads`` - process variants on *n* threads. Default: ``2``
