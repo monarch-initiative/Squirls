@@ -141,6 +141,6 @@ public class ZipCompressionWrapperTest {
         assertThat(names, hasSize(2));
         assertThat(names, hasItems("something.txt", "anything.txt"));
         assertThat(sizes, hasSize(2));
-        assertThat(sizes, hasItems(55L, 55L));
+        assertThat(sizes, hasItems(51L, 51L));
     }
 }

@@ -79,7 +79,6 @@ package org.monarchinitiative.squirls.ingest;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.monarchinitiative.squirls.ingest.data.GenomeAssemblyDownloaderTest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
@@ -97,8 +96,6 @@ public class SquirlsDataBuilderTest {
 
     private static final Path DATA_DIR = Paths.get("src/test/resources/org/monarchinitiative/squirls/ingest");
 
-    private static final URL FASTA_URL = GenomeAssemblyDownloaderTest.class.getResource("shortHg19ChromFa.tar.gz");
-
     @Autowired
     public DataSource dataSource;
     private Path buildDir;
@@ -111,22 +108,6 @@ public class SquirlsDataBuilderTest {
     @AfterEach
     public void tearDown() throws Exception {
         TestUtils.deleteFolderAndFiles(buildDir);
-    }
-
-    @Test
-    public void downloadReferenceGenome() {
-        // arrange - nothing to be done
-
-        // act - download a small reference genome
-        // TODO - move to CLI
-        Runnable rgTask = SquirlsDataBuilder.downloadReferenceGenome(FASTA_URL, buildDir, true);
-        rgTask.run();
-
-        // assert - there should be a FASTA file with index present in the `buildDir`
-
-        assertThat("FASTA file was not generated", buildDir.resolve("genome.fa").toFile().isFile(), is(true));
-        assertThat("FASTA index was not generated", buildDir.resolve("genome.fa.fai").toFile().isFile(), is(true));
-        assertThat("FASTA dictionary was not generated", buildDir.resolve("genome.fa.dict").toFile().isFile(), is(true));
     }
 
     @Test

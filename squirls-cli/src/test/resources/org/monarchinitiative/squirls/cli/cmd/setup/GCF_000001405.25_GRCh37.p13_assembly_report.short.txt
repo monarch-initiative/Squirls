@@ -335,4 +335,4 @@ HSCHR6_MHC_QBL_CTG1	alt-scaffold	6	Chromosome	GL000255.1	=	NT_167248.1	ALT_REF_L
 HSCHR6_MHC_SSTO_CTG1	alt-scaffold	6	Chromosome	GL000256.1	=	NT_167249.1	ALT_REF_LOCI_7	4928567	chr6_ssto_hap7
 HSCHR4_1_CTG9	alt-scaffold	4	Chromosome	GL000257.1	=	NT_167250.1	ALT_REF_LOCI_8	590426	chr4_ctg9_hap1
 HSCHR17_1_CTG5	alt-scaffold	17	Chromosome	GL000258.1	=	NT_167251.1	ALT_REF_LOCI_9	1680828	chr17_ctg5_hap1
-MT	assembled-molecule	MT	Mitochondrion	J01415.2	=	NC_012920.1	non-nuclear	16571	chrM
+MT	assembled-molecule	MT	Mitochondrion	J01415.2	=	NC_012920.1	non-nuclear	16569	chrM

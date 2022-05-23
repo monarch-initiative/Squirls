@@ -74,107 +74,77 @@
  * Daniel Danis, Peter N Robinson, 2020
  */
 
-package org.monarchinitiative.squirls.ingest.data;
+package org.monarchinitiative.squirls.io.download;
 
-import htsjdk.samtools.SAMSequenceDictionary;
-import htsjdk.samtools.SAMSequenceDictionaryCodec;
-import htsjdk.samtools.SAMSequenceRecord;
-import htsjdk.samtools.reference.FastaSequenceIndex;
-import htsjdk.samtools.reference.FastaSequenceIndexCreator;
-import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
-import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
-import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream;
-import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.*;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.URL;
-import java.nio.file.Files;
+import java.net.URLConnection;
 import java.nio.file.Path;
-import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 
 /**
- * This class downloads tar archive from given url, extracts chromosomes stored as tar entries into a single FASTA file,
- * creates FASTA index, and finally also FASTA sequence dictionary.
+ * Download a file from {@link URL} to given location.
  *
  * @author Daniel Danis
  */
-public final class GenomeAssemblyDownloader implements Runnable {
+public class UrlResourceDownloader implements Runnable {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(GenomeAssemblyDownloader.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(UrlResourceDownloader.class);
 
-    private final URL genomeUrl;
+    private final URL source;
 
-    private final Path whereToSave;
+    private final Path destination;
 
     private final boolean overwrite;
 
-    public GenomeAssemblyDownloader(URL genomeUrl, Path whereToSave, boolean overwrite) {
-        this.genomeUrl = genomeUrl;
-        this.whereToSave = whereToSave;
+    public UrlResourceDownloader(URL source, Path destination) {
+        this(source, destination, true);
+    }
+
+    /**
+     * @param source      url pointing to the resource file
+     * @param destination where to store the file
+     * @param overwrite   if <code>true</code>, the file is overwritten if it already exists
+     */
+    public UrlResourceDownloader(URL source, Path destination, boolean overwrite) {
+        this.source = source;
+        this.destination = destination;
         this.overwrite = overwrite;
     }
 
-
-    /**
-     * Download the genome tar.gz file, concatenate all chromosomes into a single gzipped file, index the file, and
-     * create sequence dictionary.
-     */
     @Override
     public void run() {
-        if (Files.isRegularFile(whereToSave) && !overwrite) {
-            LOGGER.info("Skipping download since reference genome FASTA already exists at '{}'", whereToSave);
+        if (!overwrite && destination.toFile().exists()) {
+            LOGGER.info("The file already exists at `{}`, skipping download", destination);
             return;
         }
+
         try {
-            // 1 - download genome tar.gz archive into a temporary location
-            File genomeTarGz = File.createTempFile("squirls-genome-downloader", ".tar.gz");
-            genomeTarGz.deleteOnExit();
-            UrlResourceDownloader downloader = new UrlResourceDownloader(genomeUrl, genomeTarGz.toPath());
-            downloader.run(); // on the same thread!
-
-            // 2 - concatenate all the files in the tar.gz archive into a single FASTA file
-            try (TarArchiveInputStream tarInput = new TarArchiveInputStream(new GzipCompressorInputStream(new FileInputStream(genomeTarGz)));
-                 OutputStream os = Files.newOutputStream(whereToSave)) {
-
-                LOGGER.info("Concatenating chromosomes from {} into a single FASTA file {}",
-                        genomeTarGz.getAbsolutePath(), whereToSave);
-                TarArchiveEntry tarEntry = tarInput.getNextTarEntry();
-
-                while (tarEntry != null) {
-                    LOGGER.info("Appending chromosome {}", tarEntry.getName());
-                    IOUtils.copyLarge(tarInput, os);
-                    tarEntry = tarInput.getNextTarEntry();
-                }
+            LOGGER.info("Downloading resource file from `{}`", source.toExternalForm());
+            URLConnection connection = source.openConnection();
+            try (InputStream is = connection.getInputStream();
+                 FileOutputStream os = new FileOutputStream(destination.toFile())) {
+                long downloaded = copyData(is, os);
+                LOGGER.info("Finished the download, transferred {} kB", String.format("%,.3f", (double) downloaded / 1024));
             }
-
-            // 3 - create fasta index for the FASTA file
-            LOGGER.info("Indexing FASTA file `{}`", whereToSave);
-            final Path fastaFai = whereToSave.resolveSibling(whereToSave.toFile().getName() + ".fai");
-            final FastaSequenceIndex fastaSequenceIndex = FastaSequenceIndexCreator.buildFromFasta(whereToSave);
-            LOGGER.info("Writing FASTA index to `{}`", fastaFai);
-            fastaSequenceIndex.write(fastaFai);
-
-            // 4 - create sequence dictionary for the FASTA file
-            final List<SAMSequenceRecord> records = StreamSupport.stream(fastaSequenceIndex.spliterator(), false)
-                    .map(entry -> new SAMSequenceRecord(entry.getContig(), Math.toIntExact(entry.getSize())))
-                    .collect(Collectors.toList());
-
-            final SAMSequenceDictionary sequenceDictionary = new SAMSequenceDictionary(records);
-            final Path fastaDict = whereToSave.resolveSibling(whereToSave.toFile().getName() + ".dict");
-            LOGGER.info("Writing FASTA sequence dictionary to `{}`", fastaDict);
-            try (final BufferedWriter writer = Files.newBufferedWriter(fastaDict)) {
-                final SAMSequenceDictionaryCodec codec = new SAMSequenceDictionaryCodec(writer);
-                codec.encode(sequenceDictionary);
-            }
-
-
         } catch (IOException e) {
-            LOGGER.error("Error: ", e);
-            throw new RuntimeException(e);
+            LOGGER.warn("Error downloading the resource `{}` to `{}`", source.toExternalForm(), destination, e);
         }
+    }
+
+    private static long copyData(InputStream input, OutputStream output) throws IOException {
+        byte[] buffer = new byte[1024 * 8];
+        long count = 0;
+        int n;
+        while ((n = input.read(buffer)) >= 0) {
+            output.write(buffer, 0, n);
+            count += n;
+        }
+        return count;
     }
 }

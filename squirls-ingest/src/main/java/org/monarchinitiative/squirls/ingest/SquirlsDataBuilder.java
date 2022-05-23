@@ -82,8 +82,7 @@ import org.flywaydb.core.Flyway;
 import org.monarchinitiative.squirls.core.SquirlsException;
 import org.monarchinitiative.squirls.core.reference.SplicingParameters;
 import org.monarchinitiative.squirls.core.reference.SplicingPwmData;
-import org.monarchinitiative.squirls.ingest.data.GenomeAssemblyDownloader;
-import org.monarchinitiative.squirls.ingest.data.UrlResourceDownloader;
+import org.monarchinitiative.squirls.io.download.UrlResourceDownloader;
 import org.monarchinitiative.squirls.ingest.parse.FileKMerParser;
 import org.monarchinitiative.squirls.ingest.parse.InputStreamBasedPositionalWeightMatrixParser;
 import org.monarchinitiative.squirls.io.SplicingPositionalWeightMatrixParser;
@@ -158,17 +157,6 @@ public class SquirlsDataBuilder {
         SplicingParameters parameters = splicingPwmData.getParameters();
         pwmIngestDao.insertDoubleMatrix(splicingPwmData.getDonor(), DONOR_NAME, parameters.getDonorExonic(), parameters.getDonorIntronic());
         pwmIngestDao.insertDoubleMatrix(splicingPwmData.getAcceptor(), ACCEPTOR_NAME, parameters.getAcceptorExonic(), parameters.getAcceptorIntronic());
-    }
-
-    /**
-     * Download, decompress, and concatenate contigs into a single FASTA file. Then, index the FASTA file.
-     * @param genomeUrl         url pointing to reference genome FASTA file to be downloaded
-     * @param buildDir          path to directory where Squirls data files will be created
-     * @param overwrite         overwrite existing FASTA file if true
-     */
-    static Runnable downloadReferenceGenome(URL genomeUrl, Path buildDir, boolean overwrite) {
-        Path genomeFastaPath = buildDir.resolve("genome.fa");
-        return new GenomeAssemblyDownloader(genomeUrl, genomeFastaPath, overwrite);
     }
 
     /**
