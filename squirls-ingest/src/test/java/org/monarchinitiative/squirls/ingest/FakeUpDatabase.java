@@ -93,7 +93,6 @@ public class FakeUpDatabase {
     private static final Path BUILD_DIR = Paths.get(System.getProperty("user.home") + "/dub/tmp/squirls");
 
     private static final Path DATA_DIR = Paths.get("src/test/resources/org/monarchinitiative/squirls/ingest");
-    private static final Path TX_DIR = DATA_DIR.resolve("transcripts");
 
     private static final URL SPLICING_IC_MATRIX_PATH;
     private static final URL HEXAMER_TSV_PATH;
@@ -112,30 +111,22 @@ public class FakeUpDatabase {
 
     @Test
     public void makeHg19Database() throws Exception {
-        URL genomeUrl = new URL("http://hgdownload.soe.ucsc.edu/goldenPath/hg19/bigZips/chromFa.tar.gz");
-        URL assemblyUrl = new URL("https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/405/GCF_000001405.25_GRCh37.p13/GCF_000001405.25_GRCh37.p13_assembly_report.txt");
-        URL phylopUrl = new URL("http://hgdownload.cse.ucsc.edu/goldenpath/hg19/phyloP100way/hg19.100way.phyloP100way.bw");
-
         Path hg19Dir = DATA_DIR.resolve("transcripts").resolve("hg19");
         URL refseqUrl = hg19Dir.resolve("hg19_refseq_small.ser").toUri().toURL();
         URL ensemblUrl = hg19Dir.resolve("hg19_ensembl_small.ser").toUri().toURL();
         URL ucscUrl = hg19Dir.resolve("hg19_ucsc_small.ser").toUri().toURL();
 
-        SquirlsDataBuilder.buildDatabase(BUILD_DIR, genomeUrl, assemblyUrl, refseqUrl, ensemblUrl, ucscUrl, phylopUrl, SPLICING_IC_MATRIX_PATH,
+        SquirlsDataBuilder.buildDatabase(BUILD_DIR, refseqUrl, ensemblUrl, ucscUrl, SPLICING_IC_MATRIX_PATH,
                 HEXAMER_TSV_PATH, SEPTAMER_TSV_PATH, TestDataSourceConfig.MODEL_PATHS);
     }
 
     @Test
     public void makeHg38Database() throws Exception {
-        URL genomeUrl = new URL("http://hgdownload.soe.ucsc.edu/goldenPath/hg38/bigZips/hg38.chromFa.tar.gz");
-        URL assemblyUrl = new URL("https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/405/GCF_000001405.39_GRCh38.p13/GCF_000001405.39_GRCh38.p13_assembly_report.txt");
-        URL phylopUrl = new URL("http://hgdownload.soe.ucsc.edu/goldenPath/hg38/phyloP100way/hg38.phyloP100way.bw");
-
         Path hg38Dir = DATA_DIR.resolve("transcripts").resolve("hg38");
         URL refseqUrl = hg38Dir.resolve("hg38_refseq_small.ser").toUri().toURL();
         URL ensemblUrl = hg38Dir.resolve("hg38_ensembl_small.ser").toUri().toURL();
         URL ucscUrl = hg38Dir.resolve("hg38_ucsc_small.ser").toUri().toURL();
-        SquirlsDataBuilder.buildDatabase(BUILD_DIR, genomeUrl, assemblyUrl, refseqUrl, ensemblUrl, ucscUrl, phylopUrl, SPLICING_IC_MATRIX_PATH,
+        SquirlsDataBuilder.buildDatabase(BUILD_DIR, refseqUrl, ensemblUrl, ucscUrl, SPLICING_IC_MATRIX_PATH,
                 HEXAMER_TSV_PATH, SEPTAMER_TSV_PATH, TestDataSourceConfig.MODEL_PATHS);
     }
 }

@@ -98,7 +98,6 @@ public class SquirlsDataBuilderTest {
     private static final Path DATA_DIR = Paths.get("src/test/resources/org/monarchinitiative/squirls/ingest");
 
     private static final URL FASTA_URL = GenomeAssemblyDownloaderTest.class.getResource("shortHg19ChromFa.tar.gz");
-    private static final URL ASSEMBLY_REPORT_URL = SquirlsDataBuilderTest.class.getResource("GCF_000001405.25_GRCh37.p13_assembly_report.short.txt");
 
     @Autowired
     public DataSource dataSource;
@@ -119,6 +118,7 @@ public class SquirlsDataBuilderTest {
         // arrange - nothing to be done
 
         // act - download a small reference genome
+        // TODO - move to CLI
         Runnable rgTask = SquirlsDataBuilder.downloadReferenceGenome(FASTA_URL, buildDir, true);
         rgTask.run();
 
@@ -131,7 +131,6 @@ public class SquirlsDataBuilderTest {
 
     @Test
     public void buildDatabase() throws Exception {
-        URL phylopUrl = SquirlsDataBuilderTest.class.getResource("small.bw");
         Path hg19Dir = DATA_DIR.resolve("transcripts").resolve("hg19");
         URL refseqUrl = hg19Dir.resolve("hg19_refseq_small.ser").toUri().toURL();
         URL ensemblUrl = hg19Dir.resolve("hg19_ensembl_small.ser").toUri().toURL();
@@ -140,26 +139,16 @@ public class SquirlsDataBuilderTest {
         URL hexamerPath = DATA_DIR.resolve("parse").resolve("hexamer-scores.tsv").toUri().toURL();
         URL septamerPath = DATA_DIR.resolve("parse").resolve("septamer-scores.tsv").toUri().toURL();
 
-        assertThat(Files.isRegularFile(buildDir.resolve("assembly_report.txt")), is(false));
-        assertThat(Files.isRegularFile(buildDir.resolve("genome.fa")), is(false));
-        assertThat(Files.isRegularFile(buildDir.resolve("genome.fa.fai")), is(false));
-        assertThat(Files.isRegularFile(buildDir.resolve("genome.fa.dict")), is(false));
         assertThat(Files.isRegularFile(buildDir.resolve("squirls.mv.db")), is(false));
-        assertThat(Files.isRegularFile(buildDir.resolve("phylop.bw")), is(false));
         assertThat(Files.isRegularFile(buildDir.resolve("tx.refseq.ser")), is(false));
         assertThat(Files.isRegularFile(buildDir.resolve("tx.ensembl.ser")), is(false));
         assertThat(Files.isRegularFile(buildDir.resolve("tx.ucsc.ser")), is(false));
 
-        SquirlsDataBuilder.buildDatabase(buildDir, FASTA_URL, ASSEMBLY_REPORT_URL, refseqUrl, ensemblUrl, ucscUrl,
-                phylopUrl, yamlPath,
+        SquirlsDataBuilder.buildDatabase(buildDir, refseqUrl, ensemblUrl, ucscUrl,
+                yamlPath,
                 hexamerPath, septamerPath, TestDataSourceConfig.MODEL_PATHS);
 
-        assertThat(Files.isRegularFile(buildDir.resolve("assembly_report.txt")), is(true));
-        assertThat(Files.isRegularFile(buildDir.resolve("genome.fa")), is(true));
-        assertThat(Files.isRegularFile(buildDir.resolve("genome.fa.fai")), is(true));
-        assertThat(Files.isRegularFile(buildDir.resolve("genome.fa.dict")), is(true));
         assertThat(Files.isRegularFile(buildDir.resolve("squirls.mv.db")), is(true));
-        assertThat(Files.isRegularFile(buildDir.resolve("phylop.bw")), is(true));
         assertThat(Files.isRegularFile(buildDir.resolve("tx.refseq.ser")), is(true));
         assertThat(Files.isRegularFile(buildDir.resolve("tx.ensembl.ser")), is(true));
         assertThat(Files.isRegularFile(buildDir.resolve("tx.ucsc.ser")), is(true));
