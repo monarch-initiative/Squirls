@@ -51,6 +51,6 @@ public class SquirlsDataResolverTest {
     public void throwsAnExceptionWhenResourceIsMissing() {
         MissingSquirlsResourceException thrown = assertThrows(MissingSquirlsResourceException.class,
                 () -> SquirlsDataResolver.of(Paths.get("src/test/resources")));
-        assertThat(thrown.getMessage(), containsString("One or more files are missing in SQUIRLS directory: 'squirls.mv.db', 'tx.refseq.ser', 'tx.ensembl.ser', 'tx.ucsc.ser'"));
+        assertThat(thrown.getMessage(), containsString("One or more files are missing in SQUIRLS directory."));
     }
 }

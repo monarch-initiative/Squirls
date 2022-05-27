@@ -76,12 +76,13 @@
 
 package org.monarchinitiative.squirls.initialize;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
+import java.util.Set;
 
 /**
  * This class provides paths to resources, such as path to FASTA file, or splicing transcript database.
@@ -92,6 +93,8 @@ import java.util.stream.Collectors;
  */
 public class SquirlsDataResolver {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(SquirlsDataResolver.class);
+
     private final Path dataDirectory;
 
     public static SquirlsDataResolver of(Path dataDirectory) throws MissingSquirlsResourceException {
@@ -100,35 +103,37 @@ public class SquirlsDataResolver {
 
     private SquirlsDataResolver(Path dataDirectory) throws MissingSquirlsResourceException {
         this.dataDirectory = Objects.requireNonNull(dataDirectory, "Squirls data directory must not be null");
+        Set<Path> primary = Set.of(dataSourceFullPath(), refseqSerPath(), ensemblSerPath(), ucscSerPath());
+        Set<Path> downloadable = Set.of(genomeAssemblyReportPath(), genomeFastaPath(), genomeFastaDictPath(), genomeFastaFaiPath(), phylopPath());
 
         if (!Files.isDirectory(dataDirectory))
             throw new MissingSquirlsResourceException("Path to Squirls data directory '" + dataDirectory + "' does not point to real directory");
 
         // Now check that we have all files present
         // First, the files coming from the Squirls data resource.
-        List<Path> primary = List.of(dataSourceFullPath(), refseqSerPath(), ensemblSerPath(), ucscSerPath());
-        List<String> missing = new LinkedList<>();
+        boolean resourceIsMissing = false;
         for (Path path : primary) {
-            if (!(Files.isRegularFile(path) && Files.isReadable(path)))
-                missing.add(path.toFile().getName());
-        }
-        if (!missing.isEmpty()) {
-            throw new MissingSquirlsResourceException(String.format("One or more files are missing in SQUIRLS directory: %s",
-                    missing.stream().collect(Collectors.joining("', '", "'", "'"))));
+            if (!(Files.isRegularFile(path) && Files.isReadable(path))) {
+                LOGGER.error("File {} is missing in the data directory.", path.toFile().getName());
+                resourceIsMissing = true;
+            }
         }
 
+        if (resourceIsMissing)
+            throw new MissingSquirlsResourceException("One or more files are missing in SQUIRLS directory.");
+
         // Then, the files downloaded separately.
-        List<Path> downloadable = List.of(genomeAssemblyReportPath(), genomeFastaPath(), genomeFastaFaiPath(), genomeFastaDictPath(), phylopPath());
         for (Path path : downloadable) {
-            if (!(Files.isRegularFile(path) && Files.isReadable(path)))
-                missing.add(path.toFile().getName());
+            if (!(Files.isRegularFile(path) && Files.isReadable(path))) {
+                LOGGER.error("A file {} is missing in the data directory. Note the content of downloadable " +
+                        "SQUIRLS resources changed, check the documentation how to get the missing files.",
+                        path.toFile().getName());
+                resourceIsMissing = true;
+            }
         }
-        if (!missing.isEmpty()) {
-            String messsage = String.format("One or more downloadable files are not present in SQUIRLS directory. " +
-                    "Content of downloadable SQUIRLS resources changed, check the documentation how to get the missing files: %s",
-                    missing.stream().collect(Collectors.joining("', '", "'", "'")));
-            throw new MissingSquirlsResourceException(messsage);
-        }
+
+        if (resourceIsMissing)
+            throw new MissingSquirlsResourceException("One or more files are missing in SQUIRLS directory.");
     }
 
     public Path dataDirectory() {
