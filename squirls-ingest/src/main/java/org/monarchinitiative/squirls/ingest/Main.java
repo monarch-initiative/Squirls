@@ -95,7 +95,7 @@ import static picocli.CommandLine.Help.Ansi.Style.*;
         footer = Main.FOOTER)
 public class Main implements Callable<Integer> {
 
-    public static final String VERSION = "squirls-ingest v2.0.1";
+    public static final String VERSION = "squirls-ingest v2.0.2-SNAPSHOT";
     public static final int WIDTH = 120;
 
     public static final String FOOTER = "See the full documentation at https://squirls.readthedocs.io/en/latest";
