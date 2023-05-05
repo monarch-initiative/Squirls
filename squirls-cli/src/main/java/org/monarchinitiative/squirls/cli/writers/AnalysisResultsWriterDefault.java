@@ -104,7 +104,7 @@ public class AnalysisResultsWriterDefault implements AnalysisResultsWriter {
         for (OutputFormat format : options.outputFormats()) {
             ResultWriter writer = resultWriterForFormat(format, options.compress(), options.reportFeatures(), options.reportAllTranscripts());
             try {
-                writer.write(results, options.outputPrefix());
+                writer.write(results, options);
             } catch (IOException e) {
                 LOGGER.error("Error writing {} results: {}", format, e.getMessage());
             }

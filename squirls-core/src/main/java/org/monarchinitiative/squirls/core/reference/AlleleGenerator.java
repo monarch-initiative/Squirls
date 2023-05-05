@@ -179,7 +179,7 @@ public class AlleleGenerator {
             throw new SpliceSiteDeletedException();
         }
 
-        String alt = donor.strand().isPositive() ? variant.alt() : Seq.reverseComplement(variant.alt());
+        String alt = donor.strand().equals(variant.strand()) ? variant.alt() : Seq.reverseComplement(variant.alt());
         int variantStart = variant.startOnStrandWithCoordinateSystem(donor.strand(), CS);
         int variantEnd = variant.endOnStrandWithCoordinateSystem(donor.strand(), CS);
         if (variant.contains(donor.startWithCoordinateSystem(CoordinateSystem.oneBased()))) { // !! one based !!
@@ -267,7 +267,7 @@ public class AlleleGenerator {
             throw new SpliceSiteDeletedException();
         }
 
-        String alt = acceptor.strand().isPositive() ? variant.alt() : Seq.reverseComplement(variant.alt());
+        String alt = acceptor.strand().equals(variant.strand()) ? variant.alt() : Seq.reverseComplement(variant.alt());
         int acceptorEnd = acceptor.endWithCoordinateSystem(CS);
         int variantStart = variant.startOnStrandWithCoordinateSystem(acceptor.strand(), CS);
         int variantEnd = variant.endOnStrandWithCoordinateSystem(acceptor.strand(), CS);

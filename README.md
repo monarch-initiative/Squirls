@@ -1,5 +1,6 @@
 # SQUIRLS
 
+[![GitHub release](https://img.shields.io/github/release/TheJacksonLaboratory/Squirls.svg)](https://github.com/TheJacksonLaboratory/Squirls/releases)
 ![Java CI with Maven](https://github.com/TheJacksonLaboratory/Squirls/workflows/Java%20CI%20with%20Maven/badge.svg)
 [![Documentation Status](https://readthedocs.org/projects/squirls/badge/?version=latest)](https://squirls.readthedocs.io/en/master/?badge=master)
 

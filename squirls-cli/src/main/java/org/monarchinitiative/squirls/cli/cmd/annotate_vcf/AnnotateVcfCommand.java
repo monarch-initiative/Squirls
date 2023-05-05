@@ -97,7 +97,6 @@ import org.monarchinitiative.squirls.core.SquirlsDataService;
 import org.monarchinitiative.squirls.core.SquirlsResult;
 import org.monarchinitiative.squirls.core.VariantSplicingEvaluator;
 import org.monarchinitiative.squirls.core.reference.SplicingPwmData;
-import org.monarchinitiative.squirls.io.SquirlsResourceException;
 import org.monarchinitiative.svart.*;
 import org.monarchinitiative.svart.assembly.GenomicAssembly;
 import org.monarchinitiative.vmvt.core.VmvtGenerator;
@@ -134,9 +133,8 @@ public class AnnotateVcfCommand extends AnnotatingSquirlsCommand {
     public Path inputPath;
 
     @CommandLine.Parameters(index = "1",
-            paramLabel = "output",
             description = "Prefix for the output files.")
-    public Path outputPrefix = Path.of("output");
+    public String prefix;
 
     private static Function<VariantContext, Collection<VariantContext>> meltToSingleAltVariants() {
         return vc -> {
@@ -318,7 +316,7 @@ public class AnnotateVcfCommand extends AnnotatingSquirlsCommand {
                     .addAllVariants(annotated)
                     .build();
 
-            analysisResultsWriter.writeResults(results, prepareOutputOptions(outputPrefix));
+            analysisResultsWriter.writeResults(results, prepareOutputOptions(prefix));
         } catch (Exception e) {
             LOGGER.error("Error: ", e);
             return 1;

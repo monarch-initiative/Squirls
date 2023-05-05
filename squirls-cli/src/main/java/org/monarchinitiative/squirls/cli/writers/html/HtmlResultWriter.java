@@ -79,10 +79,7 @@ package org.monarchinitiative.squirls.cli.writers.html;
 import de.charite.compbio.jannovar.annotation.VariantAnnotations;
 import org.monarchinitiative.squirls.cli.visualization.SplicingVariantGraphicsGenerator;
 import org.monarchinitiative.squirls.cli.visualization.VisualizableVariantAllele;
-import org.monarchinitiative.squirls.cli.writers.AnalysisResults;
-import org.monarchinitiative.squirls.cli.writers.OutputFormat;
-import org.monarchinitiative.squirls.cli.writers.ResultWriter;
-import org.monarchinitiative.squirls.cli.writers.WritableSplicingAllele;
+import org.monarchinitiative.squirls.cli.writers.*;
 import org.monarchinitiative.squirls.core.SquirlsResult;
 import org.monarchinitiative.svart.CoordinateSystem;
 import org.monarchinitiative.svart.GenomicVariant;
@@ -95,7 +92,6 @@ import java.io.IOException;
 import java.io.Writer;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -141,8 +137,8 @@ public class HtmlResultWriter implements ResultWriter {
     }
 
     @Override
-    public void write(AnalysisResults results, Path prefix) throws IOException {
-        Path outputPath = Paths.get(prefix.toAbsolutePath().toString() + '.' + OutputFormat.HTML.getFileExtension());
+    public void write(AnalysisResults results, OutputOptions outputOptions) throws IOException {
+        Path outputPath = outputOptions.outputDirectory().resolve(outputOptions.prefix() + '.' + OutputFormat.HTML.getFileExtension());
         LOGGER.info("Writing HTML output to `{}`", outputPath);
 
         // sort results by max squirls pathogenicity and select at most n variants
