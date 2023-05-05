@@ -152,6 +152,31 @@ public class AlleleGeneratorTest {
         assertThat(allele, equalTo(expected));
     }
 
+    @ParameterizedTest
+    @CsvSource({
+            " 97,     G,   C,   ATGgtaggt",
+
+            "101,     g,   t,   ATGttaggt",
+            "101,   gta,   g,   ATGgggtga",
+            "101,     g, gcc,   ATGgcctag",
+            "105,     g, gcc,   ATGgtaggc",
+            "105,   gtg,   g,   ATGgtagga",
+            " 95, GTGAT,   G,   CGGgtaggt",
+    })
+    public void getDonorSiteWithAltAllele_NegStrand(int pos, String ref, String alt, String expected) throws Exception {
+        Contig contig = TestContig.of(1, 200);
+
+        GenomicVariant variant = GenomicVariant.of(contig,"", Strand.NEGATIVE, CoordinateSystem.oneBased(), pos, ref, alt);
+        StrandedSequence sequence = StrandedSequence.of(
+                GenomicRegion.of(contig, Strand.NEGATIVE, CoordinateSystem.zeroBased(), 93, 110),
+                "CGTG" + "ATGgtaggt" + "gaaa");
+        GenomicRegion donor = GenomicRegion.of(contig, Strand.NEGATIVE, CoordinateSystem.zeroBased(), 97, 106);
+
+        String allele = generator.getDonorSiteWithAltAllele(donor, variant, sequence);
+
+        assertThat(allele, equalTo(expected));
+    }
+
     @Test
     public void deletionOfWholeSite() throws Exception {
         GenomicVariant variant = GenomicVariant.of(contig,"", Strand.POSITIVE, CoordinateSystem.zeroBased(), 96, "GATGgtaggt", "G");
@@ -193,6 +218,28 @@ public class AlleleGeneratorTest {
                 GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(), 50, 90),
                 "atggc" + "aaacactgttccttctctctttcagGT" + "GGCCCTGC");
         GenomicRegion acceptor = GenomicRegion.of(contig, Strand.POSITIVE, CoordinateSystem.zeroBased(), 55, 82);
+
+        assertThat(generator.getAcceptorSiteWithAltAllele(acceptor, variant, sequence), is(expected));
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+            " 83,    G,   C,     aaacactgttccttctctctttcagGT",
+
+            " 81,    G,   C,     aaacactgttccttctctctttcagCT",
+            " 78,  cag,   c,     gcaaacactgttccttctctctttcGT",
+            " 78,    c, ctt,     acactgttccttctctctttcttagGT",
+            " 81,    G, GCC,     acactgttccttctctctttcagGCCT",
+            " 81, GTGG,   G,     aaacactgttccttctctctttcagGC",
+            " 54,  gca,   g,     gaacactgttccttctctctttcagGT",
+    })
+    public void getAcceptorSiteWithAltAllele_NegStrand(int pos, String ref, String alt, String expected) throws Exception {
+        GenomicVariant variant = GenomicVariant.of(contig, "", Strand.NEGATIVE, CoordinateSystem.oneBased(), pos, ref, alt);
+
+        StrandedSequence sequence = StrandedSequence.of(
+                GenomicRegion.of(contig, Strand.NEGATIVE, CoordinateSystem.zeroBased(), 50, 90),
+                "atggc" + "aaacactgttccttctctctttcagGT" + "GGCCCTGC");
+        GenomicRegion acceptor = GenomicRegion.of(contig, Strand.NEGATIVE, CoordinateSystem.zeroBased(), 55, 82);
 
         assertThat(generator.getAcceptorSiteWithAltAllele(acceptor, variant, sequence), is(expected));
     }
