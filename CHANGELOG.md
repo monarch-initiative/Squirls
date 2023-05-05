@@ -1,6 +1,12 @@
 # Changelog
 
-## ✈ latest
+## ✈ v2.0.1
+
+- `squirls-core`
+  - fix bug in allele generator leading to generation of bad splice site snippets for transcripts on negative strand 
+    in sequence trekker  
+
+## ✈ v2.0.0
 
 - `Squirls`
   - add `squirls-bootstrap` to quickly bootstrap Squirls even without Spring
