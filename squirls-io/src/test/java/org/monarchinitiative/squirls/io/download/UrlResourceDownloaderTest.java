@@ -74,65 +74,47 @@
  * Daniel Danis, Peter N Robinson, 2020
  */
 
-package org.monarchinitiative.squirls.ingest.data;
+package org.monarchinitiative.squirls.io.download;
 
-import org.apache.commons.io.IOUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.monarchinitiative.squirls.io.TestDataSourceConfig;
 
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.File;
 import java.net.URL;
-import java.net.URLConnection;
 import java.nio.file.Path;
 
-/**
- * Download a file from {@link URL} to given location.
- * @author Daniel Danis
- */
-public class UrlResourceDownloader implements Runnable {
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(UrlResourceDownloader.class);
+public class UrlResourceDownloaderTest {
 
-    private final URL source;
+    private static final Path PARENT = TestDataSourceConfig.BASE_FOLDER.resolve("download");
 
-    private final Path destination;
+    private File destination;
 
-    private final boolean overwrite;
-
-    /**
-     * @param source      url pointing to the resource file
-     * @param destination where to store the file
-     * @param overwrite   if <code>true</code>, the file is overwritten if it already exists
-     */
-    public UrlResourceDownloader(URL source, Path destination, boolean overwrite) {
-        this.source = source;
-        this.destination = destination;
-        this.overwrite = overwrite;
+    @BeforeEach
+    public void setUp() {
+        this.destination = PARENT.resolve("copy.txt").toFile();
     }
 
-    public UrlResourceDownloader(URL source, Path destination) {
-        this(source, destination, true);
-    }
-
-    @Override
-    public void run() {
-        if (!overwrite && destination.toFile().exists()) {
-            LOGGER.info("The file already exists at `{}`, skipping download", destination);
-            return;
-        }
-
-        try {
-            LOGGER.info("Downloading resource file from `{}`", source.toExternalForm());
-            URLConnection connection = source.openConnection();
-            try (InputStream is = connection.getInputStream();
-                 FileOutputStream os = new FileOutputStream(destination.toFile())) {
-                long downloaded = IOUtils.copyLarge(is, os);
-                LOGGER.info("Finished the download, transferred {} kB", String.format("%,.3f", (double) downloaded / 1024));
+    @AfterEach
+    public void tearDown() {
+        if (destination.isFile()) {
+            if (!destination.delete()) {
+                System.err.println("WHOA!");
             }
-        } catch (IOException e) {
-            LOGGER.warn("Error downloading the resource `{}` to `{}`", source.toExternalForm(), destination, e);
         }
+    }
+
+    @Test
+    public void download() throws Exception {
+        URL source = PARENT.resolve("funky.txt").toUri().toURL();
+        UrlResourceDownloader downloader = new UrlResourceDownloader(source, destination.toPath());
+
+        assertThat(destination.exists(), is(false));
+        downloader.run();
+        assertThat(destination.exists(), is(true));
     }
 }

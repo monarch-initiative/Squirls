@@ -186,9 +186,6 @@ public class IngestCommand implements Callable<Integer> {
 
 
             // 1 - create build folder
-            URL genomeUrl = new URL(ingestProperties.fastaUrl());
-            URL assemblyReportUrl = new URL(ingestProperties.assemblyReportUrl());
-            URL phylopUrl = new URL(ingestProperties.phylopUrl());
             URL refseqUrl = new URL(ingestProperties.refseqUrl());
             URL ensemblUrl = new URL(ingestProperties.ensemblUrl());
             URL ucscUrl = new URL(ingestProperties.ucscUrl());
@@ -217,9 +214,7 @@ public class IngestCommand implements Callable<Integer> {
 
             // 3 - build database
             SquirlsDataBuilder.buildDatabase(genomeBuildDir,
-                    genomeUrl, assemblyReportUrl,
                     refseqUrl, ensemblUrl, ucscUrl,
-                    phylopUrl,
                     spliceMatrixUrl,
                     hexamerUrl,
                     septamerUrl,

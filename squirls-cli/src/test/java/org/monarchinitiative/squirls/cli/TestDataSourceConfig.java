@@ -96,11 +96,13 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import java.io.IOException;
-import java.nio.file.Paths;
+import java.nio.file.Path;
 import java.util.Map;
 
 @Configuration
 public class TestDataSourceConfig {
+
+    public static final Path BASE_DIR = Path.of("src/test/resources/org/monarchinitiative/squirls/cli");
 
 
     /**
@@ -137,7 +139,7 @@ public class TestDataSourceConfig {
 
     @Bean
     public GenomicAssembly genomicAssembly() {
-        return GenomicAssemblyParser.parseAssembly(Paths.get("src/test/resources/org/monarchinitiative/squirls/cli/GCF_000001405.25_GRCh37.p13_assembly_report.txt"));
+        return GenomicAssemblyParser.parseAssembly(BASE_DIR.resolve("GCF_000001405.25_GRCh37.p13_assembly_report.txt"));
     }
 
     @Bean

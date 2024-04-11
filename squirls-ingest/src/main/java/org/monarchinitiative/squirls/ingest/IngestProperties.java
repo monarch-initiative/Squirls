@@ -90,9 +90,6 @@ public class IngestProperties {
     private String ucscUrl;
     private String hexamerTsvPath;
     private String septamerTsvPath;
-    private String fastaUrl;
-    private String assemblyReportUrl;
-    private String phylopUrl;
     private List<ClassifierData> classifiers;
 
     public List<ClassifierData> classifiers() {
@@ -149,30 +146,6 @@ public class IngestProperties {
 
     public void setSeptamerTsvPath(String septamerTsvPath) {
         this.septamerTsvPath = septamerTsvPath;
-    }
-
-    public String fastaUrl() {
-        return fastaUrl;
-    }
-
-    public void setFastaUrl(String fastaUrl) {
-        this.fastaUrl = fastaUrl;
-    }
-
-    public String assemblyReportUrl() {
-        return assemblyReportUrl;
-    }
-
-    public void setAssemblyReportUrl(String assemblyReportUrl) {
-        this.assemblyReportUrl = assemblyReportUrl;
-    }
-
-    public String phylopUrl() {
-        return phylopUrl;
-    }
-
-    public void setPhylopUrl(String phylopUrl) {
-        this.phylopUrl = phylopUrl;
     }
 
     public static class ClassifierData {

@@ -82,8 +82,7 @@ import org.flywaydb.core.Flyway;
 import org.monarchinitiative.squirls.core.SquirlsException;
 import org.monarchinitiative.squirls.core.reference.SplicingParameters;
 import org.monarchinitiative.squirls.core.reference.SplicingPwmData;
-import org.monarchinitiative.squirls.ingest.data.GenomeAssemblyDownloader;
-import org.monarchinitiative.squirls.ingest.data.UrlResourceDownloader;
+import org.monarchinitiative.squirls.io.download.UrlResourceDownloader;
 import org.monarchinitiative.squirls.ingest.parse.FileKMerParser;
 import org.monarchinitiative.squirls.ingest.parse.InputStreamBasedPositionalWeightMatrixParser;
 import org.monarchinitiative.squirls.io.SplicingPositionalWeightMatrixParser;
@@ -161,17 +160,6 @@ public class SquirlsDataBuilder {
     }
 
     /**
-     * Download, decompress, and concatenate contigs into a single FASTA file. Then, index the FASTA file.
-     * @param genomeUrl         url pointing to reference genome FASTA file to be downloaded
-     * @param buildDir          path to directory where Squirls data files will be created
-     * @param overwrite         overwrite existing FASTA file if true
-     */
-    static Runnable downloadReferenceGenome(URL genomeUrl, Path buildDir, boolean overwrite) {
-        Path genomeFastaPath = buildDir.resolve("genome.fa");
-        return new GenomeAssemblyDownloader(genomeUrl, genomeFastaPath, overwrite);
-    }
-
-    /**
      * Store data for hexamer and septamer-dependent methods.
      *
      * @param dataSource  data source for a database
@@ -218,31 +206,24 @@ public class SquirlsDataBuilder {
      * Build the database given inputs.
      *
      * @param buildDir          path to directory where the database file should be stored
-     * @param genomeUrl         URL pointing to `tar.gz` file with reference genome
      * @param refseqUrl         URL pointing to Jannovar RefSeq transcript database
      * @param ensemblUrl        URL pointing to Jannovar Ensembl transcript database
      * @param ucscUrl           URL pointing to Jannovar UCSC transcript database
      * @param yamlUrl          path to file with splice site definitions
      * @throws SquirlsException if anything goes wrong
      */
-    public static void buildDatabase(Path buildDir, URL genomeUrl, URL genomeAssemblyReport,
+    public static void buildDatabase(Path buildDir,
                                      URL refseqUrl, URL ensemblUrl, URL ucscUrl,
-                                     URL phylopUrl,
                                      URL yamlUrl,
                                      URL hexamerUrl, URL septamerUrl,
                                      Map<SquirlsClassifierVersion, URL> classifierUrls) throws SquirlsException {
 
         // 0 - initiate download of reference genome FASTA file & PhyloP bigwig file
-        Path genomeAssemblyReportPath = buildDir.resolve("assembly_report.txt");
-        Path phyloPPath = buildDir.resolve("phylop.bw");
         Path refseqPath = buildDir.resolve("tx.refseq.ser");
         Path ensemblPath = buildDir.resolve("tx.ensembl.ser");
         Path ucscPath = buildDir.resolve("tx.ucsc.ser");
 
         ExecutorService es = Executors.newFixedThreadPool(3);
-        es.submit(downloadReferenceGenome(genomeUrl, buildDir, false));
-        es.submit(new UrlResourceDownloader(phylopUrl, phyloPPath, false));
-        es.submit(new UrlResourceDownloader(genomeAssemblyReport, genomeAssemblyReportPath, false));
         es.submit(new UrlResourceDownloader(refseqUrl, refseqPath, true));
         es.submit(new UrlResourceDownloader(ensemblUrl, ensemblPath, true));
         es.submit(new UrlResourceDownloader(ucscUrl, ucscPath, true));

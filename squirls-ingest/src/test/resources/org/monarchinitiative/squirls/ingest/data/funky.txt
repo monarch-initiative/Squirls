@@ -1,1 +1,1 @@
-This file is used to test download of an URL resource.
+This file is used to test Zip compression wrapper.

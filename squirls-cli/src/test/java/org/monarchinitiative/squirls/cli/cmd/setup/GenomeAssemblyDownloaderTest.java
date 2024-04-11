@@ -74,47 +74,43 @@
  * Daniel Danis, Peter N Robinson, 2020
  */
 
-package org.monarchinitiative.squirls.ingest.data;
+package org.monarchinitiative.squirls.cli.cmd.setup;
 
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
+import htsjdk.samtools.reference.FastaSequenceIndex;
 import org.junit.jupiter.api.Test;
-import org.monarchinitiative.squirls.ingest.TestDataSourceConfig;
+import org.junit.jupiter.api.io.TempDir;
+import org.monarchinitiative.squirls.cli.TestDataSourceConfig;
 
-import java.io.File;
 import java.net.URL;
 import java.nio.file.Path;
 
+import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
 
-public class UrlResourceDownloaderTest {
+public class GenomeAssemblyDownloaderTest {
 
-    private static final Path PARENT = Path.of("");
+    @TempDir
+    public Path buildDir;
 
-    private File destination;
-
-    @BeforeEach
-    public void setUp() {
-        this.destination = PARENT.resolve("copy.txt").toFile();
-    }
-
-    @AfterEach
-    public void tearDown() {
-        if (destination.isFile()) {
-            if (!destination.delete()) {
-                System.err.println("WHOA!");
-            }
-        }
-    }
 
     @Test
     public void download() throws Exception {
-        URL source = TestDataSourceConfig.BASE_FOLDER.resolve("data").resolve("funky.txt").toUri().toURL();
-        UrlResourceDownloader downloader = new UrlResourceDownloader(source, destination.toPath());
+        URL fastaUrl = TestDataSourceConfig.BASE_DIR.resolve("cmd").resolve("setup").resolve("shortHg19ChromFa.tar.gz").toUri().toURL();
 
-        assertThat(destination.exists(), is(false));
+        Path whereToSave = buildDir.resolve("the-genome.fa");
+
+        assertThat(whereToSave.toFile().exists(), is(false));
+        GenomeAssemblyDownloader downloader = new GenomeAssemblyDownloader(fastaUrl, whereToSave, true);
         downloader.run();
-        assertThat(destination.exists(), is(true));
+
+        Path expectedFastaIdxPath = buildDir.resolve("the-genome.fa.fai");
+        assertThat(expectedFastaIdxPath.toFile().isFile(), is(true));
+
+        Path expectedFastaDictPath = buildDir.resolve("the-genome.fa.dict");
+        assertThat(expectedFastaDictPath.toFile().isFile(), is(true));
+
+        FastaSequenceIndex index = new FastaSequenceIndex(expectedFastaIdxPath);
+
+        assertThat(index.size(), is(93));
     }
 }

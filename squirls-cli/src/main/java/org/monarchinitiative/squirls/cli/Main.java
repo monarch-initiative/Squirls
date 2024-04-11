@@ -80,6 +80,8 @@ import org.monarchinitiative.squirls.cli.cmd.annotate_csv.AnnotateCsvCommand;
 import org.monarchinitiative.squirls.cli.cmd.annotate_pos.AnnotatePosCommand;
 import org.monarchinitiative.squirls.cli.cmd.annotate_vcf.AnnotateVcfCommand;
 import org.monarchinitiative.squirls.cli.cmd.precalculate.PrecalculateCommand;
+import org.monarchinitiative.squirls.cli.cmd.setup.PreprocessReferenceGenomeCommand;
+import org.monarchinitiative.squirls.cli.cmd.setup.SetupCommand;
 import picocli.CommandLine;
 import picocli.CommandLine.Help.ColorScheme.Builder;
 
@@ -117,6 +119,8 @@ public class Main implements Callable<Integer> {
         Locale.setDefault(Locale.US);
         CommandLine cline = new CommandLine(new Main())
                 .setColorScheme(COLOR_SCHEME)
+                .addSubcommand("setup", new CommandLine(new SetupCommand())
+                        .addSubcommand("ref-genome", new PreprocessReferenceGenomeCommand()))
                 .addSubcommand("annotate-pos", new AnnotatePosCommand())
                 .addSubcommand("annotate-csv", new AnnotateCsvCommand())
                 .addSubcommand("annotate-vcf", new AnnotateVcfCommand())
