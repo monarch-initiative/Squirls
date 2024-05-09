@@ -242,6 +242,6 @@ variants:
 
 
 .. _Jannovar: https://pubmed.ncbi.nlm.nih.gov/24677618
-.. _example.vcf: https://github.com/TheJacksonLaboratory/Squirls/blob/development/squirls-cli/src/examples/example.vcf
-.. _example.csv: https://github.com/TheJacksonLaboratory/Squirls/blob/development/squirls-cli/src/examples/example.csv
-.. _regions.bed: https://github.com/TheJacksonLaboratory/Squirls/blob/development/squirls-cli/src/examples/regions.bed
+.. _example.vcf: https://github.com/monarch-initiative/Squirls/blob/development/squirls-cli/src/examples/example.vcf
+.. _example.csv: https://github.com/monarch-initiative/Squirls/blob/development/squirls-cli/src/examples/example.csv
+.. _regions.bed: https://github.com/monarch-initiative/Squirls/blob/development/squirls-cli/src/examples/regions.bed

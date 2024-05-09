@@ -17,7 +17,7 @@ As the first step, Squirls needs to be installed into the local Maven repository
 The installation requires JDK 11 or better to be present in the environment. Squirls uses the amazing
 `Maven Wrapper <https://github.com/takari/maven-wrapper>`_ to build the project::
 
-  git clone https://github.com/TheJacksonLaboratory/Squirls
+  git clone https://github.com/monarch-initiative/Squirls
   cd Squirls
   ./mvnw install
 
