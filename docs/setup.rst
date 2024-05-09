@@ -18,7 +18,7 @@ Prebuilt Squirls executable
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 To download the prebuilt Squirls JAR file, go to the
-`Releases section <https://github.com/TheJacksonLaboratory/Squirls/releases>`_
+`Releases section <https://github.com/monarch-initiative/Squirls/releases>`_
 on the Squirls GitHub page and download the latest precompiled version of Squirls.
 
 Squirls database files
@@ -55,7 +55,7 @@ As an alternative to using prebuilt Squirls JAR file, the Squirls JAR file can a
 
 Run the following commands to download Squirls source code from GitHub repository and to build Squirls JAR file::
 
-  $ git clone https://github.com/TheJacksonLaboratory/Squirls
+  $ git clone https://github.com/monarch-initiative/Squirls
   $ cd Squirls
   $ ./mvnw package
 

@@ -56,9 +56,9 @@
 
 
     <scm>
-        <connection>scm:git:git@github.com:TheJacksonLaboratory/Squirls.git</connection>
-        <developerConnection>scm:git:git@github.com:TheJacksonLaboratory/Squirls.git</developerConnection>
-        <url>scm:git:git@github.com:TheJacksonLaboratory/Squirls.git</url>
+        <connection>scm:git:git@github.com:monarch-initiative/Squirls.git</connection>
+        <developerConnection>scm:git:git@github.com:monarch-initiative/Squirls.git</developerConnection>
+        <url>scm:git:git@github.com:monarch-initiative/Squirls.git</url>
         <tag>v${project.version}</tag>
     </scm>
 
